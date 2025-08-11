@@ -101,8 +101,8 @@ jobs:
           COMMIT_MESSAGES=$(git log --oneline --no-color $COMMIT_RANGE | head -20)
 
           # Get version changes if any
-          CURRENT_VERSION=$(git show origin/$TARGET_BRANCH:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin').toString()).version" 2>/dev/null || echo "unknown")
-          NEW_VERSION=$(node -p "require('./package.json').version")
+          CURRENT_VERSION=$(git show origin/$TARGET_BRANCH:package.json | node -e "process.stdin.setEncoding('utf8'); let data=''; process.stdin.on('data', chunk => data += chunk); process.stdin.on('end', () => console.log(JSON.parse(data).version));" 2>/dev/null || echo "unknown")
+          NEW_VERSION=$(node -e "console.log(require('./package.json').version)")
 
           echo "commit_range=$COMMIT_RANGE" >> $GITHUB_OUTPUT
           echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
