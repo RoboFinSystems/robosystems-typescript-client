@@ -131,20 +131,20 @@ if (fs.existsSync(extensionsSourceDir)) {
 // Create README if it doesn't exist
 const readmePath = path.join(currentDir, 'README.md')
 if (!fs.existsSync(readmePath)) {
-  const readmeContent = `# RoboSystems TypeScript SDK
+  const readmeContent = `# RoboSystems TypeScript Client
 
-Official TypeScript SDK for the RoboSystems Financial Knowledge Graph API with SSE support.
+Official TypeScript Client for the RoboSystems Financial Knowledge Graph API with SSE support.
 
 ## Installation
 
 \`\`\`bash
-npm install @robosystems/sdk
+npm install @robosystems/client
 \`\`\`
 
 ## Quick Start
 
 \`\`\`typescript
-import { client, getCurrentUser, extensions } from '@robosystems/sdk';
+import { client, getCurrentUser, extensions } from '@robosystems/client';
 
 // Configure the client
 client.setConfig({
@@ -152,10 +152,10 @@ client.setConfig({
   credentials: 'include'
 });
 
-// Use the SDK
+// Use the Client
 const { data: user } = await getCurrentUser();
 
-// Use SDK Extensions for enhanced features
+// Use Client Extensions for enhanced features
 const result = await extensions.query.query('graph_123', 'MATCH (n) RETURN n LIMIT 10');
 
 // Monitor async operations with SSE
@@ -166,7 +166,7 @@ const opResult = await extensions.operations.monitorOperation('operation_123', {
 
 ## Features
 
-- **Generated SDK**: Auto-generated from OpenAPI spec
+- **Generated Client**: Auto-generated from OpenAPI spec
 - **SSE Support**: Real-time updates for async operations
 - **Query Client**: Enhanced query execution with streaming
 - **Operation Monitoring**: Track long-running operations
@@ -174,7 +174,7 @@ const opResult = await extensions.operations.monitorOperation('operation_123', {
 
 ## Documentation
 
-Full documentation available at [https://api.robosystems.ai/docs](https://api.robosystems.ai/docs)
+Full documentation available at [https://api.robosystems.ai](https://api.robosystems.ai)
 `
 
   fs.writeFileSync(readmePath, readmeContent)

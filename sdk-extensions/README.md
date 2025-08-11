@@ -23,17 +23,17 @@ The RoboSystems TypeScript SDK Extensions provide production-ready enhancements 
 The extensions are included with the main SDK:
 
 ```bash
-npm install @robosystems/sdk
+npm install @robosystems/client
 # or
-yarn add @robosystems/sdk
+yarn add @robosystems/client
 # or
-pnpm add @robosystems/sdk
+pnpm add @robosystems/client
 ```
 
 ### Basic SSE Usage
 
 ```typescript
-import { SSEClient, EventType } from '@robosystems/sdk/extensions'
+import { SSEClient, EventType } from '@robosystems/client/extensions'
 
 // Initialize SSE client
 const sseClient = new SSEClient({
@@ -67,7 +67,7 @@ sseClient.close()
 ### Query Execution with Progress Monitoring
 
 ```typescript
-import { QueryClient } from '@robosystems/sdk/extensions'
+import { QueryClient } from '@robosystems/client/extensions'
 
 const queryClient = new QueryClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -186,7 +186,7 @@ try {
 ### OperationClient for Long-Running Tasks
 
 ```typescript
-import { OperationClient, OperationStatus } from '@robosystems/sdk/extensions'
+import { OperationClient, OperationStatus } from '@robosystems/client/extensions'
 
 const operationClient = new OperationClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -275,7 +275,7 @@ await operationClient.monitor('operation-id', {
 ### useSSE Hook
 
 ```typescript
-import { useSSE } from '@robosystems/sdk/extensions/hooks'
+import { useSSE } from '@robosystems/client/extensions/hooks'
 
 function OperationMonitor({ operationId }: { operationId: string }) {
   const {
@@ -315,7 +315,7 @@ function OperationMonitor({ operationId }: { operationId: string }) {
 ### useQueryWithSSE Hook
 
 ```typescript
-import { useQueryWithSSE } from '@robosystems/sdk/extensions/hooks'
+import { useQueryWithSSE } from '@robosystems/client/extensions/hooks'
 
 function QueryRunner() {
   const {
@@ -390,7 +390,7 @@ sseClient.on('circuit_breaker_closed', () => {
 ### Graceful Degradation
 
 ```typescript
-import { QueryClient, FallbackStrategy } from '@robosystems/sdk/extensions'
+import { QueryClient, FallbackStrategy } from '@robosystems/client/extensions'
 
 const queryClient = new QueryClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -459,7 +459,7 @@ NEXT_PUBLIC_PREFER_STREAMING=true
 ### Custom Configuration
 
 ```typescript
-import { createSSEClient } from '@robosystems/sdk/extensions'
+import { createSSEClient } from '@robosystems/client/extensions'
 
 const sseClient = createSSEClient({
   // API Configuration
@@ -488,7 +488,7 @@ const sseClient = createSSEClient({
 ### Stream Processing for Large Datasets
 
 ```typescript
-import { StreamProcessor } from '@robosystems/sdk/extensions'
+import { StreamProcessor } from '@robosystems/client/extensions'
 
 const processor = new StreamProcessor({
   batchSize: 1000,
@@ -512,7 +512,7 @@ await processor.processStream('your-graph-id', 'MATCH (t:Transaction) RETURN t',
 ### Caching with SSE Updates
 
 ```typescript
-import { CachedQueryClient } from '@robosystems/sdk/extensions'
+import { CachedQueryClient } from '@robosystems/client/extensions'
 
 const cachedClient = new CachedQueryClient({
   ttl: 300000, // 5 minute cache
@@ -536,7 +536,7 @@ cachedClient.on('cache_invalidated', (query) => {
 ### Mock SSE for Testing
 
 ```typescript
-import { MockSSEClient } from '@robosystems/sdk/extensions/testing'
+import { MockSSEClient } from '@robosystems/client/extensions/testing'
 
 describe('SSE Integration', () => {
   it('should handle progress events', async () => {
