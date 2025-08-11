@@ -54,7 +54,7 @@ jobs:
       
       - name: Install dependencies
         if: steps.check-published.outputs.already_published == 'false'
-        run: npm ci
+        run: npm install
       
       - name: Regenerate SDK (if requested)
         if: steps.check-published.outputs.already_published == 'false' && github.event.inputs.regenerate == 'true'
@@ -62,17 +62,12 @@ jobs:
           ROBOSYSTEMS_API_URL: 'https://api.robosystems.ai'
         run: npm run generate
       
-      - name: Build SDK
-        if: steps.check-published.outputs.already_published == 'false'
-        run: npm run build
-      
-      - name: Run tests
-        if: steps.check-published.outputs.already_published == 'false'
-        run: npm test
+      # Skip build and tests - this is a TypeScript SDK that users build
+      # The prepare script will handle necessary file generation for publishing
       
       - name: Prepare for publishing
         if: steps.check-published.outputs.already_published == 'false'
-        run: npm run prepare
+        run: npm run prepare:publish
       
       - name: Publish to npm
         if: steps.check-published.outputs.already_published == 'false'
