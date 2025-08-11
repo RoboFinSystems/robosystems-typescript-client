@@ -439,17 +439,15 @@ client.setConfig({
 
 ## API Reference
 
-- Full API documentation: [https://api.robosystems.ai/docs](https://api.robosystems.ai/docs)
+- Full API documentation: [https://api.robosystems.ai](https://api.robosystems.ai)
 - OpenAPI specification: [https://api.robosystems.ai/openapi.json](https://api.robosystems.ai/openapi.json)
 
 ## Support
 
-- Documentation: [https://docs.robosystems.ai](https://docs.robosystems.ai)
-- Issues: [GitHub Issues](https://github.com/HarbingerFinLab/robosystems-typescript-client/issues)
-- Email: support@robosystems.ai
+- Issues: [GitHub Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-MIT © 2024 Harbinger FinLab
+MIT © 2025 Harbinger FinLab
