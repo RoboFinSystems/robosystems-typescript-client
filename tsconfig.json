@@ -1,21 +1,23 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM"],
-    "module": "ESNext",
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "CommonJS",
     "moduleResolution": "node",
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
+    "declarationMap": false,
+    "sourceMap": false,
+    "outDir": "./",
     "rootDir": "./",
     "strict": false,
     "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowJs": true,
-    "noEmit": true,
+    "noEmit": false,
     "types": ["node"]
   },
   "include": [
@@ -27,7 +29,6 @@
     "dist",
     "scripts",
     "**/*.test.ts",
-    "**/*.spec.ts",
-    "sdk-extensions/hooks.ts"
+    "**/*.spec.ts"
   ]
 }

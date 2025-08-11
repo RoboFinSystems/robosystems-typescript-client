@@ -1,6 +1,6 @@
 {
   "name": "@robosystems/client",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "TypeScript client library for RoboSystems Financial Knowledge Graph API",
   "main": "index.js",
   "types": "index.d.ts",
@@ -52,13 +52,13 @@
     "url": "https://github.com/RoboFinSystems/robosystems-typescript-client/issues"
   },
   "homepage": "https://github.com/RoboFinSystems/robosystems-typescript-client#readme",
-  "dependencies": {},
   "engines": {
     "node": ">=18.0.0"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.80.2",
     "@types/node": "^22.0.0",
+    "@types/react": "^19.1.9",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.0.0",

@@ -31,7 +31,7 @@ export function useQuery(graphId: string) {
   const [error, setError] = useState<Error | null>(null)
   const [data, setData] = useState<QueryResult | null>(null)
   const [queuePosition, setQueuePosition] = useState<number | null>(null)
-  const clientRef = useRef<QueryClient>()
+  const clientRef = useRef<QueryClient>(null)
 
   // Initialize client
   useEffect(() => {
@@ -128,7 +128,7 @@ export function useStreamingQuery(graphId: string) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [rowsReceived, setRowsReceived] = useState(0)
-  const clientRef = useRef<QueryClient>()
+  const clientRef = useRef<QueryClient>(null)
 
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
@@ -221,7 +221,7 @@ export function useOperation<T = any>(operationId?: string) {
   const [progress, setProgress] = useState<OperationProgress | null>(null)
   const [error, setError] = useState<Error | null>(null)
   const [result, setResult] = useState<OperationResult<T> | null>(null)
-  const clientRef = useRef<OperationClient>()
+  const clientRef = useRef<OperationClient>(null)
 
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
@@ -329,7 +329,7 @@ export function useMultipleOperations<T = any>() {
   const [results, setResults] = useState<Map<string, OperationResult<T>>>(new Map())
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Map<string, Error>>(new Map())
-  const clientRef = useRef<OperationClient>()
+  const clientRef = useRef<OperationClient>(null)
 
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()

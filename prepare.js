@@ -11,6 +11,16 @@ const { execSync } = require('child_process')
 
 console.log('🚀 Preparing RoboSystems SDK for publishing...')
 
+// First, build the TypeScript
+console.log('🔨 Building TypeScript...')
+try {
+  execSync('npm run build', { stdio: 'inherit' })
+  console.log('✅ TypeScript build complete')
+} catch (error) {
+  console.error('❌ TypeScript build failed:', error.message)
+  process.exit(1)
+}
+
 const sdkSourceDir = path.join(__dirname, 'sdk')
 const currentDir = __dirname
 
