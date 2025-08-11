@@ -90,38 +90,30 @@ if (!fs.existsSync(extensionsDestDir)) {
 
 // Copy extensions files
 if (fs.existsSync(extensionsSourceDir)) {
-  const files = fs.readdirSync(extensionsSourceDir)
-  files.forEach((file) => {
+  // The TypeScript compiler will have already built these files
+  // Just copy the compiled .js and .d.ts files
+  const sdkExtensionsBuilt = fs.readdirSync(extensionsSourceDir)
+  
+  sdkExtensionsBuilt.forEach((file) => {
     const sourcePath = path.join(extensionsSourceDir, file)
     const destPath = path.join(extensionsDestDir, file)
-
-    if (file.endsWith('.ts')) {
-      // Process TypeScript files
+    
+    if (file.endsWith('.js') || file.endsWith('.d.ts')) {
+      // Copy compiled JavaScript and declaration files
+      fs.copyFileSync(sourcePath, destPath)
+      console.log(`  ✓ Copied ${file}`)
+    } else if (file.endsWith('.ts') && !file.endsWith('.d.ts')) {
+      // Copy TypeScript source files for reference
       let content = fs.readFileSync(sourcePath, 'utf8')
-
+      
       // Adjust imports for published package structure
       content = content
         .replace(/from ['"]\.\.\/sdk\/sdk\.gen['"]/g, "from '../sdk.gen'")
         .replace(/from ['"]\.\.\/sdk\/types\.gen['"]/g, "from '../types.gen'")
         .replace(/from ['"]\.\.\/sdk\/client\.gen['"]/g, "from '../client.gen'")
-
-      // Save TypeScript version
+      
       fs.writeFileSync(destPath, content)
-
-      // Create JavaScript version
-      let jsContent = content
-        .replace(/export interface \w+[^}]+}/gs, '') // Remove interfaces
-        .replace(/export type[^;]+;/gs, '') // Remove type exports
-        .replace(/: (\w+(\[\])?|{[^}]+}|\([^)]+\) => \w+|['"][\w-]+['"])/g, '') // Remove type annotations
-        .replace(/<[^>]+>/g, '') // Remove generics
-        .replace(/\?:/g, ':') // Remove optional markers
-        .replace(/ as \w+/g, '') // Remove type assertions
-        .replace(/import type/g, 'import') // Convert type imports
-        .replace(/type \w+ = [^;]+;/g, '') // Remove type aliases
-
-      const jsFile = file.replace('.ts', '.js')
-      fs.writeFileSync(path.join(extensionsDestDir, jsFile), jsContent)
-      console.log(`  ✓ Copied ${file} -> ${jsFile}`)
+      console.log(`  ✓ Copied ${file}`)
     }
   })
   console.log('  ✓ SDK extensions copied')
