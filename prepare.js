@@ -100,17 +100,22 @@ if (fs.existsSync(extensionsSourceDir)) {
     
     if (file.endsWith('.js') || file.endsWith('.d.ts')) {
       // Copy compiled JavaScript and declaration files
-      fs.copyFileSync(sourcePath, destPath)
-      console.log(`  ✓ Copied ${file}`)
+      let content = fs.readFileSync(sourcePath, 'utf8')
+      
+      // Fix imports for published package structure (../sdk/ -> ../)
+      content = content
+        .replace(/require\("\.\.\/sdk\//g, 'require("../')
+        .replace(/from ['"]\.\.\/sdk\//g, "from '../")
+      
+      fs.writeFileSync(destPath, content)
+      console.log(`  ✓ Copied and fixed ${file}`)
     } else if (file.endsWith('.ts') && !file.endsWith('.d.ts')) {
       // Copy TypeScript source files for reference
       let content = fs.readFileSync(sourcePath, 'utf8')
       
       // Adjust imports for published package structure
       content = content
-        .replace(/from ['"]\.\.\/sdk\/sdk\.gen['"]/g, "from '../sdk.gen'")
-        .replace(/from ['"]\.\.\/sdk\/types\.gen['"]/g, "from '../types.gen'")
-        .replace(/from ['"]\.\.\/sdk\/client\.gen['"]/g, "from '../client.gen'")
+        .replace(/from ['"]\.\.\/sdk\//g, "from '../")
       
       fs.writeFileSync(destPath, content)
       console.log(`  ✓ Copied ${file}`)
