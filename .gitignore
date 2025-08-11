@@ -8,6 +8,16 @@ dist/
 build/
 *.tsbuildinfo
 
+# Generated SDK files (DO NOT COMMIT)
+sdk/**/*.js
+sdk/**/*.js.map
+sdk/**/*.d.ts
+sdk/**/*.d.ts.map
+sdk-extensions/**/*.js
+sdk-extensions/**/*.js.map
+sdk-extensions/**/*.d.ts
+sdk-extensions/**/*.d.ts.map
+
 # Generated files from prepare script (DO NOT COMMIT)
 *.gen.ts
 *.gen.js
