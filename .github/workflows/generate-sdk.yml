@@ -1,0 +1,61 @@
+name: Generate SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'API URL to generate SDK from'
+        required: false
+        default: 'https://api.robosystems.ai'
+        type: string
+  schedule:
+    # Run daily at 2 AM UTC to catch API changes
+    - cron: '0 2 * * *'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACTIONS_TOKEN || secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Generate SDK
+        env:
+          ROBOSYSTEMS_API_URL: ${{ github.event.inputs.api_url || 'https://api.robosystems.ai' }}
+        run: npm run generate
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: regenerate SDK from latest API spec"
+          git push
+      
+      - name: Notify if changes detected
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          echo "SDK has been updated with latest API changes"
+          echo "Consider publishing a new version"
