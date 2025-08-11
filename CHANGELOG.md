@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
 - Migrated SDK to dedicated repository (robosystems-typescript-client)
 - Separated SDK generation from main application codebase
 - Added automated SDK generation from OpenAPI spec
@@ -16,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.7] - Previous Release
 
 ### Features
+
 - Type-safe API client with full TypeScript types
 - Auto-generated from OpenAPI specification
 - Browser & Node.js support with different auth strategies
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - Initial Release
 
 ### Added
+
 - Core SDK functionality
 - Authentication methods (cookie-based and API key)
 - Company and financial data endpoints

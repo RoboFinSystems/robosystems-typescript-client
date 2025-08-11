@@ -69,8 +69,7 @@ export function getEnvironmentConfig(
       retryDelay: 2000,
     },
     staging: {
-      baseUrl:
-        process.env.NEXT_PUBLIC_API_URL || 'https://staging-api.robosystems.ai',
+      baseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://staging-api.robosystems.ai',
       credentials: 'include',
       timeout: 45000,
       maxRetries: 3,

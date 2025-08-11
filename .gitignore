@@ -7,14 +7,24 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
-*.js
-*.d.ts
-*.js.map
 
-# Keep configuration files
+# Generated files from prepare script (DO NOT COMMIT)
+*.gen.ts
+*.gen.js
+*.gen.d.ts
+client/
+core/
+extensions/
+index.js
+index.d.ts
+index.ts
+
+# Keep configuration files and scripts
 !openapi-ts.config.js
 !prepare.js
 !scripts/*.js
+!jest.config.js
+!.eslintrc.js
 
 # Testing
 coverage/

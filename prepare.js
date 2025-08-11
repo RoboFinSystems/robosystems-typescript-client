@@ -16,9 +16,7 @@ const currentDir = __dirname
 
 // Check if SDK directory exists
 if (!fs.existsSync(sdkSourceDir)) {
-  console.error(
-    '❌ SDK source directory not found. Please run "npm run generate" first.'
-  )
+  console.error('❌ SDK source directory not found. Please run "npm run generate" first.')
   process.exit(1)
 }
 
@@ -188,34 +186,23 @@ try {
   )
   console.log('  ✓ Type checking passed')
 } catch (error) {
-  console.error(
-    '  ❌ Type checking failed:',
-    error.stderr?.toString() || error.message
-  )
-  console.error(
-    '  ⚠️  Continuing anyway, but please review the generated files'
-  )
+  console.error('  ❌ Type checking failed:', error.stderr?.toString() || error.message)
+  console.error('  ⚠️  Continuing anyway, but please review the generated files')
 }
 
 // Format the generated files
 console.log('💅 Formatting files...')
 try {
   // Format TypeScript files
-  execSync(
-    'npx prettier --write "src/*.ts" --config ../prettier.config.cjs 2>/dev/null || true',
-    {
-      cwd: currentDir,
-      stdio: 'pipe',
-    }
-  )
+  execSync('npx prettier --write "src/*.ts" --config ../prettier.config.cjs 2>/dev/null || true', {
+    cwd: currentDir,
+    stdio: 'pipe',
+  })
   // Format JavaScript files
-  execSync(
-    'npx prettier --write "src/*.js" --config ../prettier.config.cjs 2>/dev/null || true',
-    {
-      cwd: currentDir,
-      stdio: 'pipe',
-    }
-  )
+  execSync('npx prettier --write "src/*.js" --config ../prettier.config.cjs 2>/dev/null || true', {
+    cwd: currentDir,
+    stdio: 'pipe',
+  })
   console.log('  ✓ Files formatted')
 } catch (error) {
   console.log('  ⚠️  Formatting skipped (prettier not available)')

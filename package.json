@@ -1,6 +1,6 @@
 {
   "name": "@robosystems/client",
-  "version": "0.1.7",
+  "version": "0.1.10",
   "description": "TypeScript client library for RoboSystems Financial Knowledge Graph API",
   "main": "index.js",
   "types": "index.d.ts",
@@ -15,18 +15,22 @@
     "LICENSE"
   ],
   "scripts": {
-    "generate": "npm run generate:clean && npm run generate:sdk && npm run generate:fix && npm run format",
+    "generate": "npm run generate:clean && npm run generate:sdk && npm run generate:fix && npm run format && npm run lint:fix",
     "generate:clean": "rm -rf sdk",
-    "generate:sdk": "npx @hey-api/openapi-ts -f openapi-ts.config.js",
+    "generate:sdk": "ROBOSYSTEMS_API_URL=http://localhost:8000 npx @hey-api/openapi-ts -f openapi-ts.config.js",
     "generate:fix": "node scripts/fix-sdk-types.js",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "prepare": "node prepare.js",
-    "validate": "npm run validate:types",
-    "validate:types": "tsc --noEmit --skipLibCheck --esModuleInterop --strict --target ES2022 --module commonjs src/*.ts *.gen.ts",
-    "prepublishOnly": "npm run prepare",
-    "build": "tsc",
-    "test": "npm run validate"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run format:check && npm run lint && npm run typecheck",
+    "validate:fix": "npm run format && npm run lint:fix && npm run typecheck",
+    "test": "npm run validate",
+    "test:all": "npm run validate && npm run build",
+    "prepare:publish": "node prepare.js",
+    "prepublishOnly": "npm run prepare:publish",
+    "build": "tsc"
   },
   "keywords": [
     "robosystems",
@@ -37,16 +41,16 @@
     "typescript",
     "knowledge-graph"
   ],
-  "author": "RoboSystems Team",
+  "author": "Harbinger FinLab",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HarbingerFinLab/robosystems-typescript-client.git"
+    "url": "https://github.com/RoboFinSystems/robosystems-typescript-client.git"
   },
   "bugs": {
-    "url": "https://github.com/HarbingerFinLab/robosystems-typescript-client/issues"
+    "url": "https://github.com/RoboFinSystems/robosystems-typescript-client/issues"
   },
-  "homepage": "https://github.com/HarbingerFinLab/robosystems-typescript-client#readme",
+  "homepage": "https://github.com/RoboFinSystems/robosystems-typescript-client#readme",
   "dependencies": {},
   "engines": {
     "node": ">=18.0.0"
@@ -57,6 +61,8 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
     "prettier": "^3.0.0",
     "prettier-plugin-organize-imports": "^4.0.0",
     "typescript": "^5.7.3"

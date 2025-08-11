@@ -45,10 +45,7 @@ export class RoboSystemsExtensions {
   /**
    * Convenience method to monitor any operation
    */
-  async monitorOperation(
-    operationId: string,
-    onProgress?: (progress: any) => void
-  ): Promise<any> {
+  async monitorOperation(operationId: string, onProgress?: (progress: any) => void): Promise<any> {
     return this.operations.monitorOperation(operationId, { onProgress })
   }
 
@@ -105,25 +102,18 @@ export const extensions = {
   get operations() {
     return getExtensions().operations
   },
-  monitorOperation: (
-    operationId: string,
-    onProgress?: (progress: any) => void
-  ) => getExtensions().monitorOperation(operationId, onProgress),
+  monitorOperation: (operationId: string, onProgress?: (progress: any) => void) =>
+    getExtensions().monitorOperation(operationId, onProgress),
   createSSEClient: () => getExtensions().createSSEClient(),
   close: () => getExtensions().close(),
 }
 
 // Export convenience functions that use the default instance
-export const monitorOperation = (
-  operationId: string,
-  onProgress?: (progress: any) => void
-) => getExtensions().monitorOperation(operationId, onProgress)
+export const monitorOperation = (operationId: string, onProgress?: (progress: any) => void) =>
+  getExtensions().monitorOperation(operationId, onProgress)
 
-export const executeQuery = (
-  graphId: string,
-  query: string,
-  parameters?: Record<string, any>
-) => getExtensions().query.query(graphId, query, parameters)
+export const executeQuery = (graphId: string, query: string, parameters?: Record<string, any>) =>
+  getExtensions().query.query(graphId, query, parameters)
 
 export const streamQuery = (
   graphId: string,

@@ -237,9 +237,7 @@ class ProgressTracker {
     const rate = progress.rowsProcessed / (elapsed / 1000)
     const eta = (progress.totalRows - progress.rowsProcessed) / rate
 
-    console.log(
-      `Processing: ${progress.rowsProcessed}/${progress.totalRows} rows`
-    )
+    console.log(`Processing: ${progress.rowsProcessed}/${progress.totalRows} rows`)
     console.log(`Rate: ${rate.toFixed(0)} rows/sec`)
     console.log(`ETA: ${this.formatDuration(eta * 1000)}`)
 
@@ -259,9 +257,7 @@ class ProgressTracker {
 
   private updateUI(progress: OperationProgress) {
     // Update your UI components
-    document
-      .querySelector('#progress-bar')
-      ?.setAttribute('value', progress.percentage.toString())
+    document.querySelector('#progress-bar')?.setAttribute('value', progress.percentage.toString())
     document.querySelector('#progress-text')?.textContent =
       `${progress.message} (${progress.percentage}%)`
   }
@@ -500,21 +496,17 @@ const processor = new StreamProcessor({
 })
 
 // Process large query results efficiently
-await processor.processStream(
-  'your-graph-id',
-  'MATCH (t:Transaction) RETURN t',
-  {
-    onBatch: async (batch) => {
-      // Process batch of 1000 rows
-      await saveToDB(batch)
-      console.log(`Processed ${batch.length} transactions`)
-    },
-    onProgress: (processed, total) => {
-      const percentage = (processed / total) * 100
-      console.log(`Progress: ${percentage.toFixed(2)}%`)
-    },
-  }
-)
+await processor.processStream('your-graph-id', 'MATCH (t:Transaction) RETURN t', {
+  onBatch: async (batch) => {
+    // Process batch of 1000 rows
+    await saveToDB(batch)
+    console.log(`Processed ${batch.length} transactions`)
+  },
+  onProgress: (processed, total) => {
+    const percentage = (processed / total) * 100
+    console.log(`Progress: ${percentage.toFixed(2)}%`)
+  },
+})
 ```
 
 ### Caching with SSE Updates
@@ -528,16 +520,10 @@ const cachedClient = new CachedQueryClient({
 })
 
 // First call hits the API
-const result1 = await cachedClient.execute(
-  'graph-id',
-  'MATCH (n) RETURN COUNT(n)'
-)
+const result1 = await cachedClient.execute('graph-id', 'MATCH (n) RETURN COUNT(n)')
 
 // Second call returns from cache
-const result2 = await cachedClient.execute(
-  'graph-id',
-  'MATCH (n) RETURN COUNT(n)'
-)
+const result2 = await cachedClient.execute('graph-id', 'MATCH (n) RETURN COUNT(n)')
 
 // SSE updates automatically invalidate relevant cache entries
 cachedClient.on('cache_invalidated', (query) => {

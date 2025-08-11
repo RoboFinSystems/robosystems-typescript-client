@@ -31,12 +31,7 @@ pnpm add @robosystems/client
 ### Browser Usage (with cookies)
 
 ```typescript
-import {
-  client,
-  getUserMe,
-  listCompanies,
-  executeCypherQuery,
-} from '@robosystems/client'
+import { client, getUserMe, listCompanies, executeCypherQuery } from '@robosystems/client'
 
 // Configure the client
 client.setConfig({
@@ -60,8 +55,7 @@ const { data: companies } = await listCompanies({
 const { data: result } = await executeCypherQuery({
   path: { graph_id: 'your-graph-id' },
   body: {
-    query:
-      'MATCH (c:Company)-[:HAS_FILING]->(f:Filing) RETURN c.name, f.form_type LIMIT 5',
+    query: 'MATCH (c:Company)-[:HAS_FILING]->(f:Filing) RETURN c.name, f.form_type LIMIT 5',
   },
 })
 ```
@@ -255,19 +249,13 @@ if (agentResponse.reasoning) {
 ### Billing & Credit Management
 
 ```typescript
-import {
-  getCreditSummary,
-  checkCreditBalance,
-  getCurrentGraphBill,
-} from '@robosystems/client'
+import { getCreditSummary, checkCreditBalance, getCurrentGraphBill } from '@robosystems/client'
 
 // Monitor credits and usage for a specific graph
 const { data: creditSummary } = await getCreditSummary({
   path: { graph_id: 'your-graph-id' },
 })
-console.log(
-  `Available credits: ${creditSummary.available_credits.toLocaleString()}`
-)
+console.log(`Available credits: ${creditSummary.available_credits.toLocaleString()}`)
 console.log(
   `Monthly usage: ${creditSummary.used_credits.toLocaleString()}/${creditSummary.total_credits.toLocaleString()}`
 )
@@ -390,10 +378,7 @@ function processCompany(company: Company): void {
 }
 
 // Type-safe query builder
-function buildMetricQuery(
-  ticker: string,
-  startYear: number
-): CypherQueryRequest {
+function buildMetricQuery(ticker: string, startYear: number): CypherQueryRequest {
   return {
     query: `
       MATCH (c:Company {ticker: $ticker})-[:HAS_METRIC]->(m:Metric)
@@ -430,8 +415,7 @@ import { client } from '@robosystems/client'
 
 // Configure for browser with cookies
 client.setConfig({
-  baseUrl:
-    import.meta.env.VITE_ROBOSYSTEMS_API_URL || 'https://api.robosystems.ai',
+  baseUrl: import.meta.env.VITE_ROBOSYSTEMS_API_URL || 'https://api.robosystems.ai',
   credentials: 'include',
 })
 ```

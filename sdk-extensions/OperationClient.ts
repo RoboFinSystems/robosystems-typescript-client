@@ -5,10 +5,7 @@
  * Handles graph creation, backups, imports, and other long-running tasks
  */
 
-import {
-  cancelOperation as cancelOperationSDK,
-  getOperationStatus,
-} from '../sdk/sdk.gen'
+import { cancelOperation as cancelOperationSDK, getOperationStatus } from '../sdk/sdk.gen'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface OperationProgress {
@@ -32,8 +29,7 @@ export interface OperationMonitorOptions {
 
 export class OperationClient {
   private sseClients: Map<string, SSEClient> = new Map()
-  private cleanupTimeouts: Map<string, ReturnType<typeof setTimeout>> =
-    new Map()
+  private cleanupTimeouts: Map<string, ReturnType<typeof setTimeout>> = new Map()
   private config: {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
@@ -189,10 +185,7 @@ export class OperationClient {
   /**
    * Wait for an operation with a simple promise interface
    */
-  async waitForOperation<T = any>(
-    operationId: string,
-    timeoutMs?: number
-  ): Promise<T> {
+  async waitForOperation<T = any>(operationId: string, timeoutMs?: number): Promise<T> {
     const result = await this.monitorOperation<T>(operationId, {
       timeout: timeoutMs,
     })
@@ -296,9 +289,6 @@ export class OperationClient {
    * Perform periodic cleanup of stale SSE connections
    */
   private performPeriodicCleanup(): void {
-    const now = Date.now()
-    const staleThreshold = 600000 // 10 minutes
-
     // Check each SSE client for staleness
     this.sseClients.forEach((client, operationId) => {
       if (!client.isConnected()) {

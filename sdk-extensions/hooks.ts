@@ -38,8 +38,7 @@ export function useQuery(graphId: string) {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
     clientRef.current = new QueryClient({
-      baseUrl:
-        sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
+      baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
     })
@@ -135,8 +134,7 @@ export function useStreamingQuery(graphId: string) {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
     clientRef.current = new QueryClient({
-      baseUrl:
-        sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
+      baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
     })
@@ -159,12 +157,7 @@ export function useStreamingQuery(graphId: string) {
       setRowsReceived(0)
 
       try {
-        const iterator = clientRef.current.streamQuery(
-          graphId,
-          query,
-          parameters,
-          chunkSize
-        )
+        const iterator = clientRef.current.streamQuery(graphId, query, parameters, chunkSize)
 
         let buffer: any[] = []
         let count = 0
@@ -224,9 +217,7 @@ export function useStreamingQuery(graphId: string) {
  * ```
  */
 export function useOperation<T = any>(operationId?: string) {
-  const [status, setStatus] = useState<
-    'idle' | 'running' | 'completed' | 'error'
-  >('idle')
+  const [status, setStatus] = useState<'idle' | 'running' | 'completed' | 'error'>('idle')
   const [progress, setProgress] = useState<OperationProgress | null>(null)
   const [error, setError] = useState<Error | null>(null)
   const [result, setResult] = useState<OperationResult<T> | null>(null)
@@ -236,8 +227,7 @@ export function useOperation<T = any>(operationId?: string) {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
     clientRef.current = new OperationClient({
-      baseUrl:
-        sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
+      baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       maxRetries: sdkConfig.maxRetries,
       retryDelay: sdkConfig.retryDelay,
@@ -249,10 +239,7 @@ export function useOperation<T = any>(operationId?: string) {
   }, [])
 
   const monitor = useCallback(
-    async (
-      id: string,
-      timeout?: number
-    ): Promise<OperationResult<T> | null> => {
+    async (id: string, timeout?: number): Promise<OperationResult<T> | null> => {
       if (!clientRef.current) return null
 
       setStatus('running')
@@ -339,9 +326,7 @@ export function useOperation<T = any>(operationId?: string) {
  * ```
  */
 export function useMultipleOperations<T = any>() {
-  const [results, setResults] = useState<Map<string, OperationResult<T>>>(
-    new Map()
-  )
+  const [results, setResults] = useState<Map<string, OperationResult<T>>>(new Map())
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Map<string, Error>>(new Map())
   const clientRef = useRef<OperationClient>()
@@ -350,8 +335,7 @@ export function useMultipleOperations<T = any>() {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
     clientRef.current = new OperationClient({
-      baseUrl:
-        sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
+      baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       maxRetries: sdkConfig.maxRetries,
       retryDelay: sdkConfig.retryDelay,
@@ -363,9 +347,7 @@ export function useMultipleOperations<T = any>() {
   }, [])
 
   const monitorAll = useCallback(
-    async (
-      operationIds: string[]
-    ): Promise<Map<string, OperationResult<T>>> => {
+    async (operationIds: string[]): Promise<Map<string, OperationResult<T>>> => {
       if (!clientRef.current) return new Map()
 
       setLoading(true)
@@ -373,8 +355,7 @@ export function useMultipleOperations<T = any>() {
       setErrors(new Map())
 
       try {
-        const allResults =
-          await clientRef.current.monitorMultiple<T>(operationIds)
+        const allResults = await clientRef.current.monitorMultiple<T>(operationIds)
         setResults(allResults)
 
         // Extract any errors
@@ -395,8 +376,7 @@ export function useMultipleOperations<T = any>() {
   )
 
   const allCompleted =
-    results.size > 0 &&
-    Array.from(results.values()).every((r) => r.success || r.error)
+    results.size > 0 && Array.from(results.values()).every((r) => r.success || r.error)
 
   const hasErrors = errors.size > 0
 
@@ -435,8 +415,7 @@ export function useSDKClients() {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
     const baseConfig = {
-      baseUrl:
-        sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
+      baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
     }

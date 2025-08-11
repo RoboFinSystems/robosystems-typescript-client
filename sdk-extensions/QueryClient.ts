@@ -96,10 +96,7 @@ export class QueryClient {
       const queuedResponse = responseData as QueuedQueryResponse
 
       // Notify about queue status
-      options.onQueueUpdate?.(
-        queuedResponse.queue_position,
-        queuedResponse.estimated_wait_seconds
-      )
+      options.onQueueUpdate?.(queuedResponse.queue_position, queuedResponse.estimated_wait_seconds)
 
       // If user doesn't want to wait, throw with queue info
       if (options.maxWait === 0) {

@@ -127,17 +127,12 @@ export class SSEClient {
     }
   }
 
-  private async handleError(
-    error: any,
-    operationId: string,
-    fromSequence: number
-  ): Promise<void> {
+  private async handleError(error: any, operationId: string, fromSequence: number): Promise<void> {
     if (this.closed) return
 
     if (this.reconnectAttempts < this.config.maxRetries!) {
       this.reconnectAttempts++
-      const delay =
-        this.config.retryDelay! * Math.pow(2, this.reconnectAttempts - 1)
+      const delay = this.config.retryDelay! * Math.pow(2, this.reconnectAttempts - 1)
 
       this.emit('reconnecting', {
         attempt: this.reconnectAttempts,
@@ -146,9 +141,7 @@ export class SSEClient {
       })
 
       setTimeout(() => {
-        const resumeFrom = this.lastEventId
-          ? parseInt(this.lastEventId) + 1
-          : fromSequence
+        const resumeFrom = this.lastEventId ? parseInt(this.lastEventId) + 1 : fromSequence
         this.connect(operationId, resumeFrom).catch(() => {
           // Error handled in connect
         })
@@ -191,9 +184,6 @@ export class SSEClient {
   }
 
   isConnected(): boolean {
-    return (
-      this.eventSource !== undefined &&
-      this.eventSource.readyState === EventSource.OPEN
-    )
+    return this.eventSource !== undefined && this.eventSource.readyState === EventSource.OPEN
   }
 }
