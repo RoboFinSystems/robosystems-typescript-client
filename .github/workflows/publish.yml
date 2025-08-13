@@ -62,7 +62,7 @@ jobs:
           ROBOSYSTEMS_API_URL: 'https://api.robosystems.ai'
         run: npm run generate
       
-      # Skip build and tests - this is a TypeScript SDK that users build
+      # Skip build and tests - this is a Typescript Client that users build
       # The prepare script will handle necessary file generation for publishing
       
       - name: Prepare for publishing
