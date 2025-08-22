@@ -93,30 +93,29 @@ if (fs.existsSync(extensionsSourceDir)) {
   // The TypeScript compiler will have already built these files
   // Just copy the compiled .js and .d.ts files
   const sdkExtensionsBuilt = fs.readdirSync(extensionsSourceDir)
-  
+
   sdkExtensionsBuilt.forEach((file) => {
     const sourcePath = path.join(extensionsSourceDir, file)
     const destPath = path.join(extensionsDestDir, file)
-    
+
     if (file.endsWith('.js') || file.endsWith('.d.ts')) {
       // Copy compiled JavaScript and declaration files
       let content = fs.readFileSync(sourcePath, 'utf8')
-      
+
       // Fix imports for published package structure (../sdk/ -> ../)
       content = content
         .replace(/require\("\.\.\/sdk\//g, 'require("../')
         .replace(/from ['"]\.\.\/sdk\//g, "from '../")
-      
+
       fs.writeFileSync(destPath, content)
       console.log(`  ✓ Copied and fixed ${file}`)
     } else if (file.endsWith('.ts') && !file.endsWith('.d.ts')) {
       // Copy TypeScript source files for reference
       let content = fs.readFileSync(sourcePath, 'utf8')
-      
+
       // Adjust imports for published package structure
-      content = content
-        .replace(/from ['"]\.\.\/sdk\//g, "from '../")
-      
+      content = content.replace(/from ['"]\.\.\/sdk\//g, "from '../")
+
       fs.writeFileSync(destPath, content)
       console.log(`  ✓ Copied ${file}`)
     }

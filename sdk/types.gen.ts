@@ -707,7 +707,7 @@ export type CreateGraphRequest = {
      * Tags
      * Optional tags for organization
      */
-    tags?: Array<string> | null;
+    tags?: Array<string>;
 };
 
 /**
@@ -1763,10 +1763,10 @@ export type RegisterRequest = {
  */
 export type RepositoryCreditsResponse = {
     /**
-     * Repository Type
-     * Repository type
+     * Repository
+     * Repository identifier
      */
-    repository_type: string;
+    repository: string;
     /**
      * Has Access
      * Whether user has access
@@ -2083,16 +2083,6 @@ export type SubscriptionInfo = {
      */
     is_active: boolean;
     /**
-     * Is Trial
-     * Whether this is a trial subscription
-     */
-    is_trial: boolean;
-    /**
-     * Trial Ends At
-     * Trial expiration date (ISO format)
-     */
-    trial_ends_at?: string | null;
-    /**
      * Activated At
      * Activation date (ISO format)
      */
@@ -2134,11 +2124,6 @@ export type SubscriptionRequest = {
      * Repository plan
      */
     repository_plan?: RepositoryPlan;
-    /**
-     * Is Trial
-     * Start with trial period
-     */
-    is_trial?: boolean;
 };
 
 /**
@@ -2155,11 +2140,6 @@ export type SubscriptionResponse = {
      * Created subscription details
      */
     subscription: SubscriptionInfo;
-    /**
-     * Trial Period
-     * Trial period in days
-     */
-    trial_period: number;
 };
 
 /**
@@ -2952,25 +2932,6 @@ export type GetServiceStatusResponses = {
 
 export type GetServiceStatusResponse = GetServiceStatusResponses[keyof GetServiceStatusResponses];
 
-export type GetMcpHealthData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/mcp/health';
-};
-
-export type GetMcpHealthResponses = {
-    /**
-     * Response Getmcphealth
-     * Successful Response
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetMcpHealthResponse = GetMcpHealthResponses[keyof GetMcpHealthResponses];
-
 export type GetCurrentUserData = {
     body?: never;
     headers?: {
@@ -3079,7 +3040,7 @@ export type SelectUserGraphData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/user/graphs/select/{graph_id}';
+    url: '/v1/user/graphs/{graph_id}/select';
 };
 
 export type SelectUserGraphErrors = {
@@ -3401,6 +3362,80 @@ export type GetUserUsageResponses = {
 
 export type GetUserUsageResponse = GetUserUsageResponses[keyof GetUserUsageResponses];
 
+export type GetSharedRepositoryLimitsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Repository
+         * Repository name (e.g., 'sec')
+         */
+        repository: string;
+    };
+    query?: never;
+    url: '/v1/user/limits/shared-repositories/{repository}';
+};
+
+export type GetSharedRepositoryLimitsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetSharedRepositoryLimitsError = GetSharedRepositoryLimitsErrors[keyof GetSharedRepositoryLimitsErrors];
+
+export type GetSharedRepositoryLimitsResponses = {
+    /**
+     * Response Getsharedrepositorylimits
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetSharedRepositoryLimitsResponse = GetSharedRepositoryLimitsResponses[keyof GetSharedRepositoryLimitsResponses];
+
+export type GetAllSharedRepositoryLimitsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/user/limits/shared-repositories/summary';
+};
+
+export type GetAllSharedRepositoryLimitsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetAllSharedRepositoryLimitsError = GetAllSharedRepositoryLimitsErrors[keyof GetAllSharedRepositoryLimitsErrors];
+
+export type GetAllSharedRepositoryLimitsResponses = {
+    /**
+     * Response Getallsharedrepositorylimits
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetAllSharedRepositoryLimitsResponse = GetAllSharedRepositoryLimitsResponses[keyof GetAllSharedRepositoryLimitsResponses];
+
 export type GetUserUsageOverviewData = {
     body?: never;
     headers?: {
@@ -3709,12 +3744,12 @@ export type GetRepositoryCreditsData = {
     };
     path: {
         /**
-         * Repository Type
+         * Repository
          */
-        repository_type: string;
+        repository: string;
     };
     query?: never;
-    url: '/v1/user/subscriptions/shared-repositories/credits/{repository_type}';
+    url: '/v1/user/subscriptions/shared-repositories/credits/{repository}';
 };
 
 export type GetRepositoryCreditsErrors = {
@@ -3870,10 +3905,6 @@ export type CreateConnectionErrors = {
      */
     400: ErrorResponse;
     /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
-    /**
      * Access denied - admin role required
      */
     403: ErrorResponse;
@@ -3927,10 +3958,6 @@ export type DeleteConnectionData = {
 };
 
 export type DeleteConnectionErrors = {
-    /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
     /**
      * Access denied - admin role required
      */
@@ -4039,10 +4066,6 @@ export type SyncConnectionData = {
 };
 
 export type SyncConnectionErrors = {
-    /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
     /**
      * Access denied - admin role required
      */
@@ -4462,10 +4485,6 @@ export type CreateBackupErrors = {
      */
     400: ErrorResponse;
     /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
-    /**
      * Access denied - admin role required
      */
     403: ErrorResponse;
@@ -4555,10 +4574,6 @@ export type ExportBackupData = {
 
 export type ExportBackupErrors = {
     /**
-     * Insufficient credits for backup export
-     */
-    402: unknown;
-    /**
      * Access denied or backup is encrypted
      */
     403: unknown;
@@ -4605,10 +4620,6 @@ export type RestoreBackupErrors = {
      * Invalid restore configuration
      */
     400: ErrorResponse;
-    /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
     /**
      * Access denied - admin role required
      */
@@ -4734,7 +4745,7 @@ export type GetBackupDownloadUrlData = {
          */
         expires_in?: number;
     };
-    url: '/v1/{graph_id}/backup/{backup_id}/download-url';
+    url: '/v1/{graph_id}/backup/{backup_id}/download';
 };
 
 export type GetBackupDownloadUrlErrors = {
@@ -4791,10 +4802,6 @@ export type GetGraphMetricsData = {
 
 export type GetGraphMetricsErrors = {
     /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
-    /**
      * Access denied to graph
      */
     403: ErrorResponse;
@@ -4849,10 +4856,6 @@ export type GetGraphUsageStatsData = {
 };
 
 export type GetGraphUsageStatsErrors = {
-    /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
     /**
      * Access denied to graph
      */
@@ -4919,10 +4922,6 @@ export type ExecuteCypherQueryErrors = {
      */
     400: unknown;
     /**
-     * Insufficient credits
-     */
-    402: unknown;
-    /**
      * Access denied
      */
     403: unknown;
@@ -4982,10 +4981,6 @@ export type GetGraphSchemaInfoData = {
 
 export type GetGraphSchemaInfoErrors = {
     /**
-     * Insufficient credits for schema query
-     */
-    402: unknown;
-    /**
      * Access denied to graph
      */
     403: unknown;
@@ -5040,10 +5035,6 @@ export type ValidateSchemaErrors = {
      * Invalid schema format
      */
     400: ErrorResponse;
-    /**
-     * Insufficient credits
-     */
-    402: ErrorResponse;
     /**
      * Access denied to graph
      */
@@ -5990,7 +5981,7 @@ export type GetAvailableExtensionsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/v1/create/graph/available-extensions';
+    url: '/v1/create/graph/extensions';
 };
 
 export type GetAvailableExtensionsResponses = {

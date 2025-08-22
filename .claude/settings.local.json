@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": ["Bash(ROBOSYSTEMS_API_URL=http://localhost:8000 npm run generate)"],
+    "deny": [],
+    "ask": []
+  }
+}
