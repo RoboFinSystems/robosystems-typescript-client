@@ -1,13 +1,13 @@
-# RoboSystems TypeScript SDK Extensions
+# RoboSystems Typescript Client Extensions
 
-🚀 **Enhanced SSE and Real-time Features** for the RoboSystems TypeScript SDK
+🚀 **Enhanced SSE and Real-time Features** for the RoboSystems Typescript Client
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-The RoboSystems TypeScript SDK Extensions provide production-ready enhancements for real-time operations:
+The RoboSystems Typescript Client Extensions provide production-ready enhancements for real-time operations:
 
 - **Server-Sent Events (SSE)** with automatic reconnection and event replay
 - **Smart Query Execution** with automatic queueing and progress monitoring
@@ -667,6 +667,6 @@ See the [Contributing Guide](../../CONTRIBUTING.md) for development setup and gu
 
 ---
 
-**RoboSystems TypeScript SDK Extensions** - Production-ready SSE streaming and real-time monitoring for financial knowledge graphs.
+**RoboSystems Typescript Client Extensions** - Production-ready SSE streaming and real-time monitoring for financial knowledge graphs.
 
 _Built with ❤️ by the RoboSystems team_

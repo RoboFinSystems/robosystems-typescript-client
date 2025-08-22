@@ -1,6 +1,6 @@
 {
   "name": "@robosystems/client",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "TypeScript client library for RoboSystems Financial Knowledge Graph API",
   "main": "index.js",
   "types": "index.d.ts",
@@ -18,7 +18,7 @@
   "scripts": {
     "generate": "npm run generate:clean && npm run generate:sdk && npm run generate:fix && npm run format && npm run lint:fix",
     "generate:clean": "rm -rf sdk",
-    "generate:sdk": "ROBOSYSTEMS_API_URL=http://localhost:8000 npx @hey-api/openapi-ts -f openapi-ts.config.js",
+    "generate:sdk": "npx @hey-api/openapi-ts -f openapi-ts.config.js",
     "generate:fix": "node scripts/fix-sdk-types.js",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
