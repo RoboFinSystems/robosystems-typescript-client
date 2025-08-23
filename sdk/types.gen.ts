@@ -711,6 +711,44 @@ export type CreateGraphRequest = {
 };
 
 /**
+ * CreateSubgraphRequest
+ * Request model for creating a subgraph.
+ */
+export type CreateSubgraphRequest = {
+    /**
+     * Name
+     * Alphanumeric name for the subgraph (e.g., dev, staging, prod1)
+     */
+    name: string;
+    /**
+     * Display Name
+     * Human-readable display name for the subgraph
+     */
+    display_name: string;
+    /**
+     * Description
+     * Optional description of the subgraph's purpose
+     */
+    description?: string | null;
+    /**
+     * Schema Extensions
+     * Schema extensions to include (inherits from parent by default)
+     */
+    schema_extensions?: Array<string> | null;
+    /**
+     * Type of subgraph (currently only 'static' is supported)
+     */
+    subgraph_type?: SubgraphType;
+    /**
+     * Metadata
+     * Additional metadata for the subgraph
+     */
+    metadata?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
  * CreditCheckRequest
  * Request to check credit balance.
  */
@@ -792,10 +830,6 @@ export type CreditSummaryResponse = {
      * Graph Tier
      */
     graph_tier: string;
-    /**
-     * Credit Multiplier
-     */
-    credit_multiplier: number;
     /**
      * Current Balance
      */
@@ -1061,6 +1095,60 @@ export type DatabaseInfoResponse = {
      * Date of last backup
      */
     last_backup_date?: string | null;
+};
+
+/**
+ * DeleteSubgraphRequest
+ * Request model for deleting a subgraph.
+ */
+export type DeleteSubgraphRequest = {
+    /**
+     * Force
+     * Force deletion even if subgraph contains data
+     */
+    force?: boolean;
+    /**
+     * Backup First
+     * Create a backup before deletion
+     */
+    backup_first?: boolean;
+    /**
+     * Backup Location
+     * S3 location for backup (uses default if not specified)
+     */
+    backup_location?: string | null;
+};
+
+/**
+ * DeleteSubgraphResponse
+ * Response model for subgraph deletion.
+ */
+export type DeleteSubgraphResponse = {
+    /**
+     * Graph Id
+     * Deleted subgraph identifier
+     */
+    graph_id: string;
+    /**
+     * Status
+     * Deletion status
+     */
+    status: string;
+    /**
+     * Backup Location
+     * Location of backup if created
+     */
+    backup_location?: string | null;
+    /**
+     * Deleted At
+     * When deletion occurred
+     */
+    deleted_at: string;
+    /**
+     * Message
+     * Additional information about the deletion
+     */
+    message?: string | null;
 };
 
 /**
@@ -1477,6 +1565,48 @@ export type LinkTokenRequest = {
     options?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * ListSubgraphsResponse
+ * Response model for listing subgraphs.
+ */
+export type ListSubgraphsResponse = {
+    /**
+     * Parent Graph Id
+     * Parent graph identifier
+     */
+    parent_graph_id: string;
+    /**
+     * Parent Graph Name
+     * Parent graph name
+     */
+    parent_graph_name: string;
+    /**
+     * Parent Graph Tier
+     * Parent graph tier
+     */
+    parent_graph_tier: string;
+    /**
+     * Subgraph Count
+     * Total number of subgraphs
+     */
+    subgraph_count: number;
+    /**
+     * Max Subgraphs
+     * Maximum allowed subgraphs for this tier (None = unlimited)
+     */
+    max_subgraphs?: number | null;
+    /**
+     * Total Size Mb
+     * Combined size of all subgraphs in megabytes
+     */
+    total_size_mb?: number | null;
+    /**
+     * Subgraphs
+     * List of subgraphs
+     */
+    subgraphs: Array<SubgraphSummary>;
 };
 
 /**
@@ -2051,6 +2181,183 @@ export type StorageLimitResponse = {
      */
     recommendations?: Array<string> | null;
 };
+
+/**
+ * SubgraphQuotaResponse
+ * Response model for subgraph quota information.
+ */
+export type SubgraphQuotaResponse = {
+    /**
+     * Parent Graph Id
+     * Parent graph identifier
+     */
+    parent_graph_id: string;
+    /**
+     * Tier
+     * Graph tier
+     */
+    tier: string;
+    /**
+     * Current Count
+     * Current number of subgraphs
+     */
+    current_count: number;
+    /**
+     * Max Allowed
+     * Maximum allowed subgraphs (None = unlimited)
+     */
+    max_allowed?: number | null;
+    /**
+     * Remaining
+     * Remaining subgraphs that can be created
+     */
+    remaining?: number | null;
+    /**
+     * Total Size Mb
+     * Total size of all subgraphs
+     */
+    total_size_mb?: number | null;
+    /**
+     * Max Size Mb
+     * Maximum allowed total size
+     */
+    max_size_mb?: number | null;
+};
+
+/**
+ * SubgraphResponse
+ * Response model for a subgraph.
+ */
+export type SubgraphResponse = {
+    /**
+     * Graph Id
+     * Full subgraph identifier (e.g., kg123_dev)
+     */
+    graph_id: string;
+    /**
+     * Parent Graph Id
+     * Parent graph identifier
+     */
+    parent_graph_id: string;
+    /**
+     * Subgraph Index
+     * Numeric index of the subgraph
+     */
+    subgraph_index: number;
+    /**
+     * Subgraph Name
+     * Alphanumeric name of the subgraph
+     */
+    subgraph_name: string;
+    /**
+     * Display Name
+     * Human-readable display name
+     */
+    display_name: string;
+    /**
+     * Description
+     * Description of the subgraph's purpose
+     */
+    description?: string | null;
+    /**
+     * Type of subgraph
+     */
+    subgraph_type: SubgraphType;
+    /**
+     * Status
+     * Current status of the subgraph
+     */
+    status: string;
+    /**
+     * Created At
+     * When the subgraph was created
+     */
+    created_at: string;
+    /**
+     * Updated At
+     * When the subgraph was last updated
+     */
+    updated_at: string;
+    /**
+     * Size Mb
+     * Size of the subgraph database in megabytes
+     */
+    size_mb?: number | null;
+    /**
+     * Node Count
+     * Number of nodes in the subgraph
+     */
+    node_count?: number | null;
+    /**
+     * Edge Count
+     * Number of edges in the subgraph
+     */
+    edge_count?: number | null;
+    /**
+     * Last Accessed
+     * When the subgraph was last accessed
+     */
+    last_accessed?: string | null;
+    /**
+     * Metadata
+     * Additional metadata for the subgraph
+     */
+    metadata?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * SubgraphSummary
+ * Summary model for listing subgraphs.
+ */
+export type SubgraphSummary = {
+    /**
+     * Graph Id
+     * Full subgraph identifier
+     */
+    graph_id: string;
+    /**
+     * Subgraph Name
+     * Alphanumeric name
+     */
+    subgraph_name: string;
+    /**
+     * Display Name
+     * Human-readable name
+     */
+    display_name: string;
+    /**
+     * Type of subgraph
+     */
+    subgraph_type: SubgraphType;
+    /**
+     * Status
+     * Current status
+     */
+    status: string;
+    /**
+     * Size Mb
+     * Size in megabytes
+     */
+    size_mb?: number | null;
+    /**
+     * Created At
+     * Creation timestamp
+     */
+    created_at: string;
+    /**
+     * Last Accessed
+     * Last access timestamp
+     */
+    last_accessed?: string | null;
+};
+
+/**
+ * SubgraphType
+ * Types of subgraphs.
+ */
+export type SubgraphType = 'static' | 'temporal' | 'versioned' | 'memory';
 
 /**
  * SubscriptionInfo
@@ -5947,6 +6254,301 @@ export type GetDatabaseInfoResponses = {
 };
 
 export type GetDatabaseInfoResponse = GetDatabaseInfoResponses[keyof GetDatabaseInfoResponses];
+
+export type ListSubgraphsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Parent graph identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/subgraphs';
+};
+
+export type ListSubgraphsErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to parent graph
+     */
+    403: unknown;
+    /**
+     * Parent graph not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type ListSubgraphsError = ListSubgraphsErrors[keyof ListSubgraphsErrors];
+
+export type ListSubgraphsResponses = {
+    /**
+     * Subgraphs retrieved successfully
+     */
+    200: ListSubgraphsResponse;
+};
+
+export type ListSubgraphsResponse2 = ListSubgraphsResponses[keyof ListSubgraphsResponses];
+
+export type CreateSubgraphData = {
+    body: CreateSubgraphRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Parent graph identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/subgraphs';
+};
+
+export type CreateSubgraphErrors = {
+    /**
+     * Invalid subgraph name or configuration
+     */
+    400: unknown;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Insufficient permissions or tier
+     */
+    403: unknown;
+    /**
+     * Parent graph not found
+     */
+    404: unknown;
+    /**
+     * Subgraph name already exists
+     */
+    409: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type CreateSubgraphError = CreateSubgraphErrors[keyof CreateSubgraphErrors];
+
+export type CreateSubgraphResponses = {
+    /**
+     * Subgraph created successfully
+     */
+    200: SubgraphResponse;
+};
+
+export type CreateSubgraphResponse = CreateSubgraphResponses[keyof CreateSubgraphResponses];
+
+export type DeleteSubgraphData = {
+    body?: DeleteSubgraphRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Parent graph identifier
+         */
+        graph_id: string;
+        /**
+         * Subgraph Name
+         * Subgraph name to delete
+         */
+        subgraph_name: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/subgraphs/{subgraph_name}';
+};
+
+export type DeleteSubgraphErrors = {
+    /**
+     * Invalid subgraph identifier
+     */
+    400: unknown;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Insufficient permissions
+     */
+    403: unknown;
+    /**
+     * Subgraph not found
+     */
+    404: unknown;
+    /**
+     * Subgraph contains data (use force=true)
+     */
+    409: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type DeleteSubgraphError = DeleteSubgraphErrors[keyof DeleteSubgraphErrors];
+
+export type DeleteSubgraphResponses = {
+    /**
+     * Subgraph deleted successfully
+     */
+    200: DeleteSubgraphResponse;
+};
+
+export type DeleteSubgraphResponse2 = DeleteSubgraphResponses[keyof DeleteSubgraphResponses];
+
+export type GetSubgraphQuotaData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Parent graph identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/subgraphs/quota';
+};
+
+export type GetSubgraphQuotaErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to parent graph
+     */
+    403: unknown;
+    /**
+     * Parent graph not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetSubgraphQuotaError = GetSubgraphQuotaErrors[keyof GetSubgraphQuotaErrors];
+
+export type GetSubgraphQuotaResponses = {
+    /**
+     * Quota information retrieved
+     */
+    200: SubgraphQuotaResponse;
+};
+
+export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgraphQuotaResponses];
+
+export type GetSubgraphInfoData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Parent graph identifier
+         */
+        graph_id: string;
+        /**
+         * Subgraph Name
+         * Subgraph name
+         */
+        subgraph_name: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/subgraphs/{subgraph_name}/info';
+};
+
+export type GetSubgraphInfoErrors = {
+    /**
+     * Not a valid subgraph
+     */
+    400: unknown;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied
+     */
+    403: unknown;
+    /**
+     * Subgraph not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetSubgraphInfoError = GetSubgraphInfoErrors[keyof GetSubgraphInfoErrors];
+
+export type GetSubgraphInfoResponses = {
+    /**
+     * Subgraph information retrieved
+     */
+    200: SubgraphResponse;
+};
+
+export type GetSubgraphInfoResponse = GetSubgraphInfoResponses[keyof GetSubgraphInfoResponses];
 
 export type CreateGraphData = {
     body: CreateGraphRequest;

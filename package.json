@@ -1,22 +1,64 @@
 {
   "name": "@robosystems/client",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "TypeScript client library for RoboSystems Financial Knowledge Graph API",
   "main": "index.js",
   "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "import": "./index.js",
+      "default": "./index.js"
+    },
+    "./extensions": {
+      "types": "./extensions/index.d.ts",
+      "require": "./extensions/index.js",
+      "import": "./extensions/index.js",
+      "default": "./extensions/index.js"
+    },
+    "./client": {
+      "types": "./client.gen.d.ts",
+      "require": "./client.gen.js",
+      "import": "./client.gen.js",
+      "default": "./client.gen.js"
+    },
+    "./types": {
+      "types": "./types.gen.d.ts",
+      "require": "./types.gen.js",
+      "import": "./types.gen.js",
+      "default": "./types.gen.js"
+    },
+    "./sdk": {
+      "types": "./sdk.gen.d.ts",
+      "require": "./sdk.gen.js",
+      "import": "./sdk.gen.js",
+      "default": "./sdk.gen.js"
+    }
+  },
   "files": [
-    "*.js",
-    "*.ts",
-    "*.d.ts",
+    "index.js",
+    "index.ts",
+    "index.d.ts",
+    "client.gen.js",
+    "client.gen.ts",
+    "client.gen.d.ts",
+    "sdk.gen.js",
+    "sdk.gen.ts",
+    "sdk.gen.d.ts",
+    "types.gen.js",
+    "types.gen.ts",
+    "types.gen.d.ts",
     "client/**/*",
     "core/**/*",
     "extensions/**/*",
-    "src/**/*",
+    "sdk/**/*",
+    "sdk-extensions/**/*",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "generate": "npm run generate:clean && npm run generate:sdk && npm run generate:fix && npm run format && npm run lint:fix",
+    "generate": "npm run generate:clean && npm run generate:sdk && npm run generate:fix && npm run prepare:publish && npm run format && npm run lint:fix",
     "generate:clean": "rm -rf sdk",
     "generate:sdk": "npx @hey-api/openapi-ts -f openapi-ts.config.js",
     "generate:fix": "node scripts/fix-sdk-types.js",
