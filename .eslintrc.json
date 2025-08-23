@@ -40,7 +40,8 @@
     "sdk-extensions/",
     "client/",
     "core/",
-    "extensions/",
+    "extensions/*.js",
+    "extensions/*.d.ts",
     "index.js",
     "index.d.ts"
   ]
