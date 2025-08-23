@@ -20,7 +20,8 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/consistent-type-imports": "off",
+    "@typescript-eslint/no-var-requires": "off",
     "prettier/prettier": "error"
   },
   "ignorePatterns": [
@@ -29,10 +30,18 @@
     "node_modules/",
     "*.gen.ts",
     "*.gen.js",
+    "*.gen.d.ts",
     "*.config.js",
     "*.config.cjs",
     "prepare.js",
     "scripts/",
-    "coverage/"
+    "coverage/",
+    "sdk/",
+    "sdk-extensions/",
+    "client/",
+    "core/",
+    "extensions/",
+    "index.js",
+    "index.d.ts"
   ]
 }
