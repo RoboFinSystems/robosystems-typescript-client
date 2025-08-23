@@ -2286,9 +2286,10 @@ export const listSubgraphs = <ThrowOnError extends boolean = false>(options: Opt
  * - Base schema always included
  *
  * **Limits:**
- * - Enterprise: Maximum 10 subgraphs
+ * - Standard: Not supported (0 subgraphs)
+ * - Enterprise: Configurable limit (default: 10 subgraphs)
  * - Premium: Unlimited subgraphs
- * - Standard: Not supported
+ * - Limits are defined in deployment configuration
  *
  * **Response includes:**
  * - `graph_id`: Full subgraph identifier
@@ -2371,8 +2372,9 @@ export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Tier Limits:**
  * - Standard: 0 subgraphs (not supported)
- * - Enterprise: 10 subgraphs maximum
+ * - Enterprise: Configurable limit (default: 10 subgraphs)
  * - Premium: Unlimited subgraphs
+ * - Limits are defined in deployment configuration
  *
  * **Size Tracking:**
  * Provides aggregate size metrics when available.

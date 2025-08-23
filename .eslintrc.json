@@ -23,5 +23,25 @@
     "@typescript-eslint/consistent-type-imports": "off",
     "@typescript-eslint/no-var-requires": "off",
     "prettier/prettier": "error"
-  }
+  },
+  "ignorePatterns": [
+    "dist/",
+    "build/",
+    "node_modules/",
+    "*.gen.ts",
+    "*.gen.js",
+    "*.gen.d.ts",
+    "*.config.js",
+    "*.config.cjs",
+    "prepare.js",
+    "scripts/",
+    "coverage/",
+    "sdk/",
+    "sdk-extensions/",
+    "client/",
+    "core/",
+    "extensions/",
+    "index.js",
+    "index.d.ts"
+  ]
 }
