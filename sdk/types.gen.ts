@@ -288,23 +288,6 @@ export type BackupCreateRequest = {
 };
 
 /**
- * BackupExportRequest
- * Request model for exporting a backup.
- */
-export type BackupExportRequest = {
-    /**
-     * Backup Id
-     * ID of backup to export
-     */
-    backup_id: string;
-    /**
-     * Export Format
-     * Export format - only 'original' is supported (compressed .kuzu file)
-     */
-    export_format?: string;
-};
-
-/**
  * BackupListResponse
  * Response model for backup list.
  */
@@ -629,6 +612,60 @@ export type ConnectionResponse = {
 };
 
 /**
+ * CopyResponse
+ * Response model for copy operations.
+ */
+export type CopyResponse = {
+    /**
+     * Status
+     * Operation status
+     */
+    status: 'completed' | 'failed' | 'partial';
+    /**
+     * Source Type
+     * Type of source that was copied from
+     */
+    source_type: string;
+    /**
+     * Execution Time Ms
+     * Total execution time in milliseconds
+     */
+    execution_time_ms: number;
+    /**
+     * Message
+     * Human-readable status message
+     */
+    message: string;
+    /**
+     * Rows Imported
+     * Number of rows successfully imported
+     */
+    rows_imported?: number | null;
+    /**
+     * Rows Skipped
+     * Number of rows skipped due to errors (when ignore_errors=true)
+     */
+    rows_skipped?: number | null;
+    /**
+     * Warnings
+     * List of warnings encountered during import
+     */
+    warnings?: Array<string> | null;
+    /**
+     * Error Details
+     * Detailed error information if operation failed
+     */
+    error_details?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Bytes Processed
+     * Total bytes processed from source
+     */
+    bytes_processed?: number | null;
+};
+
+/**
  * CreateAPIKeyRequest
  * Request model for creating a new API key.
  */
@@ -746,23 +783,6 @@ export type CreateSubgraphRequest = {
     metadata?: {
         [key: string]: unknown;
     } | null;
-};
-
-/**
- * CreditCheckRequest
- * Request to check credit balance.
- */
-export type CreditCheckRequest = {
-    /**
-     * Operation Type
-     * Type of operation to check
-     */
-    operation_type: string;
-    /**
-     * Base Cost
-     * Custom base cost (uses default if not provided)
-     */
-    base_cost?: number | null;
 };
 
 /**
@@ -956,6 +976,48 @@ export type CypherQueryRequest = {
      * Query timeout in seconds (1-300)
      */
     timeout?: number | null;
+};
+
+/**
+ * DataFrameCopyRequest
+ * Request model for DataFrame copy operations (future).
+ */
+export type DataFrameCopyRequest = {
+    /**
+     * Table Name
+     * Target Kuzu table name
+     */
+    table_name: string;
+    /**
+     * Ignore Errors
+     * Skip duplicate/invalid rows (enables upsert-like behavior)
+     */
+    ignore_errors?: boolean;
+    /**
+     * Extended Timeout
+     * Use extended timeout for large datasets
+     */
+    extended_timeout?: boolean;
+    /**
+     * Validate Schema
+     * Validate source schema against target table
+     */
+    validate_schema?: boolean;
+    /**
+     * Source Type
+     * Source type identifier
+     */
+    source_type?: 'dataframe';
+    /**
+     * Data Reference
+     * Reference to uploaded DataFrame data
+     */
+    data_reference: string;
+    /**
+     * Format
+     * DataFrame format
+     */
+    format?: 'pandas' | 'polars' | 'arrow';
 };
 
 /**
@@ -1932,6 +1994,113 @@ export type RepositoryType = 'sec' | 'industry' | 'economic';
 export type ResponseMode = 'auto' | 'sync' | 'async' | 'stream';
 
 /**
+ * S3CopyRequest
+ * Request model for S3 copy operations.
+ */
+export type S3CopyRequest = {
+    /**
+     * Table Name
+     * Target Kuzu table name
+     */
+    table_name: string;
+    /**
+     * Ignore Errors
+     * Skip duplicate/invalid rows (enables upsert-like behavior)
+     */
+    ignore_errors?: boolean;
+    /**
+     * Extended Timeout
+     * Use extended timeout for large datasets
+     */
+    extended_timeout?: boolean;
+    /**
+     * Validate Schema
+     * Validate source schema against target table
+     */
+    validate_schema?: boolean;
+    /**
+     * Source Type
+     * Source type identifier
+     */
+    source_type?: 's3';
+    /**
+     * S3 Path
+     * Full S3 path (s3://bucket/key or s3://bucket/prefix*.parquet)
+     */
+    s3_path: string;
+    /**
+     * S3 Access Key Id
+     * AWS access key ID for S3 access
+     */
+    s3_access_key_id: string;
+    /**
+     * S3 Secret Access Key
+     * AWS secret access key for S3 access
+     */
+    s3_secret_access_key: string;
+    /**
+     * S3 Session Token
+     * AWS session token (for temporary credentials)
+     */
+    s3_session_token?: string | null;
+    /**
+     * S3 Region
+     * S3 region
+     */
+    s3_region?: string | null;
+    /**
+     * S3 Endpoint
+     * Custom S3 endpoint (for S3-compatible storage)
+     */
+    s3_endpoint?: string | null;
+    /**
+     * S3 Url Style
+     * S3 URL style (vhost or path)
+     */
+    s3_url_style?: ('vhost' | 'path') | null;
+    /**
+     * File Format
+     * File format of the S3 data
+     */
+    file_format?: 'parquet' | 'csv' | 'json' | 'delta' | 'iceberg';
+    /**
+     * Csv Delimiter
+     * CSV delimiter
+     */
+    csv_delimiter?: string | null;
+    /**
+     * Csv Header
+     * CSV has header row
+     */
+    csv_header?: boolean | null;
+    /**
+     * Csv Quote
+     * CSV quote character
+     */
+    csv_quote?: string | null;
+    /**
+     * Csv Escape
+     * CSV escape character
+     */
+    csv_escape?: string | null;
+    /**
+     * Csv Skip
+     * Number of rows to skip
+     */
+    csv_skip?: number | null;
+    /**
+     * Allow Moved Paths
+     * Allow moved paths for Iceberg tables
+     */
+    allow_moved_paths?: boolean | null;
+    /**
+     * Max File Size Gb
+     * Maximum total file size limit in GB
+     */
+    max_file_size_gb?: number | null;
+};
+
+/**
  * SECConnectionConfig
  * SEC-specific connection configuration.
  */
@@ -2535,6 +2704,55 @@ export type TransactionSummaryResponse = {
 };
 
 /**
+ * URLCopyRequest
+ * Request model for URL copy operations (future).
+ */
+export type UrlCopyRequest = {
+    /**
+     * Table Name
+     * Target Kuzu table name
+     */
+    table_name: string;
+    /**
+     * Ignore Errors
+     * Skip duplicate/invalid rows (enables upsert-like behavior)
+     */
+    ignore_errors?: boolean;
+    /**
+     * Extended Timeout
+     * Use extended timeout for large datasets
+     */
+    extended_timeout?: boolean;
+    /**
+     * Validate Schema
+     * Validate source schema against target table
+     */
+    validate_schema?: boolean;
+    /**
+     * Source Type
+     * Source type identifier
+     */
+    source_type?: 'url';
+    /**
+     * Url
+     * HTTP(S) URL to the data file
+     */
+    url: string;
+    /**
+     * File Format
+     * File format of the URL data
+     */
+    file_format: 'parquet' | 'csv' | 'json';
+    /**
+     * Headers
+     * Optional HTTP headers for authentication
+     */
+    headers?: {
+        [key: string]: string;
+    } | null;
+};
+
+/**
  * UpdateAPIKeyRequest
  * Request model for updating an API key.
  */
@@ -2588,21 +2806,6 @@ export type UpdateUserRequest = {
      * User's email address
      */
     email?: string | null;
-};
-
-/**
- * UpgradeSubscriptionRequest
- * Request to upgrade a graph database subscription.
- */
-export type UpgradeSubscriptionRequest = {
-    /**
-     * Plan Name
-     */
-    plan_name: string;
-    /**
-     * Payment Method Id
-     */
-    payment_method_id?: string | null;
 };
 
 /**
@@ -3168,20 +3371,6 @@ export type CompleteSsoAuthResponses = {
 
 export type CompleteSsoAuthResponse = CompleteSsoAuthResponses[keyof CompleteSsoAuthResponses];
 
-export type GetCaptchaConfigData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/auth/captcha/config';
-};
-
-export type GetCaptchaConfigResponses = {
-    /**
-     * CAPTCHA configuration
-     */
-    200: unknown;
-};
-
 export type GetPasswordPolicyData = {
     body?: never;
     path?: never;
@@ -3222,6 +3411,20 @@ export type CheckPasswordStrengthResponses = {
 };
 
 export type CheckPasswordStrengthResponse = CheckPasswordStrengthResponses[keyof CheckPasswordStrengthResponses];
+
+export type GetCaptchaConfigData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/captcha/config';
+};
+
+export type GetCaptchaConfigResponses = {
+    /**
+     * CAPTCHA configuration
+     */
+    200: unknown;
+};
 
 export type GetServiceStatusData = {
     body?: never;
@@ -3390,7 +3593,7 @@ export type GetAllCreditSummariesData = {
     };
     path?: never;
     query?: never;
-    url: '/v1/user/credits/summary';
+    url: '/v1/user/credits';
 };
 
 export type GetAllCreditSummariesErrors = {
@@ -3669,6 +3872,40 @@ export type GetUserUsageResponses = {
 
 export type GetUserUsageResponse = GetUserUsageResponses[keyof GetUserUsageResponses];
 
+export type GetAllSharedRepositoryLimitsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/user/limits/shared-repositories/summary';
+};
+
+export type GetAllSharedRepositoryLimitsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetAllSharedRepositoryLimitsError = GetAllSharedRepositoryLimitsErrors[keyof GetAllSharedRepositoryLimitsErrors];
+
+export type GetAllSharedRepositoryLimitsResponses = {
+    /**
+     * Response Getallsharedrepositorylimits
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetAllSharedRepositoryLimitsResponse = GetAllSharedRepositoryLimitsResponses[keyof GetAllSharedRepositoryLimitsResponses];
+
 export type GetSharedRepositoryLimitsData = {
     body?: never;
     headers?: {
@@ -3708,40 +3945,6 @@ export type GetSharedRepositoryLimitsResponses = {
 };
 
 export type GetSharedRepositoryLimitsResponse = GetSharedRepositoryLimitsResponses[keyof GetSharedRepositoryLimitsResponses];
-
-export type GetAllSharedRepositoryLimitsData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path?: never;
-    query?: never;
-    url: '/v1/user/limits/shared-repositories/summary';
-};
-
-export type GetAllSharedRepositoryLimitsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetAllSharedRepositoryLimitsError = GetAllSharedRepositoryLimitsErrors[keyof GetAllSharedRepositoryLimitsErrors];
-
-export type GetAllSharedRepositoryLimitsResponses = {
-    /**
-     * Response Getallsharedrepositorylimits
-     * Successful Response
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetAllSharedRepositoryLimitsResponse = GetAllSharedRepositoryLimitsResponses[keyof GetAllSharedRepositoryLimitsResponses];
 
 export type GetUserUsageOverviewData = {
     body?: never;
@@ -4085,51 +4288,6 @@ export type GetRepositoryCreditsResponses = {
 
 export type GetRepositoryCreditsResponse = GetRepositoryCreditsResponses[keyof GetRepositoryCreditsResponses];
 
-export type GetConnectionOptionsData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/connections/options';
-};
-
-export type GetConnectionOptionsErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve options
-     */
-    500: ErrorResponse;
-};
-
-export type GetConnectionOptionsError = GetConnectionOptionsErrors[keyof GetConnectionOptionsErrors];
-
-export type GetConnectionOptionsResponses = {
-    /**
-     * Connection options retrieved successfully
-     */
-    200: ConnectionOptionsResponse;
-};
-
-export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof GetConnectionOptionsResponses];
-
 export type ListConnectionsData = {
     body?: never;
     headers?: {
@@ -4347,6 +4505,51 @@ export type GetConnectionResponses = {
 };
 
 export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionResponses];
+
+export type GetConnectionOptionsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/connections/options';
+};
+
+export type GetConnectionOptionsErrors = {
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to retrieve options
+     */
+    500: ErrorResponse;
+};
+
+export type GetConnectionOptionsError = GetConnectionOptionsErrors[keyof GetConnectionOptionsErrors];
+
+export type GetConnectionOptionsResponses = {
+    /**
+     * Connection options retrieved successfully
+     */
+    200: ConnectionOptionsResponse;
+};
+
+export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof GetConnectionOptionsResponses];
 
 export type SyncConnectionData = {
     body?: SyncConnectionRequest;
@@ -4767,6 +4970,54 @@ export type CallMcpToolResponses = {
     202: unknown;
 };
 
+export type ListBackupsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Limit
+         * Maximum number of backups to return
+         */
+        limit?: number;
+        /**
+         * Offset
+         * Number of backups to skip
+         */
+        offset?: number;
+    };
+    url: '/v1/{graph_id}/backups';
+};
+
+export type ListBackupsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListBackupsError = ListBackupsErrors[keyof ListBackupsErrors];
+
+export type ListBackupsResponses = {
+    /**
+     * Successful Response
+     */
+    200: BackupListResponse;
+};
+
+export type ListBackupsResponse = ListBackupsResponses[keyof ListBackupsResponses];
+
 export type CreateBackupData = {
     body: BackupCreateRequest;
     headers?: {
@@ -4783,7 +5034,7 @@ export type CreateBackupData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/backup/create';
+    url: '/v1/{graph_id}/backups';
 };
 
 export type CreateBackupErrors = {
@@ -4818,50 +5069,8 @@ export type CreateBackupResponses = {
     202: unknown;
 };
 
-export type ListBackupsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Limit
-         * Maximum number of backups to return
-         */
-        limit?: number;
-        /**
-         * Offset
-         * Number of backups to skip
-         */
-        offset?: number;
-    };
-    url: '/v1/{graph_id}/backup/list';
-};
-
-export type ListBackupsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListBackupsError = ListBackupsErrors[keyof ListBackupsErrors];
-
-export type ListBackupsResponses = {
-    /**
-     * Successful Response
-     */
-    200: BackupListResponse;
-};
-
-export type ListBackupsResponse = ListBackupsResponses[keyof ListBackupsResponses];
-
 export type ExportBackupData = {
-    body: BackupExportRequest;
+    body?: never;
     headers?: {
         /**
          * Authorization
@@ -4870,13 +5079,18 @@ export type ExportBackupData = {
     };
     path: {
         /**
+         * Backup Id
+         * Backup identifier
+         */
+        backup_id: string;
+        /**
          * Graph Id
          * Graph database identifier
          */
         graph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/backup/export';
+    url: '/v1/{graph_id}/backups/{backup_id}/export';
 };
 
 export type ExportBackupErrors = {
@@ -4903,6 +5117,69 @@ export type ExportBackupResponses = {
     200: unknown;
 };
 
+export type GetBackupDownloadUrlData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Backup Id
+         * Backup identifier
+         */
+        backup_id: string;
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Expires In
+         * URL expiration time in seconds
+         */
+        expires_in?: number;
+    };
+    url: '/v1/{graph_id}/backups/{backup_id}/download';
+};
+
+export type GetBackupDownloadUrlErrors = {
+    /**
+     * Access denied or backup is encrypted
+     */
+    403: unknown;
+    /**
+     * Backup not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to generate download URL
+     */
+    500: unknown;
+};
+
+export type GetBackupDownloadUrlError = GetBackupDownloadUrlErrors[keyof GetBackupDownloadUrlErrors];
+
+export type GetBackupDownloadUrlResponses = {
+    /**
+     * Response Getbackupdownloadurl
+     * Download URL generated successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetBackupDownloadUrlResponse = GetBackupDownloadUrlResponses[keyof GetBackupDownloadUrlResponses];
+
 export type RestoreBackupData = {
     body: BackupRestoreRequest;
     headers?: {
@@ -4919,7 +5196,7 @@ export type RestoreBackupData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/backup/restore';
+    url: '/v1/{graph_id}/backups/restore';
 };
 
 export type RestoreBackupErrors = {
@@ -4956,6 +5233,12 @@ export type RestoreBackupResponses = {
 
 export type GetBackupStatsData = {
     body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -4964,7 +5247,7 @@ export type GetBackupStatsData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/backup/stats';
+    url: '/v1/{graph_id}/backups/stats';
 };
 
 export type GetBackupStatsErrors = {
@@ -4984,109 +5267,6 @@ export type GetBackupStatsResponses = {
 };
 
 export type GetBackupStatsResponse = GetBackupStatsResponses[keyof GetBackupStatsResponses];
-
-export type KuzuBackupHealthData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/backup/health';
-};
-
-export type KuzuBackupHealthErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type KuzuBackupHealthError = KuzuBackupHealthErrors[keyof KuzuBackupHealthErrors];
-
-export type KuzuBackupHealthResponses = {
-    /**
-     * Response Kuzubackuphealth
-     * Successful Response
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type KuzuBackupHealthResponse = KuzuBackupHealthResponses[keyof KuzuBackupHealthResponses];
-
-export type GetBackupDownloadUrlData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Backup Id
-         * Backup identifier
-         */
-        backup_id: string;
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Expires In
-         * URL expiration time in seconds
-         */
-        expires_in?: number;
-    };
-    url: '/v1/{graph_id}/backup/{backup_id}/download';
-};
-
-export type GetBackupDownloadUrlErrors = {
-    /**
-     * Access denied or backup is encrypted
-     */
-    403: unknown;
-    /**
-     * Backup not found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to generate download URL
-     */
-    500: unknown;
-};
-
-export type GetBackupDownloadUrlError = GetBackupDownloadUrlErrors[keyof GetBackupDownloadUrlErrors];
-
-export type GetBackupDownloadUrlResponses = {
-    /**
-     * Response Getbackupdownloadurl
-     * Download URL generated successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetBackupDownloadUrlResponse = GetBackupDownloadUrlResponses[keyof GetBackupDownloadUrlResponses];
 
 export type GetGraphMetricsData = {
     body?: never;
@@ -5507,130 +5687,6 @@ export type GetCurrentGraphBillResponses = {
 
 export type GetCurrentGraphBillResponse = GetCurrentGraphBillResponses[keyof GetCurrentGraphBillResponses];
 
-export type GetGraphMonthlyBillData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Year
-         * Year (2024-2030)
-         */
-        year: number;
-        /**
-         * Month
-         * Month (1-12)
-         */
-        month: number;
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/billing/history/{year}/{month}';
-};
-
-export type GetGraphMonthlyBillErrors = {
-    /**
-     * Invalid year or month
-     */
-    400: ErrorResponse;
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found or no data for period
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to calculate bill
-     */
-    500: ErrorResponse;
-};
-
-export type GetGraphMonthlyBillError = GetGraphMonthlyBillErrors[keyof GetGraphMonthlyBillErrors];
-
-export type GetGraphMonthlyBillResponses = {
-    /**
-     * Response Getgraphmonthlybill
-     * Monthly bill retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetGraphMonthlyBillResponse = GetGraphMonthlyBillResponses[keyof GetGraphMonthlyBillResponses];
-
-export type GetGraphBillingHistoryData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Months
-         * Number of months to retrieve (1-24)
-         */
-        months?: number;
-    };
-    url: '/v1/{graph_id}/billing/history';
-};
-
-export type GetGraphBillingHistoryErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve history
-     */
-    500: ErrorResponse;
-};
-
-export type GetGraphBillingHistoryError = GetGraphBillingHistoryErrors[keyof GetGraphBillingHistoryErrors];
-
-export type GetGraphBillingHistoryResponses = {
-    /**
-     * Response Getgraphbillinghistory
-     * Billing history retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetGraphBillingHistoryResponse = GetGraphBillingHistoryResponses[keyof GetGraphBillingHistoryResponses];
-
 export type GetGraphUsageDetailsData = {
     body?: never;
     headers?: {
@@ -5698,7 +5754,7 @@ export type GetGraphUsageDetailsResponses = {
 
 export type GetGraphUsageDetailsResponse = GetGraphUsageDetailsResponses[keyof GetGraphUsageDetailsResponses];
 
-export type GetGraphPricingInfoV1GraphIdBillingPricingGetData = {
+export type GetGraphBillingHistoryData = {
     body?: never;
     headers?: {
         /**
@@ -5709,66 +5765,54 @@ export type GetGraphPricingInfoV1GraphIdBillingPricingGetData = {
     path: {
         /**
          * Graph Id
-         * Graph database ID
+         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: never;
-    url: '/v1/{graph_id}/billing/pricing';
+    query?: {
+        /**
+         * Months
+         * Number of months to retrieve (1-24)
+         */
+        months?: number;
+    };
+    url: '/v1/{graph_id}/billing/history';
 };
 
-export type GetGraphPricingInfoV1GraphIdBillingPricingGetErrors = {
+export type GetGraphBillingHistoryErrors = {
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
-};
-
-export type GetGraphPricingInfoV1GraphIdBillingPricingGetError = GetGraphPricingInfoV1GraphIdBillingPricingGetErrors[keyof GetGraphPricingInfoV1GraphIdBillingPricingGetErrors];
-
-export type GetGraphPricingInfoV1GraphIdBillingPricingGetResponses = {
     /**
-     * Successful Response
+     * Failed to retrieve history
      */
-    200: unknown;
+    500: ErrorResponse;
 };
 
-export type UpgradeGraphSubscriptionV1GraphIdBillingSubscriptionUpgradePostData = {
-    body: UpgradeSubscriptionRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
+export type GetGraphBillingHistoryError = GetGraphBillingHistoryErrors[keyof GetGraphBillingHistoryErrors];
+
+export type GetGraphBillingHistoryResponses = {
+    /**
+     * Response Getgraphbillinghistory
+     * Billing history retrieved successfully
+     */
+    200: {
+        [key: string]: unknown;
     };
-    path: {
-        /**
-         * Graph Id
-         * Graph database ID
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/billing/subscription/upgrade';
 };
 
-export type UpgradeGraphSubscriptionV1GraphIdBillingSubscriptionUpgradePostErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
+export type GetGraphBillingHistoryResponse = GetGraphBillingHistoryResponses[keyof GetGraphBillingHistoryResponses];
 
-export type UpgradeGraphSubscriptionV1GraphIdBillingSubscriptionUpgradePostError = UpgradeGraphSubscriptionV1GraphIdBillingSubscriptionUpgradePostErrors[keyof UpgradeGraphSubscriptionV1GraphIdBillingSubscriptionUpgradePostErrors];
-
-export type UpgradeGraphSubscriptionV1GraphIdBillingSubscriptionUpgradePostResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-};
-
-export type GetGraphSubscriptionV1GraphIdBillingSubscriptionGetData = {
+export type GetGraphMonthlyBillData = {
     body?: never;
     headers?: {
         /**
@@ -5778,100 +5822,61 @@ export type GetGraphSubscriptionV1GraphIdBillingSubscriptionGetData = {
     };
     path: {
         /**
+         * Year
+         * Year (2024-2030)
+         */
+        year: number;
+        /**
+         * Month
+         * Month (1-12)
+         */
+        month: number;
+        /**
          * Graph Id
-         * Graph database ID
+         * Graph database identifier
          */
         graph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/billing/subscription';
+    url: '/v1/{graph_id}/billing/history/{year}/{month}';
 };
 
-export type GetGraphSubscriptionV1GraphIdBillingSubscriptionGetErrors = {
+export type GetGraphMonthlyBillErrors = {
+    /**
+     * Invalid year or month
+     */
+    400: ErrorResponse;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found or no data for period
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
-};
-
-export type GetGraphSubscriptionV1GraphIdBillingSubscriptionGetError = GetGraphSubscriptionV1GraphIdBillingSubscriptionGetErrors[keyof GetGraphSubscriptionV1GraphIdBillingSubscriptionGetErrors];
-
-export type GetGraphSubscriptionV1GraphIdBillingSubscriptionGetResponses = {
     /**
-     * Successful Response
+     * Failed to calculate bill
      */
-    200: unknown;
+    500: ErrorResponse;
 };
 
-export type GetAvailableSubscriptionPlansV1GraphIdBillingAvailablePlansGetData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
+export type GetGraphMonthlyBillError = GetGraphMonthlyBillErrors[keyof GetGraphMonthlyBillErrors];
+
+export type GetGraphMonthlyBillResponses = {
+    /**
+     * Response Getgraphmonthlybill
+     * Monthly bill retrieved successfully
+     */
+    200: {
+        [key: string]: unknown;
     };
-    path: {
-        /**
-         * Graph Id
-         * Graph database ID
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/billing/available-plans';
 };
 
-export type GetAvailableSubscriptionPlansV1GraphIdBillingAvailablePlansGetErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetAvailableSubscriptionPlansV1GraphIdBillingAvailablePlansGetError = GetAvailableSubscriptionPlansV1GraphIdBillingAvailablePlansGetErrors[keyof GetAvailableSubscriptionPlansV1GraphIdBillingAvailablePlansGetErrors];
-
-export type GetAvailableSubscriptionPlansV1GraphIdBillingAvailablePlansGetResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-};
-
-export type GetCreditBillingInfoV1GraphIdBillingCreditsGetData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database ID
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/billing/credits';
-};
-
-export type GetCreditBillingInfoV1GraphIdBillingCreditsGetErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetCreditBillingInfoV1GraphIdBillingCreditsGetError = GetCreditBillingInfoV1GraphIdBillingCreditsGetErrors[keyof GetCreditBillingInfoV1GraphIdBillingCreditsGetErrors];
-
-export type GetCreditBillingInfoV1GraphIdBillingCreditsGetResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-};
+export type GetGraphMonthlyBillResponse = GetGraphMonthlyBillResponses[keyof GetGraphMonthlyBillResponses];
 
 export type GetCreditSummaryData = {
     body?: never;
@@ -6003,7 +6008,7 @@ export type ListCreditTransactionsResponses = {
 export type ListCreditTransactionsResponse = ListCreditTransactionsResponses[keyof ListCreditTransactionsResponses];
 
 export type CheckCreditBalanceData = {
-    body: CreditCheckRequest;
+    body?: never;
     headers?: {
         /**
          * Authorization
@@ -6017,8 +6022,19 @@ export type CheckCreditBalanceData = {
          */
         graph_id: string;
     };
-    query?: never;
-    url: '/v1/{graph_id}/credits/check';
+    query: {
+        /**
+         * Operation Type
+         * Type of operation to check
+         */
+        operation_type: string;
+        /**
+         * Base Cost
+         * Custom base cost (uses default if not provided)
+         */
+        base_cost?: number | null;
+    };
+    url: '/v1/{graph_id}/credits/balance/check';
 };
 
 export type CheckCreditBalanceErrors = {
@@ -6173,7 +6189,7 @@ export type GetDatabaseHealthData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/status/health';
+    url: '/v1/{graph_id}/health';
 };
 
 export type GetDatabaseHealthErrors = {
@@ -6222,7 +6238,7 @@ export type GetDatabaseInfoData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/status/info';
+    url: '/v1/{graph_id}/info';
 };
 
 export type GetDatabaseInfoErrors = {
@@ -6255,6 +6271,58 @@ export type GetDatabaseInfoResponses = {
 
 export type GetDatabaseInfoResponse = GetDatabaseInfoResponses[keyof GetDatabaseInfoResponses];
 
+export type GetGraphLimitsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier (user graph or shared repository)
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/limits';
+};
+
+export type GetGraphLimitsErrors = {
+    /**
+     * Access denied to graph
+     */
+    403: unknown;
+    /**
+     * Graph not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to retrieve limits
+     */
+    500: unknown;
+};
+
+export type GetGraphLimitsError = GetGraphLimitsErrors[keyof GetGraphLimitsErrors];
+
+export type GetGraphLimitsResponses = {
+    /**
+     * Response Getgraphlimits
+     * Limits retrieved successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetGraphLimitsResponse = GetGraphLimitsResponses[keyof GetGraphLimitsResponses];
+
 export type ListSubgraphsData = {
     body?: never;
     headers?: {
@@ -6266,7 +6334,7 @@ export type ListSubgraphsData = {
     path: {
         /**
          * Graph Id
-         * Parent graph identifier
+         * Parent graph ID (e.g., 'kg1a2b3c4d5')
          */
         graph_id: string;
     };
@@ -6276,32 +6344,16 @@ export type ListSubgraphsData = {
 
 export type ListSubgraphsErrors = {
     /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied to parent graph
-     */
-    403: unknown;
-    /**
-     * Parent graph not found
-     */
-    404: unknown;
-    /**
      * Validation Error
      */
     422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
 };
 
 export type ListSubgraphsError = ListSubgraphsErrors[keyof ListSubgraphsErrors];
 
 export type ListSubgraphsResponses = {
     /**
-     * Subgraphs retrieved successfully
+     * Successful Response
      */
     200: ListSubgraphsResponse;
 };
@@ -6319,7 +6371,7 @@ export type CreateSubgraphData = {
     path: {
         /**
          * Graph Id
-         * Parent graph identifier
+         * Parent graph ID (e.g., 'kg1a2b3c4d5')
          */
         graph_id: string;
     };
@@ -6329,42 +6381,18 @@ export type CreateSubgraphData = {
 
 export type CreateSubgraphErrors = {
     /**
-     * Invalid subgraph name or configuration
-     */
-    400: unknown;
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Insufficient permissions or tier
-     */
-    403: unknown;
-    /**
-     * Parent graph not found
-     */
-    404: unknown;
-    /**
-     * Subgraph name already exists
-     */
-    409: unknown;
-    /**
      * Validation Error
      */
     422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
 };
 
 export type CreateSubgraphError = CreateSubgraphErrors[keyof CreateSubgraphErrors];
 
 export type CreateSubgraphResponses = {
     /**
-     * Subgraph created successfully
+     * Successful Response
      */
-    200: SubgraphResponse;
+    201: SubgraphResponse;
 };
 
 export type CreateSubgraphResponse = CreateSubgraphResponses[keyof CreateSubgraphResponses];
@@ -6384,13 +6412,13 @@ export type DeleteSubgraphData = {
          */
         graph_id: string;
         /**
-         * Subgraph Name
-         * Subgraph name to delete
+         * Subgraph Id
+         * Subgraph identifier to delete
          */
-        subgraph_name: string;
+        subgraph_id: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/subgraphs/{subgraph_name}';
+    url: '/v1/{graph_id}/subgraphs/{subgraph_id}';
 };
 
 export type DeleteSubgraphErrors = {
@@ -6434,6 +6462,68 @@ export type DeleteSubgraphResponses = {
 };
 
 export type DeleteSubgraphResponse2 = DeleteSubgraphResponses[keyof DeleteSubgraphResponses];
+
+export type GetSubgraphInfoData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Parent graph identifier
+         */
+        graph_id: string;
+        /**
+         * Subgraph Id
+         * Subgraph identifier
+         */
+        subgraph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/subgraphs/{subgraph_id}/info';
+};
+
+export type GetSubgraphInfoErrors = {
+    /**
+     * Not a valid subgraph
+     */
+    400: unknown;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied
+     */
+    403: unknown;
+    /**
+     * Subgraph not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetSubgraphInfoError = GetSubgraphInfoErrors[keyof GetSubgraphInfoErrors];
+
+export type GetSubgraphInfoResponses = {
+    /**
+     * Subgraph information retrieved
+     */
+    200: SubgraphResponse;
+};
+
+export type GetSubgraphInfoResponse = GetSubgraphInfoResponses[keyof GetSubgraphInfoResponses];
 
 export type GetSubgraphQuotaData = {
     body?: never;
@@ -6488,8 +6578,11 @@ export type GetSubgraphQuotaResponses = {
 
 export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgraphQuotaResponses];
 
-export type GetSubgraphInfoData = {
-    body?: never;
+export type CopyDataToGraphData = {
+    /**
+     * Request
+     */
+    body: S3CopyRequest | UrlCopyRequest | DataFrameCopyRequest;
     headers?: {
         /**
          * Authorization
@@ -6499,56 +6592,31 @@ export type GetSubgraphInfoData = {
     path: {
         /**
          * Graph Id
-         * Parent graph identifier
+         * Target graph identifier (user graphs only - shared repositories not allowed)
          */
         graph_id: string;
-        /**
-         * Subgraph Name
-         * Subgraph name
-         */
-        subgraph_name: string;
     };
     query?: never;
-    url: '/v1/{graph_id}/subgraphs/{subgraph_name}/info';
+    url: '/v1/{graph_id}/copy';
 };
 
-export type GetSubgraphInfoErrors = {
-    /**
-     * Not a valid subgraph
-     */
-    400: unknown;
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied
-     */
-    403: unknown;
-    /**
-     * Subgraph not found
-     */
-    404: unknown;
+export type CopyDataToGraphErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
 };
 
-export type GetSubgraphInfoError = GetSubgraphInfoErrors[keyof GetSubgraphInfoErrors];
+export type CopyDataToGraphError = CopyDataToGraphErrors[keyof CopyDataToGraphErrors];
 
-export type GetSubgraphInfoResponses = {
+export type CopyDataToGraphResponses = {
     /**
-     * Subgraph information retrieved
+     * Successful Response
      */
-    200: SubgraphResponse;
+    200: CopyResponse;
 };
 
-export type GetSubgraphInfoResponse = GetSubgraphInfoResponses[keyof GetSubgraphInfoResponses];
+export type CopyDataToGraphResponse = CopyDataToGraphResponses[keyof CopyDataToGraphResponses];
 
 export type CreateGraphData = {
     body: CreateGraphRequest;
