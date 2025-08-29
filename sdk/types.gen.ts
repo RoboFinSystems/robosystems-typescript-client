@@ -620,7 +620,17 @@ export type CopyResponse = {
      * Status
      * Operation status
      */
-    status: 'completed' | 'failed' | 'partial';
+    status: 'completed' | 'failed' | 'partial' | 'accepted';
+    /**
+     * Operation Id
+     * Operation ID for SSE monitoring (for long-running operations)
+     */
+    operation_id?: string | null;
+    /**
+     * Sse Url
+     * SSE endpoint URL for monitoring operation progress
+     */
+    sse_url?: string | null;
     /**
      * Source Type
      * Type of source that was copied from
@@ -628,9 +638,9 @@ export type CopyResponse = {
     source_type: string;
     /**
      * Execution Time Ms
-     * Total execution time in milliseconds
+     * Total execution time in milliseconds (for synchronous operations)
      */
-    execution_time_ms: number;
+    execution_time_ms?: number | null;
     /**
      * Message
      * Human-readable status message
@@ -1996,6 +2006,9 @@ export type ResponseMode = 'auto' | 'sync' | 'async' | 'stream';
 /**
  * S3CopyRequest
  * Request model for S3 copy operations.
+ *
+ * Copies data from S3 buckets into graph database tables using user-provided
+ * AWS credentials. Supports various file formats and bulk loading options.
  */
 export type S3CopyRequest = {
     /**
@@ -6602,18 +6615,46 @@ export type CopyDataToGraphData = {
 
 export type CopyDataToGraphErrors = {
     /**
+     * Invalid request parameters
+     */
+    400: unknown;
+    /**
+     * Access denied or shared repository
+     */
+    403: unknown;
+    /**
+     * Operation timeout
+     */
+    408: unknown;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+    /**
+     * Service unavailable
+     */
+    503: unknown;
 };
 
 export type CopyDataToGraphError = CopyDataToGraphErrors[keyof CopyDataToGraphErrors];
 
 export type CopyDataToGraphResponses = {
     /**
-     * Successful Response
+     * Copy operation accepted and started
      */
     200: CopyResponse;
+    /**
+     * Copy operation queued for execution
+     */
+    202: unknown;
 };
 
 export type CopyDataToGraphResponse = CopyDataToGraphResponses[keyof CopyDataToGraphResponses];

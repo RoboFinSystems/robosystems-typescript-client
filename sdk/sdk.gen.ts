@@ -2319,9 +2319,44 @@ export const getSubgraphQuota = <ThrowOnError extends boolean = false>(options: 
  * - Premium: 100GB max file size, 60 min timeout
  *
  * **Copy Options:**
- * - `ignore_errors`: Skip duplicate/invalid rows (enables upsert-like behavior)
+ * - `ignore_errors`: Skip duplicate/invalid rows (enables upsert-like behavior). Note: When enabled, row counts may not be accurately reported
  * - `extended_timeout`: Use extended timeout for large datasets
  * - `validate_schema`: Validate source schema against target table
+ *
+ * **Asynchronous Execution with SSE:**
+ * For large data imports, this endpoint returns immediately with an operation ID
+ * and SSE monitoring endpoint. Connect to the returned stream URL for real-time updates:
+ *
+ * ```javascript
+ * const eventSource = new EventSource('/v1/operations/{operation_id}/stream');
+ * eventSource.onmessage = (event) => {
+ * const data = JSON.parse(event.data);
+ * console.log('Progress:', data.message);
+ * };
+ * ```
+ *
+ * **SSE Events Emitted:**
+ * - `operation_started`: Copy operation begins
+ * - `operation_progress`: Progress updates during data transfer
+ * - `operation_completed`: Copy successful with statistics
+ * - `operation_error`: Copy failed with error details
+ *
+ * **SSE Connection Limits:**
+ * - Maximum 5 concurrent SSE connections per user
+ * - Rate limited to 10 new connections per minute
+ * - Automatic circuit breaker for Redis failures
+ * - Graceful degradation if event system unavailable
+ *
+ * **Error Handling:**
+ * - `403 Forbidden`: Attempted copy to shared repository
+ * - `408 Request Timeout`: Operation exceeded timeout limit
+ * - `429 Too Many Requests`: Rate limit exceeded
+ * - `503 Service Unavailable`: Circuit breaker open or service unavailable
+ * - Clients should implement exponential backoff on errors
+ *
+ * **Note:**
+ * Copy operations are FREE - no credit consumption required.
+ * All copy operations are performed asynchronously with progress monitoring.
  */
 export const copyDataToGraph = <ThrowOnError extends boolean = false>(options: Options<CopyDataToGraphData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<CopyDataToGraphResponses, CopyDataToGraphErrors, ThrowOnError>({
