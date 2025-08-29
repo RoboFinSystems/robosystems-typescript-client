@@ -11,6 +11,7 @@ The RoboSystems Typescript Client Extensions provide production-ready enhancemen
 
 - **Server-Sent Events (SSE)** with automatic reconnection and event replay
 - **Smart Query Execution** with automatic queueing and progress monitoring
+- **Data Copy Operations** with S3 import and real-time progress tracking
 - **Operation Monitoring** for long-running tasks with real-time updates
 - **Connection Management** with rate limiting and circuit breaker patterns
 - **React Hooks** for seamless UI integration
@@ -89,6 +90,53 @@ const result = await queryClient.executeWithProgress(
 )
 
 console.log(`Query completed with ${result.rowCount} results`)
+```
+
+### Data Copy Operations with Progress Monitoring
+
+```typescript
+import { CopyClient } from '@robosystems/client/extensions'
+
+const copyClient = new CopyClient({
+  baseUrl: 'https://api.robosystems.ai',
+  headers: { 'X-API-Key': 'your-api-key' },
+})
+
+// Copy data from S3 with real-time progress
+const result = await copyClient.copyFromS3(
+  'your-graph-id',
+  {
+    table_name: 'companies',
+    source_type: 's3',
+    s3_path: 's3://my-bucket/data/companies.csv',
+    s3_access_key_id: 'AWS_ACCESS_KEY',
+    s3_secret_access_key: 'AWS_SECRET_KEY',
+    s3_region: 'us-east-1',
+    file_format: 'csv',
+    ignore_errors: false, // Stop on first error
+  },
+  {
+    onProgress: (message, percent) => {
+      console.log(`Copy progress: ${message} (${percent}%)`)
+      updateProgressBar(percent)
+    },
+    onQueueUpdate: (position, estimatedWait) => {
+      console.log(`Queue position: ${position}, ETA: ${estimatedWait}s`)
+    },
+    onWarning: (warning) => {
+      console.warn(`Copy warning: ${warning}`)
+    },
+  }
+)
+
+// Check results
+if (result.status === 'completed') {
+  console.log(`Successfully imported ${result.rowsImported} rows`)
+  const stats = copyClient.calculateStatistics(result)
+  console.log(`Throughput: ${stats.throughput.toFixed(2)} rows/second`)
+} else if (result.status === 'partial') {
+  console.log(`Imported ${result.rowsImported} rows, skipped ${result.rowsSkipped}`)
+}
 ```
 
 ## 📊 SSE Event Types
@@ -178,6 +226,113 @@ try {
     console.log('SSE temporarily unavailable - circuit breaker open')
     // SSE system is degraded, use alternative method
   }
+}
+```
+
+## 📤 Data Copy Operations
+
+### CopyClient for S3 Data Import
+
+```typescript
+import { CopyClient, CopySourceType } from '@robosystems/client/extensions'
+
+const copyClient = new CopyClient({
+  baseUrl: 'https://api.robosystems.ai',
+  headers: { 'X-API-Key': 'your-api-key' },
+})
+
+// Batch copy multiple tables
+const results = await copyClient.batchCopyFromS3('graph-id', [
+  {
+    request: {
+      table_name: 'companies',
+      source_type: 's3',
+      s3_path: 's3://bucket/companies.csv',
+      s3_access_key_id: 'KEY',
+      s3_secret_access_key: 'SECRET',
+      file_format: 'csv',
+    },
+  },
+  {
+    request: {
+      table_name: 'transactions',
+      source_type: 's3',
+      s3_path: 's3://bucket/transactions.parquet',
+      s3_access_key_id: 'KEY',
+      s3_secret_access_key: 'SECRET',
+      file_format: 'parquet',
+      ignore_errors: true, // Continue on errors
+    },
+  },
+])
+
+results.forEach((result, index) => {
+  console.log(`Table ${index}: ${result.status}`)
+  if (result.rowsImported) {
+    console.log(`  Imported: ${result.rowsImported} rows`)
+  }
+})
+```
+
+### Copy with Retry Logic
+
+```typescript
+// Retry failed copy operations with exponential backoff
+const result = await copyClient.copyWithRetry(
+  'graph-id',
+  {
+    table_name: 'large_dataset',
+    source_type: 's3',
+    s3_path: 's3://bucket/large-dataset.csv',
+    s3_access_key_id: 'KEY',
+    s3_secret_access_key: 'SECRET',
+    max_file_size_gb: 50,
+    extended_timeout: true,
+  },
+  CopySourceType.S3,
+  3, // Max retries
+  {
+    onProgress: (message, percent) => {
+      console.log(`Progress: ${message} (${percent}%)`)
+    },
+  }
+)
+```
+
+### Monitor Multiple Copy Operations
+
+```typescript
+// Start multiple copy operations
+const operations = await Promise.all([
+  copyClient.copyFromS3('graph1', request1),
+  copyClient.copyFromS3('graph2', request2),
+])
+
+// Extract operation IDs for monitoring
+const operationIds = operations
+  .filter((op) => op.status === 'accepted')
+  .map((op) => op.operationId!)
+
+// Monitor all operations concurrently
+const results = await copyClient.monitorMultipleCopies(operationIds, {
+  onProgress: (message) => console.log(`Progress: ${message}`),
+})
+```
+
+### Copy Statistics
+
+```typescript
+const result = await copyClient.copyFromS3('graph-id', request)
+
+// Calculate performance statistics
+const stats = copyClient.calculateStatistics(result)
+if (stats) {
+  console.log(`Total Rows: ${stats.totalRows}`)
+  console.log(`Imported: ${stats.importedRows}`)
+  console.log(`Skipped: ${stats.skippedRows}`)
+  console.log(`Throughput: ${stats.throughput.toFixed(2)} rows/sec`)
+  console.log(`Duration: ${stats.duration.toFixed(2)} seconds`)
+  console.log(`Bytes Processed: ${(stats.bytesProcessed / 1024 / 1024).toFixed(2)} MB`)
 }
 ```
 
@@ -360,6 +515,68 @@ function QueryRunner() {
             ))}
           </tbody>
         </table>
+      )}
+    </div>
+  )
+}
+```
+
+### useCopy Hook for Data Import
+
+```typescript
+import { useCopy } from '@robosystems/client/extensions/hooks'
+
+function DataImporter({ graphId }: { graphId: string }) {
+  const {
+    copyFromS3,
+    loading,
+    progress,
+    error,
+    result,
+    queuePosition
+  } = useCopy(graphId)
+
+  const handleImport = async () => {
+    const importResult = await copyFromS3({
+      table_name: 'products',
+      source_type: 's3',
+      s3_path: 's3://data-bucket/products.csv',
+      s3_access_key_id: process.env.NEXT_PUBLIC_AWS_KEY!,
+      s3_secret_access_key: process.env.NEXT_PUBLIC_AWS_SECRET!,
+      file_format: 'csv',
+    })
+
+    if (importResult?.status === 'completed') {
+      alert(`Successfully imported ${importResult.rowsImported} products`)
+    }
+  }
+
+  return (
+    <div>
+      <button onClick={handleImport} disabled={loading}>
+        {loading ? 'Importing...' : 'Import Products'}
+      </button>
+
+      {progress && (
+        <div>
+          <p>{progress.message}</p>
+          {progress.percent && (
+            <progress value={progress.percent} max={100} />
+          )}
+        </div>
+      )}
+
+      {queuePosition && (
+        <p>Queue position: {queuePosition}</p>
+      )}
+
+      {error && <p style={{ color: 'red' }}>Error: {error.message}</p>}
+
+      {result && result.status === 'completed' && (
+        <div style={{ color: 'green' }}>
+          <p>✅ Successfully imported {result.rowsImported} rows</p>
+          <p>Execution time: {(result.executionTimeMs / 1000).toFixed(2)}s</p>
+        </div>
       )}
     </div>
   )
@@ -572,6 +789,7 @@ describe('SSE Integration', () => {
 
 - **`SSEClient`** - Server-Sent Events client with auto-reconnection
 - **`QueryClient`** - Enhanced query execution with SSE support
+- **`CopyClient`** - Data copy operations with S3 import and progress monitoring
 - **`OperationClient`** - Long-running operation monitoring
 - **`StreamProcessor`** - Efficient stream processing for large datasets
 
@@ -586,6 +804,7 @@ describe('SSE Integration', () => {
 
 - **`useSSE`** - Hook for SSE connection management
 - **`useQueryWithSSE`** - Hook for queries with progress
+- **`useCopy`** - Hook for data copy operations with progress
 - **`useOperation`** - Hook for operation monitoring
 
 ### Utilities

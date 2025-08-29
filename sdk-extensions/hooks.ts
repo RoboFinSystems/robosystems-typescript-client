@@ -7,7 +7,10 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { client } from '../sdk/client.gen'
+import type { S3CopyRequest } from '../sdk/types.gen'
 import { getSDKExtensionsConfig } from './config'
+import type { CopyOptions, CopyResult } from './CopyClient'
+import { CopyClient } from './CopyClient'
 import type { OperationProgress, OperationResult } from './OperationClient'
 import { OperationClient } from './OperationClient'
 import type { QueryOptions, QueryResult } from './QueryClient'
@@ -404,9 +407,11 @@ export function useMultipleOperations<T = any>() {
  */
 export function useSDKClients() {
   const [clients, setClients] = useState<{
+    copy: CopyClient | null
     query: QueryClient | null
     operations: OperationClient | null
   }>({
+    copy: null,
     query: null,
     operations: null,
   })
@@ -420,19 +425,153 @@ export function useSDKClients() {
       headers: sdkConfig.headers,
     }
 
+    const copyClient = new CopyClient(baseConfig)
     const queryClient = new QueryClient(baseConfig)
     const operationsClient = new OperationClient(baseConfig)
 
     setClients({
+      copy: copyClient,
       query: queryClient,
       operations: operationsClient,
     })
 
     return () => {
+      copyClient.close()
       queryClient.close()
       operationsClient.closeAll()
     }
   }, [])
 
   return clients
+}
+
+/**
+ * Hook for copying data from S3 to graph database with progress monitoring
+ *
+ * @example
+ * ```tsx
+ * const { copyFromS3, loading, progress, error, result } = useCopy('graph_123')
+ *
+ * const handleImport = async () => {
+ *   const result = await copyFromS3({
+ *     table_name: 'companies',
+ *     source_type: 's3',
+ *     s3_uri: 's3://my-bucket/data.csv',
+ *     aws_access_key_id: 'KEY',
+ *     aws_secret_access_key: 'SECRET',
+ *   })
+ * }
+ * ```
+ */
+export function useCopy(graphId: string) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+  const [result, setResult] = useState<CopyResult | null>(null)
+  const [progress, setProgress] = useState<{
+    message: string
+    percent?: number
+  } | null>(null)
+  const [queuePosition, setQueuePosition] = useState<number | null>(null)
+  const clientRef = useRef<CopyClient>(null)
+
+  // Initialize client
+  useEffect(() => {
+    const sdkConfig = getSDKExtensionsConfig()
+    const clientConfig = client.getConfig()
+    clientRef.current = new CopyClient({
+      baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
+      credentials: sdkConfig.credentials,
+      headers: sdkConfig.headers,
+    })
+
+    return () => {
+      clientRef.current?.close()
+    }
+  }, [])
+
+  const copyFromS3 = useCallback(
+    async (request: S3CopyRequest, options?: CopyOptions): Promise<CopyResult | null> => {
+      if (!clientRef.current) return null
+
+      setLoading(true)
+      setError(null)
+      setResult(null)
+      setProgress(null)
+      setQueuePosition(null)
+
+      try {
+        const copyResult = await clientRef.current.copyFromS3(graphId, request, {
+          ...options,
+          onProgress: (message, progressPercent) => {
+            setProgress({ message, percent: progressPercent })
+            setQueuePosition(null) // Clear queue position when executing
+          },
+          onQueueUpdate: (position, estimatedWait) => {
+            setQueuePosition(position)
+            setProgress({
+              message: `Queue position: ${position} (est. ${estimatedWait}s)`,
+            })
+          },
+          onWarning: (warning) => {
+            console.warn('Copy warning:', warning)
+          },
+        })
+
+        setResult(copyResult)
+        return copyResult
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        return null
+      } finally {
+        setLoading(false)
+        setQueuePosition(null)
+      }
+    },
+    [graphId]
+  )
+
+  // Simple copy method with retry logic
+  const copyWithRetry = useCallback(
+    async (request: S3CopyRequest, maxRetries: number = 3): Promise<CopyResult | null> => {
+      if (!clientRef.current) return null
+
+      setLoading(true)
+      setError(null)
+
+      try {
+        const result = await clientRef.current.copyWithRetry(graphId, request, 's3', maxRetries, {
+          onProgress: (message, progressPercent) => {
+            setProgress({ message, percent: progressPercent })
+          },
+        })
+        setResult(result)
+        return result
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        return null
+      } finally {
+        setLoading(false)
+      }
+    },
+    [graphId]
+  )
+
+  // Get statistics from the last copy operation
+  const getStatistics = useCallback(() => {
+    if (!clientRef.current || !result) return null
+    return clientRef.current.calculateStatistics(result)
+  }, [result])
+
+  return {
+    copyFromS3,
+    copyWithRetry,
+    getStatistics,
+    loading,
+    error,
+    result,
+    progress,
+    queuePosition,
+  }
 }
