@@ -4,6 +4,9 @@
   "description": "TypeScript client library for RoboSystems Financial Knowledge Graph API",
   "main": "index.js",
   "types": "index.d.ts",
+  "bin": {
+    "create-feature": "./bin/create-feature"
+  },
   "exports": {
     ".": {
       "types": "./index.d.ts",
@@ -68,6 +71,9 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "validate": "npm run format:check && npm run lint && npm run typecheck",
+    "feature:create": "./bin/create-feature",
+    "release:create": "./bin/create-release",
+    "pr:create": "./bin/create-pr",
     "validate:fix": "npm run format && npm run lint:fix && npm run typecheck",
     "test": "npm run validate",
     "test:all": "npm run validate && npm run build",
