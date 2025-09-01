@@ -86,7 +86,7 @@ jobs:
           
           # Commit and push to main
           git add package.json package-lock.json
-          git commit -m "Bump version from $CURRENT_VERSION to $NEW_VERSION"
+          git commit -m "Release v$NEW_VERSION"
           git push origin main
       
       - name: Create release branch
