@@ -879,10 +879,9 @@ See the [Contributing Guide](../../CONTRIBUTING.md) for development setup and gu
 
 ## 📞 Support
 
-- **Documentation**: [docs.robosystems.ai](https://docs.robosystems.ai)
 - **API Reference**: [api.robosystems.ai/docs](https://api.robosystems.ai/docs)
-- **Discord**: [Join our community](https://discord.gg/robosystems)
-- **Issues**: [GitHub Issues](https://github.com/robosystems/sdk/issues)
+- **Discord**: [Join our community](https://discord.gg/V9vjcqstxX)
+- **Issues**: [GitHub Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)
 
 ---
 
