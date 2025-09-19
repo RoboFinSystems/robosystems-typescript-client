@@ -46,7 +46,7 @@
     {
       "label": "Create PR",
       "type": "shell",
-      "command": "npm run pr:create ${input:targetBranch} ${input:prType} ${input:claudeReview}",
+      "command": "npm run pr:create ${input:targetBranch} ${input:claudeReview}",
       "problemMatcher": []
     },
     {
