@@ -124,6 +124,27 @@ export type AddOnCreditInfo = {
 };
 
 /**
+ * AgentListResponse
+ * Response for listing available agents.
+ */
+export type AgentListResponse = {
+    /**
+     * Agents
+     * Dictionary of available agents with metadata
+     */
+    agents: {
+        [key: string]: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Total
+     * Total number of agents
+     */
+    total: number;
+};
+
+/**
  * AgentMessage
  * Message in conversation history.
  */
@@ -138,16 +159,142 @@ export type AgentMessage = {
      * Message content
      */
     content: string;
+    /**
+     * Timestamp
+     * Message timestamp
+     */
+    timestamp?: string | null;
+};
+
+/**
+ * AgentMetadataResponse
+ * Response for agent metadata.
+ */
+export type AgentMetadataResponse = {
+    /**
+     * Name
+     * Agent name
+     */
+    name: string;
+    /**
+     * Description
+     * Agent description
+     */
+    description: string;
+    /**
+     * Version
+     * Agent version
+     */
+    version: string;
+    /**
+     * Capabilities
+     * Agent capabilities
+     */
+    capabilities: Array<string>;
+    /**
+     * Supported Modes
+     * Supported execution modes
+     */
+    supported_modes: Array<string>;
+    /**
+     * Requires Credits
+     * Whether agent requires credits
+     */
+    requires_credits: boolean;
+    /**
+     * Author
+     * Agent author
+     */
+    author?: string | null;
+    /**
+     * Tags
+     * Agent tags
+     */
+    tags?: Array<string>;
+};
+
+/**
+ * AgentMode
+ * Agent execution modes.
+ */
+export type AgentMode = 'quick' | 'standard' | 'extended' | 'streaming';
+
+/**
+ * AgentRecommendation
+ * Single agent recommendation.
+ */
+export type AgentRecommendation = {
+    /**
+     * Agent Type
+     * Agent type identifier
+     */
+    agent_type: string;
+    /**
+     * Agent Name
+     * Agent display name
+     */
+    agent_name: string;
+    /**
+     * Confidence
+     * Confidence score (0-1)
+     */
+    confidence: number;
+    /**
+     * Capabilities
+     * Agent capabilities
+     */
+    capabilities: Array<string>;
+    /**
+     * Reason
+     * Reason for recommendation
+     */
+    reason?: string | null;
+};
+
+/**
+ * AgentRecommendationRequest
+ * Request for agent recommendations.
+ */
+export type AgentRecommendationRequest = {
+    /**
+     * Query
+     * Query to analyze
+     */
+    query: string;
+    /**
+     * Context
+     * Additional context
+     */
+    context?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * AgentRecommendationResponse
+ * Response for agent recommendations.
+ */
+export type AgentRecommendationResponse = {
+    /**
+     * Recommendations
+     * List of agent recommendations sorted by confidence
+     */
+    recommendations: Array<AgentRecommendation>;
+    /**
+     * Query
+     * The analyzed query
+     */
+    query: string;
 };
 
 /**
  * AgentRequest
- * Request model for financial agent interactions.
+ * Request model for agent interactions.
  */
 export type AgentRequest = {
     /**
      * Message
-     * Financial analysis query
+     * The query or message to process
      */
     message: string;
     /**
@@ -157,45 +304,106 @@ export type AgentRequest = {
     history?: Array<AgentMessage>;
     /**
      * Context
-     * Additional context for analysis (e.g., include_schema, limit_results)
+     * Additional context for analysis (e.g., enable_rag, include_schema)
      */
     context?: {
         [key: string]: unknown;
     } | null;
     /**
+     * Execution mode
+     */
+    mode?: AgentMode | null;
+    /**
+     * Agent Type
+     * Specific agent type to use (optional)
+     */
+    agent_type?: string | null;
+    /**
+     * Criteria for agent selection
+     */
+    selection_criteria?: SelectionCriteria | null;
+    /**
      * Force Extended Analysis
-     * Force extended analysis mode with comprehensive research (like Claude Desktop's deep research)
+     * Force extended analysis mode with comprehensive research
      */
     force_extended_analysis?: boolean;
+    /**
+     * Enable Rag
+     * Enable RAG context enrichment
+     */
+    enable_rag?: boolean;
+    /**
+     * Stream
+     * Enable streaming response
+     */
+    stream?: boolean;
 };
 
 /**
  * AgentResponse
- * Response model for financial agent interactions.
+ * Response model for agent interactions.
  */
 export type AgentResponse = {
     /**
-     * Response
-     * Financial analysis response
+     * Content
+     * The agent's response content
      */
-    response: string;
+    content: string;
+    /**
+     * Agent Used
+     * The agent type that handled the request
+     */
+    agent_used: string;
+    /**
+     * The execution mode used
+     */
+    mode_used: AgentMode;
     /**
      * Metadata
-     * Analysis metadata (e.g., analysis_type, graph_id)
+     * Response metadata including routing info
      */
     metadata?: {
         [key: string]: unknown;
     } | null;
     /**
+     * Tokens Used
+     * Token usage statistics
+     */
+    tokens_used?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Confidence Score
+     * Confidence score of the response
+     */
+    confidence_score?: number | null;
+    /**
      * Operation Id
-     * SSE operation ID for monitoring extended analysis via /v1/operations/{operation_id}/stream
+     * Operation ID for SSE monitoring
      */
     operation_id?: string | null;
     /**
      * Is Partial
-     * Whether this is a partial response with more analysis coming
+     * Whether this is a partial response
      */
     is_partial?: boolean;
+    /**
+     * Error Details
+     * Error details if any
+     */
+    error_details?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Execution Time
+     * Execution time in seconds
+     */
+    execution_time?: number | null;
+    /**
+     * Timestamp
+     * Response timestamp
+     */
+    timestamp?: string;
 };
 
 /**
@@ -217,9 +425,9 @@ export type AuthResponse = {
     message: string;
     /**
      * Token
-     * JWT authentication token
+     * JWT authentication token (optional for cookie-based auth)
      */
-    token: string;
+    token?: string | null;
 };
 
 /**
@@ -454,6 +662,45 @@ export type BackupStatsResponse = {
     backup_formats: {
         [key: string]: number;
     };
+};
+
+/**
+ * BatchAgentRequest
+ * Request for batch processing multiple queries.
+ */
+export type BatchAgentRequest = {
+    /**
+     * Queries
+     * List of queries to process
+     */
+    queries: Array<AgentRequest>;
+    /**
+     * Parallel
+     * Process queries in parallel
+     */
+    parallel?: boolean;
+};
+
+/**
+ * BatchAgentResponse
+ * Response for batch processing.
+ */
+export type BatchAgentResponse = {
+    /**
+     * Results
+     * List of agent responses
+     */
+    results: Array<AgentResponse>;
+    /**
+     * Total Execution Time
+     * Total execution time
+     */
+    total_execution_time: number;
+    /**
+     * Parallel Processed
+     * Whether queries were processed in parallel
+     */
+    parallel_processed: boolean;
 };
 
 /**
@@ -834,12 +1081,12 @@ export type CreditSummary = {
      * Last Allocation Date
      * Last allocation date (ISO format)
      */
-    last_allocation_date?: string;
+    last_allocation_date?: string | null;
     /**
      * Next Allocation Date
      * Next allocation date (ISO format)
      */
-    next_allocation_date?: string;
+    next_allocation_date?: string | null;
     /**
      * Is Active
      * Whether credit pool is active
@@ -908,7 +1155,7 @@ export type CreditsSummaryResponse = {
      */
     credits_by_addon?: Array<{
         [key: string]: unknown;
-    }>;
+    }> | null;
     /**
      * Addon Count
      * Number of active add-ons
@@ -918,7 +1165,7 @@ export type CreditsSummaryResponse = {
 
 /**
  * CustomSchemaDefinition
- * Custom schema definition for user-defined graphs.
+ * Custom schema definition for custom graphs.
  */
 export type CustomSchemaDefinition = {
     /**
@@ -1978,11 +2225,11 @@ export type RepositoryCreditsResponse = {
      * Message
      * Access message
      */
-    message?: string;
+    message?: string | null;
     /**
      * Credit summary if access available
      */
-    credits?: CreditSummary;
+    credits?: CreditSummary | null;
 };
 
 /**
@@ -2319,6 +2566,37 @@ export type SchemaValidationResponse = {
     compatibility?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * SelectionCriteria
+ * Criteria for agent selection.
+ */
+export type SelectionCriteria = {
+    /**
+     * Min Confidence
+     * Minimum confidence score
+     */
+    min_confidence?: number;
+    /**
+     * Required Capabilities
+     * Required agent capabilities
+     */
+    required_capabilities?: Array<string>;
+    /**
+     * Preferred execution mode
+     */
+    preferred_mode?: AgentMode | null;
+    /**
+     * Max Response Time
+     * Maximum response time in seconds
+     */
+    max_response_time?: number;
+    /**
+     * Excluded Agents
+     * Agents to exclude from selection
+     */
+    excluded_agents?: Array<string>;
 };
 
 /**
@@ -4301,224 +4579,6 @@ export type GetRepositoryCreditsResponses = {
 
 export type GetRepositoryCreditsResponse = GetRepositoryCreditsResponses[keyof GetRepositoryCreditsResponses];
 
-export type ListConnectionsData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Entity Id
-         * Filter by entity ID
-         */
-        entity_id?: string | null;
-        /**
-         * Provider
-         * Filter by provider type
-         */
-        provider?: ('sec' | 'quickbooks' | 'plaid') | null;
-    };
-    url: '/v1/{graph_id}/connections';
-};
-
-export type ListConnectionsErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to list connections
-     */
-    500: ErrorResponse;
-};
-
-export type ListConnectionsError = ListConnectionsErrors[keyof ListConnectionsErrors];
-
-export type ListConnectionsResponses = {
-    /**
-     * Response Listconnections
-     * Connections retrieved successfully
-     */
-    200: Array<ConnectionResponse>;
-};
-
-export type ListConnectionsResponse = ListConnectionsResponses[keyof ListConnectionsResponses];
-
-export type CreateConnectionData = {
-    body: CreateConnectionRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/connections';
-};
-
-export type CreateConnectionErrors = {
-    /**
-     * Invalid connection configuration
-     */
-    400: ErrorResponse;
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Connection already exists
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to create connection
-     */
-    500: ErrorResponse;
-};
-
-export type CreateConnectionError = CreateConnectionErrors[keyof CreateConnectionErrors];
-
-export type CreateConnectionResponses = {
-    /**
-     * Connection created successfully
-     */
-    201: ConnectionResponse;
-};
-
-export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateConnectionResponses];
-
-export type DeleteConnectionData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         * Connection identifier
-         */
-        connection_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/connections/{connection_id}';
-};
-
-export type DeleteConnectionErrors = {
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to delete connection
-     */
-    500: ErrorResponse;
-};
-
-export type DeleteConnectionError = DeleteConnectionErrors[keyof DeleteConnectionErrors];
-
-export type DeleteConnectionResponses = {
-    /**
-     * Connection deleted successfully
-     */
-    200: SuccessResponse;
-};
-
-export type DeleteConnectionResponse = DeleteConnectionResponses[keyof DeleteConnectionResponses];
-
-export type GetConnectionData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         * Unique connection identifier
-         */
-        connection_id: string;
-    };
-    query?: never;
-    url: '/v1/{graph_id}/connections/{connection_id}';
-};
-
-export type GetConnectionErrors = {
-    /**
-     * Access denied to connection
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve connection
-     */
-    500: ErrorResponse;
-};
-
-export type GetConnectionError = GetConnectionErrors[keyof GetConnectionErrors];
-
-export type GetConnectionResponses = {
-    /**
-     * Connection details retrieved successfully
-     */
-    200: ConnectionResponse;
-};
-
-export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionResponses];
-
 export type GetConnectionOptionsData = {
     body?: never;
     headers?: {
@@ -4565,7 +4625,7 @@ export type GetConnectionOptionsResponses = {
 export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof GetConnectionOptionsResponses];
 
 export type SyncConnectionData = {
-    body?: SyncConnectionRequest;
+    body: SyncConnectionRequest;
     headers?: {
         /**
          * Authorization
@@ -4808,7 +4868,225 @@ export type OauthCallbackResponses = {
     200: unknown;
 };
 
-export type QueryFinancialAgentData = {
+export type ListConnectionsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Entity Id
+         * Filter by entity ID
+         */
+        entity_id?: string | null;
+        /**
+         * Provider
+         * Filter by provider type
+         */
+        provider?: ('sec' | 'quickbooks' | 'plaid') | null;
+    };
+    url: '/v1/{graph_id}/connections';
+};
+
+export type ListConnectionsErrors = {
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to list connections
+     */
+    500: ErrorResponse;
+};
+
+export type ListConnectionsError = ListConnectionsErrors[keyof ListConnectionsErrors];
+
+export type ListConnectionsResponses = {
+    /**
+     * Response Listconnections
+     * Connections retrieved successfully
+     */
+    200: Array<ConnectionResponse>;
+};
+
+export type ListConnectionsResponse = ListConnectionsResponses[keyof ListConnectionsResponses];
+
+export type CreateConnectionData = {
+    body: CreateConnectionRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/connections';
+};
+
+export type CreateConnectionErrors = {
+    /**
+     * Invalid connection configuration
+     */
+    400: ErrorResponse;
+    /**
+     * Access denied - admin role required
+     */
+    403: ErrorResponse;
+    /**
+     * Connection already exists
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to create connection
+     */
+    500: ErrorResponse;
+};
+
+export type CreateConnectionError = CreateConnectionErrors[keyof CreateConnectionErrors];
+
+export type CreateConnectionResponses = {
+    /**
+     * Connection created successfully
+     */
+    201: ConnectionResponse;
+};
+
+export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateConnectionResponses];
+
+export type DeleteConnectionData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * Connection Id
+         * Connection identifier
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/connections/{connection_id}';
+};
+
+export type DeleteConnectionErrors = {
+    /**
+     * Access denied - admin role required
+     */
+    403: ErrorResponse;
+    /**
+     * Connection not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to delete connection
+     */
+    500: ErrorResponse;
+};
+
+export type DeleteConnectionError = DeleteConnectionErrors[keyof DeleteConnectionErrors];
+
+export type DeleteConnectionResponses = {
+    /**
+     * Connection deleted successfully
+     */
+    200: SuccessResponse;
+};
+
+export type DeleteConnectionResponse = DeleteConnectionResponses[keyof DeleteConnectionResponses];
+
+export type GetConnectionData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * Connection Id
+         * Unique connection identifier
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/connections/{connection_id}';
+};
+
+export type GetConnectionErrors = {
+    /**
+     * Access denied to connection
+     */
+    403: ErrorResponse;
+    /**
+     * Connection not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to retrieve connection
+     */
+    500: ErrorResponse;
+};
+
+export type GetConnectionError = GetConnectionErrors[keyof GetConnectionErrors];
+
+export type GetConnectionResponses = {
+    /**
+     * Connection details retrieved successfully
+     */
+    200: ConnectionResponse;
+};
+
+export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionResponses];
+
+export type AutoSelectAgentData = {
     body: AgentRequest;
     headers?: {
         /**
@@ -4826,39 +5104,281 @@ export type QueryFinancialAgentData = {
     url: '/v1/{graph_id}/agent';
 };
 
-export type QueryFinancialAgentErrors = {
+export type AutoSelectAgentErrors = {
     /**
      * Invalid request parameters
      */
-    400: ErrorResponse;
+    400: unknown;
     /**
-     * Insufficient credits for AI analysis
+     * Insufficient credits for selected agent
      */
-    402: ErrorResponse;
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
+    402: unknown;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Internal server error during analysis
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
 
-export type QueryFinancialAgentError = QueryFinancialAgentErrors[keyof QueryFinancialAgentErrors];
+export type AutoSelectAgentError = AutoSelectAgentErrors[keyof AutoSelectAgentErrors];
 
-export type QueryFinancialAgentResponses = {
+export type AutoSelectAgentResponses = {
     /**
-     * Successful financial analysis
+     * Query successfully processed by selected agent
      */
     200: AgentResponse;
 };
 
-export type QueryFinancialAgentResponse = QueryFinancialAgentResponses[keyof QueryFinancialAgentResponses];
+export type AutoSelectAgentResponse = AutoSelectAgentResponses[keyof AutoSelectAgentResponses];
+
+export type ExecuteSpecificAgentData = {
+    body: AgentRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Agent Type
+         */
+        agent_type: string;
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/agent/{agent_type}';
+};
+
+export type ExecuteSpecificAgentErrors = {
+    /**
+     * Invalid agent type or request parameters
+     */
+    400: unknown;
+    /**
+     * Insufficient credits for specified agent
+     */
+    402: unknown;
+    /**
+     * Agent type not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ExecuteSpecificAgentError = ExecuteSpecificAgentErrors[keyof ExecuteSpecificAgentErrors];
+
+export type ExecuteSpecificAgentResponses = {
+    /**
+     * Query successfully processed by specified agent
+     */
+    200: AgentResponse;
+};
+
+export type ExecuteSpecificAgentResponse = ExecuteSpecificAgentResponses[keyof ExecuteSpecificAgentResponses];
+
+export type BatchProcessQueriesData = {
+    body: BatchAgentRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/agent/batch';
+};
+
+export type BatchProcessQueriesErrors = {
+    /**
+     * Invalid batch request or too many queries
+     */
+    400: unknown;
+    /**
+     * Insufficient credits for batch processing
+     */
+    402: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error during batch processing
+     */
+    500: unknown;
+};
+
+export type BatchProcessQueriesError = BatchProcessQueriesErrors[keyof BatchProcessQueriesErrors];
+
+export type BatchProcessQueriesResponses = {
+    /**
+     * Batch processing completed successfully
+     */
+    200: BatchAgentResponse;
+};
+
+export type BatchProcessQueriesResponse = BatchProcessQueriesResponses[keyof BatchProcessQueriesResponses];
+
+export type ListAgentsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Capability
+         * Filter by capability (e.g., 'financial_analysis', 'rag_search')
+         */
+        capability?: string | null;
+    };
+    url: '/v1/{graph_id}/agent/list';
+};
+
+export type ListAgentsErrors = {
+    /**
+     * Unauthorized - Invalid or missing authentication
+     */
+    401: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListAgentsError = ListAgentsErrors[keyof ListAgentsErrors];
+
+export type ListAgentsResponses = {
+    /**
+     * List of agents retrieved successfully
+     */
+    200: AgentListResponse;
+};
+
+export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
+
+export type GetAgentMetadataData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * Agent Type
+         * Agent type identifier (e.g., 'financial', 'research', 'rag')
+         */
+        agent_type: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/agent/{agent_type}/metadata';
+};
+
+export type GetAgentMetadataErrors = {
+    /**
+     * Agent type not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetAgentMetadataError = GetAgentMetadataErrors[keyof GetAgentMetadataErrors];
+
+export type GetAgentMetadataResponses = {
+    /**
+     * Agent metadata retrieved successfully
+     */
+    200: AgentMetadataResponse;
+};
+
+export type GetAgentMetadataResponse = GetAgentMetadataResponses[keyof GetAgentMetadataResponses];
+
+export type RecommendAgentData = {
+    body: AgentRecommendationRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/{graph_id}/agent/recommend';
+};
+
+export type RecommendAgentErrors = {
+    /**
+     * Invalid recommendation request
+     */
+    400: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RecommendAgentError = RecommendAgentErrors[keyof RecommendAgentErrors];
+
+export type RecommendAgentResponses = {
+    /**
+     * Recommendations generated successfully
+     */
+    200: AgentRecommendationResponse;
+};
+
+export type RecommendAgentResponse = RecommendAgentResponses[keyof RecommendAgentResponses];
 
 export type ListMcpToolsData = {
     body?: never;
@@ -6045,7 +6565,7 @@ export type CheckCreditBalanceData = {
          * Base Cost
          * Custom base cost (uses default if not provided)
          */
-        base_cost?: number | null;
+        base_cost?: number | string | null;
     };
     url: '/v1/{graph_id}/credits/balance/check';
 };
@@ -6411,7 +6931,7 @@ export type CreateSubgraphResponses = {
 export type CreateSubgraphResponse = CreateSubgraphResponses[keyof CreateSubgraphResponses];
 
 export type DeleteSubgraphData = {
-    body?: DeleteSubgraphRequest;
+    body: DeleteSubgraphRequest;
     headers?: {
         /**
          * Authorization

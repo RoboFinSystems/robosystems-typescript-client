@@ -4,7 +4,7 @@
     {
       "label": "Generate SDK",
       "type": "shell",
-      "command": "npm run generate",
+      "command": "ROBOSYSTEMS_API_URL=${input:apiUrl} npm run generate",
       "problemMatcher": []
     },
     {
@@ -114,5 +114,11 @@
       "default": "true",
       "options": ["true", "false"]
     },
+    {
+      "id": "apiUrl",
+      "type": "promptString",
+      "description": "Enter API URL for SDK generation:",
+      "default": "http://localhost:8000"
+    }
   ]
 }
