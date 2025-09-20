@@ -1,4 +1,4 @@
-name: Claude Create PR
+name: Create Claude PR
 
 on:
   workflow_dispatch:
