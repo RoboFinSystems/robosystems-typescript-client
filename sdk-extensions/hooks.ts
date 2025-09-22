@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { client } from '../sdk/client.gen'
 import type { S3CopyRequest } from '../sdk/types.gen'
-import { getSDKExtensionsConfig } from './config'
+import { extractTokenFromSDKClient, getSDKExtensionsConfig } from './config'
 import type { CopyOptions, CopyResult } from './CopyClient'
 import { CopyClient } from './CopyClient'
 import type { OperationProgress, OperationResult } from './OperationClient'
@@ -40,10 +40,15 @@ export function useQuery(graphId: string) {
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
+
+    // Extract JWT token (uses centralized logic)
+    const token = extractTokenFromSDKClient()
+
     clientRef.current = new QueryClient({
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
+      token,
     })
 
     return () => {
@@ -140,6 +145,7 @@ export function useStreamingQuery(graphId: string) {
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
+      token: sdkConfig.token,
     })
 
     return () => {
@@ -229,9 +235,14 @@ export function useOperation<T = any>(operationId?: string) {
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
+
+    // Extract JWT token (uses centralized logic)
+    const token = extractTokenFromSDKClient()
+
     clientRef.current = new OperationClient({
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
+      token,
       maxRetries: sdkConfig.maxRetries,
       retryDelay: sdkConfig.retryDelay,
     })
@@ -337,9 +348,14 @@ export function useMultipleOperations<T = any>() {
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
+
+    // Extract JWT token (uses centralized logic)
+    const token = extractTokenFromSDKClient()
+
     clientRef.current = new OperationClient({
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
+      token,
       maxRetries: sdkConfig.maxRetries,
       retryDelay: sdkConfig.retryDelay,
     })
@@ -419,10 +435,15 @@ export function useSDKClients() {
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
+
+    // Extract JWT token (uses centralized logic)
+    const token = extractTokenFromSDKClient()
+
     const baseConfig = {
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
+      token,
     }
 
     const copyClient = new CopyClient(baseConfig)
@@ -478,10 +499,15 @@ export function useCopy(graphId: string) {
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
+
+    // Extract JWT token (uses centralized logic)
+    const token = extractTokenFromSDKClient()
+
     clientRef.current = new CopyClient({
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
+      token,
     })
 
     return () => {

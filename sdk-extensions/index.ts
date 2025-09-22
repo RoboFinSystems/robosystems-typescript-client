@@ -4,6 +4,7 @@
  */
 
 import { client } from '../sdk/client.gen'
+import { extractTokenFromSDKClient } from './config'
 import { CopyClient } from './CopyClient'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
@@ -12,23 +13,40 @@ import { SSEClient } from './SSEClient'
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
   credentials?: 'include' | 'same-origin' | 'omit'
+  token?: string // JWT token for authentication
+  headers?: Record<string, string>
   maxRetries?: number
   retryDelay?: number
+}
+
+// Properly typed configuration interface
+interface ResolvedConfig {
+  baseUrl: string
+  credentials: 'include' | 'same-origin' | 'omit'
+  token?: string
+  headers?: Record<string, string>
+  maxRetries: number
+  retryDelay: number
 }
 
 export class RoboSystemsExtensions {
   public readonly copy: CopyClient
   public readonly query: QueryClient
   public readonly operations: OperationClient
-  private config: Required<RoboSystemsExtensionConfig>
+  private config: ResolvedConfig
 
   constructor(config: RoboSystemsExtensionConfig = {}) {
     // Get base URL from SDK client config or use provided/default
     const sdkConfig = client.getConfig()
 
+    // Extract JWT token using centralized logic
+    const token = config.token || extractTokenFromSDKClient()
+
     this.config = {
       baseUrl: config.baseUrl || sdkConfig.baseUrl || 'http://localhost:8000',
       credentials: config.credentials || 'include',
+      token,
+      headers: config.headers,
       maxRetries: config.maxRetries || 5,
       retryDelay: config.retryDelay || 1000,
     }
@@ -36,16 +54,23 @@ export class RoboSystemsExtensions {
     this.copy = new CopyClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
     })
 
     this.query = new QueryClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
     })
 
     this.operations = new OperationClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
+      token: this.config.token,
+      maxRetries: this.config.maxRetries,
+      retryDelay: this.config.retryDelay,
     })
   }
 
@@ -63,6 +88,8 @@ export class RoboSystemsExtensions {
     return new SSEClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
       maxRetries: this.config.maxRetries,
       retryDelay: this.config.retryDelay,
     })

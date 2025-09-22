@@ -47,12 +47,14 @@ export class QueryClient {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
+    token?: string // JWT token for authentication
   }
 
   constructor(config: {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
+    token?: string // JWT token for authentication
   }) {
     this.config = config
   }
@@ -72,6 +74,7 @@ export class QueryClient {
       query: {
         mode: options.mode,
         test_mode: options.testMode,
+        token: this.config.token, // Pass JWT token for SSE authentication
       },
     }
 

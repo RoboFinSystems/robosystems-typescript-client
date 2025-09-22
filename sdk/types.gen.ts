@@ -3985,7 +3985,13 @@ export type GetCurrentUserData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user';
 };
 
@@ -4016,7 +4022,13 @@ export type UpdateUserData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user';
 };
 
@@ -4047,7 +4059,13 @@ export type GetUserGraphsData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/graphs';
 };
 
@@ -4083,7 +4101,13 @@ export type SelectUserGraphData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/graphs/{graph_id}/select';
 };
 
@@ -4126,7 +4150,13 @@ export type GetAllCreditSummariesData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/credits';
 };
 
@@ -4164,7 +4194,13 @@ export type UpdateUserPasswordData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/password';
 };
 
@@ -4207,7 +4243,13 @@ export type ListUserApiKeysData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/api-keys';
 };
 
@@ -4238,7 +4280,13 @@ export type CreateUserApiKeyData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/api-keys';
 };
 
@@ -4274,7 +4322,13 @@ export type RevokeUserApiKeyData = {
          */
         api_key_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/api-keys/{api_key_id}';
 };
 
@@ -4318,7 +4372,13 @@ export type UpdateUserApiKeyData = {
          */
         api_key_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/api-keys/{api_key_id}';
 };
 
@@ -4349,7 +4409,13 @@ export type GetUserLimitsData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/limits';
 };
 
@@ -4384,7 +4450,13 @@ export type GetUserUsageData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/limits/usage';
 };
 
@@ -4415,7 +4487,13 @@ export type GetAllSharedRepositoryLimitsData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/limits/shared-repositories/summary';
 };
 
@@ -4455,7 +4533,13 @@ export type GetSharedRepositoryLimitsData = {
          */
         repository: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/limits/shared-repositories/{repository}';
 };
 
@@ -4489,7 +4573,13 @@ export type GetUserUsageOverviewData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/analytics/overview';
 };
 
@@ -4531,6 +4621,11 @@ export type GetDetailedUserAnalyticsData = {
          * Include recent activity
          */
         include_recent_activity?: boolean;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/user/analytics/detailed';
 };
@@ -4568,6 +4663,11 @@ export type GetUserSharedSubscriptionsData = {
          * Only return active subscriptions
          */
         active_only?: boolean;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/user/subscriptions/shared-repositories';
 };
@@ -4607,7 +4707,13 @@ export type SubscribeToSharedRepositoryData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/subscriptions/shared-repositories/subscribe';
 };
 
@@ -4655,7 +4761,13 @@ export type UpgradeSharedRepositorySubscriptionData = {
          */
         subscription_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/subscriptions/shared-repositories/{subscription_id}/upgrade';
 };
 
@@ -4705,7 +4817,13 @@ export type CancelSharedRepositorySubscriptionData = {
          */
         subscription_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/subscriptions/shared-repositories/{subscription_id}';
 };
 
@@ -4748,7 +4866,13 @@ export type GetSharedRepositoryCreditsData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/subscriptions/shared-repositories/credits';
 };
 
@@ -4792,7 +4916,13 @@ export type GetRepositoryCreditsData = {
          */
         repository: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/user/subscriptions/shared-repositories/credits/{repository}';
 };
 
@@ -4837,7 +4967,13 @@ export type GetConnectionOptionsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/options';
 };
 
@@ -4887,7 +5023,13 @@ export type SyncConnectionData = {
          */
         connection_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/{connection_id}/sync';
 };
 
@@ -4939,7 +5081,13 @@ export type CreateLinkTokenData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/link/token';
 };
 
@@ -4986,7 +5134,13 @@ export type ExchangeLinkTokenData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/link/exchange';
 };
 
@@ -5033,7 +5187,13 @@ export type InitOAuthData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/oauth/init';
 };
 
@@ -5075,7 +5235,13 @@ export type OauthCallbackData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/oauth/callback/{provider}';
 };
 
@@ -5137,6 +5303,11 @@ export type ListConnectionsData = {
          * Filter by provider type
          */
         provider?: ('sec' | 'quickbooks' | 'plaid') | null;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/connections';
 };
@@ -5183,7 +5354,13 @@ export type CreateConnectionData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections';
 };
 
@@ -5241,7 +5418,13 @@ export type DeleteConnectionData = {
          */
         connection_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/{connection_id}';
 };
 
@@ -5295,7 +5478,13 @@ export type GetConnectionData = {
          */
         connection_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/connections/{connection_id}';
 };
 
@@ -5343,7 +5532,13 @@ export type AutoSelectAgentData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/agent';
 };
 
@@ -5399,7 +5594,13 @@ export type ExecuteSpecificAgentData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/agent/{agent_type}';
 };
 
@@ -5455,7 +5656,13 @@ export type BatchProcessQueriesData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/agent/batch';
 };
 
@@ -5510,6 +5717,11 @@ export type ListAgentsData = {
          * Filter by capability (e.g., 'financial_analysis', 'rag_search')
          */
         capability?: string | null;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/agent/list';
 };
@@ -5556,7 +5768,13 @@ export type GetAgentMetadataData = {
          */
         agent_type: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/agent/{agent_type}/metadata';
 };
 
@@ -5597,7 +5815,13 @@ export type RecommendAgentData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/agent/recommend';
 };
 
@@ -5638,7 +5862,13 @@ export type ListMcpToolsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/mcp/tools';
 };
 
@@ -5694,6 +5924,11 @@ export type CallMcpToolData = {
          * Enable test mode for debugging
          */
         test_mode?: boolean;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/mcp/call-tool';
 };
@@ -5772,6 +6007,11 @@ export type ListBackupsData = {
          * Number of backups to skip
          */
         offset?: number;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/backups';
 };
@@ -5809,7 +6049,13 @@ export type CreateBackupData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/backups';
 };
 
@@ -5865,7 +6111,13 @@ export type ExportBackupData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/backups/{backup_id}/export';
 };
 
@@ -5919,6 +6171,11 @@ export type GetBackupDownloadUrlData = {
          * URL expiration time in seconds
          */
         expires_in?: number;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/backups/{backup_id}/download';
 };
@@ -5971,7 +6228,13 @@ export type RestoreBackupData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/backups/restore';
 };
 
@@ -6022,7 +6285,13 @@ export type GetBackupStatsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/backups/stats';
 };
 
@@ -6059,7 +6328,13 @@ export type GetGraphMetricsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/analytics';
 };
 
@@ -6114,6 +6389,11 @@ export type GetGraphUsageStatsData = {
          * Include detailed metrics (may be slower)
          */
         include_details?: boolean;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/analytics/usage';
 };
@@ -6175,6 +6455,11 @@ export type ExecuteCypherQueryData = {
          * Enable test mode for better debugging
          */
         test_mode?: boolean;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/query';
 };
@@ -6238,7 +6523,13 @@ export type GetGraphSchemaInfoData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/schema/info';
 };
 
@@ -6289,7 +6580,13 @@ export type ValidateSchemaData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/schema/validate';
 };
 
@@ -6349,6 +6646,11 @@ export type ExportGraphSchemaData = {
          * Include statistics about actual data in the graph
          */
         include_data_stats?: boolean;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/schema/export';
 };
@@ -6386,7 +6688,13 @@ export type ListSchemaExtensionsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/schema/extensions';
 };
 
@@ -6426,7 +6734,13 @@ export type GetCurrentGraphBillData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/billing/current';
 };
 
@@ -6489,6 +6803,11 @@ export type GetGraphUsageDetailsData = {
          * Month (defaults to current)
          */
         month?: number | null;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/billing/usage';
 };
@@ -6551,6 +6870,11 @@ export type GetGraphBillingHistoryData = {
          * Number of months to retrieve (1-24)
          */
         months?: number;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/billing/history';
 };
@@ -6613,7 +6937,13 @@ export type GetGraphMonthlyBillData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/billing/history/{year}/{month}';
 };
 
@@ -6669,7 +6999,13 @@ export type GetCreditSummaryData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/credits/summary';
 };
 
@@ -6749,6 +7085,11 @@ export type ListCreditTransactionsData = {
          * Number of transactions to skip
          */
         offset?: number;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/credits/transactions';
 };
@@ -6809,6 +7150,11 @@ export type CheckCreditBalanceData = {
          * Custom base cost (uses default if not provided)
          */
         base_cost?: number | string | null;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/credits/balance/check';
 };
@@ -6867,6 +7213,11 @@ export type GetStorageUsageData = {
          * Number of days of history to return
          */
         days?: number;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/{graph_id}/credits/storage/usage';
 };
@@ -6915,7 +7266,13 @@ export type CheckStorageLimitsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/credits/storage/limits';
 };
 
@@ -6964,7 +7321,13 @@ export type GetDatabaseHealthData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/health';
 };
 
@@ -7013,7 +7376,13 @@ export type GetDatabaseInfoData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/info';
 };
 
@@ -7062,7 +7431,13 @@ export type GetGraphLimitsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/limits';
 };
 
@@ -7114,7 +7489,13 @@ export type ListSubgraphsData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/subgraphs';
 };
 
@@ -7151,7 +7532,13 @@ export type CreateSubgraphData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/subgraphs';
 };
 
@@ -7193,7 +7580,13 @@ export type DeleteSubgraphData = {
          */
         subgraph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/subgraphs/{subgraph_id}';
 };
 
@@ -7259,7 +7652,13 @@ export type GetSubgraphInfoData = {
          */
         subgraph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/subgraphs/{subgraph_id}/info';
 };
 
@@ -7316,7 +7715,13 @@ export type GetSubgraphQuotaData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/subgraphs/quota';
 };
 
@@ -7372,7 +7777,13 @@ export type CopyDataToGraphData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/{graph_id}/copy';
 };
 
@@ -7431,7 +7842,13 @@ export type CreateGraphData = {
         authorization?: string | null;
     };
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/create/graph';
 };
 
@@ -7511,6 +7928,11 @@ export type StreamOperationEventsData = {
          * Start streaming from this sequence number (0 = from beginning)
          */
         from_sequence?: number;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
     };
     url: '/v1/operations/{operation_id}/stream';
 };
@@ -7558,7 +7980,13 @@ export type GetOperationStatusData = {
          */
         operation_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/operations/{operation_id}/status';
 };
 
@@ -7610,7 +8038,13 @@ export type CancelOperationData = {
          */
         operation_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
     url: '/v1/operations/{operation_id}';
 };
 

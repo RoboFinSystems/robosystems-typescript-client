@@ -3,12 +3,26 @@
 /**
  * Core SSE (Server-Sent Events) client for RoboSystems API
  * Provides automatic reconnection, event replay, and type-safe event handling
+ *
+ * SECURITY NOTE: When using JWT authentication, tokens are passed as query parameters
+ * due to EventSource API limitations. This means tokens may appear in:
+ * - Server access logs
+ * - Proxy logs
+ * - Browser history
+ * - Referer headers
+ *
+ * For production environments with sensitive data, consider:
+ * - Using cookie-based authentication instead
+ * - Implementing a WebSocket-based alternative
+ * - Using short-lived tokens that expire quickly
+ * - Ensuring all connections use HTTPS
  */
 
 export interface SSEConfig {
   baseUrl: string
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: Record<string, string>
+  token?: string // JWT token for authentication
   maxRetries?: number
   retryDelay?: number
   heartbeatInterval?: number
@@ -53,7 +67,14 @@ export class SSEClient {
 
   async connect(operationId: string, fromSequence: number = 0): Promise<void> {
     return new Promise((resolve, reject) => {
-      const url = `${this.config.baseUrl}/v1/operations/${operationId}/stream?from_sequence=${fromSequence}`
+      let url = `${this.config.baseUrl}/v1/operations/${operationId}/stream?from_sequence=${fromSequence}`
+
+      // Add JWT token as query parameter if provided
+      // WARNING: EventSource API doesn't support custom headers, so tokens are passed via query param
+      // This has security implications - see class documentation
+      if (this.config.token) {
+        url += `&token=${encodeURIComponent(this.config.token)}`
+      }
 
       this.eventSource = new EventSource(url, {
         withCredentials: this.config.credentials === 'include',

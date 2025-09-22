@@ -34,6 +34,7 @@ export class OperationClient {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
+    token?: string // JWT token for authentication
     maxRetries?: number
     retryDelay?: number
   }
@@ -44,6 +45,7 @@ export class OperationClient {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
+    token?: string // JWT token for authentication
     maxRetries?: number
     retryDelay?: number
   }) {
