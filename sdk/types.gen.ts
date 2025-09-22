@@ -1502,6 +1502,18 @@ export type DetailedTransactionsResponse = {
 };
 
 /**
+ * EmailVerificationRequest
+ * Email verification request model.
+ */
+export type EmailVerificationRequest = {
+    /**
+     * Token
+     * Email verification token from email link
+     */
+    token: string;
+};
+
+/**
  * EnhancedCreditTransactionResponse
  * Enhanced credit transaction response with more details.
  */
@@ -1602,6 +1614,18 @@ export type ExchangeTokenRequest = {
     metadata?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * ForgotPasswordRequest
+ * Forgot password request model.
+ */
+export type ForgotPasswordRequest = {
+    /**
+     * Email
+     * Email address to send reset link
+     */
+    email: string;
 };
 
 /**
@@ -2243,6 +2267,40 @@ export type RepositoryPlan = 'starter' | 'advanced' | 'unlimited';
  * Types of shared repositories.
  */
 export type RepositoryType = 'sec' | 'industry' | 'economic';
+
+/**
+ * ResetPasswordRequest
+ * Reset password request model.
+ */
+export type ResetPasswordRequest = {
+    /**
+     * Token
+     * Password reset token from email link
+     */
+    token: string;
+    /**
+     * New Password
+     * New password (must meet security requirements)
+     */
+    new_password: string;
+};
+
+/**
+ * ResetPasswordValidateResponse
+ * Password reset token validation response model.
+ */
+export type ResetPasswordValidateResponse = {
+    /**
+     * Valid
+     * Whether the token is valid
+     */
+    valid: boolean;
+    /**
+     * Email
+     * Masked email address if token is valid
+     */
+    email?: string | null;
+};
 
 /**
  * ResponseMode
@@ -3449,6 +3507,12 @@ export type LoginUserResponse = LoginUserResponses[keyof LoginUserResponses];
 
 export type LogoutUserData = {
     body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
     path?: never;
     query?: never;
     url: '/v1/auth/logout';
@@ -3513,14 +3577,20 @@ export type GetCurrentAuthUserResponses = {
 
 export type GetCurrentAuthUserResponse = GetCurrentAuthUserResponses[keyof GetCurrentAuthUserResponses];
 
-export type RefreshSessionData = {
+export type RefreshAuthSessionData = {
     body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
     path?: never;
     query?: never;
     url: '/v1/auth/refresh';
 };
 
-export type RefreshSessionErrors = {
+export type RefreshAuthSessionErrors = {
     /**
      * Not authenticated
      */
@@ -3531,19 +3601,233 @@ export type RefreshSessionErrors = {
     422: HttpValidationError;
 };
 
-export type RefreshSessionError = RefreshSessionErrors[keyof RefreshSessionErrors];
+export type RefreshAuthSessionError = RefreshAuthSessionErrors[keyof RefreshAuthSessionErrors];
 
-export type RefreshSessionResponses = {
+export type RefreshAuthSessionResponses = {
     /**
      * Successful Response
      */
     200: AuthResponse;
 };
 
-export type RefreshSessionResponse = RefreshSessionResponses[keyof RefreshSessionResponses];
+export type RefreshAuthSessionResponse = RefreshAuthSessionResponses[keyof RefreshAuthSessionResponses];
+
+export type ResendVerificationEmailData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: never;
+    url: '/v1/auth/email/resend';
+};
+
+export type ResendVerificationEmailErrors = {
+    /**
+     * Email already verified
+     */
+    400: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Email service unavailable
+     */
+    503: ErrorResponse;
+};
+
+export type ResendVerificationEmailError = ResendVerificationEmailErrors[keyof ResendVerificationEmailErrors];
+
+export type ResendVerificationEmailResponses = {
+    /**
+     * Response Resendverificationemail
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type ResendVerificationEmailResponse = ResendVerificationEmailResponses[keyof ResendVerificationEmailResponses];
+
+export type VerifyEmailData = {
+    body: EmailVerificationRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/email/verify';
+};
+
+export type VerifyEmailErrors = {
+    /**
+     * Invalid or expired token
+     */
+    400: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type VerifyEmailError = VerifyEmailErrors[keyof VerifyEmailErrors];
+
+export type VerifyEmailResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthResponse;
+};
+
+export type VerifyEmailResponse = VerifyEmailResponses[keyof VerifyEmailResponses];
+
+export type GetPasswordPolicyData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/password/policy';
+};
+
+export type GetPasswordPolicyResponses = {
+    /**
+     * Password policy requirements
+     */
+    200: PasswordPolicyResponse;
+};
+
+export type GetPasswordPolicyResponse = GetPasswordPolicyResponses[keyof GetPasswordPolicyResponses];
+
+export type CheckPasswordStrengthData = {
+    body: PasswordCheckRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/password/check';
+};
+
+export type CheckPasswordStrengthErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CheckPasswordStrengthError = CheckPasswordStrengthErrors[keyof CheckPasswordStrengthErrors];
+
+export type CheckPasswordStrengthResponses = {
+    /**
+     * Password strength analysis
+     */
+    200: PasswordCheckResponse;
+};
+
+export type CheckPasswordStrengthResponse = CheckPasswordStrengthResponses[keyof CheckPasswordStrengthResponses];
+
+export type ForgotPasswordData = {
+    body: ForgotPasswordRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/password/forgot';
+};
+
+export type ForgotPasswordErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+};
+
+export type ForgotPasswordError = ForgotPasswordErrors[keyof ForgotPasswordErrors];
+
+export type ForgotPasswordResponses = {
+    /**
+     * Response Forgotpassword
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type ForgotPasswordResponse = ForgotPasswordResponses[keyof ForgotPasswordResponses];
+
+export type ValidateResetTokenData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Token
+         * Password reset token
+         */
+        token: string;
+    };
+    url: '/v1/auth/password/reset/validate';
+};
+
+export type ValidateResetTokenErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ValidateResetTokenError = ValidateResetTokenErrors[keyof ValidateResetTokenErrors];
+
+export type ValidateResetTokenResponses = {
+    /**
+     * Successful Response
+     */
+    200: ResetPasswordValidateResponse;
+};
+
+export type ValidateResetTokenResponse = ValidateResetTokenResponses[keyof ValidateResetTokenResponses];
+
+export type ResetPasswordData = {
+    body: ResetPasswordRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/password/reset';
+};
+
+export type ResetPasswordErrors = {
+    /**
+     * Invalid token or password
+     */
+    400: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ResetPasswordError = ResetPasswordErrors[keyof ResetPasswordErrors];
+
+export type ResetPasswordResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthResponse;
+};
+
+export type ResetPasswordResponse = ResetPasswordResponses[keyof ResetPasswordResponses];
 
 export type GenerateSsoTokenData = {
     body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
     path?: never;
     query?: never;
     url: '/v1/auth/sso-token';
@@ -3661,47 +3945,6 @@ export type CompleteSsoAuthResponses = {
 };
 
 export type CompleteSsoAuthResponse = CompleteSsoAuthResponses[keyof CompleteSsoAuthResponses];
-
-export type GetPasswordPolicyData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/auth/password/policy';
-};
-
-export type GetPasswordPolicyResponses = {
-    /**
-     * Password policy requirements
-     */
-    200: PasswordPolicyResponse;
-};
-
-export type GetPasswordPolicyResponse = GetPasswordPolicyResponses[keyof GetPasswordPolicyResponses];
-
-export type CheckPasswordStrengthData = {
-    body: PasswordCheckRequest;
-    path?: never;
-    query?: never;
-    url: '/v1/auth/password/check';
-};
-
-export type CheckPasswordStrengthErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CheckPasswordStrengthError = CheckPasswordStrengthErrors[keyof CheckPasswordStrengthErrors];
-
-export type CheckPasswordStrengthResponses = {
-    /**
-     * Password strength analysis
-     */
-    200: PasswordCheckResponse;
-};
-
-export type CheckPasswordStrengthResponse = CheckPasswordStrengthResponses[keyof CheckPasswordStrengthResponses];
 
 export type GetCaptchaConfigData = {
     body?: never;
