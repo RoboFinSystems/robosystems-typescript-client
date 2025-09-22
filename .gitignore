@@ -80,3 +80,7 @@ tmp/
 # Lock files (keep package-lock.json for npm ci)
 yarn.lock
 pnpm-lock.yaml
+
+#AI
+.claude/
+CLAUDE.local.md

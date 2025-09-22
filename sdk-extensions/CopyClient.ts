@@ -53,12 +53,14 @@ export class CopyClient {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
+    token?: string // JWT token for authentication
   }
 
   constructor(config: {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
+    token?: string // JWT token for authentication
   }) {
     this.config = config
   }
@@ -111,6 +113,9 @@ export class CopyClient {
       url: '/v1/{graph_id}/copy' as const,
       path: { graph_id: graphId },
       body: request,
+      query: {
+        token: this.config.token, // Pass JWT token for SSE authentication
+      },
     }
 
     try {
