@@ -8,12 +8,10 @@ Official TypeScript Client for the RoboSystems Financial Knowledge Graph API. Ac
 ## Features
 
 - **Type-safe API client** with full TypeScript types
-- **Auto-generated from OpenAPI** for always up-to-date types
 - **Browser & Node.js support** with different auth strategies
 - **React hooks** for seamless UI integration
-- **Queue handling** for long-running operations
-- **Streaming support** for large datasets
-- **Financial AI Agent** integration
+- **Streaming support** for memory-efficient processing of large result sets
+- **Financial AI Agent** integration for natural language queries
 - **Comprehensive error handling** with typed errors
 
 ## Installation
