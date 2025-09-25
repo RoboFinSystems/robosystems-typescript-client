@@ -110,7 +110,7 @@ export class CopyClient {
     const startTime = Date.now()
 
     const data: CopyDataToGraphData = {
-      url: '/v1/{graph_id}/copy' as const,
+      url: '/v1/graphs/{graph_id}/copy' as const,
       path: { graph_id: graphId },
       body: request,
       query: {
