@@ -36,6 +36,11 @@ export type ApiKeyInfo = {
      */
     last_used_at?: string | null;
     /**
+     * Expires At
+     * Expiration timestamp
+     */
+    expires_at?: string | null;
+    /**
      * Created At
      * Creation timestamp
      */
@@ -937,6 +942,11 @@ export type CreateApiKeyRequest = {
      * Optional description
      */
     description?: string | null;
+    /**
+     * Expires At
+     * Optional expiration date in ISO format (e.g. 2024-12-31T23:59:59Z)
+     */
+    expires_at?: string | null;
 };
 
 /**
@@ -2492,18 +2502,6 @@ export type SsoExchangeResponse = {
 };
 
 /**
- * SSOLoginRequest
- * SSO login request model.
- */
-export type SsoLoginRequest = {
-    /**
-     * Token
-     * Temporary SSO token
-     */
-    token: string;
-};
-
-/**
  * SSOTokenResponse
  * SSO token response model.
  */
@@ -3855,35 +3853,6 @@ export type GenerateSsoTokenResponses = {
 
 export type GenerateSsoTokenResponse = GenerateSsoTokenResponses[keyof GenerateSsoTokenResponses];
 
-export type SsoLoginData = {
-    body: SsoLoginRequest;
-    path?: never;
-    query?: never;
-    url: '/v1/auth/sso-login';
-};
-
-export type SsoLoginErrors = {
-    /**
-     * Invalid SSO token
-     */
-    401: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type SsoLoginError = SsoLoginErrors[keyof SsoLoginErrors];
-
-export type SsoLoginResponses = {
-    /**
-     * Successful Response
-     */
-    200: AuthResponse;
-};
-
-export type SsoLoginResponse = SsoLoginResponses[keyof SsoLoginResponses];
-
 export type SsoTokenExchangeData = {
     body: SsoExchangeRequest;
     path?: never;
@@ -4049,97 +4018,6 @@ export type UpdateUserResponses = {
 };
 
 export type UpdateUserResponse = UpdateUserResponses[keyof UpdateUserResponses];
-
-export type GetUserGraphsData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/user/graphs';
-};
-
-export type GetUserGraphsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetUserGraphsError = GetUserGraphsErrors[keyof GetUserGraphsErrors];
-
-export type GetUserGraphsResponses = {
-    /**
-     * Successful Response
-     */
-    200: UserGraphsResponse;
-};
-
-export type GetUserGraphsResponse = GetUserGraphsResponses[keyof GetUserGraphsResponses];
-
-export type SelectUserGraphData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/user/graphs/{graph_id}/select';
-};
-
-export type SelectUserGraphErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Error selecting graph
-     */
-    500: ErrorResponse;
-};
-
-export type SelectUserGraphError = SelectUserGraphErrors[keyof SelectUserGraphErrors];
-
-export type SelectUserGraphResponses = {
-    /**
-     * Graph selected successfully
-     */
-    200: SuccessResponse;
-};
-
-export type SelectUserGraphResponse = SelectUserGraphResponses[keyof SelectUserGraphResponses];
 
 export type GetAllCreditSummariesData = {
     body?: never;
@@ -4974,7 +4852,7 @@ export type GetConnectionOptionsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/options';
+    url: '/v1/graphs/{graph_id}/connections/options';
 };
 
 export type GetConnectionOptionsErrors = {
@@ -5030,7 +4908,7 @@ export type SyncConnectionData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/{connection_id}/sync';
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
 };
 
 export type SyncConnectionErrors = {
@@ -5088,7 +4966,7 @@ export type CreateLinkTokenData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/link/token';
+    url: '/v1/graphs/{graph_id}/connections/link/token';
 };
 
 export type CreateLinkTokenErrors = {
@@ -5141,7 +5019,7 @@ export type ExchangeLinkTokenData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/link/exchange';
+    url: '/v1/graphs/{graph_id}/connections/link/exchange';
 };
 
 export type ExchangeLinkTokenErrors = {
@@ -5194,7 +5072,7 @@ export type InitOAuthData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/oauth/init';
+    url: '/v1/graphs/{graph_id}/connections/oauth/init';
 };
 
 export type InitOAuthErrors = {
@@ -5242,7 +5120,7 @@ export type OauthCallbackData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/oauth/callback/{provider}';
+    url: '/v1/graphs/{graph_id}/connections/oauth/callback/{provider}';
 };
 
 export type OauthCallbackErrors = {
@@ -5309,7 +5187,7 @@ export type ListConnectionsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections';
+    url: '/v1/graphs/{graph_id}/connections';
 };
 
 export type ListConnectionsErrors = {
@@ -5361,7 +5239,7 @@ export type CreateConnectionData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections';
+    url: '/v1/graphs/{graph_id}/connections';
 };
 
 export type CreateConnectionErrors = {
@@ -5425,7 +5303,7 @@ export type DeleteConnectionData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/{connection_id}';
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}';
 };
 
 export type DeleteConnectionErrors = {
@@ -5485,7 +5363,7 @@ export type GetConnectionData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/connections/{connection_id}';
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}';
 };
 
 export type GetConnectionErrors = {
@@ -5539,7 +5417,7 @@ export type AutoSelectAgentData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/agent';
+    url: '/v1/graphs/{graph_id}/agent';
 };
 
 export type AutoSelectAgentErrors = {
@@ -5601,7 +5479,7 @@ export type ExecuteSpecificAgentData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/agent/{agent_type}';
+    url: '/v1/graphs/{graph_id}/agent/{agent_type}';
 };
 
 export type ExecuteSpecificAgentErrors = {
@@ -5663,7 +5541,7 @@ export type BatchProcessQueriesData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/agent/batch';
+    url: '/v1/graphs/{graph_id}/agent/batch';
 };
 
 export type BatchProcessQueriesErrors = {
@@ -5723,7 +5601,7 @@ export type ListAgentsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/agent/list';
+    url: '/v1/graphs/{graph_id}/agent/list';
 };
 
 export type ListAgentsErrors = {
@@ -5775,7 +5653,7 @@ export type GetAgentMetadataData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/agent/{agent_type}/metadata';
+    url: '/v1/graphs/{graph_id}/agent/{agent_type}/metadata';
 };
 
 export type GetAgentMetadataErrors = {
@@ -5822,7 +5700,7 @@ export type RecommendAgentData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/agent/recommend';
+    url: '/v1/graphs/{graph_id}/agent/recommend';
 };
 
 export type RecommendAgentErrors = {
@@ -5869,7 +5747,7 @@ export type ListMcpToolsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/mcp/tools';
+    url: '/v1/graphs/{graph_id}/mcp/tools';
 };
 
 export type ListMcpToolsErrors = {
@@ -5930,7 +5808,7 @@ export type CallMcpToolData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/mcp/call-tool';
+    url: '/v1/graphs/{graph_id}/mcp/call-tool';
 };
 
 export type CallMcpToolErrors = {
@@ -6013,7 +5891,7 @@ export type ListBackupsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/backups';
+    url: '/v1/graphs/{graph_id}/backups';
 };
 
 export type ListBackupsErrors = {
@@ -6056,7 +5934,7 @@ export type CreateBackupData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/backups';
+    url: '/v1/graphs/{graph_id}/backups';
 };
 
 export type CreateBackupErrors = {
@@ -6118,7 +5996,7 @@ export type ExportBackupData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/backups/{backup_id}/export';
+    url: '/v1/graphs/{graph_id}/backups/{backup_id}/export';
 };
 
 export type ExportBackupErrors = {
@@ -6177,7 +6055,7 @@ export type GetBackupDownloadUrlData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/backups/{backup_id}/download';
+    url: '/v1/graphs/{graph_id}/backups/{backup_id}/download';
 };
 
 export type GetBackupDownloadUrlErrors = {
@@ -6235,7 +6113,7 @@ export type RestoreBackupData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/backups/restore';
+    url: '/v1/graphs/{graph_id}/backups/restore';
 };
 
 export type RestoreBackupErrors = {
@@ -6292,7 +6170,7 @@ export type GetBackupStatsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/backups/stats';
+    url: '/v1/graphs/{graph_id}/backups/stats';
 };
 
 export type GetBackupStatsErrors = {
@@ -6335,7 +6213,7 @@ export type GetGraphMetricsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/analytics';
+    url: '/v1/graphs/{graph_id}/analytics';
 };
 
 export type GetGraphMetricsErrors = {
@@ -6395,7 +6273,7 @@ export type GetGraphUsageStatsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/analytics/usage';
+    url: '/v1/graphs/{graph_id}/analytics/usage';
 };
 
 export type GetGraphUsageStatsErrors = {
@@ -6461,7 +6339,7 @@ export type ExecuteCypherQueryData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/query';
+    url: '/v1/graphs/{graph_id}/query';
 };
 
 export type ExecuteCypherQueryErrors = {
@@ -6530,7 +6408,7 @@ export type GetGraphSchemaInfoData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/schema/info';
+    url: '/v1/graphs/{graph_id}/schema/info';
 };
 
 export type GetGraphSchemaInfoErrors = {
@@ -6587,7 +6465,7 @@ export type ValidateSchemaData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/schema/validate';
+    url: '/v1/graphs/{graph_id}/schema/validate';
 };
 
 export type ValidateSchemaErrors = {
@@ -6652,7 +6530,7 @@ export type ExportGraphSchemaData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/schema/export';
+    url: '/v1/graphs/{graph_id}/schema/export';
 };
 
 export type ExportGraphSchemaErrors = {
@@ -6695,7 +6573,7 @@ export type ListSchemaExtensionsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/schema/extensions';
+    url: '/v1/graphs/{graph_id}/schema/extensions';
 };
 
 export type ListSchemaExtensionsErrors = {
@@ -6741,7 +6619,7 @@ export type GetCurrentGraphBillData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/billing/current';
+    url: '/v1/graphs/{graph_id}/billing/current';
 };
 
 export type GetCurrentGraphBillErrors = {
@@ -6809,7 +6687,7 @@ export type GetGraphUsageDetailsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/billing/usage';
+    url: '/v1/graphs/{graph_id}/billing/usage';
 };
 
 export type GetGraphUsageDetailsErrors = {
@@ -6876,7 +6754,7 @@ export type GetGraphBillingHistoryData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/billing/history';
+    url: '/v1/graphs/{graph_id}/billing/history';
 };
 
 export type GetGraphBillingHistoryErrors = {
@@ -6944,7 +6822,7 @@ export type GetGraphMonthlyBillData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/billing/history/{year}/{month}';
+    url: '/v1/graphs/{graph_id}/billing/history/{year}/{month}';
 };
 
 export type GetGraphMonthlyBillErrors = {
@@ -7006,7 +6884,7 @@ export type GetCreditSummaryData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/credits/summary';
+    url: '/v1/graphs/{graph_id}/credits/summary';
 };
 
 export type GetCreditSummaryErrors = {
@@ -7091,7 +6969,7 @@ export type ListCreditTransactionsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/credits/transactions';
+    url: '/v1/graphs/{graph_id}/credits/transactions';
 };
 
 export type ListCreditTransactionsErrors = {
@@ -7156,7 +7034,7 @@ export type CheckCreditBalanceData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/credits/balance/check';
+    url: '/v1/graphs/{graph_id}/credits/balance/check';
 };
 
 export type CheckCreditBalanceErrors = {
@@ -7219,7 +7097,7 @@ export type GetStorageUsageData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/credits/storage/usage';
+    url: '/v1/graphs/{graph_id}/credits/storage/usage';
 };
 
 export type GetStorageUsageErrors = {
@@ -7273,7 +7151,7 @@ export type CheckStorageLimitsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/credits/storage/limits';
+    url: '/v1/graphs/{graph_id}/credits/storage/limits';
 };
 
 export type CheckStorageLimitsErrors = {
@@ -7328,7 +7206,7 @@ export type GetDatabaseHealthData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/health';
+    url: '/v1/graphs/{graph_id}/health';
 };
 
 export type GetDatabaseHealthErrors = {
@@ -7383,7 +7261,7 @@ export type GetDatabaseInfoData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/info';
+    url: '/v1/graphs/{graph_id}/info';
 };
 
 export type GetDatabaseInfoErrors = {
@@ -7438,7 +7316,7 @@ export type GetGraphLimitsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/limits';
+    url: '/v1/graphs/{graph_id}/limits';
 };
 
 export type GetGraphLimitsErrors = {
@@ -7496,7 +7374,7 @@ export type ListSubgraphsData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/subgraphs';
+    url: '/v1/graphs/{graph_id}/subgraphs';
 };
 
 export type ListSubgraphsErrors = {
@@ -7539,7 +7417,7 @@ export type CreateSubgraphData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/subgraphs';
+    url: '/v1/graphs/{graph_id}/subgraphs';
 };
 
 export type CreateSubgraphErrors = {
@@ -7587,7 +7465,7 @@ export type DeleteSubgraphData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/subgraphs/{subgraph_id}';
+    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}';
 };
 
 export type DeleteSubgraphErrors = {
@@ -7659,7 +7537,7 @@ export type GetSubgraphInfoData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/subgraphs/{subgraph_id}/info';
+    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}/info';
 };
 
 export type GetSubgraphInfoErrors = {
@@ -7722,7 +7600,7 @@ export type GetSubgraphQuotaData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/subgraphs/quota';
+    url: '/v1/graphs/{graph_id}/subgraphs/quota';
 };
 
 export type GetSubgraphQuotaErrors = {
@@ -7784,7 +7662,7 @@ export type CopyDataToGraphData = {
          */
         token?: string | null;
     };
-    url: '/v1/{graph_id}/copy';
+    url: '/v1/graphs/{graph_id}/copy';
 };
 
 export type CopyDataToGraphErrors = {
@@ -7833,6 +7711,43 @@ export type CopyDataToGraphResponses = {
 
 export type CopyDataToGraphResponse = CopyDataToGraphResponses[keyof CopyDataToGraphResponses];
 
+export type GetGraphsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path?: never;
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs';
+};
+
+export type GetGraphsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetGraphsError = GetGraphsErrors[keyof GetGraphsErrors];
+
+export type GetGraphsResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserGraphsResponse;
+};
+
+export type GetGraphsResponse = GetGraphsResponses[keyof GetGraphsResponses];
+
 export type CreateGraphData = {
     body: CreateGraphRequest;
     headers?: {
@@ -7849,7 +7764,7 @@ export type CreateGraphData = {
          */
         token?: string | null;
     };
-    url: '/v1/create/graph';
+    url: '/v1/graphs';
 };
 
 export type CreateGraphErrors = {
@@ -7872,7 +7787,7 @@ export type GetAvailableExtensionsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/v1/create/graph/extensions';
+    url: '/v1/graphs/extensions';
 };
 
 export type GetAvailableExtensionsResponses = {
@@ -7883,6 +7798,60 @@ export type GetAvailableExtensionsResponses = {
 };
 
 export type GetAvailableExtensionsResponse = GetAvailableExtensionsResponses[keyof GetAvailableExtensionsResponses];
+
+export type SelectGraphData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/select';
+};
+
+export type SelectGraphErrors = {
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Error selecting graph
+     */
+    500: ErrorResponse;
+};
+
+export type SelectGraphError = SelectGraphErrors[keyof SelectGraphErrors];
+
+export type SelectGraphResponses = {
+    /**
+     * Graph selected successfully
+     */
+    200: SuccessResponse;
+};
+
+export type SelectGraphResponse = SelectGraphResponses[keyof SelectGraphResponses];
 
 export type GetServiceOfferingsData = {
     body?: never;

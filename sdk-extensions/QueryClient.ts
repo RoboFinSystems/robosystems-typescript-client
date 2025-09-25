@@ -65,7 +65,7 @@ export class QueryClient {
     options: QueryOptions = {}
   ): Promise<QueryResult | AsyncIterableIterator<any>> {
     const data: ExecuteCypherQueryData = {
-      url: '/v1/{graph_id}/query' as const,
+      url: '/v1/graphs/{graph_id}/query' as const,
       path: { graph_id: graphId },
       body: {
         query: request.query,
