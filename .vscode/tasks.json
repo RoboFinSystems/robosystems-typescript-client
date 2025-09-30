@@ -72,7 +72,7 @@
       "type": "shell",
       "command": "npm run pr:create ${input:targetBranch} ${input:claudeReview}",
       "problemMatcher": []
-    },
+    }
   ],
   "inputs": [
     {
@@ -118,7 +118,7 @@
       "id": "apiUrl",
       "type": "promptString",
       "description": "Enter API URL for SDK generation:",
-      "default": "http://localhost:8000"
+      "default": "http://localhost:8000/openapi.json"
     }
   ]
 }
