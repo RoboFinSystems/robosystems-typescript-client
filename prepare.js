@@ -126,18 +126,15 @@ if (fs.existsSync(extensionsSourceDir)) {
 }
 
 // Format the generated files
-console.log('💅 Formatting files...')
+console.log('💅 Formatting generated files...')
 try {
-  // Format TypeScript files
-  execSync('npx prettier --write "src/*.ts" --config ../prettier.config.cjs 2>/dev/null || true', {
-    cwd: currentDir,
-    stdio: 'pipe',
-  })
-  // Format JavaScript files
-  execSync('npx prettier --write "src/*.js" --config ../prettier.config.cjs 2>/dev/null || true', {
-    cwd: currentDir,
-    stdio: 'pipe',
-  })
+  execSync(
+    'npx prettier --write index.ts index.js index.d.ts extensions/*.ts extensions/*.js extensions/*.d.ts',
+    {
+      cwd: currentDir,
+      stdio: 'inherit',
+    }
+  )
   console.log('  ✓ Files formatted')
 } catch (error) {
   console.log('  ⚠️  Formatting skipped (prettier not available)')

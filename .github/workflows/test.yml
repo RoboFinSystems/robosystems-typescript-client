@@ -23,9 +23,6 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Prepare for Publishing
-        run: npm run prepare:publish
-
       - name: Format Check
         run: npm run format:check
 
@@ -34,6 +31,9 @@ jobs:
 
       - name: Type Check
         run: npm run typecheck
+
+      - name: Prepare for Publishing
+        run: npm run prepare:publish
 
       - name: Run Tests
         run: npm run test
