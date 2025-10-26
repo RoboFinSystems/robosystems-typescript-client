@@ -75,8 +75,11 @@
     "release:create": "./bin/create-release",
     "pr:create": "./bin/create-pr",
     "validate:fix": "npm run format && npm run lint:fix && npm run typecheck",
-    "test": "npm run validate",
-    "test:all": "npm run validate && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:all": "npm run validate && npm run test && npm run build",
     "prepare:publish": "node prepare.js",
     "prepublishOnly": "npm run prepare:publish",
     "build": "tsc"
@@ -105,16 +108,22 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.80.2",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.1.9",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
+    "@vitest/ui": "^4.0.3",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "happy-dom": "^20.0.8",
     "prettier": "^3.0.0",
     "prettier-plugin-organize-imports": "^4.0.0",
-    "typescript": "5.5.4"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "5.5.4",
+    "vitest": "^4.0.3"
   },
   "publishConfig": {
     "access": "public",

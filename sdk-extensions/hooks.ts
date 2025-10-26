@@ -12,6 +12,8 @@ import type { OperationProgress, OperationResult } from './OperationClient'
 import { OperationClient } from './OperationClient'
 import type { QueryOptions, QueryResult } from './QueryClient'
 import { QueryClient } from './QueryClient'
+import type { FileInput, IngestOptions, UploadOptions, UploadResult } from './TableIngestClient'
+import { TableIngestClient } from './TableIngestClient'
 
 /**
  * Hook for executing Cypher queries with loading states and error handling
@@ -456,4 +458,199 @@ export function useSDKClients() {
   }, [])
 
   return clients
+}
+
+/**
+ * Hook for uploading Parquet files to staging tables
+ *
+ * @example
+ * ```tsx
+ * const { upload, uploadAndIngest, loading, error, progress } = useTableUpload('graph_123')
+ *
+ * const handleFileUpload = async (file: File) => {
+ *   const result = await upload('Entity', file, {
+ *     onProgress: (msg) => console.log(msg),
+ *     fixLocalStackUrl: true,
+ *   })
+ *
+ *   if (result?.success) {
+ *     console.log(`Uploaded ${result.rowCount} rows`)
+ *   }
+ * }
+ * ```
+ */
+export function useTableUpload(graphId: string) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+  const [progress, setProgress] = useState<string | null>(null)
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
+  const clientRef = useRef<TableIngestClient>(null)
+
+  useEffect(() => {
+    const sdkConfig = getSDKExtensionsConfig()
+    const clientConfig = client.getConfig()
+
+    // Extract JWT token (uses centralized logic)
+    const token = extractTokenFromSDKClient()
+
+    clientRef.current = new TableIngestClient({
+      baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
+      credentials: sdkConfig.credentials,
+      token,
+      headers: sdkConfig.headers,
+    })
+  }, [])
+
+  const upload = useCallback(
+    async (
+      tableName: string,
+      fileOrBuffer: FileInput,
+      options?: UploadOptions
+    ): Promise<UploadResult | null> => {
+      if (!clientRef.current) return null
+
+      setLoading(true)
+      setError(null)
+      setUploadResult(null)
+      setProgress(null)
+
+      try {
+        const result = await clientRef.current.uploadParquetFile(graphId, tableName, fileOrBuffer, {
+          ...options,
+          onProgress: (msg) => {
+            setProgress(msg)
+            options?.onProgress?.(msg)
+          },
+        })
+
+        setUploadResult(result)
+
+        if (!result.success && result.error) {
+          setError(new Error(result.error))
+        }
+
+        return result
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        return null
+      } finally {
+        setLoading(false)
+        setProgress(null)
+      }
+    },
+    [graphId]
+  )
+
+  const uploadAndIngest = useCallback(
+    async (
+      tableName: string,
+      fileOrBuffer: FileInput,
+      uploadOptions?: UploadOptions,
+      ingestOptions?: IngestOptions
+    ): Promise<{ upload: UploadResult; ingest: any } | null> => {
+      if (!clientRef.current) return null
+
+      setLoading(true)
+      setError(null)
+      setUploadResult(null)
+      setProgress(null)
+
+      try {
+        const result = await clientRef.current.uploadAndIngest(
+          graphId,
+          tableName,
+          fileOrBuffer,
+          {
+            ...uploadOptions,
+            onProgress: (msg) => {
+              setProgress(msg)
+              uploadOptions?.onProgress?.(msg)
+            },
+          },
+          {
+            ...ingestOptions,
+            onProgress: (msg) => {
+              setProgress(msg)
+              ingestOptions?.onProgress?.(msg)
+            },
+          }
+        )
+
+        setUploadResult(result.upload)
+
+        if (!result.upload.success && result.upload.error) {
+          setError(new Error(result.upload.error))
+        } else if (result.ingest && !result.ingest.success && result.ingest.error) {
+          setError(new Error(result.ingest.error))
+        }
+
+        return result
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        return null
+      } finally {
+        setLoading(false)
+        setProgress(null)
+      }
+    },
+    [graphId]
+  )
+
+  const listTables = useCallback(async () => {
+    if (!clientRef.current) return []
+
+    try {
+      return await clientRef.current.listStagingTables(graphId)
+    } catch (err) {
+      setError(err as Error)
+      return []
+    }
+  }, [graphId])
+
+  const ingestAllTables = useCallback(
+    async (options?: IngestOptions) => {
+      if (!clientRef.current) return null
+
+      setLoading(true)
+      setError(null)
+      setProgress(null)
+
+      try {
+        const result = await clientRef.current.ingestAllTables(graphId, {
+          ...options,
+          onProgress: (msg) => {
+            setProgress(msg)
+            options?.onProgress?.(msg)
+          },
+        })
+
+        if (!result.success && result.error) {
+          setError(new Error(result.error))
+        }
+
+        return result
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        return null
+      } finally {
+        setLoading(false)
+        setProgress(null)
+      }
+    },
+    [graphId]
+  )
+
+  return {
+    upload,
+    uploadAndIngest,
+    listTables,
+    ingestAllTables,
+    loading,
+    error,
+    progress,
+    uploadResult,
+  }
 }

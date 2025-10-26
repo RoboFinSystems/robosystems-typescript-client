@@ -10,6 +10,7 @@ Official TypeScript Client for the RoboSystems Financial Knowledge Graph API. Ac
 - **Type-safe API client** with full TypeScript types
 - **Browser & Node.js support** with different auth strategies
 - **React hooks** for seamless UI integration
+- **Table ingestion** with simplified Parquet file uploads
 - **Streaming support** for memory-efficient processing of large result sets
 - **Financial AI Agent** integration for natural language queries
 - **Comprehensive error handling** with typed errors
@@ -22,16 +23,16 @@ npm install @robosystems/client
 
 ## API Reference
 
-- API reference: [https://api.robosystems.ai](https://api.robosystems.ai)
-- API documentation: [https://api.robosystems.ai/docs](https://api.robosystems.ai/docs)
-- OpenAPI specification: [https://api.robosystems.ai/openapi.json](https://api.robosystems.ai/openapi.json)
+- [API reference](https://api.robosystems.ai)
+- [API documentation](https://api.robosystems.ai/docs)
+- [OpenAPI specification](https://api.robosystems.ai/openapi.json)
 
 ## Support
 
-- Issues: [Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)
-- Discussions: [Discussions](https://github.com/RoboFinSystems/robosystems-typescript-client/discussions)
-- Projects: [Projects](https://github.com/RoboFinSystems/robosystems-typescript-client/projects)
-- Wiki: [Wiki](https://github.com/RoboFinSystems/robosystems-typescript-client/wiki)
+- [Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)
+- [Discussions](https://github.com/RoboFinSystems/robosystems/discussions)
+- [Projects](https://github.com/RoboFinSystems/robosystems/projects)
+- [Wiki](https://github.com/RoboFinSystems/robosystems/wiki)
 
 ## License
 

@@ -8,6 +8,7 @@ import { extractTokenFromSDKClient } from './config'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { SSEClient } from './SSEClient'
+import { TableIngestClient } from './TableIngestClient'
 
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
@@ -31,6 +32,7 @@ interface ResolvedConfig {
 export class RoboSystemsExtensions {
   public readonly query: QueryClient
   public readonly operations: OperationClient
+  public readonly tables: TableIngestClient
   private config: ResolvedConfig
 
   constructor(config: RoboSystemsExtensionConfig = {}) {
@@ -62,6 +64,13 @@ export class RoboSystemsExtensions {
       token: this.config.token,
       maxRetries: this.config.maxRetries,
       retryDelay: this.config.retryDelay,
+    })
+
+    this.tables = new TableIngestClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
     })
   }
 
@@ -99,7 +108,8 @@ export class RoboSystemsExtensions {
 export * from './OperationClient'
 export * from './QueryClient'
 export * from './SSEClient'
-export { OperationClient, QueryClient, SSEClient }
+export * from './TableIngestClient'
+export { OperationClient, QueryClient, SSEClient, TableIngestClient }
 
 // Export React hooks
 export {
@@ -108,6 +118,7 @@ export {
   useQuery,
   useSDKClients,
   useStreamingQuery,
+  useTableUpload,
 } from './hooks'
 
 // Lazy initialization of default instance
