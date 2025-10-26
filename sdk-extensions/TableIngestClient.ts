@@ -12,14 +12,14 @@ import {
   ingestTablesV1GraphsGraphIdTablesIngestPost,
   listTablesV1GraphsGraphIdTablesGet,
   updateFileV1GraphsGraphIdTablesFilesFileIdPatch,
-} from '../sdk.gen'
+} from '../sdk/sdk.gen'
 import type {
   BulkIngestRequest,
   FileUpdateRequest,
   FileUploadRequest,
   FileUploadResponse,
   TableListResponse,
-} from '../types.gen'
+} from '../sdk/types.gen'
 
 export interface UploadOptions {
   onProgress?: (message: string) => void
