@@ -5,10 +5,10 @@
 
 import { client } from '../sdk/client.gen'
 import { extractTokenFromSDKClient } from './config'
-import { CopyClient } from './CopyClient'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { SSEClient } from './SSEClient'
+import { TableIngestClient } from './TableIngestClient'
 
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
@@ -30,9 +30,9 @@ interface ResolvedConfig {
 }
 
 export class RoboSystemsExtensions {
-  public readonly copy: CopyClient
   public readonly query: QueryClient
   public readonly operations: OperationClient
+  public readonly tables: TableIngestClient
   private config: ResolvedConfig
 
   constructor(config: RoboSystemsExtensionConfig = {}) {
@@ -51,13 +51,6 @@ export class RoboSystemsExtensions {
       retryDelay: config.retryDelay || 1000,
     }
 
-    this.copy = new CopyClient({
-      baseUrl: this.config.baseUrl,
-      credentials: this.config.credentials,
-      token: this.config.token,
-      headers: this.config.headers,
-    })
-
     this.query = new QueryClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
@@ -71,6 +64,13 @@ export class RoboSystemsExtensions {
       token: this.config.token,
       maxRetries: this.config.maxRetries,
       retryDelay: this.config.retryDelay,
+    })
+
+    this.tables = new TableIngestClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
     })
   }
 
@@ -99,27 +99,26 @@ export class RoboSystemsExtensions {
    * Clean up all active connections
    */
   close(): void {
-    this.copy.close()
     this.query.close()
     this.operations.closeAll()
   }
 }
 
 // Export all types and classes
-export * from './CopyClient'
 export * from './OperationClient'
 export * from './QueryClient'
 export * from './SSEClient'
-export { CopyClient, OperationClient, QueryClient, SSEClient }
+export * from './TableIngestClient'
+export { OperationClient, QueryClient, SSEClient, TableIngestClient }
 
 // Export React hooks
 export {
-  useCopy,
   useMultipleOperations,
   useOperation,
   useQuery,
   useSDKClients,
   useStreamingQuery,
+  useTableUpload,
 } from './hooks'
 
 // Lazy initialization of default instance
@@ -133,9 +132,6 @@ function getExtensions(): RoboSystemsExtensions {
 }
 
 export const extensions = {
-  get copy() {
-    return getExtensions().copy
-  },
   get query() {
     return getExtensions().query
   },
@@ -161,12 +157,3 @@ export const streamQuery = (
   parameters?: Record<string, any>,
   chunkSize?: number
 ) => getExtensions().query.streamQuery(graphId, query, parameters, chunkSize)
-
-export const copyFromS3 = (
-  graphId: string,
-  tableName: string,
-  s3Uri: string,
-  accessKeyId: string,
-  secretAccessKey: string,
-  options?: Parameters<CopyClient['copyS3']>[5]
-) => getExtensions().copy.copyS3(graphId, tableName, s3Uri, accessKeyId, secretAccessKey, options)

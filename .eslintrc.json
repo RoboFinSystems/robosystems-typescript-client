@@ -41,6 +41,7 @@
     "client/",
     "core/",
     "extensions/",
+    "index.ts",
     "index.js",
     "index.d.ts"
   ]

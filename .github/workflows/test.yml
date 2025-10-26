@@ -22,4 +22,31 @@ jobs:
       
       - name: Install Dependencies
         run: npm install
-      
+
+      - name: Format Check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Prepare for Publishing
+        run: npm run prepare:publish
+
+      - name: Run Tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate Package Structure
+        run: |
+          # Check that key files exist after prepare
+          test -f index.js || { echo "Missing index.js"; exit 1; }
+          test -f index.d.ts || { echo "Missing index.d.ts"; exit 1; }
+          test -f sdk.gen.js || { echo "Missing sdk.gen.js"; exit 1; }
+          test -f package.json || { echo "Missing package.json"; exit 1; }
+          echo "✅ Package structure validated"
+

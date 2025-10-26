@@ -125,90 +125,16 @@ if (fs.existsSync(extensionsSourceDir)) {
   console.log('  ⚠️  SDK extensions not found')
 }
 
-// No longer copying legacy utils - using sdk-extensions instead
-
-// Create README if it doesn't exist
-const readmePath = path.join(currentDir, 'README.md')
-if (!fs.existsSync(readmePath)) {
-  const readmeContent = `# RoboSystems TypeScript Client
-
-Official TypeScript Client for the RoboSystems Financial Knowledge Graph API with SSE support.
-
-## Installation
-
-\`\`\`bash
-npm install @robosystems/client
-\`\`\`
-
-## Quick Start
-
-\`\`\`typescript
-import { client, getCurrentUser, extensions } from '@robosystems/client';
-
-// Configure the client
-client.setConfig({
-  baseUrl: 'https://api.robosystems.ai',
-  credentials: 'include'
-});
-
-// Use the Client
-const { data: user } = await getCurrentUser();
-
-// Use Client Extensions for enhanced features
-const result = await extensions.query.query('graph_123', 'MATCH (n) RETURN n LIMIT 10');
-
-// Monitor async operations with SSE
-const opResult = await extensions.operations.monitorOperation('operation_123', {
-  onProgress: (progress) => console.log(progress.message)
-});
-\`\`\`
-
-## Features
-
-- **Generated Client**: Auto-generated from OpenAPI spec
-- **SSE Support**: Real-time updates for async operations
-- **Query Client**: Enhanced query execution with streaming
-- **Operation Monitoring**: Track long-running operations
-- **Type Safety**: Full TypeScript support
-
-## Documentation
-
-Full documentation available at [https://api.robosystems.ai](https://api.robosystems.ai)
-`
-
-  fs.writeFileSync(readmePath, readmeContent)
-  console.log('  ✓ Created README.md')
-}
-
-// Run TypeScript type checking
-console.log('🔍 Type checking...')
+// Format the generated files
+console.log('💅 Formatting generated files...')
 try {
   execSync(
-    'npx tsc --noEmit --skipLibCheck --esModuleInterop --strict --target ES2022 --module commonjs src/*.ts',
+    'npx prettier --write index.ts index.js index.d.ts extensions/*.ts extensions/*.js extensions/*.d.ts',
     {
       cwd: currentDir,
-      stdio: 'pipe',
+      stdio: 'inherit',
     }
   )
-  console.log('  ✓ Type checking passed')
-} catch (error) {
-  console.error('  ❌ Type checking failed:', error.stderr?.toString() || error.message)
-  console.error('  ⚠️  Continuing anyway, but please review the generated files')
-}
-
-// Format the generated files
-console.log('💅 Formatting files...')
-try {
-  // Format TypeScript files
-  execSync('npx prettier --write "src/*.ts" --config ../prettier.config.cjs 2>/dev/null || true', {
-    cwd: currentDir,
-    stdio: 'pipe',
-  })
-  // Format JavaScript files
-  execSync('npx prettier --write "src/*.js" --config ../prettier.config.cjs 2>/dev/null || true', {
-    cwd: currentDir,
-    stdio: 'pipe',
-  })
   console.log('  ✓ Files formatted')
 } catch (error) {
   console.log('  ⚠️  Formatting skipped (prettier not available)')

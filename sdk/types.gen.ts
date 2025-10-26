@@ -600,11 +600,6 @@ export type BackupResponse = {
  */
 export type BackupRestoreRequest = {
     /**
-     * Backup Id
-     * ID of backup to restore from
-     */
-    backup_id: string;
-    /**
      * Create System Backup
      * Create a system backup of existing database before restore
      */
@@ -706,6 +701,73 @@ export type BatchAgentResponse = {
      * Whether queries were processed in parallel
      */
     parallel_processed: boolean;
+};
+
+/**
+ * BulkIngestRequest
+ */
+export type BulkIngestRequest = {
+    /**
+     * Ignore Errors
+     * Continue ingestion on row errors
+     */
+    ignore_errors?: boolean;
+    /**
+     * Rebuild
+     * Rebuild graph database from scratch before ingestion. Safe operation - staged data is the source of truth, graph can always be regenerated.
+     */
+    rebuild?: boolean;
+};
+
+/**
+ * BulkIngestResponse
+ */
+export type BulkIngestResponse = {
+    /**
+     * Status
+     * Overall ingestion status
+     */
+    status: string;
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Total Tables
+     * Total number of tables processed
+     */
+    total_tables: number;
+    /**
+     * Successful Tables
+     * Number of successfully ingested tables
+     */
+    successful_tables: number;
+    /**
+     * Failed Tables
+     * Number of failed table ingestions
+     */
+    failed_tables: number;
+    /**
+     * Skipped Tables
+     * Number of skipped tables (no files)
+     */
+    skipped_tables: number;
+    /**
+     * Total Rows Ingested
+     * Total rows ingested across all tables
+     */
+    total_rows_ingested: number;
+    /**
+     * Total Execution Time Ms
+     * Total execution time in milliseconds
+     */
+    total_execution_time_ms: number;
+    /**
+     * Results
+     * Per-table ingestion results
+     */
+    results: Array<TableIngestResult>;
 };
 
 /**
@@ -864,70 +926,6 @@ export type ConnectionResponse = {
 };
 
 /**
- * CopyResponse
- * Response model for copy operations.
- */
-export type CopyResponse = {
-    /**
-     * Status
-     * Operation status
-     */
-    status: 'completed' | 'failed' | 'partial' | 'accepted';
-    /**
-     * Operation Id
-     * Operation ID for SSE monitoring (for long-running operations)
-     */
-    operation_id?: string | null;
-    /**
-     * Sse Url
-     * SSE endpoint URL for monitoring operation progress
-     */
-    sse_url?: string | null;
-    /**
-     * Source Type
-     * Type of source that was copied from
-     */
-    source_type: string;
-    /**
-     * Execution Time Ms
-     * Total execution time in milliseconds (for synchronous operations)
-     */
-    execution_time_ms?: number | null;
-    /**
-     * Message
-     * Human-readable status message
-     */
-    message: string;
-    /**
-     * Rows Imported
-     * Number of rows successfully imported
-     */
-    rows_imported?: number | null;
-    /**
-     * Rows Skipped
-     * Number of rows skipped due to errors (when ignore_errors=true)
-     */
-    rows_skipped?: number | null;
-    /**
-     * Warnings
-     * List of warnings encountered during import
-     */
-    warnings?: Array<string> | null;
-    /**
-     * Error Details
-     * Detailed error information if operation failed
-     */
-    error_details?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Bytes Processed
-     * Total bytes processed from source
-     */
-    bytes_processed?: number | null;
-};
-
-/**
  * CreateAPIKeyRequest
  * Request model for creating a new API key.
  */
@@ -996,7 +994,7 @@ export type CreateGraphRequest = {
     metadata: GraphMetadata;
     /**
      * Instance Tier
-     * Instance tier: standard, enterprise, or premium
+     * Instance tier: kuzu-standard, kuzu-large, kuzu-xlarge, neo4j-community-large, neo4j-enterprise-xlarge
      */
     instance_tier?: string;
     /**
@@ -1243,48 +1241,6 @@ export type CypherQueryRequest = {
      * Query timeout in seconds (1-300)
      */
     timeout?: number | null;
-};
-
-/**
- * DataFrameCopyRequest
- * Request model for DataFrame copy operations (future).
- */
-export type DataFrameCopyRequest = {
-    /**
-     * Table Name
-     * Target Kuzu table name
-     */
-    table_name: string;
-    /**
-     * Ignore Errors
-     * Skip duplicate/invalid rows (enables upsert-like behavior)
-     */
-    ignore_errors?: boolean;
-    /**
-     * Extended Timeout
-     * Use extended timeout for large datasets
-     */
-    extended_timeout?: boolean;
-    /**
-     * Validate Schema
-     * Validate source schema against target table
-     */
-    validate_schema?: boolean;
-    /**
-     * Source Type
-     * Source type identifier
-     */
-    source_type?: 'dataframe';
-    /**
-     * Data Reference
-     * Reference to uploaded DataFrame data
-     */
-    data_reference: string;
-    /**
-     * Format
-     * DataFrame format
-     */
-    format?: 'pandas' | 'polars' | 'arrow';
 };
 
 /**
@@ -1624,6 +1580,64 @@ export type ExchangeTokenRequest = {
     metadata?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * FileUpdateRequest
+ */
+export type FileUpdateRequest = {
+    /**
+     * File Size Bytes
+     * Actual uploaded file size in bytes
+     */
+    file_size_bytes: number;
+    /**
+     * Row Count
+     * Number of rows in the file
+     */
+    row_count?: number | null;
+};
+
+/**
+ * FileUploadRequest
+ */
+export type FileUploadRequest = {
+    /**
+     * File Name
+     * File name to upload
+     */
+    file_name: string;
+    /**
+     * Content Type
+     * File MIME type
+     */
+    content_type?: string;
+};
+
+/**
+ * FileUploadResponse
+ */
+export type FileUploadResponse = {
+    /**
+     * Upload Url
+     * Presigned S3 upload URL
+     */
+    upload_url: string;
+    /**
+     * Expires In
+     * URL expiration time in seconds
+     */
+    expires_in: number;
+    /**
+     * File Id
+     * File tracking ID
+     */
+    file_id: string;
+    /**
+     * S3 Key
+     * S3 object key
+     */
+    s3_key: string;
 };
 
 /**
@@ -2319,116 +2333,6 @@ export type ResetPasswordValidateResponse = {
 export type ResponseMode = 'auto' | 'sync' | 'async' | 'stream';
 
 /**
- * S3CopyRequest
- * Request model for S3 copy operations.
- *
- * Copies data from S3 buckets into graph database tables using user-provided
- * AWS credentials. Supports various file formats and bulk loading options.
- */
-export type S3CopyRequest = {
-    /**
-     * Table Name
-     * Target Kuzu table name
-     */
-    table_name: string;
-    /**
-     * Ignore Errors
-     * Skip duplicate/invalid rows (enables upsert-like behavior)
-     */
-    ignore_errors?: boolean;
-    /**
-     * Extended Timeout
-     * Use extended timeout for large datasets
-     */
-    extended_timeout?: boolean;
-    /**
-     * Validate Schema
-     * Validate source schema against target table
-     */
-    validate_schema?: boolean;
-    /**
-     * Source Type
-     * Source type identifier
-     */
-    source_type?: 's3';
-    /**
-     * S3 Path
-     * Full S3 path (s3://bucket/key or s3://bucket/prefix*.parquet)
-     */
-    s3_path: string;
-    /**
-     * S3 Access Key Id
-     * AWS access key ID for S3 access
-     */
-    s3_access_key_id: string;
-    /**
-     * S3 Secret Access Key
-     * AWS secret access key for S3 access
-     */
-    s3_secret_access_key: string;
-    /**
-     * S3 Session Token
-     * AWS session token (for temporary credentials)
-     */
-    s3_session_token?: string | null;
-    /**
-     * S3 Region
-     * S3 region
-     */
-    s3_region?: string | null;
-    /**
-     * S3 Endpoint
-     * Custom S3 endpoint (for S3-compatible storage)
-     */
-    s3_endpoint?: string | null;
-    /**
-     * S3 Url Style
-     * S3 URL style (vhost or path)
-     */
-    s3_url_style?: ('vhost' | 'path') | null;
-    /**
-     * File Format
-     * File format of the S3 data
-     */
-    file_format?: 'parquet' | 'csv' | 'json' | 'delta' | 'iceberg';
-    /**
-     * Csv Delimiter
-     * CSV delimiter
-     */
-    csv_delimiter?: string | null;
-    /**
-     * Csv Header
-     * CSV has header row
-     */
-    csv_header?: boolean | null;
-    /**
-     * Csv Quote
-     * CSV quote character
-     */
-    csv_quote?: string | null;
-    /**
-     * Csv Escape
-     * CSV escape character
-     */
-    csv_escape?: string | null;
-    /**
-     * Csv Skip
-     * Number of rows to skip
-     */
-    csv_skip?: number | null;
-    /**
-     * Allow Moved Paths
-     * Allow moved paths for Iceberg tables
-     */
-    allow_moved_paths?: boolean | null;
-    /**
-     * Max File Size Gb
-     * Maximum total file size limit in GB
-     */
-    max_file_size_gb?: number | null;
-};
-
-/**
  * SECConnectionConfig
  * SEC-specific connection configuration.
  */
@@ -3009,6 +2913,121 @@ export type SyncConnectionRequest = {
 };
 
 /**
+ * TableInfo
+ */
+export type TableInfo = {
+    /**
+     * Table Name
+     * Table name
+     */
+    table_name: string;
+    /**
+     * Row Count
+     * Approximate row count
+     */
+    row_count: number;
+    /**
+     * File Count
+     * Number of files
+     */
+    file_count?: number;
+    /**
+     * Total Size Bytes
+     * Total size in bytes
+     */
+    total_size_bytes?: number;
+    /**
+     * S3 Location
+     * S3 location for external tables
+     */
+    s3_location?: string | null;
+};
+
+/**
+ * TableIngestResult
+ */
+export type TableIngestResult = {
+    /**
+     * Table Name
+     * Table name
+     */
+    table_name: string;
+    /**
+     * Status
+     * Ingestion status (success/failed/skipped)
+     */
+    status: string;
+    /**
+     * Rows Ingested
+     * Number of rows ingested
+     */
+    rows_ingested?: number;
+    /**
+     * Execution Time Ms
+     * Ingestion time in milliseconds
+     */
+    execution_time_ms?: number;
+    /**
+     * Error
+     * Error message if failed
+     */
+    error?: string | null;
+};
+
+/**
+ * TableListResponse
+ */
+export type TableListResponse = {
+    /**
+     * Tables
+     * List of tables
+     */
+    tables: Array<TableInfo>;
+    /**
+     * Total Count
+     * Total number of tables
+     */
+    total_count: number;
+};
+
+/**
+ * TableQueryRequest
+ */
+export type TableQueryRequest = {
+    /**
+     * Sql
+     * SQL query to execute on staging tables
+     */
+    sql: string;
+};
+
+/**
+ * TableQueryResponse
+ */
+export type TableQueryResponse = {
+    /**
+     * Columns
+     * Column names
+     */
+    columns: Array<string>;
+    /**
+     * Rows
+     * Query results
+     */
+    rows: Array<Array<unknown>>;
+    /**
+     * Row Count
+     * Number of rows returned
+     */
+    row_count: number;
+    /**
+     * Execution Time Ms
+     * Query execution time
+     */
+    execution_time_ms: number;
+};
+
+/**
  * TierUpgradeRequest
  * Request to upgrade subscription tier.
  */
@@ -3048,55 +3067,6 @@ export type TransactionSummaryResponse = {
      * Last Transaction
      */
     last_transaction?: string | null;
-};
-
-/**
- * URLCopyRequest
- * Request model for URL copy operations (future).
- */
-export type UrlCopyRequest = {
-    /**
-     * Table Name
-     * Target Kuzu table name
-     */
-    table_name: string;
-    /**
-     * Ignore Errors
-     * Skip duplicate/invalid rows (enables upsert-like behavior)
-     */
-    ignore_errors?: boolean;
-    /**
-     * Extended Timeout
-     * Use extended timeout for large datasets
-     */
-    extended_timeout?: boolean;
-    /**
-     * Validate Schema
-     * Validate source schema against target table
-     */
-    validate_schema?: boolean;
-    /**
-     * Source Type
-     * Source type identifier
-     */
-    source_type?: 'url';
-    /**
-     * Url
-     * HTTP(S) URL to the data file
-     */
-    url: string;
-    /**
-     * File Format
-     * File format of the URL data
-     */
-    file_format: 'parquet' | 'csv' | 'json';
-    /**
-     * Headers
-     * Optional HTTP headers for authentication
-     */
-    headers?: {
-        [key: string]: string;
-    } | null;
 };
 
 /**
@@ -4830,331 +4800,6 @@ export type GetRepositoryCreditsResponses = {
 
 export type GetRepositoryCreditsResponse = GetRepositoryCreditsResponses[keyof GetRepositoryCreditsResponses];
 
-export type GetConnectionOptionsData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections/options';
-};
-
-export type GetConnectionOptionsErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve options
-     */
-    500: ErrorResponse;
-};
-
-export type GetConnectionOptionsError = GetConnectionOptionsErrors[keyof GetConnectionOptionsErrors];
-
-export type GetConnectionOptionsResponses = {
-    /**
-     * Connection options retrieved successfully
-     */
-    200: ConnectionOptionsResponse;
-};
-
-export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof GetConnectionOptionsResponses];
-
-export type SyncConnectionData = {
-    body: SyncConnectionRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         * Connection identifier
-         */
-        connection_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
-};
-
-export type SyncConnectionErrors = {
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to start sync
-     */
-    500: ErrorResponse;
-};
-
-export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
-
-export type SyncConnectionResponses = {
-    /**
-     * Response Syncconnection
-     * Sync started successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
-
-export type CreateLinkTokenData = {
-    body: LinkTokenRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections/link/token';
-};
-
-export type CreateLinkTokenErrors = {
-    /**
-     * Invalid provider or request
-     */
-    400: ErrorResponse;
-    /**
-     * Entity not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to create link token
-     */
-    500: ErrorResponse;
-};
-
-export type CreateLinkTokenError = CreateLinkTokenErrors[keyof CreateLinkTokenErrors];
-
-export type CreateLinkTokenResponses = {
-    /**
-     * Link token created successfully
-     */
-    200: unknown;
-};
-
-export type ExchangeLinkTokenData = {
-    body: ExchangeTokenRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections/link/exchange';
-};
-
-export type ExchangeLinkTokenErrors = {
-    /**
-     * Invalid token or provider
-     */
-    400: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Token exchange failed
-     */
-    500: ErrorResponse;
-};
-
-export type ExchangeLinkTokenError = ExchangeLinkTokenErrors[keyof ExchangeLinkTokenErrors];
-
-export type ExchangeLinkTokenResponses = {
-    /**
-     * Token exchanged successfully
-     */
-    200: unknown;
-};
-
-export type InitOAuthData = {
-    body: OAuthInitRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections/oauth/init';
-};
-
-export type InitOAuthErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type InitOAuthError = InitOAuthErrors[keyof InitOAuthErrors];
-
-export type InitOAuthResponses = {
-    /**
-     * Successful Response
-     */
-    200: OAuthInitResponse;
-};
-
-export type InitOAuthResponse = InitOAuthResponses[keyof InitOAuthResponses];
-
-export type OauthCallbackData = {
-    body: OAuthCallbackRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Provider
-         * OAuth provider name
-         */
-        provider: string;
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections/oauth/callback/{provider}';
-};
-
-export type OauthCallbackErrors = {
-    /**
-     * OAuth error or invalid state
-     */
-    400: ErrorResponse;
-    /**
-     * State does not match user
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * OAuth callback processing failed
-     */
-    500: ErrorResponse;
-};
-
-export type OauthCallbackError = OauthCallbackErrors[keyof OauthCallbackErrors];
-
-export type OauthCallbackResponses = {
-    /**
-     * OAuth flow completed successfully
-     */
-    200: unknown;
-};
-
 export type ListConnectionsData = {
     body?: never;
     headers?: {
@@ -5276,6 +4921,268 @@ export type CreateConnectionResponses = {
 
 export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateConnectionResponses];
 
+export type GetConnectionOptionsData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/connections/options';
+};
+
+export type GetConnectionOptionsErrors = {
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to retrieve options
+     */
+    500: ErrorResponse;
+};
+
+export type GetConnectionOptionsError = GetConnectionOptionsErrors[keyof GetConnectionOptionsErrors];
+
+export type GetConnectionOptionsResponses = {
+    /**
+     * Connection options retrieved successfully
+     */
+    200: ConnectionOptionsResponse;
+};
+
+export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof GetConnectionOptionsResponses];
+
+export type ExchangeLinkTokenData = {
+    body: ExchangeTokenRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/connections/link/exchange';
+};
+
+export type ExchangeLinkTokenErrors = {
+    /**
+     * Invalid token or provider
+     */
+    400: ErrorResponse;
+    /**
+     * Connection not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Token exchange failed
+     */
+    500: ErrorResponse;
+};
+
+export type ExchangeLinkTokenError = ExchangeLinkTokenErrors[keyof ExchangeLinkTokenErrors];
+
+export type ExchangeLinkTokenResponses = {
+    /**
+     * Token exchanged successfully
+     */
+    200: unknown;
+};
+
+export type CreateLinkTokenData = {
+    body: LinkTokenRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/connections/link/token';
+};
+
+export type CreateLinkTokenErrors = {
+    /**
+     * Invalid provider or request
+     */
+    400: ErrorResponse;
+    /**
+     * Entity not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to create link token
+     */
+    500: ErrorResponse;
+};
+
+export type CreateLinkTokenError = CreateLinkTokenErrors[keyof CreateLinkTokenErrors];
+
+export type CreateLinkTokenResponses = {
+    /**
+     * Link token created successfully
+     */
+    200: unknown;
+};
+
+export type InitOAuthData = {
+    body: OAuthInitRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/connections/oauth/init';
+};
+
+export type InitOAuthErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type InitOAuthError = InitOAuthErrors[keyof InitOAuthErrors];
+
+export type InitOAuthResponses = {
+    /**
+     * Successful Response
+     */
+    200: OAuthInitResponse;
+};
+
+export type InitOAuthResponse = InitOAuthResponses[keyof InitOAuthResponses];
+
+export type OauthCallbackData = {
+    body: OAuthCallbackRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Provider
+         * OAuth provider name
+         */
+        provider: string;
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/connections/oauth/callback/{provider}';
+};
+
+export type OauthCallbackErrors = {
+    /**
+     * OAuth error or invalid state
+     */
+    400: ErrorResponse;
+    /**
+     * State does not match user
+     */
+    403: ErrorResponse;
+    /**
+     * Connection not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * OAuth callback processing failed
+     */
+    500: ErrorResponse;
+};
+
+export type OauthCallbackError = OauthCallbackErrors[keyof OauthCallbackErrors];
+
+export type OauthCallbackResponses = {
+    /**
+     * OAuth flow completed successfully
+     */
+    200: unknown;
+};
+
 export type DeleteConnectionData = {
     body?: never;
     headers?: {
@@ -5395,6 +5302,69 @@ export type GetConnectionResponses = {
 };
 
 export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionResponses];
+
+export type SyncConnectionData = {
+    body: SyncConnectionRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * Connection Id
+         * Connection identifier
+         */
+        connection_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
+};
+
+export type SyncConnectionErrors = {
+    /**
+     * Access denied - admin role required
+     */
+    403: ErrorResponse;
+    /**
+     * Connection not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to start sync
+     */
+    500: ErrorResponse;
+};
+
+export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
+
+export type SyncConnectionResponses = {
+    /**
+     * Response Syncconnection
+     * Sync started successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
 
 export type AutoSelectAgentData = {
     body: AgentRequest;
@@ -5969,60 +5939,6 @@ export type CreateBackupResponses = {
     202: unknown;
 };
 
-export type ExportBackupData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Backup Id
-         * Backup identifier
-         */
-        backup_id: string;
-        /**
-         * Graph Id
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/backups/{backup_id}/export';
-};
-
-export type ExportBackupErrors = {
-    /**
-     * Access denied or backup is encrypted
-     */
-    403: unknown;
-    /**
-     * Backup not found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ExportBackupError = ExportBackupErrors[keyof ExportBackupErrors];
-
-export type ExportBackupResponses = {
-    /**
-     * Backup exported successfully
-     */
-    200: unknown;
-};
-
 export type GetBackupDownloadUrlData = {
     body?: never;
     headers?: {
@@ -6101,6 +6017,11 @@ export type RestoreBackupData = {
     };
     path: {
         /**
+         * Backup Id
+         * Backup identifier
+         */
+        backup_id: string;
+        /**
          * Graph Id
          * Graph database identifier
          */
@@ -6113,7 +6034,7 @@ export type RestoreBackupData = {
          */
         token?: string | null;
     };
-    url: '/v1/graphs/{graph_id}/backups/restore';
+    url: '/v1/graphs/{graph_id}/backups/{backup_id}/restore';
 };
 
 export type RestoreBackupErrors = {
@@ -6386,7 +6307,7 @@ export type ExecuteCypherQueryResponses = {
     202: unknown;
 };
 
-export type GetGraphSchemaInfoData = {
+export type GetGraphSchemaData = {
     body?: never;
     headers?: {
         /**
@@ -6408,10 +6329,10 @@ export type GetGraphSchemaInfoData = {
          */
         token?: string | null;
     };
-    url: '/v1/graphs/{graph_id}/schema/info';
+    url: '/v1/graphs/{graph_id}/schema';
 };
 
-export type GetGraphSchemaInfoErrors = {
+export type GetGraphSchemaErrors = {
     /**
      * Access denied to graph
      */
@@ -6426,11 +6347,11 @@ export type GetGraphSchemaInfoErrors = {
     500: unknown;
 };
 
-export type GetGraphSchemaInfoError = GetGraphSchemaInfoErrors[keyof GetGraphSchemaInfoErrors];
+export type GetGraphSchemaError = GetGraphSchemaErrors[keyof GetGraphSchemaErrors];
 
-export type GetGraphSchemaInfoResponses = {
+export type GetGraphSchemaResponses = {
     /**
-     * Response Getgraphschemainfo
+     * Response Getgraphschema
      * Schema information retrieved successfully
      */
     200: {
@@ -6438,7 +6359,60 @@ export type GetGraphSchemaInfoResponses = {
     };
 };
 
-export type GetGraphSchemaInfoResponse = GetGraphSchemaInfoResponses[keyof GetGraphSchemaInfoResponses];
+export type GetGraphSchemaResponse = GetGraphSchemaResponses[keyof GetGraphSchemaResponses];
+
+export type ExportGraphSchemaData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * The graph ID to export schema from
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Format
+         * Export format: json, yaml, or cypher
+         */
+        format?: string;
+        /**
+         * Include Data Stats
+         * Include statistics about actual data in the graph
+         */
+        include_data_stats?: boolean;
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/schema/export';
+};
+
+export type ExportGraphSchemaErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ExportGraphSchemaError = ExportGraphSchemaErrors[keyof ExportGraphSchemaErrors];
+
+export type ExportGraphSchemaResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchemaExportResponse;
+};
+
+export type ExportGraphSchemaResponse = ExportGraphSchemaResponses[keyof ExportGraphSchemaResponses];
 
 export type ValidateSchemaData = {
     /**
@@ -6497,105 +6471,6 @@ export type ValidateSchemaResponses = {
 };
 
 export type ValidateSchemaResponse = ValidateSchemaResponses[keyof ValidateSchemaResponses];
-
-export type ExportGraphSchemaData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * The graph ID to export schema from
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Format
-         * Export format: json, yaml, or cypher
-         */
-        format?: string;
-        /**
-         * Include Data Stats
-         * Include statistics about actual data in the graph
-         */
-        include_data_stats?: boolean;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/schema/export';
-};
-
-export type ExportGraphSchemaErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ExportGraphSchemaError = ExportGraphSchemaErrors[keyof ExportGraphSchemaErrors];
-
-export type ExportGraphSchemaResponses = {
-    /**
-     * Successful Response
-     */
-    200: SchemaExportResponse;
-};
-
-export type ExportGraphSchemaResponse = ExportGraphSchemaResponses[keyof ExportGraphSchemaResponses];
-
-export type ListSchemaExtensionsData = {
-    body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         * The graph ID to list extensions for
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/schema/extensions';
-};
-
-export type ListSchemaExtensionsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListSchemaExtensionsError = ListSchemaExtensionsErrors[keyof ListSchemaExtensionsErrors];
-
-export type ListSchemaExtensionsResponses = {
-    /**
-     * Response Listschemaextensions
-     * Successful Response
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type ListSchemaExtensionsResponse = ListSchemaExtensionsResponses[keyof ListSchemaExtensionsResponses];
 
 export type GetCurrentGraphBillData = {
     body?: never;
@@ -7637,11 +7512,8 @@ export type GetSubgraphQuotaResponses = {
 
 export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgraphQuotaResponses];
 
-export type CopyDataToGraphData = {
-    /**
-     * Request
-     */
-    body: S3CopyRequest | UrlCopyRequest | DataFrameCopyRequest;
+export type ListTablesV1GraphsGraphIdTablesGetData = {
+    body?: never;
     headers?: {
         /**
          * Authorization
@@ -7651,7 +7523,7 @@ export type CopyDataToGraphData = {
     path: {
         /**
          * Graph Id
-         * Target graph identifier (user graphs only - shared repositories not allowed)
+         * Graph database identifier
          */
         graph_id: string;
     };
@@ -7662,54 +7534,488 @@ export type CopyDataToGraphData = {
          */
         token?: string | null;
     };
-    url: '/v1/graphs/{graph_id}/copy';
+    url: '/v1/graphs/{graph_id}/tables';
 };
 
-export type CopyDataToGraphErrors = {
+export type ListTablesV1GraphsGraphIdTablesGetErrors = {
     /**
-     * Invalid request parameters
+     * Not authenticated
      */
-    400: unknown;
+    401: unknown;
     /**
-     * Access denied or shared repository
+     * Access denied to graph
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Operation timeout
+     * Graph not found
      */
-    408: unknown;
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListTablesV1GraphsGraphIdTablesGetError = ListTablesV1GraphsGraphIdTablesGetErrors[keyof ListTablesV1GraphsGraphIdTablesGetErrors];
+
+export type ListTablesV1GraphsGraphIdTablesGetResponses = {
+    /**
+     * Tables retrieved successfully
+     */
+    200: TableListResponse;
+};
+
+export type ListTablesV1GraphsGraphIdTablesGetResponse = ListTablesV1GraphsGraphIdTablesGetResponses[keyof ListTablesV1GraphsGraphIdTablesGetResponses];
+
+export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * Table Name
+         * Table name
+         */
+        table_name: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
+};
+
+export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph or table not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetError = ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetErrors[keyof ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetErrors];
+
+export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponses = {
+    /**
+     * Response List Table Files V1 Graphs  Graph Id  Tables  Table Name  Files Get
+     * Files retrieved successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponse = ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponses[keyof ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponses];
+
+export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostData = {
+    /**
+     * Upload request
+     */
+    body: FileUploadRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * Table Name
+         * Table name
+         */
+        table_name: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
+};
+
+export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostErrors = {
+    /**
+     * Invalid file format or name
+     */
+    400: ErrorResponse;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph or table not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostError = GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostErrors[keyof GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostErrors];
+
+export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponses = {
+    /**
+     * Upload URL generated successfully
+     */
+    200: FileUploadResponse;
+};
+
+export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponse = GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponses[keyof GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponses];
+
+export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * File Id
+         * File ID
+         */
+        file_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
+};
+
+export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * File not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteError = DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteErrors[keyof DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteErrors];
+
+export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponses = {
+    /**
+     * Response Delete File V1 Graphs  Graph Id  Tables Files  File Id  Delete
+     * File deleted successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponse = DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponses[keyof DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponses];
+
+export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetData = {
+    body?: never;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * File Id
+         * File ID
+         */
+        file_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
+};
+
+export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * File not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetError = GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetErrors[keyof GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetErrors];
+
+export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponses = {
+    /**
+     * Response Get File Info V1 Graphs  Graph Id  Tables Files  File Id  Get
+     * File info retrieved successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponse = GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponses[keyof GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponses];
+
+export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchData = {
+    /**
+     * File update details
+     */
+    body: FileUpdateRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+        /**
+         * File Id
+         * File identifier
+         */
+        file_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
+};
+
+export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchErrors = {
+    /**
+     * Invalid file size
+     */
+    400: ErrorResponse;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph or file not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchError = UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchErrors[keyof UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchErrors];
+
+export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponses = {
+    /**
+     * Response Update File V1 Graphs  Graph Id  Tables Files  File Id  Patch
+     * File updated successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponse = UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponses[keyof UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponses];
+
+export type IngestTablesV1GraphsGraphIdTablesIngestPostData = {
+    /**
+     * Ingestion request
+     */
+    body: BulkIngestRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/tables/ingest';
+};
+
+export type IngestTablesV1GraphsGraphIdTablesIngestPostErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Rate limit exceeded
+     * Ingestion failed
      */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-    /**
-     * Service unavailable
-     */
-    503: unknown;
+    500: ErrorResponse;
 };
 
-export type CopyDataToGraphError = CopyDataToGraphErrors[keyof CopyDataToGraphErrors];
+export type IngestTablesV1GraphsGraphIdTablesIngestPostError = IngestTablesV1GraphsGraphIdTablesIngestPostErrors[keyof IngestTablesV1GraphsGraphIdTablesIngestPostErrors];
 
-export type CopyDataToGraphResponses = {
+export type IngestTablesV1GraphsGraphIdTablesIngestPostResponses = {
     /**
-     * Copy operation accepted and started
+     * Ingestion completed
      */
-    200: CopyResponse;
-    /**
-     * Copy operation queued for execution
-     */
-    202: unknown;
+    200: BulkIngestResponse;
 };
 
-export type CopyDataToGraphResponse = CopyDataToGraphResponses[keyof CopyDataToGraphResponses];
+export type IngestTablesV1GraphsGraphIdTablesIngestPostResponse = IngestTablesV1GraphsGraphIdTablesIngestPostResponses[keyof IngestTablesV1GraphsGraphIdTablesIngestPostResponses];
+
+export type QueryTablesV1GraphsGraphIdTablesQueryPostData = {
+    /**
+     * SQL query request
+     */
+    body: TableQueryRequest;
+    headers?: {
+        /**
+         * Authorization
+         */
+        authorization?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         * Graph database identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Token
+         * JWT token for SSE authentication
+         */
+        token?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/tables/query';
+};
+
+export type QueryTablesV1GraphsGraphIdTablesQueryPostErrors = {
+    /**
+     * Invalid SQL query
+     */
+    400: ErrorResponse;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied to graph
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type QueryTablesV1GraphsGraphIdTablesQueryPostError = QueryTablesV1GraphsGraphIdTablesQueryPostErrors[keyof QueryTablesV1GraphsGraphIdTablesQueryPostErrors];
+
+export type QueryTablesV1GraphsGraphIdTablesQueryPostResponses = {
+    /**
+     * Query executed successfully
+     */
+    200: TableQueryResponse;
+};
+
+export type QueryTablesV1GraphsGraphIdTablesQueryPostResponse = QueryTablesV1GraphsGraphIdTablesQueryPostResponses[keyof QueryTablesV1GraphsGraphIdTablesQueryPostResponses];
 
 export type GetGraphsData = {
     body?: never;

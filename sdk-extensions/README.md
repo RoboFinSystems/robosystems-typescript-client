@@ -92,50 +92,49 @@ const result = await queryClient.executeWithProgress(
 console.log(`Query completed with ${result.rowCount} results`)
 ```
 
-### Data Copy Operations with Progress Monitoring
+### Table Ingestion with Progress Monitoring
 
 ```typescript
-import { CopyClient } from '@robosystems/client/extensions'
+import { TableIngestClient } from '@robosystems/client/extensions'
 
-const copyClient = new CopyClient({
+const tableClient = new TableIngestClient({
   baseUrl: 'https://api.robosystems.ai',
   headers: { 'X-API-Key': 'your-api-key' },
 })
 
-// Copy data from S3 with real-time progress
-const result = await copyClient.copyFromS3(
+// Upload Parquet file with real-time progress
+import { readFileSync } from 'fs'
+
+const fileBuffer = readFileSync('data/companies.parquet')
+const result = await tableClient.uploadParquetFile(
   'your-graph-id',
+  'Company',
+  Buffer.from(fileBuffer),
   {
-    table_name: 'companies',
-    source_type: 's3',
-    s3_path: 's3://my-bucket/data/companies.csv',
-    s3_access_key_id: 'AWS_ACCESS_KEY',
-    s3_secret_access_key: 'AWS_SECRET_KEY',
-    s3_region: 'us-east-1',
-    file_format: 'csv',
-    ignore_errors: false, // Stop on first error
-  },
-  {
-    onProgress: (message, percent) => {
-      console.log(`Copy progress: ${message} (${percent}%)`)
-      updateProgressBar(percent)
+    onProgress: (message) => {
+      console.log(`Upload progress: ${message}`)
     },
-    onQueueUpdate: (position, estimatedWait) => {
-      console.log(`Queue position: ${position}, ETA: ${estimatedWait}s`)
-    },
-    onWarning: (warning) => {
-      console.warn(`Copy warning: ${warning}`)
-    },
+    fixLocalStackUrl: true, // Auto-fix for local development
   }
 )
 
 // Check results
-if (result.status === 'completed') {
-  console.log(`Successfully imported ${result.rowsImported} rows`)
-  const stats = copyClient.calculateStatistics(result)
-  console.log(`Throughput: ${stats.throughput.toFixed(2)} rows/second`)
-} else if (result.status === 'partial') {
-  console.log(`Imported ${result.rowsImported} rows, skipped ${result.rowsSkipped}`)
+if (result.success) {
+  console.log(`Successfully uploaded ${result.rowCount} rows to ${result.tableName}`)
+  console.log(`File size: ${(result.fileSize / 1024 / 1024).toFixed(2)} MB`)
+
+  // Ingest the table into the graph
+  const ingestResult = await tableClient.ingestAllTables('your-graph-id', {
+    ignoreErrors: true,
+    rebuild: false,
+    onProgress: (msg) => console.log(`Ingest: ${msg}`),
+  })
+
+  if (ingestResult.success) {
+    console.log(`Ingestion started. Operation ID: ${ingestResult.operationId}`)
+  }
+} else {
+  console.error(`Upload failed: ${result.error}`)
 }
 ```
 
@@ -229,110 +228,108 @@ try {
 }
 ```
 
-## 📤 Data Copy Operations
+## 📤 Table Ingestion
 
-### CopyClient for S3 Data Import
+### TableIngestClient for Parquet File Uploads
+
+Upload Parquet files directly to staging tables with simplified API.
 
 ```typescript
-import { CopyClient, CopySourceType } from '@robosystems/client/extensions'
+import { TableIngestClient } from '@robosystems/client/extensions'
 
-const copyClient = new CopyClient({
+const tableClient = new TableIngestClient({
   baseUrl: 'https://api.robosystems.ai',
   headers: { 'X-API-Key': 'your-api-key' },
 })
 
-// Batch copy multiple tables
-const results = await copyClient.batchCopyFromS3('graph-id', [
-  {
-    request: {
-      table_name: 'companies',
-      source_type: 's3',
-      s3_path: 's3://bucket/companies.csv',
-      s3_access_key_id: 'KEY',
-      s3_secret_access_key: 'SECRET',
-      file_format: 'csv',
-    },
-  },
-  {
-    request: {
-      table_name: 'transactions',
-      source_type: 's3',
-      s3_path: 's3://bucket/transactions.parquet',
-      s3_access_key_id: 'KEY',
-      s3_secret_access_key: 'SECRET',
-      file_format: 'parquet',
-      ignore_errors: true, // Continue on errors
-    },
-  },
-])
+// Upload a Parquet file (Node.js with Buffer)
+import { readFileSync } from 'fs'
 
-results.forEach((result, index) => {
-  console.log(`Table ${index}: ${result.status}`)
-  if (result.rowsImported) {
-    console.log(`  Imported: ${result.rowsImported} rows`)
-  }
+const fileBuffer = readFileSync('data/entities.parquet')
+const result = await tableClient.uploadParquetFile('graph-id', 'Entity', Buffer.from(fileBuffer), {
+  onProgress: (msg) => console.log(msg),
+  fixLocalStackUrl: true, // Auto-fix for local development
 })
+
+if (result.success) {
+  console.log(`✅ Uploaded ${result.rowCount} rows to ${result.tableName}`)
+} else {
+  console.error(`❌ Upload failed: ${result.error}`)
+}
 ```
 
-### Copy with Retry Logic
+### Upload File in Browser
 
 ```typescript
-// Retry failed copy operations with exponential backoff
-const result = await copyClient.copyWithRetry(
+// Browser with File object
+const handleFileUpload = async (file: File) => {
+  const result = await tableClient.uploadParquetFile('graph-id', 'Entity', file, {
+    onProgress: (msg) => console.log(msg),
+  })
+
+  if (result.success) {
+    console.log(`Uploaded ${result.rowCount} rows`)
+  }
+}
+
+// Usage in React component
+<input type="file" accept=".parquet" onChange={(e) => {
+  const file = e.target.files?.[0]
+  if (file) handleFileUpload(file)
+}} />
+```
+
+### Upload and Ingest in One Step
+
+```typescript
+// Upload a file and immediately ingest it into the graph
+const { upload, ingest } = await tableClient.uploadAndIngest(
   'graph-id',
+  'Entity',
+  fileBuffer,
   {
-    table_name: 'large_dataset',
-    source_type: 's3',
-    s3_path: 's3://bucket/large-dataset.csv',
-    s3_access_key_id: 'KEY',
-    s3_secret_access_key: 'SECRET',
-    max_file_size_gb: 50,
-    extended_timeout: true,
+    // Upload options
+    onProgress: (msg) => console.log(`Upload: ${msg}`),
   },
-  CopySourceType.S3,
-  3, // Max retries
   {
-    onProgress: (message, percent) => {
-      console.log(`Progress: ${message} (${percent}%)`)
-    },
+    // Ingest options
+    ignoreErrors: true,
+    rebuild: false,
+    onProgress: (msg) => console.log(`Ingest: ${msg}`),
   }
 )
+
+if (upload.success && ingest?.success) {
+  console.log(`Operation ID: ${ingest.operationId}`)
+}
 ```
 
-### Monitor Multiple Copy Operations
+### List Staging Tables
 
 ```typescript
-// Start multiple copy operations
-const operations = await Promise.all([
-  copyClient.copyFromS3('graph1', request1),
-  copyClient.copyFromS3('graph2', request2),
-])
+// List all staging tables in a graph
+const tables = await tableClient.listStagingTables('graph-id')
 
-// Extract operation IDs for monitoring
-const operationIds = operations
-  .filter((op) => op.status === 'accepted')
-  .map((op) => op.operationId!)
-
-// Monitor all operations concurrently
-const results = await copyClient.monitorMultipleCopies(operationIds, {
-  onProgress: (message) => console.log(`Progress: ${message}`),
+tables.forEach((table) => {
+  console.log(`Table: ${table.tableName}`)
+  console.log(`  Rows: ${table.rowCount}`)
+  console.log(`  Files: ${table.fileCount}`)
+  console.log(`  Size: ${(table.totalSizeBytes / 1024 / 1024).toFixed(2)} MB`)
 })
 ```
 
-### Copy Statistics
+### Ingest All Tables
 
 ```typescript
-const result = await copyClient.copyFromS3('graph-id', request)
+// Ingest all staging tables into the graph
+const result = await tableClient.ingestAllTables('graph-id', {
+  ignoreErrors: true, // Continue on errors
+  rebuild: false, // Don't rebuild existing data
+  onProgress: (msg) => console.log(msg),
+})
 
-// Calculate performance statistics
-const stats = copyClient.calculateStatistics(result)
-if (stats) {
-  console.log(`Total Rows: ${stats.totalRows}`)
-  console.log(`Imported: ${stats.importedRows}`)
-  console.log(`Skipped: ${stats.skippedRows}`)
-  console.log(`Throughput: ${stats.throughput.toFixed(2)} rows/sec`)
-  console.log(`Duration: ${stats.duration.toFixed(2)} seconds`)
-  console.log(`Bytes Processed: ${(stats.bytesProcessed / 1024 / 1024).toFixed(2)} MB`)
+if (result.success) {
+  console.log(`Ingestion started. Operation ID: ${result.operationId}`)
 }
 ```
 
@@ -789,7 +786,7 @@ describe('SSE Integration', () => {
 
 - **`SSEClient`** - Server-Sent Events client with auto-reconnection
 - **`QueryClient`** - Enhanced query execution with SSE support
-- **`CopyClient`** - Data copy operations with S3 import and progress monitoring
+- **`TableIngestClient`** - Parquet file uploads to staging tables with progress monitoring
 - **`OperationClient`** - Long-running operation monitoring
 - **`StreamProcessor`** - Efficient stream processing for large datasets
 

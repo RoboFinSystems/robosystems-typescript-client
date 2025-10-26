@@ -7,14 +7,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { client } from '../sdk/client.gen'
-import type { S3CopyRequest } from '../sdk/types.gen'
 import { extractTokenFromSDKClient, getSDKExtensionsConfig } from './config'
-import type { CopyOptions, CopyResult } from './CopyClient'
-import { CopyClient } from './CopyClient'
 import type { OperationProgress, OperationResult } from './OperationClient'
 import { OperationClient } from './OperationClient'
 import type { QueryOptions, QueryResult } from './QueryClient'
 import { QueryClient } from './QueryClient'
+import type { FileInput, IngestOptions, UploadOptions, UploadResult } from './TableIngestClient'
+import { TableIngestClient } from './TableIngestClient'
 
 /**
  * Hook for executing Cypher queries with loading states and error handling
@@ -423,11 +422,9 @@ export function useMultipleOperations<T = any>() {
  */
 export function useSDKClients() {
   const [clients, setClients] = useState<{
-    copy: CopyClient | null
     query: QueryClient | null
     operations: OperationClient | null
   }>({
-    copy: null,
     query: null,
     operations: null,
   })
@@ -446,18 +443,15 @@ export function useSDKClients() {
       token,
     }
 
-    const copyClient = new CopyClient(baseConfig)
     const queryClient = new QueryClient(baseConfig)
     const operationsClient = new OperationClient(baseConfig)
 
     setClients({
-      copy: copyClient,
       query: queryClient,
       operations: operationsClient,
     })
 
     return () => {
-      copyClient.close()
       queryClient.close()
       operationsClient.closeAll()
     }
@@ -467,35 +461,31 @@ export function useSDKClients() {
 }
 
 /**
- * Hook for copying data from S3 to graph database with progress monitoring
+ * Hook for uploading Parquet files to staging tables
  *
  * @example
  * ```tsx
- * const { copyFromS3, loading, progress, error, result } = useCopy('graph_123')
+ * const { upload, uploadAndIngest, loading, error, progress } = useTableUpload('graph_123')
  *
- * const handleImport = async () => {
- *   const result = await copyFromS3({
- *     table_name: 'companies',
- *     source_type: 's3',
- *     s3_uri: 's3://my-bucket/data.csv',
- *     aws_access_key_id: 'KEY',
- *     aws_secret_access_key: 'SECRET',
+ * const handleFileUpload = async (file: File) => {
+ *   const result = await upload('Entity', file, {
+ *     onProgress: (msg) => console.log(msg),
+ *     fixLocalStackUrl: true,
  *   })
+ *
+ *   if (result?.success) {
+ *     console.log(`Uploaded ${result.rowCount} rows`)
+ *   }
  * }
  * ```
  */
-export function useCopy(graphId: string) {
+export function useTableUpload(graphId: string) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  const [result, setResult] = useState<CopyResult | null>(null)
-  const [progress, setProgress] = useState<{
-    message: string
-    percent?: number
-  } | null>(null)
-  const [queuePosition, setQueuePosition] = useState<number | null>(null)
-  const clientRef = useRef<CopyClient>(null)
+  const [progress, setProgress] = useState<string | null>(null)
+  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
+  const clientRef = useRef<TableIngestClient>(null)
 
-  // Initialize client
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
@@ -503,75 +493,42 @@ export function useCopy(graphId: string) {
     // Extract JWT token (uses centralized logic)
     const token = extractTokenFromSDKClient()
 
-    clientRef.current = new CopyClient({
+    clientRef.current = new TableIngestClient({
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
-      headers: sdkConfig.headers,
       token,
+      headers: sdkConfig.headers,
     })
-
-    return () => {
-      clientRef.current?.close()
-    }
   }, [])
 
-  const copyFromS3 = useCallback(
-    async (request: S3CopyRequest, options?: CopyOptions): Promise<CopyResult | null> => {
+  const upload = useCallback(
+    async (
+      tableName: string,
+      fileOrBuffer: FileInput,
+      options?: UploadOptions
+    ): Promise<UploadResult | null> => {
       if (!clientRef.current) return null
 
       setLoading(true)
       setError(null)
-      setResult(null)
+      setUploadResult(null)
       setProgress(null)
-      setQueuePosition(null)
 
       try {
-        const copyResult = await clientRef.current.copyFromS3(graphId, request, {
+        const result = await clientRef.current.uploadParquetFile(graphId, tableName, fileOrBuffer, {
           ...options,
-          onProgress: (message, progressPercent) => {
-            setProgress({ message, percent: progressPercent })
-            setQueuePosition(null) // Clear queue position when executing
-          },
-          onQueueUpdate: (position, estimatedWait) => {
-            setQueuePosition(position)
-            setProgress({
-              message: `Queue position: ${position} (est. ${estimatedWait}s)`,
-            })
-          },
-          onWarning: (warning) => {
-            console.warn('Copy warning:', warning)
+          onProgress: (msg) => {
+            setProgress(msg)
+            options?.onProgress?.(msg)
           },
         })
 
-        setResult(copyResult)
-        return copyResult
-      } catch (err) {
-        const error = err as Error
-        setError(error)
-        return null
-      } finally {
-        setLoading(false)
-        setQueuePosition(null)
-      }
-    },
-    [graphId]
-  )
+        setUploadResult(result)
 
-  // Simple copy method with retry logic
-  const copyWithRetry = useCallback(
-    async (request: S3CopyRequest, maxRetries: number = 3): Promise<CopyResult | null> => {
-      if (!clientRef.current) return null
+        if (!result.success && result.error) {
+          setError(new Error(result.error))
+        }
 
-      setLoading(true)
-      setError(null)
-
-      try {
-        const result = await clientRef.current.copyWithRetry(graphId, request, 's3', maxRetries, {
-          onProgress: (message, progressPercent) => {
-            setProgress({ message, percent: progressPercent })
-          },
-        })
-        setResult(result)
         return result
       } catch (err) {
         const error = err as Error
@@ -579,25 +536,121 @@ export function useCopy(graphId: string) {
         return null
       } finally {
         setLoading(false)
+        setProgress(null)
       }
     },
     [graphId]
   )
 
-  // Get statistics from the last copy operation
-  const getStatistics = useCallback(() => {
-    if (!clientRef.current || !result) return null
-    return clientRef.current.calculateStatistics(result)
-  }, [result])
+  const uploadAndIngest = useCallback(
+    async (
+      tableName: string,
+      fileOrBuffer: FileInput,
+      uploadOptions?: UploadOptions,
+      ingestOptions?: IngestOptions
+    ): Promise<{ upload: UploadResult; ingest: any } | null> => {
+      if (!clientRef.current) return null
+
+      setLoading(true)
+      setError(null)
+      setUploadResult(null)
+      setProgress(null)
+
+      try {
+        const result = await clientRef.current.uploadAndIngest(
+          graphId,
+          tableName,
+          fileOrBuffer,
+          {
+            ...uploadOptions,
+            onProgress: (msg) => {
+              setProgress(msg)
+              uploadOptions?.onProgress?.(msg)
+            },
+          },
+          {
+            ...ingestOptions,
+            onProgress: (msg) => {
+              setProgress(msg)
+              ingestOptions?.onProgress?.(msg)
+            },
+          }
+        )
+
+        setUploadResult(result.upload)
+
+        if (!result.upload.success && result.upload.error) {
+          setError(new Error(result.upload.error))
+        } else if (result.ingest && !result.ingest.success && result.ingest.error) {
+          setError(new Error(result.ingest.error))
+        }
+
+        return result
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        return null
+      } finally {
+        setLoading(false)
+        setProgress(null)
+      }
+    },
+    [graphId]
+  )
+
+  const listTables = useCallback(async () => {
+    if (!clientRef.current) return []
+
+    try {
+      return await clientRef.current.listStagingTables(graphId)
+    } catch (err) {
+      setError(err as Error)
+      return []
+    }
+  }, [graphId])
+
+  const ingestAllTables = useCallback(
+    async (options?: IngestOptions) => {
+      if (!clientRef.current) return null
+
+      setLoading(true)
+      setError(null)
+      setProgress(null)
+
+      try {
+        const result = await clientRef.current.ingestAllTables(graphId, {
+          ...options,
+          onProgress: (msg) => {
+            setProgress(msg)
+            options?.onProgress?.(msg)
+          },
+        })
+
+        if (!result.success && result.error) {
+          setError(new Error(result.error))
+        }
+
+        return result
+      } catch (err) {
+        const error = err as Error
+        setError(error)
+        return null
+      } finally {
+        setLoading(false)
+        setProgress(null)
+      }
+    },
+    [graphId]
+  )
 
   return {
-    copyFromS3,
-    copyWithRetry,
-    getStatistics,
+    upload,
+    uploadAndIngest,
+    listTables,
+    ingestAllTables,
     loading,
     error,
-    result,
     progress,
-    queuePosition,
+    uploadResult,
   }
 }
