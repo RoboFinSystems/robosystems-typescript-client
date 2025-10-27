@@ -9,6 +9,37 @@ import { createGraph, getGraphs, getOperationStatus } from '../sdk/sdk.gen'
 import type { GraphMetadata, InitialEntityData } from '../sdk/types.gen'
 import { OperationClient } from './OperationClient'
 
+// API Response Types
+interface GraphCreateResponse {
+  graph_id?: string
+  operation_id?: string
+}
+
+interface OperationStatusResponse {
+  status?: 'pending' | 'completed' | 'failed' | string
+  result?: {
+    graph_id?: string
+  }
+  error?: string
+  message?: string
+}
+
+interface GraphApiData {
+  graph_id?: string
+  id?: string
+  graph_name?: string
+  name?: string
+  description?: string
+  schema_extensions?: string[]
+  tags?: string[]
+  created_at?: string
+  status?: string
+}
+
+interface GetGraphsResponse {
+  graphs?: GraphApiData[]
+}
+
 export interface GraphMetadataInput {
   graphName: string
   description?: string
@@ -106,7 +137,7 @@ export class GraphClient {
     })
 
     // Check if we got immediate graph_id
-    const responseData = response.data as any
+    const responseData = response.data as GraphCreateResponse
     if (responseData?.graph_id) {
       if (onProgress) {
         onProgress(`Graph created: ${responseData.graph_id}`)
@@ -131,7 +162,7 @@ export class GraphClient {
           path: { operation_id: operationId },
         })
 
-        const statusData = statusResponse.data as any
+        const statusData = statusResponse.data as OperationStatusResponse
         const status = statusData?.status
 
         if (onProgress) {
@@ -173,9 +204,9 @@ export class GraphClient {
     // Use getGraphs to list all graphs and find the one we want
     // Note: This is a workaround since there's no dedicated getGraph endpoint yet
     const response = await getGraphs()
-    const graphs = (response.data as any)?.graphs || []
+    const graphs = (response.data as GetGraphsResponse)?.graphs || []
 
-    const graph = graphs.find((g: any) => g.graph_id === graphId || g.id === graphId)
+    const graph = graphs.find((g) => g.graph_id === graphId || g.id === graphId)
 
     if (!graph) {
       throw new Error(`Graph not found: ${graphId}`)
@@ -201,9 +232,9 @@ export class GraphClient {
     }
 
     const response = await getGraphs()
-    const graphs = (response.data as any)?.graphs || []
+    const graphs = (response.data as GetGraphsResponse)?.graphs || []
 
-    return graphs.map((graph: any) => ({
+    return graphs.map((graph) => ({
       graphId: graph.graph_id || graph.id,
       graphName: graph.graph_name || graph.name,
       description: graph.description,
