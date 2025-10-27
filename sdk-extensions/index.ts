@@ -9,6 +9,7 @@ import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { SSEClient } from './SSEClient'
 import { TableIngestClient } from './TableIngestClient'
+import { GraphClient } from './GraphClient'
 
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
@@ -33,6 +34,7 @@ export class RoboSystemsExtensions {
   public readonly query: QueryClient
   public readonly operations: OperationClient
   public readonly tables: TableIngestClient
+  public readonly graphs: GraphClient
   private config: ResolvedConfig
 
   constructor(config: RoboSystemsExtensionConfig = {}) {
@@ -72,6 +74,13 @@ export class RoboSystemsExtensions {
       token: this.config.token,
       headers: this.config.headers,
     })
+
+    this.graphs = new GraphClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
   }
 
   /**
@@ -101,6 +110,7 @@ export class RoboSystemsExtensions {
   close(): void {
     this.query.close()
     this.operations.closeAll()
+    this.graphs.close()
   }
 }
 
@@ -109,7 +119,8 @@ export * from './OperationClient'
 export * from './QueryClient'
 export * from './SSEClient'
 export * from './TableIngestClient'
-export { OperationClient, QueryClient, SSEClient, TableIngestClient }
+export * from './GraphClient'
+export { OperationClient, QueryClient, SSEClient, TableIngestClient, GraphClient }
 
 // Export React hooks
 export {
@@ -137,6 +148,9 @@ export const extensions = {
   },
   get operations() {
     return getExtensions().operations
+  },
+  get graphs() {
+    return getExtensions().graphs
   },
   monitorOperation: (operationId: string, onProgress?: (progress: any) => void) =>
     getExtensions().monitorOperation(operationId, onProgress),
