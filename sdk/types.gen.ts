@@ -5759,7 +5759,7 @@ export type ExecuteCypherQueryData = {
          * Chunk Size
          * Rows per chunk for streaming
          */
-        chunk_size?: number;
+        chunk_size?: number | null;
         /**
          * Test Mode
          * Enable test mode for better debugging
@@ -7203,9 +7203,16 @@ export type GetGraphsData = {
     url: '/v1/graphs';
 };
 
+export type GetGraphsErrors = {
+    /**
+     * Error retrieving graphs
+     */
+    500: unknown;
+};
+
 export type GetGraphsResponses = {
     /**
-     * Successful Response
+     * Graphs retrieved successfully
      */
     200: UserGraphsResponse;
 };
@@ -7242,9 +7249,16 @@ export type GetAvailableExtensionsData = {
     url: '/v1/graphs/extensions';
 };
 
+export type GetAvailableExtensionsErrors = {
+    /**
+     * Failed to retrieve extensions
+     */
+    500: unknown;
+};
+
 export type GetAvailableExtensionsResponses = {
     /**
-     * Successful Response
+     * Extensions retrieved successfully
      */
     200: AvailableExtensionsResponse;
 };
