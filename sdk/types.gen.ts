@@ -1231,12 +1231,12 @@ export type CustomSchemaDefinition = {
 export type CypherQueryRequest = {
     /**
      * Query
-     * The Cypher query to execute
+     * The Cypher query to execute. Use parameters ($param_name) for all dynamic values to prevent injection attacks.
      */
     query: string;
     /**
      * Parameters
-     * Optional parameters for the Cypher query
+     * Query parameters for safe value substitution. ALWAYS use parameters instead of string interpolation.
      */
     parameters?: {
         [key: string]: unknown;
@@ -2623,7 +2623,7 @@ export type SchemaExportResponse = {
     graph_id: string;
     /**
      * Schema Definition
-     * Exported schema definition
+     * Exported schema definition (format depends on 'format' parameter)
      */
     schema_definition: {
         [key: string]: unknown;
@@ -2640,11 +2640,33 @@ export type SchemaExportResponse = {
     exported_at: string;
     /**
      * Data Stats
-     * Data statistics if requested
+     * Data statistics if requested (only when include_data_stats=true)
      */
     data_stats?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * SchemaInfoResponse
+ * Response model for runtime schema introspection.
+ *
+ * This model represents the actual current state of the graph database,
+ * showing what node labels, relationship types, and properties exist right now.
+ */
+export type SchemaInfoResponse = {
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Schema
+     * Runtime schema information showing actual database structure
+     */
+    schema: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -2688,24 +2710,24 @@ export type SchemaValidationResponse = {
     message: string;
     /**
      * Errors
-     * List of validation errors
+     * List of validation errors (only present when valid=false)
      */
     errors?: Array<string> | null;
     /**
      * Warnings
-     * List of warnings
+     * List of validation warnings (schema is still valid but has potential issues)
      */
     warnings?: Array<string> | null;
     /**
      * Stats
-     * Schema statistics (nodes, relationships, properties)
+     * Schema statistics (only present when valid=true)
      */
     stats?: {
         [key: string]: number;
     } | null;
     /**
      * Compatibility
-     * Compatibility check results if requested
+     * Compatibility check results (only when check_compatibility specified)
      */
     compatibility?: {
         [key: string]: unknown;
@@ -3180,9 +3202,14 @@ export type TableListResponse = {
 export type TableQueryRequest = {
     /**
      * Sql
-     * SQL query to execute on staging tables
+     * SQL query to execute on staging tables. Use ? placeholders or $param_name for dynamic values to prevent SQL injection.
      */
     sql: string;
+    /**
+     * Parameters
+     * Query parameters for safe value substitution. ALWAYS use parameters instead of string concatenation.
+     */
+    parameters?: Array<unknown> | null;
 };
 
 /**
@@ -5838,18 +5865,19 @@ export type GetGraphSchemaErrors = {
      * Failed to retrieve schema
      */
     500: unknown;
+    /**
+     * Schema operation timed out
+     */
+    504: unknown;
 };
 
 export type GetGraphSchemaError = GetGraphSchemaErrors[keyof GetGraphSchemaErrors];
 
 export type GetGraphSchemaResponses = {
     /**
-     * Response Getgraphschema
      * Schema information retrieved successfully
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: SchemaInfoResponse;
 };
 
 export type GetGraphSchemaResponse = GetGraphSchemaResponses[keyof GetGraphSchemaResponses];
@@ -5870,7 +5898,7 @@ export type ExportGraphSchemaData = {
         format?: string;
         /**
          * Include Data Stats
-         * Include statistics about actual data in the graph
+         * Include statistics about actual data in the graph (node counts, relationship counts)
          */
         include_data_stats?: boolean;
     };
@@ -5879,16 +5907,28 @@ export type ExportGraphSchemaData = {
 
 export type ExportGraphSchemaErrors = {
     /**
+     * Access denied to graph
+     */
+    403: unknown;
+    /**
+     * Schema not found for graph
+     */
+    404: unknown;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Failed to export schema
+     */
+    500: unknown;
 };
 
 export type ExportGraphSchemaError = ExportGraphSchemaErrors[keyof ExportGraphSchemaErrors];
 
 export type ExportGraphSchemaResponses = {
     /**
-     * Successful Response
+     * Schema exported successfully
      */
     200: SchemaExportResponse;
 };

@@ -1656,6 +1656,13 @@ export const getGraphUsageStats = <ThrowOnError extends boolean = false>(options
  * 1. Create file upload: `POST /v1/graphs/{graph_id}/tables/{table_name}/files`
  * 2. Ingest to graph: `POST /v1/graphs/{graph_id}/tables/ingest`
  *
+ * **Security Best Practice - Use Parameterized Queries:**
+ * ALWAYS use query parameters instead of string interpolation to prevent injection attacks:
+ * - ✅ SAFE: `MATCH (n:Entity {type: $entity_type}) RETURN n` with `parameters: {"entity_type": "Company"}`
+ * - ❌ UNSAFE: `MATCH (n:Entity {type: "Company"}) RETURN n` with user input concatenated into query string
+ *
+ * Query parameters provide automatic escaping and type safety. All examples in this API use parameterized queries.
+ *
  * This endpoint automatically selects the best execution strategy based on:
  * - Query characteristics (size, complexity)
  * - Client capabilities (SSE, NDJSON, JSON)
@@ -1727,13 +1734,38 @@ export const executeCypherQuery = <ThrowOnError extends boolean = false>(options
  * Get Runtime Graph Schema
  * Get runtime schema information for the specified graph database.
  *
- * This endpoint inspects the actual graph database structure and returns:
+ * ## What This Returns
+ *
+ * This endpoint inspects the **actual current state** of the graph database and returns:
  * - **Node Labels**: All node types currently in the database
  * - **Relationship Types**: All relationship types currently in the database
- * - **Node Properties**: Properties for each node type (limited to first 10 for performance)
+ * - **Node Properties**: Properties discovered from actual data (up to 10 properties per node type)
  *
- * This shows what actually exists in the database right now - the runtime state.
- * For the declared schema definition, use GET /schema/export instead.
+ * ## Runtime vs Declared Schema
+ *
+ * **Use this endpoint** (`/schema`) when you need to know:
+ * - What data is ACTUALLY in the database right now
+ * - What properties exist on real nodes
+ * - What relationships have been created
+ * - Current database structure for querying
+ *
+ * **Use `/schema/export` instead** when you need:
+ * - The original schema definition used to create the graph
+ * - Schema in a specific format (JSON, YAML, Cypher DDL)
+ * - Schema for documentation or version control
+ * - Schema to replicate in another graph
+ *
+ * ## Example Use Cases
+ *
+ * - **Building queries**: See what node labels and properties exist to write accurate Cypher
+ * - **Data exploration**: Discover what's in an unfamiliar graph
+ * - **Schema drift detection**: Compare runtime vs declared schema
+ * - **API integration**: Dynamically adapt to current graph structure
+ *
+ * ## Performance Note
+ *
+ * Property discovery is limited to 10 properties per node type for performance.
+ * For complete schema definitions, use `/schema/export`.
  *
  * This operation is included - no credit consumption required.
  */
@@ -1755,8 +1787,54 @@ export const getGraphSchema = <ThrowOnError extends boolean = false>(options: Op
 };
 
 /**
- * Export Graph Schema
- * Export the schema of an existing graph in JSON, YAML, or Cypher format
+ * Export Declared Graph Schema
+ * Export the declared schema definition of an existing graph.
+ *
+ * ## What This Returns
+ *
+ * This endpoint returns the **original schema definition** that was used to create the graph:
+ * - The schema as it was **declared** during graph creation
+ * - Complete node and relationship definitions
+ * - Property types and constraints
+ * - Schema metadata (name, version, type)
+ *
+ * ## Runtime vs Declared Schema
+ *
+ * **Use this endpoint** (`/schema/export`) when you need:
+ * - The original schema definition used to create the graph
+ * - Schema in a specific format (JSON, YAML, Cypher DDL)
+ * - Schema for documentation or version control
+ * - Schema to replicate in another graph
+ *
+ * **Use `/schema` instead** when you need:
+ * - What data is ACTUALLY in the database right now
+ * - What properties exist on real nodes (discovered from data)
+ * - Current runtime database structure for querying
+ *
+ * ## Export Formats
+ *
+ * ### JSON Format (`format=json`)
+ * Returns structured JSON with nodes, relationships, and properties.
+ * Best for programmatic access and API integration.
+ *
+ * ### YAML Format (`format=yaml`)
+ * Returns human-readable YAML with comments.
+ * Best for documentation and configuration management.
+ *
+ * ### Cypher DDL Format (`format=cypher`)
+ * Returns Cypher CREATE statements for recreating the schema.
+ * Best for database migration and replication.
+ *
+ * ## Data Statistics
+ *
+ * Set `include_data_stats=true` to include:
+ * - Node counts by label
+ * - Relationship counts by type
+ * - Total nodes and relationships
+ *
+ * This combines declared schema with runtime statistics.
+ *
+ * This operation is included - no credit consumption required.
  */
 export const exportGraphSchema = <ThrowOnError extends boolean = false>(options: Options<ExportGraphSchemaData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<ExportGraphSchemaResponses, ExportGraphSchemaErrors, ThrowOnError>({
@@ -2800,6 +2878,13 @@ export const ingestTables = <ThrowOnError extends boolean = false>(options: Opti
  * Query raw staging data directly with SQL before ingestion into the graph database.
  * Useful for data quality checks, validation, and exploratory analysis.
  *
+ * **Security Best Practice - Use Parameterized Queries:**
+ * ALWAYS use query parameters instead of string concatenation to prevent SQL injection:
+ * - ✅ SAFE: `SELECT * FROM Entity WHERE type = ? LIMIT ?` with `parameters: ["Company", 100]`
+ * - ❌ UNSAFE: `SELECT * FROM Entity WHERE type = 'Company' LIMIT 100` with user input concatenated into SQL string
+ *
+ * Query parameters provide automatic escaping and type safety. Use `?` placeholders with parameters array.
+ *
  * **Use Cases:**
  * - Validate data quality before graph ingestion
  * - Inspect row-level data for debugging
@@ -2821,9 +2906,10 @@ export const ingestTables = <ThrowOnError extends boolean = false>(options: Opti
  *
  * **Common Operations:**
  * - Count rows: `SELECT COUNT(*) FROM Entity`
+ * - Filter by type: `SELECT * FROM Entity WHERE entity_type = ? LIMIT ?` with `parameters: ["Company", 100]`
  * - Check for nulls: `SELECT * FROM Entity WHERE name IS NULL LIMIT 10`
  * - Find duplicates: `SELECT identifier, COUNT(*) as cnt FROM Entity GROUP BY identifier HAVING COUNT(*) > 1`
- * - Join tables: `SELECT e.name, COUNT(t.id) FROM Entity e LEFT JOIN Transaction t ON e.identifier = t.entity_id GROUP BY e.name`
+ * - Filter amounts: `SELECT * FROM Transaction WHERE amount > ? AND date >= ?` with `parameters: [1000, "2024-01-01"]`
  *
  * **Limits:**
  * - Query timeout: 30 seconds
