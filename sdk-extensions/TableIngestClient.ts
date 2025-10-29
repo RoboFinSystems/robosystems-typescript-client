@@ -102,7 +102,6 @@ export class TableIngestClient {
       const uploadUrlResponse = await getUploadUrl({
         path: { graph_id: graphId, table_name: tableName },
         body: uploadRequest,
-        query: this.config.token ? { token: this.config.token } : undefined,
       })
 
       if (uploadUrlResponse.error || !uploadUrlResponse.data) {
@@ -162,7 +161,6 @@ export class TableIngestClient {
       const updateResponse = await updateFileStatus({
         path: { graph_id: graphId, file_id: fileId },
         body: statusUpdate,
-        query: this.config.token ? { token: this.config.token } : undefined,
       })
 
       if (updateResponse.error || !updateResponse.data) {
@@ -214,7 +212,6 @@ export class TableIngestClient {
     try {
       const response = await listTables({
         path: { graph_id: graphId },
-        query: this.config.token ? { token: this.config.token } : undefined,
       })
 
       if (response.error || !response.data) {
@@ -253,7 +250,6 @@ export class TableIngestClient {
       const response = await ingestTables({
         path: { graph_id: graphId },
         body: ingestRequest,
-        query: this.config.token ? { token: this.config.token } : undefined,
       })
 
       if (response.error || !response.data) {

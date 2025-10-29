@@ -74,7 +74,6 @@ export class QueryClient {
       query: {
         mode: options.mode,
         test_mode: options.testMode,
-        token: this.config.token, // Pass JWT token for SSE authentication
       },
     }
 
