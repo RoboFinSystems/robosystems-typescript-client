@@ -66,6 +66,7 @@ export interface GraphInfo {
 }
 
 export interface CreateGraphOptions {
+  createEntity?: boolean
   timeout?: number
   pollInterval?: number
   onProgress?: (message: string) => void
@@ -92,13 +93,25 @@ export class GraphClient {
 
   /**
    * Create a graph and wait for completion
+   *
+   * @param metadata - Graph metadata (name, description, etc.)
+   * @param initialEntity - Optional initial entity to create
+   * @param options - Additional options including:
+   *   - createEntity: Whether to create the entity node and upload initial data.
+   *                   Only applies when initialEntity is provided. Set to false to
+   *                   create graph without populating entity data (useful for file-based ingestion).
+   *                   Defaults to true.
+   *   - timeout: Maximum time to wait in milliseconds (default: 60000)
+   *   - pollInterval: Time between status checks in milliseconds (default: 2000)
+   *   - onProgress: Callback for progress updates
+   * @returns The graph ID when creation completes
    */
   async createGraphAndWait(
     metadata: GraphMetadataInput,
     initialEntity?: InitialEntityInput,
     options: CreateGraphOptions = {}
   ): Promise<string> {
-    const { timeout = 60000, pollInterval = 2000, onProgress } = options
+    const { createEntity = true, timeout = 60000, pollInterval = 2000, onProgress } = options
 
     if (!this.config.token) {
       throw new Error('No API key provided. Set token in config.')
@@ -133,6 +146,7 @@ export class GraphClient {
       body: {
         metadata: apiMetadata,
         initial_entity: initialEntityData || null,
+        create_entity: createEntity,
       },
     })
 
@@ -249,10 +263,10 @@ export class GraphClient {
    * Delete a graph
    * Note: This will be implemented when the deleteGraph endpoint is available in the SDK
    */
-  async deleteGraph(graphId: string): Promise<void> {
+  async deleteGraph(_graphId: string): Promise<void> {
     throw new Error('deleteGraph is not yet implemented - waiting for SDK endpoint to be generated')
     // TODO: Implement when deleteGraph endpoint is available
-    // const response = await deleteGraph({ path: { graph_id: graphId } })
+    // const response = await deleteGraph({ path: { graph_id: _graphId } })
     // if (response.status !== 200 && response.status !== 204) {
     //   throw new Error(`Failed to delete graph: ${response.status}`)
     // }
