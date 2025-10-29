@@ -1231,12 +1231,12 @@ export type CustomSchemaDefinition = {
 export type CypherQueryRequest = {
     /**
      * Query
-     * The Cypher query to execute
+     * The Cypher query to execute. Use parameters ($param_name) for all dynamic values to prevent injection attacks.
      */
     query: string;
     /**
      * Parameters
-     * Optional parameters for the Cypher query
+     * Query parameters for safe value substitution. ALWAYS use parameters instead of string interpolation.
      */
     parameters?: {
         [key: string]: unknown;
@@ -2623,7 +2623,7 @@ export type SchemaExportResponse = {
     graph_id: string;
     /**
      * Schema Definition
-     * Exported schema definition
+     * Exported schema definition (format depends on 'format' parameter)
      */
     schema_definition: {
         [key: string]: unknown;
@@ -2640,11 +2640,33 @@ export type SchemaExportResponse = {
     exported_at: string;
     /**
      * Data Stats
-     * Data statistics if requested
+     * Data statistics if requested (only when include_data_stats=true)
      */
     data_stats?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * SchemaInfoResponse
+ * Response model for runtime schema introspection.
+ *
+ * This model represents the actual current state of the graph database,
+ * showing what node labels, relationship types, and properties exist right now.
+ */
+export type SchemaInfoResponse = {
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Schema
+     * Runtime schema information showing actual database structure
+     */
+    schema: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -2688,24 +2710,24 @@ export type SchemaValidationResponse = {
     message: string;
     /**
      * Errors
-     * List of validation errors
+     * List of validation errors (only present when valid=false)
      */
     errors?: Array<string> | null;
     /**
      * Warnings
-     * List of warnings
+     * List of validation warnings (schema is still valid but has potential issues)
      */
     warnings?: Array<string> | null;
     /**
      * Stats
-     * Schema statistics (nodes, relationships, properties)
+     * Schema statistics (only present when valid=true)
      */
     stats?: {
         [key: string]: number;
     } | null;
     /**
      * Compatibility
-     * Compatibility check results if requested
+     * Compatibility check results (only when check_compatibility specified)
      */
     compatibility?: {
         [key: string]: unknown;
@@ -3180,9 +3202,14 @@ export type TableListResponse = {
 export type TableQueryRequest = {
     /**
      * Sql
-     * SQL query to execute on staging tables
+     * SQL query to execute on staging tables. Use ? placeholders or $param_name for dynamic values to prevent SQL injection.
      */
     sql: string;
+    /**
+     * Parameters
+     * Query parameters for safe value substitution. ALWAYS use parameters instead of string concatenation.
+     */
+    parameters?: Array<unknown> | null;
 };
 
 /**
@@ -3659,25 +3686,10 @@ export type LoginUserResponse = LoginUserResponses[keyof LoginUserResponses];
 
 export type LogoutUserData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
     query?: never;
     url: '/v1/auth/logout';
 };
-
-export type LogoutUserErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type LogoutUserError = LogoutUserErrors[keyof LogoutUserErrors];
 
 export type LogoutUserResponses = {
     /**
@@ -3693,12 +3705,6 @@ export type LogoutUserResponse = LogoutUserResponses[keyof LogoutUserResponses];
 
 export type GetCurrentAuthUserData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
     query?: never;
     url: '/v1/auth/me';
@@ -3709,10 +3715,6 @@ export type GetCurrentAuthUserErrors = {
      * Not authenticated
      */
     401: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
 };
 
 export type GetCurrentAuthUserError = GetCurrentAuthUserErrors[keyof GetCurrentAuthUserErrors];
@@ -3731,12 +3733,6 @@ export type GetCurrentAuthUserResponse = GetCurrentAuthUserResponses[keyof GetCu
 
 export type RefreshAuthSessionData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
     query?: never;
     url: '/v1/auth/refresh';
@@ -3747,10 +3743,6 @@ export type RefreshAuthSessionErrors = {
      * Not authenticated
      */
     401: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
 };
 
 export type RefreshAuthSessionError = RefreshAuthSessionErrors[keyof RefreshAuthSessionErrors];
@@ -3766,12 +3758,6 @@ export type RefreshAuthSessionResponse = RefreshAuthSessionResponses[keyof Refre
 
 export type ResendVerificationEmailData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
     query?: never;
     url: '/v1/auth/email/resend';
@@ -3782,10 +3768,6 @@ export type ResendVerificationEmailErrors = {
      * Email already verified
      */
     400: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
     /**
      * Rate limit exceeded
      */
@@ -3974,12 +3956,6 @@ export type ResetPasswordResponse = ResetPasswordResponses[keyof ResetPasswordRe
 
 export type GenerateSsoTokenData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
     query?: never;
     url: '/v1/auth/sso-token';
@@ -4101,31 +4077,10 @@ export type GetServiceStatusResponse = GetServiceStatusResponses[keyof GetServic
 
 export type GetCurrentUserData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user';
 };
-
-export type GetCurrentUserErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetCurrentUserError = GetCurrentUserErrors[keyof GetCurrentUserErrors];
 
 export type GetCurrentUserResponses = {
     /**
@@ -4138,20 +4093,8 @@ export type GetCurrentUserResponse = GetCurrentUserResponses[keyof GetCurrentUse
 
 export type UpdateUserData = {
     body: UpdateUserRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user';
 };
 
@@ -4175,28 +4118,12 @@ export type UpdateUserResponse = UpdateUserResponses[keyof UpdateUserResponses];
 
 export type GetAllCreditSummariesData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/credits';
 };
 
 export type GetAllCreditSummariesErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
     /**
      * Failed to retrieve credit summaries
      */
@@ -4219,20 +4146,8 @@ export type GetAllCreditSummariesResponse = GetAllCreditSummariesResponses[keyof
 
 export type UpdateUserPasswordData = {
     body: UpdatePasswordRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/password';
 };
 
@@ -4268,31 +4183,10 @@ export type UpdateUserPasswordResponse = UpdateUserPasswordResponses[keyof Updat
 
 export type ListUserApiKeysData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/api-keys';
 };
-
-export type ListUserApiKeysErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListUserApiKeysError = ListUserApiKeysErrors[keyof ListUserApiKeysErrors];
 
 export type ListUserApiKeysResponses = {
     /**
@@ -4305,20 +4199,8 @@ export type ListUserApiKeysResponse = ListUserApiKeysResponses[keyof ListUserApi
 
 export type CreateUserApiKeyData = {
     body: CreateApiKeyRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/api-keys';
 };
 
@@ -4342,25 +4224,13 @@ export type CreateUserApiKeyResponse = CreateUserApiKeyResponses[keyof CreateUse
 
 export type RevokeUserApiKeyData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Api Key Id
          */
         api_key_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/api-keys/{api_key_id}';
 };
 
@@ -4392,25 +4262,13 @@ export type RevokeUserApiKeyResponse = RevokeUserApiKeyResponses[keyof RevokeUse
 
 export type UpdateUserApiKeyData = {
     body: UpdateApiKeyRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Api Key Id
          */
         api_key_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/api-keys/{api_key_id}';
 };
 
@@ -4434,20 +4292,8 @@ export type UpdateUserApiKeyResponse = UpdateUserApiKeyResponses[keyof UpdateUse
 
 export type GetUserLimitsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/limits';
 };
 
@@ -4456,13 +4302,7 @@ export type GetUserLimitsErrors = {
      * User limits not found
      */
     404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
 };
-
-export type GetUserLimitsError = GetUserLimitsErrors[keyof GetUserLimitsErrors];
 
 export type GetUserLimitsResponses = {
     /**
@@ -4475,31 +4315,10 @@ export type GetUserLimitsResponse = GetUserLimitsResponses[keyof GetUserLimitsRe
 
 export type GetUserUsageData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/limits/usage';
 };
-
-export type GetUserUsageErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetUserUsageError = GetUserUsageErrors[keyof GetUserUsageErrors];
 
 export type GetUserUsageResponses = {
     /**
@@ -4512,31 +4331,10 @@ export type GetUserUsageResponse = GetUserUsageResponses[keyof GetUserUsageRespo
 
 export type GetAllSharedRepositoryLimitsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/limits/shared-repositories/summary';
 };
-
-export type GetAllSharedRepositoryLimitsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetAllSharedRepositoryLimitsError = GetAllSharedRepositoryLimitsErrors[keyof GetAllSharedRepositoryLimitsErrors];
 
 export type GetAllSharedRepositoryLimitsResponses = {
     /**
@@ -4552,12 +4350,6 @@ export type GetAllSharedRepositoryLimitsResponse = GetAllSharedRepositoryLimitsR
 
 export type GetSharedRepositoryLimitsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Repository
@@ -4565,13 +4357,7 @@ export type GetSharedRepositoryLimitsData = {
          */
         repository: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/limits/shared-repositories/{repository}';
 };
 
@@ -4598,31 +4384,10 @@ export type GetSharedRepositoryLimitsResponse = GetSharedRepositoryLimitsRespons
 
 export type GetUserUsageOverviewData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/analytics/overview';
 };
-
-export type GetUserUsageOverviewErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetUserUsageOverviewError = GetUserUsageOverviewErrors[keyof GetUserUsageOverviewErrors];
 
 export type GetUserUsageOverviewResponses = {
     /**
@@ -4635,12 +4400,6 @@ export type GetUserUsageOverviewResponse = GetUserUsageOverviewResponses[keyof G
 
 export type GetDetailedUserAnalyticsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
     query?: {
         /**
@@ -4653,11 +4412,6 @@ export type GetDetailedUserAnalyticsData = {
          * Include recent activity
          */
         include_recent_activity?: boolean;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/user/analytics/detailed';
 };
@@ -4682,12 +4436,6 @@ export type GetDetailedUserAnalyticsResponse = GetDetailedUserAnalyticsResponses
 
 export type GetUserSharedSubscriptionsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
     query?: {
         /**
@@ -4695,11 +4443,6 @@ export type GetUserSharedSubscriptionsData = {
          * Only return active subscriptions
          */
         active_only?: boolean;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/user/subscriptions/shared-repositories';
 };
@@ -4732,20 +4475,8 @@ export type GetUserSharedSubscriptionsResponse = GetUserSharedSubscriptionsRespo
 
 export type SubscribeToSharedRepositoryData = {
     body: SubscriptionRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/subscriptions/shared-repositories/subscribe';
 };
 
@@ -4781,25 +4512,13 @@ export type SubscribeToSharedRepositoryResponse = SubscribeToSharedRepositoryRes
 
 export type UpgradeSharedRepositorySubscriptionData = {
     body: TierUpgradeRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Subscription Id
          */
         subscription_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/subscriptions/shared-repositories/{subscription_id}/upgrade';
 };
 
@@ -4837,25 +4556,13 @@ export type UpgradeSharedRepositorySubscriptionResponses = {
 
 export type CancelSharedRepositorySubscriptionData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Subscription Id
          */
         subscription_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/subscriptions/shared-repositories/{subscription_id}';
 };
 
@@ -4891,20 +4598,8 @@ export type CancelSharedRepositorySubscriptionResponse = CancelSharedRepositoryS
 
 export type GetSharedRepositoryCreditsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/subscriptions/shared-repositories/credits';
 };
 
@@ -4914,16 +4609,10 @@ export type GetSharedRepositoryCreditsErrors = {
      */
     401: unknown;
     /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
      * Internal server error
      */
     500: unknown;
 };
-
-export type GetSharedRepositoryCreditsError = GetSharedRepositoryCreditsErrors[keyof GetSharedRepositoryCreditsErrors];
 
 export type GetSharedRepositoryCreditsResponses = {
     /**
@@ -4936,25 +4625,13 @@ export type GetSharedRepositoryCreditsResponse = GetSharedRepositoryCreditsRespo
 
 export type GetRepositoryCreditsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Repository
          */
         repository: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/user/subscriptions/shared-repositories/credits/{repository}';
 };
 
@@ -4986,16 +4663,9 @@ export type GetRepositoryCreditsResponse = GetRepositoryCreditsResponses[keyof G
 
 export type ListConnectionsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -5010,11 +4680,6 @@ export type ListConnectionsData = {
          * Filter by provider type
          */
         provider?: ('sec' | 'quickbooks' | 'plaid') | null;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/connections';
 };
@@ -5048,26 +4713,13 @@ export type ListConnectionsResponse = ListConnectionsResponses[keyof ListConnect
 
 export type CreateConnectionData = {
     body: CreateConnectionRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections';
 };
 
@@ -5107,26 +4759,13 @@ export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateCon
 
 export type GetConnectionOptionsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/options';
 };
 
@@ -5158,26 +4797,13 @@ export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof G
 
 export type ExchangeLinkTokenData = {
     body: ExchangeTokenRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/link/exchange';
 };
 
@@ -5211,26 +4837,13 @@ export type ExchangeLinkTokenResponses = {
 
 export type CreateLinkTokenData = {
     body: LinkTokenRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/link/token';
 };
 
@@ -5264,26 +4877,13 @@ export type CreateLinkTokenResponses = {
 
 export type InitOAuthData = {
     body: OAuthInitRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/oauth/init';
 };
 
@@ -5307,12 +4907,6 @@ export type InitOAuthResponse = InitOAuthResponses[keyof InitOAuthResponses];
 
 export type OauthCallbackData = {
     body: OAuthCallbackRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Provider
@@ -5321,17 +4915,10 @@ export type OauthCallbackData = {
         provider: string;
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/oauth/callback/{provider}';
 };
 
@@ -5369,16 +4956,9 @@ export type OauthCallbackResponses = {
 
 export type DeleteConnectionData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -5387,13 +4967,7 @@ export type DeleteConnectionData = {
          */
         connection_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/{connection_id}';
 };
 
@@ -5429,16 +5003,9 @@ export type DeleteConnectionResponse = DeleteConnectionResponses[keyof DeleteCon
 
 export type GetConnectionData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -5447,13 +5014,7 @@ export type GetConnectionData = {
          */
         connection_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/{connection_id}';
 };
 
@@ -5489,16 +5050,9 @@ export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionRe
 
 export type SyncConnectionData = {
     body: SyncConnectionRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -5507,13 +5061,7 @@ export type SyncConnectionData = {
          */
         connection_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
 };
 
@@ -5552,25 +5100,13 @@ export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectio
 
 export type AutoSelectAgentData = {
     body: AgentRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/agent';
 };
 
@@ -5610,12 +5146,6 @@ export type AutoSelectAgentResponse = AutoSelectAgentResponses[keyof AutoSelectA
 
 export type ExecuteSpecificAgentData = {
     body: AgentRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Agent Type
@@ -5626,13 +5156,7 @@ export type ExecuteSpecificAgentData = {
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/agent/{agent_type}';
 };
 
@@ -5676,25 +5200,13 @@ export type ExecuteSpecificAgentResponse = ExecuteSpecificAgentResponses[keyof E
 
 export type BatchProcessQueriesData = {
     body: BatchAgentRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/agent/batch';
 };
 
@@ -5730,16 +5242,9 @@ export type BatchProcessQueriesResponse = BatchProcessQueriesResponses[keyof Bat
 
 export type ListAgentsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -5749,11 +5254,6 @@ export type ListAgentsData = {
          * Filter by capability (e.g., 'financial_analysis', 'rag_search')
          */
         capability?: string | null;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/agent/list';
 };
@@ -5782,16 +5282,9 @@ export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
 
 export type GetAgentMetadataData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -5800,13 +5293,7 @@ export type GetAgentMetadataData = {
          */
         agent_type: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/agent/{agent_type}/metadata';
 };
 
@@ -5834,26 +5321,13 @@ export type GetAgentMetadataResponse = GetAgentMetadataResponses[keyof GetAgentM
 
 export type RecommendAgentData = {
     body: AgentRecommendationRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/agent/recommend';
 };
 
@@ -5881,26 +5355,13 @@ export type RecommendAgentResponse = RecommendAgentResponses[keyof RecommendAgen
 
 export type ListMcpToolsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/mcp/tools';
 };
 
@@ -5932,16 +5393,9 @@ export type ListMcpToolsResponse = ListMcpToolsResponses[keyof ListMcpToolsRespo
 
 export type CallMcpToolData = {
     body: McpToolCall;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -5956,11 +5410,6 @@ export type CallMcpToolData = {
          * Enable test mode for debugging
          */
         test_mode?: boolean;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/mcp/call-tool';
 };
@@ -6015,16 +5464,9 @@ export type CallMcpToolResponses = {
 
 export type ListBackupsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -6039,11 +5481,6 @@ export type ListBackupsData = {
          * Number of backups to skip
          */
         offset?: number;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/backups';
 };
@@ -6068,26 +5505,13 @@ export type ListBackupsResponse = ListBackupsResponses[keyof ListBackupsResponse
 
 export type CreateBackupData = {
     body: BackupCreateRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/backups';
 };
 
@@ -6125,12 +5549,6 @@ export type CreateBackupResponses = {
 
 export type GetBackupDownloadUrlData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Backup Id
@@ -6139,7 +5557,6 @@ export type GetBackupDownloadUrlData = {
         backup_id: string;
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -6149,11 +5566,6 @@ export type GetBackupDownloadUrlData = {
          * URL expiration time in seconds
          */
         expires_in?: number;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/backups/{backup_id}/download';
 };
@@ -6193,12 +5605,6 @@ export type GetBackupDownloadUrlResponse = GetBackupDownloadUrlResponses[keyof G
 
 export type RestoreBackupData = {
     body: BackupRestoreRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Backup Id
@@ -6207,17 +5613,10 @@ export type RestoreBackupData = {
         backup_id: string;
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/backups/{backup_id}/restore';
 };
 
@@ -6255,26 +5654,13 @@ export type RestoreBackupResponses = {
 
 export type GetBackupStatsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/backups/stats';
 };
 
@@ -6298,26 +5684,13 @@ export type GetBackupStatsResponse = GetBackupStatsResponses[keyof GetBackupStat
 
 export type GetGraphMetricsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * The graph ID to get metrics for
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/analytics';
 };
 
@@ -6353,16 +5726,9 @@ export type GetGraphMetricsResponse = GetGraphMetricsResponses[keyof GetGraphMet
 
 export type GetGraphUsageStatsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * The graph ID to get usage stats for
          */
         graph_id: string;
     };
@@ -6372,11 +5738,6 @@ export type GetGraphUsageStatsData = {
          * Include detailed metrics (may be slower)
          */
         include_details?: boolean;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/analytics/usage';
 };
@@ -6409,16 +5770,9 @@ export type GetGraphUsageStatsResponse = GetGraphUsageStatsResponses[keyof GetGr
 
 export type ExecuteCypherQueryData = {
     body: CypherQueryRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -6432,17 +5786,12 @@ export type ExecuteCypherQueryData = {
          * Chunk Size
          * Rows per chunk for streaming
          */
-        chunk_size?: number;
+        chunk_size?: number | null;
         /**
          * Test Mode
          * Enable test mode for better debugging
          */
         test_mode?: boolean;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/query';
 };
@@ -6493,26 +5842,13 @@ export type ExecuteCypherQueryResponses = {
 
 export type GetGraphSchemaData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * The graph database to get schema for
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/schema';
 };
 
@@ -6529,34 +5865,28 @@ export type GetGraphSchemaErrors = {
      * Failed to retrieve schema
      */
     500: unknown;
+    /**
+     * Schema operation timed out
+     */
+    504: unknown;
 };
 
 export type GetGraphSchemaError = GetGraphSchemaErrors[keyof GetGraphSchemaErrors];
 
 export type GetGraphSchemaResponses = {
     /**
-     * Response Getgraphschema
      * Schema information retrieved successfully
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: SchemaInfoResponse;
 };
 
 export type GetGraphSchemaResponse = GetGraphSchemaResponses[keyof GetGraphSchemaResponses];
 
 export type ExportGraphSchemaData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * The graph ID to export schema from
          */
         graph_id: string;
     };
@@ -6568,30 +5898,37 @@ export type ExportGraphSchemaData = {
         format?: string;
         /**
          * Include Data Stats
-         * Include statistics about actual data in the graph
+         * Include statistics about actual data in the graph (node counts, relationship counts)
          */
         include_data_stats?: boolean;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/schema/export';
 };
 
 export type ExportGraphSchemaErrors = {
     /**
+     * Access denied to graph
+     */
+    403: unknown;
+    /**
+     * Schema not found for graph
+     */
+    404: unknown;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Failed to export schema
+     */
+    500: unknown;
 };
 
 export type ExportGraphSchemaError = ExportGraphSchemaErrors[keyof ExportGraphSchemaErrors];
 
 export type ExportGraphSchemaResponses = {
     /**
-     * Successful Response
+     * Schema exported successfully
      */
     200: SchemaExportResponse;
 };
@@ -6603,26 +5940,13 @@ export type ValidateSchemaData = {
      * Schema definition to validate
      */
     body: SchemaValidationRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/schema/validate';
 };
 
@@ -6658,26 +5982,13 @@ export type ValidateSchemaResponse = ValidateSchemaResponses[keyof ValidateSchem
 
 export type GetCurrentGraphBillData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/billing/current';
 };
 
@@ -6716,16 +6027,9 @@ export type GetCurrentGraphBillResponse = GetCurrentGraphBillResponses[keyof Get
 
 export type GetGraphUsageDetailsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -6740,11 +6044,6 @@ export type GetGraphUsageDetailsData = {
          * Month (defaults to current)
          */
         month?: number | null;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/billing/usage';
 };
@@ -6788,16 +6087,9 @@ export type GetGraphUsageDetailsResponse = GetGraphUsageDetailsResponses[keyof G
 
 export type GetGraphBillingHistoryData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -6807,11 +6099,6 @@ export type GetGraphBillingHistoryData = {
          * Number of months to retrieve (1-24)
          */
         months?: number;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/billing/history';
 };
@@ -6851,12 +6138,6 @@ export type GetGraphBillingHistoryResponse = GetGraphBillingHistoryResponses[key
 
 export type GetGraphMonthlyBillData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Year
@@ -6870,17 +6151,10 @@ export type GetGraphMonthlyBillData = {
         month: number;
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/billing/history/{year}/{month}';
 };
 
@@ -6923,12 +6197,6 @@ export type GetGraphMonthlyBillResponse = GetGraphMonthlyBillResponses[keyof Get
 
 export type GetCreditSummaryData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
@@ -6936,13 +6204,7 @@ export type GetCreditSummaryData = {
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/credits/summary';
 };
 
@@ -6978,16 +6240,9 @@ export type GetCreditSummaryResponse = GetCreditSummaryResponses[keyof GetCredit
 
 export type ListCreditTransactionsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
@@ -7022,11 +6277,6 @@ export type ListCreditTransactionsData = {
          * Number of transactions to skip
          */
         offset?: number;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/credits/transactions';
 };
@@ -7063,12 +6313,6 @@ export type ListCreditTransactionsResponse = ListCreditTransactionsResponses[key
 
 export type CheckCreditBalanceData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
@@ -7087,11 +6331,6 @@ export type CheckCreditBalanceData = {
          * Custom base cost (uses default if not provided)
          */
         base_cost?: number | string | null;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/credits/balance/check';
 };
@@ -7131,12 +6370,6 @@ export type CheckCreditBalanceResponse = CheckCreditBalanceResponses[keyof Check
 
 export type GetStorageUsageData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
@@ -7150,11 +6383,6 @@ export type GetStorageUsageData = {
          * Number of days of history to return
          */
         days?: number;
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
     };
     url: '/v1/graphs/{graph_id}/credits/storage/usage';
 };
@@ -7190,12 +6418,6 @@ export type GetStorageUsageResponse = GetStorageUsageResponses[keyof GetStorageU
 
 export type CheckStorageLimitsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
@@ -7203,13 +6425,7 @@ export type CheckStorageLimitsData = {
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/credits/storage/limits';
 };
 
@@ -7245,26 +6461,13 @@ export type CheckStorageLimitsResponse = CheckStorageLimitsResponses[keyof Check
 
 export type GetDatabaseHealthData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/health';
 };
 
@@ -7300,26 +6503,13 @@ export type GetDatabaseHealthResponse = GetDatabaseHealthResponses[keyof GetData
 
 export type GetDatabaseInfoData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/info';
 };
 
@@ -7355,26 +6545,13 @@ export type GetDatabaseInfoResponse = GetDatabaseInfoResponses[keyof GetDatabase
 
 export type GetGraphLimitsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier (user graph or shared repository)
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/limits';
 };
 
@@ -7413,26 +6590,13 @@ export type GetGraphLimitsResponse = GetGraphLimitsResponses[keyof GetGraphLimit
 
 export type ListSubgraphsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Parent graph ID (e.g., 'kg1a2b3c4d5')
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/subgraphs';
 };
 
@@ -7456,26 +6620,13 @@ export type ListSubgraphsResponse2 = ListSubgraphsResponses[keyof ListSubgraphsR
 
 export type CreateSubgraphData = {
     body: CreateSubgraphRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Parent graph ID (e.g., 'kg1a2b3c4d5')
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/subgraphs';
 };
 
@@ -7499,16 +6650,9 @@ export type CreateSubgraphResponse = CreateSubgraphResponses[keyof CreateSubgrap
 
 export type DeleteSubgraphData = {
     body: DeleteSubgraphRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Parent graph identifier
          */
         graph_id: string;
         /**
@@ -7517,13 +6661,7 @@ export type DeleteSubgraphData = {
          */
         subgraph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}';
 };
 
@@ -7571,16 +6709,9 @@ export type DeleteSubgraphResponse2 = DeleteSubgraphResponses[keyof DeleteSubgra
 
 export type GetSubgraphInfoData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Parent graph identifier
          */
         graph_id: string;
         /**
@@ -7589,13 +6720,7 @@ export type GetSubgraphInfoData = {
          */
         subgraph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}/info';
 };
 
@@ -7639,26 +6764,13 @@ export type GetSubgraphInfoResponse = GetSubgraphInfoResponses[keyof GetSubgraph
 
 export type GetSubgraphQuotaData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Parent graph identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/subgraphs/quota';
 };
 
@@ -7698,26 +6810,13 @@ export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgra
 
 export type ListTablesData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables';
 };
 
@@ -7757,16 +6856,9 @@ export type ListTablesResponse = ListTablesResponses[keyof ListTablesResponses];
 
 export type ListTableFilesData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -7775,13 +6867,7 @@ export type ListTableFilesData = {
          */
         table_name: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
 };
 
@@ -7824,16 +6910,9 @@ export type GetUploadUrlData = {
      * Upload request
      */
     body: FileUploadRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -7842,13 +6921,7 @@ export type GetUploadUrlData = {
          */
         table_name: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
 };
 
@@ -7892,16 +6965,9 @@ export type GetUploadUrlResponse = GetUploadUrlResponses[keyof GetUploadUrlRespo
 
 export type DeleteFileData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -7910,13 +6976,7 @@ export type DeleteFileData = {
          */
         file_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
 };
 
@@ -7956,16 +7016,9 @@ export type DeleteFileResponse2 = DeleteFileResponses[keyof DeleteFileResponses]
 
 export type GetFileInfoData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -7974,13 +7027,7 @@ export type GetFileInfoData = {
          */
         file_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
 };
 
@@ -8019,16 +7066,9 @@ export type UpdateFileStatusData = {
      * Status update
      */
     body: FileStatusUpdate;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
         /**
@@ -8037,13 +7077,7 @@ export type UpdateFileStatusData = {
          */
         file_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
 };
 
@@ -8097,26 +7131,13 @@ export type IngestTablesData = {
      * Ingestion request
      */
     body: BulkIngestRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables/ingest';
 };
 
@@ -8163,26 +7184,13 @@ export type QueryTablesData = {
      * SQL query request
      */
     body: TableQueryRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
-         * Graph database identifier
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/tables/query';
 };
 
@@ -8230,35 +7238,21 @@ export type QueryTablesResponse = QueryTablesResponses[keyof QueryTablesResponse
 
 export type GetGraphsData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs';
 };
 
 export type GetGraphsErrors = {
     /**
-     * Validation Error
+     * Error retrieving graphs
      */
-    422: HttpValidationError;
+    500: unknown;
 };
-
-export type GetGraphsError = GetGraphsErrors[keyof GetGraphsErrors];
 
 export type GetGraphsResponses = {
     /**
-     * Successful Response
+     * Graphs retrieved successfully
      */
     200: UserGraphsResponse;
 };
@@ -8267,20 +7261,8 @@ export type GetGraphsResponse = GetGraphsResponses[keyof GetGraphsResponses];
 
 export type CreateGraphData = {
     body: CreateGraphRequest;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path?: never;
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs';
 };
 
@@ -8307,9 +7289,16 @@ export type GetAvailableExtensionsData = {
     url: '/v1/graphs/extensions';
 };
 
+export type GetAvailableExtensionsErrors = {
+    /**
+     * Failed to retrieve extensions
+     */
+    500: unknown;
+};
+
 export type GetAvailableExtensionsResponses = {
     /**
-     * Successful Response
+     * Extensions retrieved successfully
      */
     200: AvailableExtensionsResponse;
 };
@@ -8318,25 +7307,13 @@ export type GetAvailableExtensionsResponse = GetAvailableExtensionsResponses[key
 
 export type SelectGraphData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/select';
 };
 
@@ -8453,12 +7430,6 @@ export type StreamOperationEventsResponses = {
 
 export type GetOperationStatusData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Operation Id
@@ -8466,13 +7437,7 @@ export type GetOperationStatusData = {
          */
         operation_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/operations/{operation_id}/status';
 };
 
@@ -8511,12 +7476,6 @@ export type GetOperationStatusResponse = GetOperationStatusResponses[keyof GetOp
 
 export type CancelOperationData = {
     body?: never;
-    headers?: {
-        /**
-         * Authorization
-         */
-        authorization?: string | null;
-    };
     path: {
         /**
          * Operation Id
@@ -8524,13 +7483,7 @@ export type CancelOperationData = {
          */
         operation_id: string;
     };
-    query?: {
-        /**
-         * Token
-         * JWT token for SSE authentication
-         */
-        token?: string | null;
-    };
+    query?: never;
     url: '/v1/operations/{operation_id}';
 };
 
