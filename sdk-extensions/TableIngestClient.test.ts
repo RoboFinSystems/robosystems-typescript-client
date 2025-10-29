@@ -153,7 +153,7 @@ describe('TableIngestClient', () => {
       const result = await tableClient.uploadParquetFile('graph_123', 'Entity', buffer)
 
       expect(result.success).toBe(false)
-      expect(result.error).toContain('Failed to update file metadata')
+      expect(result.error).toContain('Failed to complete file upload')
     })
   })
 

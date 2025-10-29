@@ -7,15 +7,10 @@
  * Supports File (browser), Blob (browser), Buffer (Node.js), and ReadableStream.
  */
 
-import {
-  getUploadUrlV1GraphsGraphIdTablesTableNameFilesPost,
-  ingestTablesV1GraphsGraphIdTablesIngestPost,
-  listTablesV1GraphsGraphIdTablesGet,
-  updateFileV1GraphsGraphIdTablesFilesFileIdPatch,
-} from '../sdk/sdk.gen'
+import { getUploadUrl, ingestTables, listTables, updateFileStatus } from '../sdk/sdk.gen'
 import type {
   BulkIngestRequest,
-  FileUpdateRequest,
+  FileStatusUpdate,
   FileUploadRequest,
   FileUploadResponse,
   TableListResponse,
@@ -83,7 +78,7 @@ export class TableIngestClient {
    * This method handles the complete 3-step upload process:
    * 1. Get presigned upload URL
    * 2. Upload file to S3
-   * 3. Update file metadata
+   * 3. Mark file as 'uploaded' (backend validates, calculates size/row count)
    *
    * Supports File (browser), Blob (browser), Buffer (Node.js), and ReadableStream.
    */
@@ -104,7 +99,7 @@ export class TableIngestClient {
         content_type: 'application/x-parquet',
       }
 
-      const uploadUrlResponse = await getUploadUrlV1GraphsGraphIdTablesTableNameFilesPost({
+      const uploadUrlResponse = await getUploadUrl({
         path: { graph_id: graphId, table_name: tableName },
         body: uploadRequest,
         query: this.config.token ? { token: this.config.token } : undefined,
@@ -157,44 +152,44 @@ export class TableIngestClient {
         }
       }
 
-      // Step 3: Update file metadata
-      options.onProgress?.(`Updating file metadata for ${fileName}...`)
+      // Step 3: Mark file as uploaded (backend validates and calculates size/row count)
+      options.onProgress?.(`Marking ${fileName} as uploaded...`)
 
-      // Estimate row count (TypeScript can't read Parquet metadata without library)
-      // Rough estimate: ~100 bytes per row for typical data
-      const estimatedRowCount = Math.floor(fileSize / 100)
-
-      const metadataUpdate: FileUpdateRequest = {
-        file_size_bytes: fileSize,
-        row_count: estimatedRowCount,
+      const statusUpdate: FileStatusUpdate = {
+        status: 'uploaded',
       }
 
-      const updateResponse = await updateFileV1GraphsGraphIdTablesFilesFileIdPatch({
+      const updateResponse = await updateFileStatus({
         path: { graph_id: graphId, file_id: fileId },
-        body: metadataUpdate,
+        body: statusUpdate,
         query: this.config.token ? { token: this.config.token } : undefined,
       })
 
-      if (updateResponse.error) {
+      if (updateResponse.error || !updateResponse.data) {
         return {
           fileId,
           fileSize,
-          rowCount: estimatedRowCount,
+          rowCount: 0,
           tableName,
           fileName,
           success: false,
-          error: 'Failed to update file metadata',
+          error: 'Failed to complete file upload',
         }
       }
 
+      // Extract size and row count from response (calculated by backend)
+      const responseData = updateResponse.data as any
+      const actualFileSize = responseData.file_size_bytes || 0
+      const actualRowCount = responseData.row_count || 0
+
       options.onProgress?.(
-        `✅ Uploaded ${fileName} (${fileSize.toLocaleString()} bytes, ~${estimatedRowCount.toLocaleString()} rows)`
+        `✅ Uploaded ${fileName} (${actualFileSize.toLocaleString()} bytes, ${actualRowCount.toLocaleString()} rows)`
       )
 
       return {
         fileId,
-        fileSize,
-        rowCount: estimatedRowCount,
+        fileSize: actualFileSize,
+        rowCount: actualRowCount,
         tableName,
         fileName,
         success: true,
@@ -217,7 +212,7 @@ export class TableIngestClient {
    */
   async listStagingTables(graphId: string): Promise<TableInfo[]> {
     try {
-      const response = await listTablesV1GraphsGraphIdTablesGet({
+      const response = await listTables({
         path: { graph_id: graphId },
         query: this.config.token ? { token: this.config.token } : undefined,
       })
@@ -255,7 +250,7 @@ export class TableIngestClient {
         rebuild: options.rebuild ?? false,
       }
 
-      const response = await ingestTablesV1GraphsGraphIdTablesIngestPost({
+      const response = await ingestTables({
         path: { graph_id: graphId },
         body: ingestRequest,
         query: this.config.token ? { token: this.config.token } : undefined,

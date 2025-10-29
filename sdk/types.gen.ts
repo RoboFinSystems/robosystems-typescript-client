@@ -1006,6 +1006,11 @@ export type CreateGraphRequest = {
      */
     initial_entity?: InitialEntityData | null;
     /**
+     * Create Entity
+     * Whether to create the entity node and upload initial data. Only applies when initial_entity is provided. Set to False to create graph without populating entity data (useful for file-based ingestion workflows).
+     */
+    create_entity?: boolean;
+    /**
      * Tags
      * Optional tags for organization
      */
@@ -1383,6 +1388,32 @@ export type DatabaseInfoResponse = {
 };
 
 /**
+ * DeleteFileResponse
+ */
+export type DeleteFileResponse = {
+    /**
+     * Status
+     * Deletion status
+     */
+    status: string;
+    /**
+     * File Id
+     * Deleted file ID
+     */
+    file_id: string;
+    /**
+     * File Name
+     * Deleted file name
+     */
+    file_name: string;
+    /**
+     * Message
+     * Operation message
+     */
+    message: string;
+};
+
+/**
  * DeleteSubgraphRequest
  * Request model for deleting a subgraph.
  */
@@ -1583,19 +1614,70 @@ export type ExchangeTokenRequest = {
 };
 
 /**
- * FileUpdateRequest
+ * FileInfo
  */
-export type FileUpdateRequest = {
+export type FileInfo = {
     /**
-     * File Size Bytes
-     * Actual uploaded file size in bytes
+     * File Id
+     * Unique file identifier
      */
-    file_size_bytes: number;
+    file_id: string;
+    /**
+     * File Name
+     * Original file name
+     */
+    file_name: string;
+    /**
+     * File Format
+     * File format (parquet, csv, etc.)
+     */
+    file_format: string;
+    /**
+     * Size Bytes
+     * File size in bytes
+     */
+    size_bytes: number;
     /**
      * Row Count
-     * Number of rows in the file
+     * Estimated row count
      */
     row_count?: number | null;
+    /**
+     * Upload Status
+     * Current upload status
+     */
+    upload_status: string;
+    /**
+     * Upload Method
+     * Upload method used
+     */
+    upload_method: string;
+    /**
+     * Created At
+     * File creation timestamp
+     */
+    created_at?: string | null;
+    /**
+     * Uploaded At
+     * File upload completion timestamp
+     */
+    uploaded_at?: string | null;
+    /**
+     * S3 Key
+     * S3 object key
+     */
+    s3_key: string;
+};
+
+/**
+ * FileStatusUpdate
+ */
+export type FileStatusUpdate = {
+    /**
+     * Status
+     * File status: 'uploaded' (ready for ingest), 'disabled' (exclude from ingest), 'archived' (soft deleted)
+     */
+    status: string;
 };
 
 /**
@@ -1650,6 +1732,77 @@ export type ForgotPasswordRequest = {
      * Email address to send reset link
      */
     email: string;
+};
+
+/**
+ * GetFileInfoResponse
+ */
+export type GetFileInfoResponse = {
+    /**
+     * File Id
+     * Unique file identifier
+     */
+    file_id: string;
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Table Id
+     * Table identifier
+     */
+    table_id: string;
+    /**
+     * Table Name
+     * Table name
+     */
+    table_name?: string | null;
+    /**
+     * File Name
+     * Original file name
+     */
+    file_name: string;
+    /**
+     * File Format
+     * File format (parquet, csv, etc.)
+     */
+    file_format: string;
+    /**
+     * Size Bytes
+     * File size in bytes
+     */
+    size_bytes: number;
+    /**
+     * Row Count
+     * Estimated row count
+     */
+    row_count?: number | null;
+    /**
+     * Upload Status
+     * Current upload status
+     */
+    upload_status: string;
+    /**
+     * Upload Method
+     * Upload method used
+     */
+    upload_method: string;
+    /**
+     * Created At
+     * File creation timestamp
+     */
+    created_at?: string | null;
+    /**
+     * Uploaded At
+     * File upload completion timestamp
+     */
+    uploaded_at?: string | null;
+    /**
+     * S3 Key
+     * S3 object key
+     */
+    s3_key: string;
 };
 
 /**
@@ -1974,6 +2127,37 @@ export type ListSubgraphsResponse = {
      * List of subgraphs
      */
     subgraphs: Array<SubgraphSummary>;
+};
+
+/**
+ * ListTableFilesResponse
+ */
+export type ListTableFilesResponse = {
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Table Name
+     * Table name
+     */
+    table_name: string;
+    /**
+     * Files
+     * List of files in the table
+     */
+    files: Array<FileInfo>;
+    /**
+     * Total Files
+     * Total number of files
+     */
+    total_files: number;
+    /**
+     * Total Size Bytes
+     * Total size of all files in bytes
+     */
+    total_size_bytes: number;
 };
 
 /**
@@ -7512,7 +7696,7 @@ export type GetSubgraphQuotaResponses = {
 
 export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgraphQuotaResponses];
 
-export type ListTablesV1GraphsGraphIdTablesGetData = {
+export type ListTablesData = {
     body?: never;
     headers?: {
         /**
@@ -7537,13 +7721,13 @@ export type ListTablesV1GraphsGraphIdTablesGetData = {
     url: '/v1/graphs/{graph_id}/tables';
 };
 
-export type ListTablesV1GraphsGraphIdTablesGetErrors = {
+export type ListTablesErrors = {
     /**
      * Not authenticated
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - insufficient permissions for this graph
      */
     403: ErrorResponse;
     /**
@@ -7554,20 +7738,24 @@ export type ListTablesV1GraphsGraphIdTablesGetErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
 };
 
-export type ListTablesV1GraphsGraphIdTablesGetError = ListTablesV1GraphsGraphIdTablesGetErrors[keyof ListTablesV1GraphsGraphIdTablesGetErrors];
+export type ListTablesError = ListTablesErrors[keyof ListTablesErrors];
 
-export type ListTablesV1GraphsGraphIdTablesGetResponses = {
+export type ListTablesResponses = {
     /**
-     * Tables retrieved successfully
+     * Tables retrieved successfully with full metrics
      */
     200: TableListResponse;
 };
 
-export type ListTablesV1GraphsGraphIdTablesGetResponse = ListTablesV1GraphsGraphIdTablesGetResponses[keyof ListTablesV1GraphsGraphIdTablesGetResponses];
+export type ListTablesResponse = ListTablesResponses[keyof ListTablesResponses];
 
-export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetData = {
+export type ListTableFilesData = {
     body?: never;
     headers?: {
         /**
@@ -7597,13 +7785,13 @@ export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetData = {
     url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
 };
 
-export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetErrors = {
+export type ListTableFilesErrors = {
     /**
      * Not authenticated
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - insufficient permissions for this graph
      */
     403: ErrorResponse;
     /**
@@ -7614,23 +7802,24 @@ export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetErrors = {
      * Validation Error
      */
     422: HttpValidationError;
-};
-
-export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetError = ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetErrors[keyof ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetErrors];
-
-export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponses = {
     /**
-     * Response List Table Files V1 Graphs  Graph Id  Tables  Table Name  Files Get
-     * Files retrieved successfully
+     * Internal server error
      */
-    200: {
-        [key: string]: unknown;
-    };
+    500: unknown;
 };
 
-export type ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponse = ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponses[keyof ListTableFilesV1GraphsGraphIdTablesTableNameFilesGetResponses];
+export type ListTableFilesError = ListTableFilesErrors[keyof ListTableFilesErrors];
 
-export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostData = {
+export type ListTableFilesResponses = {
+    /**
+     * Files retrieved successfully with full metadata
+     */
+    200: ListTableFilesResponse;
+};
+
+export type ListTableFilesResponse2 = ListTableFilesResponses[keyof ListTableFilesResponses];
+
+export type GetUploadUrlData = {
     /**
      * Upload request
      */
@@ -7663,9 +7852,9 @@ export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostData = {
     url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
 };
 
-export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostErrors = {
+export type GetUploadUrlErrors = {
     /**
-     * Invalid file format or name
+     * Invalid file format, name, or extension mismatch
      */
     400: ErrorResponse;
     /**
@@ -7673,31 +7862,35 @@ export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostErrors = {
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - shared repositories or insufficient permissions
      */
     403: ErrorResponse;
     /**
-     * Graph or table not found
+     * Graph not found
      */
     404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
 };
 
-export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostError = GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostErrors[keyof GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostErrors];
+export type GetUploadUrlError = GetUploadUrlErrors[keyof GetUploadUrlErrors];
 
-export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponses = {
+export type GetUploadUrlResponses = {
     /**
      * Upload URL generated successfully
      */
     200: FileUploadResponse;
 };
 
-export type GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponse = GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponses[keyof GetUploadUrlV1GraphsGraphIdTablesTableNameFilesPostResponses];
+export type GetUploadUrlResponse = GetUploadUrlResponses[keyof GetUploadUrlResponses];
 
-export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteData = {
+export type DeleteFileData = {
     body?: never;
     headers?: {
         /**
@@ -7727,40 +7920,41 @@ export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteData = {
     url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
 };
 
-export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteErrors = {
+export type DeleteFileErrors = {
     /**
      * Not authenticated
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - shared repositories or insufficient permissions
      */
     403: ErrorResponse;
     /**
-     * File not found
+     * File not found in graph
      */
     404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
 };
 
-export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteError = DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteErrors[keyof DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteErrors];
+export type DeleteFileError = DeleteFileErrors[keyof DeleteFileErrors];
 
-export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponses = {
+export type DeleteFileResponses = {
     /**
-     * Response Delete File V1 Graphs  Graph Id  Tables Files  File Id  Delete
      * File deleted successfully
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: DeleteFileResponse;
 };
 
-export type DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponse = DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponses[keyof DeleteFileV1GraphsGraphIdTablesFilesFileIdDeleteResponses];
+export type DeleteFileResponse2 = DeleteFileResponses[keyof DeleteFileResponses];
 
-export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetData = {
+export type GetFileInfoData = {
     body?: never;
     headers?: {
         /**
@@ -7790,17 +7984,17 @@ export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetData = {
     url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
 };
 
-export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetErrors = {
+export type GetFileInfoErrors = {
     /**
      * Not authenticated
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - insufficient permissions for this graph
      */
     403: ErrorResponse;
     /**
-     * File not found
+     * File not found in graph
      */
     404: ErrorResponse;
     /**
@@ -7809,25 +8003,22 @@ export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetError = GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetErrors[keyof GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetErrors];
+export type GetFileInfoError = GetFileInfoErrors[keyof GetFileInfoErrors];
 
-export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponses = {
+export type GetFileInfoResponses = {
     /**
-     * Response Get File Info V1 Graphs  Graph Id  Tables Files  File Id  Get
-     * File info retrieved successfully
+     * File information retrieved successfully
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: GetFileInfoResponse;
 };
 
-export type GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponse = GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponses[keyof GetFileInfoV1GraphsGraphIdTablesFilesFileIdGetResponses];
+export type GetFileInfoResponse2 = GetFileInfoResponses[keyof GetFileInfoResponses];
 
-export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchData = {
+export type UpdateFileStatusData = {
     /**
-     * File update details
+     * Status update
      */
-    body: FileUpdateRequest;
+    body: FileStatusUpdate;
     headers?: {
         /**
          * Authorization
@@ -7856,9 +8047,9 @@ export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchData = {
     url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
 };
 
-export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchErrors = {
+export type UpdateFileStatusErrors = {
     /**
-     * Invalid file size
+     * Invalid status, file too large, or empty file
      */
     400: ErrorResponse;
     /**
@@ -7866,34 +8057,42 @@ export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchErrors = {
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - shared repositories or insufficient permissions
      */
     403: ErrorResponse;
     /**
-     * Graph or file not found
+     * Graph, file, or S3 object not found
      */
     404: ErrorResponse;
+    /**
+     * Storage limit exceeded for tier
+     */
+    413: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
 };
 
-export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchError = UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchErrors[keyof UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchErrors];
+export type UpdateFileStatusError = UpdateFileStatusErrors[keyof UpdateFileStatusErrors];
 
-export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponses = {
+export type UpdateFileStatusResponses = {
     /**
-     * Response Update File V1 Graphs  Graph Id  Tables Files  File Id  Patch
-     * File updated successfully
+     * Response Updatefilestatus
+     * File status updated successfully
      */
     200: {
         [key: string]: unknown;
     };
 };
 
-export type UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponse = UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponses[keyof UpdateFileV1GraphsGraphIdTablesFilesFileIdPatchResponses];
+export type UpdateFileStatusResponse = UpdateFileStatusResponses[keyof UpdateFileStatusResponses];
 
-export type IngestTablesV1GraphsGraphIdTablesIngestPostData = {
+export type IngestTablesData = {
     /**
      * Ingestion request
      */
@@ -7921,13 +8120,13 @@ export type IngestTablesV1GraphsGraphIdTablesIngestPostData = {
     url: '/v1/graphs/{graph_id}/tables/ingest';
 };
 
-export type IngestTablesV1GraphsGraphIdTablesIngestPostErrors = {
+export type IngestTablesErrors = {
     /**
      * Not authenticated
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - shared repositories or insufficient permissions
      */
     403: ErrorResponse;
     /**
@@ -7935,27 +8134,31 @@ export type IngestTablesV1GraphsGraphIdTablesIngestPostErrors = {
      */
     404: ErrorResponse;
     /**
+     * Conflict - another ingestion is already in progress for this graph
+     */
+    409: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Ingestion failed
+     * Ingestion failed - check per-table results for details
      */
     500: ErrorResponse;
 };
 
-export type IngestTablesV1GraphsGraphIdTablesIngestPostError = IngestTablesV1GraphsGraphIdTablesIngestPostErrors[keyof IngestTablesV1GraphsGraphIdTablesIngestPostErrors];
+export type IngestTablesError = IngestTablesErrors[keyof IngestTablesErrors];
 
-export type IngestTablesV1GraphsGraphIdTablesIngestPostResponses = {
+export type IngestTablesResponses = {
     /**
-     * Ingestion completed
+     * Ingestion completed with detailed per-table results
      */
     200: BulkIngestResponse;
 };
 
-export type IngestTablesV1GraphsGraphIdTablesIngestPostResponse = IngestTablesV1GraphsGraphIdTablesIngestPostResponses[keyof IngestTablesV1GraphsGraphIdTablesIngestPostResponses];
+export type IngestTablesResponse = IngestTablesResponses[keyof IngestTablesResponses];
 
-export type QueryTablesV1GraphsGraphIdTablesQueryPostData = {
+export type QueryTablesData = {
     /**
      * SQL query request
      */
@@ -7983,9 +8186,9 @@ export type QueryTablesV1GraphsGraphIdTablesQueryPostData = {
     url: '/v1/graphs/{graph_id}/tables/query';
 };
 
-export type QueryTablesV1GraphsGraphIdTablesQueryPostErrors = {
+export type QueryTablesErrors = {
     /**
-     * Invalid SQL query
+     * Invalid SQL query syntax or execution error
      */
     400: ErrorResponse;
     /**
@@ -7993,7 +8196,7 @@ export type QueryTablesV1GraphsGraphIdTablesQueryPostErrors = {
      */
     401: unknown;
     /**
-     * Access denied to graph
+     * Access denied - shared repositories or insufficient permissions
      */
     403: ErrorResponse;
     /**
@@ -8001,21 +8204,29 @@ export type QueryTablesV1GraphsGraphIdTablesQueryPostErrors = {
      */
     404: ErrorResponse;
     /**
+     * Query timeout exceeded
+     */
+    408: unknown;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
 };
 
-export type QueryTablesV1GraphsGraphIdTablesQueryPostError = QueryTablesV1GraphsGraphIdTablesQueryPostErrors[keyof QueryTablesV1GraphsGraphIdTablesQueryPostErrors];
+export type QueryTablesError = QueryTablesErrors[keyof QueryTablesErrors];
 
-export type QueryTablesV1GraphsGraphIdTablesQueryPostResponses = {
+export type QueryTablesResponses = {
     /**
      * Query executed successfully
      */
     200: TableQueryResponse;
 };
 
-export type QueryTablesV1GraphsGraphIdTablesQueryPostResponse = QueryTablesV1GraphsGraphIdTablesQueryPostResponses[keyof QueryTablesV1GraphsGraphIdTablesQueryPostResponses];
+export type QueryTablesResponse = QueryTablesResponses[keyof QueryTablesResponses];
 
 export type GetGraphsData = {
     body?: never;
