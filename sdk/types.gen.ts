@@ -433,6 +433,16 @@ export type AuthResponse = {
      * JWT authentication token (optional for cookie-based auth)
      */
     token?: string | null;
+    /**
+     * Expires In
+     * Token expiry time in seconds from now
+     */
+    expires_in?: number | null;
+    /**
+     * Refresh Threshold
+     * Recommended refresh threshold in seconds before expiry
+     */
+    refresh_threshold?: number | null;
 };
 
 /**
