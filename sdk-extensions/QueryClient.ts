@@ -79,6 +79,18 @@ export class QueryClient {
 
     // Execute the query
     const response = await executeCypherQuery(data)
+
+    // Check if this is an NDJSON streaming response
+    // The SDK returns the response object which includes the raw Response
+    if (response.response) {
+      const contentType = response.response.headers.get('content-type') || ''
+      const streamFormat = response.response.headers.get('x-stream-format')
+
+      if (contentType.includes('application/x-ndjson') || streamFormat === 'ndjson') {
+        return this.parseNDJSONResponse(response.response, graphId)
+      }
+    }
+
     const responseData = response.data as any
 
     // Check if this is an immediate response
@@ -115,6 +127,56 @@ export class QueryClient {
 
     // Unexpected response format
     throw new Error('Unexpected response format from query endpoint')
+  }
+
+  private async parseNDJSONResponse(response: Response, graphId: string): Promise<QueryResult> {
+    const allData: any[] = []
+    let columns: string[] | null = null
+    let totalRows = 0
+    let executionTimeMs = 0
+
+    // Parse NDJSON line by line
+    const text = await response.text()
+    const lines = text.trim().split('\n')
+
+    for (const line of lines) {
+      if (!line.trim()) continue
+
+      try {
+        const chunk = JSON.parse(line)
+
+        // Extract columns from first chunk
+        if (columns === null && chunk.columns) {
+          columns = chunk.columns
+        }
+
+        // Aggregate data rows (NDJSON uses "rows", regular JSON uses "data")
+        if (chunk.rows) {
+          allData.push(...chunk.rows)
+          totalRows += chunk.rows.length
+        } else if (chunk.data) {
+          allData.push(...chunk.data)
+          totalRows += chunk.data.length
+        }
+
+        // Track execution time (use max from all chunks)
+        if (chunk.execution_time_ms) {
+          executionTimeMs = Math.max(executionTimeMs, chunk.execution_time_ms)
+        }
+      } catch (error) {
+        throw new Error(`Failed to parse NDJSON line: ${error}`)
+      }
+    }
+
+    // Return aggregated result
+    return {
+      data: allData,
+      columns: columns || [],
+      row_count: totalRows,
+      execution_time_ms: executionTimeMs,
+      graph_id: graphId,
+      timestamp: new Date().toISOString(),
+    }
   }
 
   private async *streamQueryResults(
