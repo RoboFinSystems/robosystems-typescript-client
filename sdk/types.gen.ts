@@ -379,7 +379,7 @@ export type AgentResponse = {
     } | null;
     /**
      * Confidence Score
-     * Confidence score of the response
+     * Confidence score of the response (0.0-1.0 scale)
      */
     confidence_score?: number | null;
     /**
@@ -508,6 +508,60 @@ export type BackupCreateRequest = {
      * Optional cron schedule for automated backups
      */
     schedule?: string | null;
+};
+
+/**
+ * BackupDownloadUrlResponse
+ * Response model for backup download URL generation.
+ */
+export type BackupDownloadUrlResponse = {
+    /**
+     * Download Url
+     * Pre-signed S3 URL for downloading the backup file
+     */
+    download_url: string;
+    /**
+     * Expires In
+     * URL expiration time in seconds from now
+     */
+    expires_in: number;
+    /**
+     * Expires At
+     * Unix timestamp when the URL expires
+     */
+    expires_at: number;
+    /**
+     * Backup Id
+     * Backup identifier
+     */
+    backup_id: string;
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+};
+
+/**
+ * BackupLimits
+ * Backup operation limits.
+ */
+export type BackupLimits = {
+    /**
+     * Max Backup Size Gb
+     * Maximum backup size in GB
+     */
+    max_backup_size_gb: number;
+    /**
+     * Backup Retention Days
+     * Backup retention period in days
+     */
+    backup_retention_days: number;
+    /**
+     * Max Backups Per Day
+     * Maximum backups per day
+     */
+    max_backups_per_day: number;
 };
 
 /**
@@ -681,7 +735,7 @@ export type BackupStatsResponse = {
 export type BatchAgentRequest = {
     /**
      * Queries
-     * List of queries to process
+     * List of queries to process (max 10)
      */
     queries: Array<AgentRequest>;
     /**
@@ -698,12 +752,12 @@ export type BatchAgentRequest = {
 export type BatchAgentResponse = {
     /**
      * Results
-     * List of agent responses
+     * List of agent responses (includes successes and failures)
      */
     results: Array<AgentResponse>;
     /**
      * Total Execution Time
-     * Total execution time
+     * Total execution time in seconds
      */
     total_execution_time: number;
     /**
@@ -936,6 +990,43 @@ export type ConnectionResponse = {
 };
 
 /**
+ * CopyOperationLimits
+ * Copy/ingestion operation limits.
+ */
+export type CopyOperationLimits = {
+    /**
+     * Max File Size Gb
+     * Maximum file size in GB
+     */
+    max_file_size_gb: number;
+    /**
+     * Timeout Seconds
+     * Operation timeout in seconds
+     */
+    timeout_seconds: number;
+    /**
+     * Concurrent Operations
+     * Maximum concurrent operations
+     */
+    concurrent_operations: number;
+    /**
+     * Max Files Per Operation
+     * Maximum files per operation
+     */
+    max_files_per_operation: number;
+    /**
+     * Daily Copy Operations
+     * Daily operation limit
+     */
+    daily_copy_operations: number;
+    /**
+     * Supported Formats
+     * Supported file formats
+     */
+    supported_formats: Array<string>;
+};
+
+/**
  * CreateAPIKeyRequest
  * Request model for creating a new API key.
  */
@@ -996,6 +1087,10 @@ export type CreateConnectionRequest = {
 /**
  * CreateGraphRequest
  * Request model for creating a new graph.
+ *
+ * Use this to create either:
+ * - **Entity graphs**: Standard graphs with entity schema and optional extensions
+ * - **Custom graphs**: Generic graphs with fully custom schema definitions
  */
 export type CreateGraphRequest = {
     /**
@@ -1008,11 +1103,11 @@ export type CreateGraphRequest = {
      */
     instance_tier?: string;
     /**
-     * Custom schema definition to apply
+     * Custom schema definition to apply. If provided, creates a generic custom graph. If omitted, creates an entity graph using schema_extensions.
      */
     custom_schema?: CustomSchemaDefinition | null;
     /**
-     * Optional initial entity to create in the graph. If provided, creates a entity-focused graph.
+     * Optional initial entity to create in the graph. If provided with entity graph, populates the first entity node.
      */
     initial_entity?: InitialEntityData | null;
     /**
@@ -1063,6 +1158,33 @@ export type CreateSubgraphRequest = {
     metadata?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * CreditLimits
+ * AI credit limits (optional).
+ */
+export type CreditLimits = {
+    /**
+     * Monthly Ai Credits
+     * Monthly AI credits allocation
+     */
+    monthly_ai_credits: number;
+    /**
+     * Current Balance
+     * Current credit balance
+     */
+    current_balance: number;
+    /**
+     * Storage Billing Enabled
+     * Whether storage billing is enabled
+     */
+    storage_billing_enabled: boolean;
+    /**
+     * Storage Rate Per Gb Per Day
+     * Storage billing rate per GB per day
+     */
+    storage_rate_per_gb_per_day: number;
 };
 
 /**
@@ -1188,7 +1310,11 @@ export type CreditsSummaryResponse = {
 
 /**
  * CustomSchemaDefinition
- * Custom schema definition for custom graphs.
+ * Custom schema definition for generic graphs.
+ *
+ * This model allows you to define custom node types, relationship types, and properties
+ * for graphs that don't fit the standard entity-based schema. Perfect for domain-specific
+ * applications like inventory systems, org charts, project management, etc.
  */
 export type CustomSchemaDefinition = {
     /**
@@ -1208,7 +1334,7 @@ export type CustomSchemaDefinition = {
     description?: string | null;
     /**
      * Extends
-     * Base schema to extend (e.g., 'base')
+     * Base schema to extend (e.g., 'base' for common utilities)
      */
     extends?: string | null;
     /**
@@ -1848,6 +1974,57 @@ export type GraphInfo = {
 };
 
 /**
+ * GraphLimitsResponse
+ * Response model for comprehensive graph operational limits.
+ */
+export type GraphLimitsResponse = {
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Subscription Tier
+     * User's subscription tier
+     */
+    subscription_tier: string;
+    /**
+     * Graph Tier
+     * Graph's database tier
+     */
+    graph_tier: string;
+    /**
+     * Is Shared Repository
+     * Whether this is a shared repository
+     */
+    is_shared_repository: boolean;
+    /**
+     * Storage limits and usage
+     */
+    storage: StorageLimits;
+    /**
+     * Query operation limits
+     */
+    queries: QueryLimits;
+    /**
+     * Copy/ingestion operation limits
+     */
+    copy_operations: CopyOperationLimits;
+    /**
+     * Backup operation limits
+     */
+    backups: BackupLimits;
+    /**
+     * API rate limits
+     */
+    rate_limits: RateLimits;
+    /**
+     * AI credit limits (if applicable)
+     */
+    credits?: CreditLimits | null;
+};
+
+/**
  * GraphMetadata
  * Metadata for graph creation.
  */
@@ -2013,7 +2190,10 @@ export type HealthStatus = {
 
 /**
  * InitialEntityData
- * Initial entity data for graph creation.
+ * Initial entity data for entity-focused graph creation.
+ *
+ * When creating an entity graph with an initial entity node, this model defines
+ * the entity's identifying information and metadata.
  */
 export type InitialEntityData = {
     /**
@@ -2405,6 +2585,33 @@ export type PlaidConnectionConfig = {
 };
 
 /**
+ * QueryLimits
+ * Query operation limits.
+ */
+export type QueryLimits = {
+    /**
+     * Max Timeout Seconds
+     * Maximum query timeout in seconds
+     */
+    max_timeout_seconds: number;
+    /**
+     * Chunk Size
+     * Maximum chunk size for result streaming
+     */
+    chunk_size: number;
+    /**
+     * Max Rows Per Query
+     * Maximum rows returned per query
+     */
+    max_rows_per_query: number;
+    /**
+     * Concurrent Queries
+     * Maximum concurrent queries allowed
+     */
+    concurrent_queries: number;
+};
+
+/**
  * QuickBooksConnectionConfig
  * QuickBooks-specific connection configuration.
  */
@@ -2419,6 +2626,28 @@ export type QuickBooksConnectionConfig = {
      * OAuth refresh token
      */
     refresh_token?: string | null;
+};
+
+/**
+ * RateLimits
+ * API rate limits.
+ */
+export type RateLimits = {
+    /**
+     * Requests Per Minute
+     * Requests per minute limit
+     */
+    requests_per_minute: number;
+    /**
+     * Requests Per Hour
+     * Requests per hour limit
+     */
+    requests_per_hour: number;
+    /**
+     * Burst Capacity
+     * Burst capacity for short spikes
+     */
+    burst_capacity: number;
 };
 
 /**
@@ -2816,6 +3045,28 @@ export type StorageLimitResponse = {
      * Recommendations
      */
     recommendations?: Array<string> | null;
+};
+
+/**
+ * StorageLimits
+ * Storage limits information.
+ */
+export type StorageLimits = {
+    /**
+     * Current Usage Gb
+     * Current storage usage in GB
+     */
+    current_usage_gb?: number | null;
+    /**
+     * Max Storage Gb
+     * Maximum storage limit in GB
+     */
+    max_storage_gb: number;
+    /**
+     * Approaching Limit
+     * Whether approaching storage limit (>80%)
+     */
+    approaching_limit: boolean;
 };
 
 /**
@@ -5603,12 +5854,9 @@ export type GetBackupDownloadUrlError = GetBackupDownloadUrlErrors[keyof GetBack
 
 export type GetBackupDownloadUrlResponses = {
     /**
-     * Response Getbackupdownloadurl
      * Download URL generated successfully
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: BackupDownloadUrlResponse;
 };
 
 export type GetBackupDownloadUrlResponse = GetBackupDownloadUrlResponses[keyof GetBackupDownloadUrlResponses];
@@ -5843,12 +6091,24 @@ export type ExecuteCypherQueryResponses = {
     /**
      * Query executed successfully
      */
-    200: unknown;
+    200: {
+        success?: boolean;
+        data?: Array<{
+            [key: string]: unknown;
+        }>;
+        columns?: Array<string>;
+        row_count?: number;
+        execution_time_ms?: number;
+        graph_id?: string;
+        timestamp?: string;
+    };
     /**
      * Query queued for execution
      */
     202: unknown;
 };
+
+export type ExecuteCypherQueryResponse = ExecuteCypherQueryResponses[keyof ExecuteCypherQueryResponses];
 
 export type GetGraphSchemaData = {
     body?: never;
@@ -6588,12 +6848,9 @@ export type GetGraphLimitsError = GetGraphLimitsErrors[keyof GetGraphLimitsError
 
 export type GetGraphLimitsResponses = {
     /**
-     * Response Getgraphlimits
      * Limits retrieved successfully
      */
-    200: {
-        [key: string]: unknown;
-    };
+    200: GraphLimitsResponse;
 };
 
 export type GetGraphLimitsResponse = GetGraphLimitsResponses[keyof GetGraphLimitsResponses];
@@ -7314,6 +7571,38 @@ export type GetAvailableExtensionsResponses = {
 };
 
 export type GetAvailableExtensionsResponse = GetAvailableExtensionsResponses[keyof GetAvailableExtensionsResponses];
+
+export type GetAvailableGraphTiersData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Include Disabled
+         */
+        include_disabled?: boolean;
+    };
+    url: '/v1/graphs/tiers';
+};
+
+export type GetAvailableGraphTiersErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Failed to retrieve tiers
+     */
+    500: unknown;
+};
+
+export type GetAvailableGraphTiersError = GetAvailableGraphTiersErrors[keyof GetAvailableGraphTiersErrors];
+
+export type GetAvailableGraphTiersResponses = {
+    /**
+     * Tiers retrieved successfully
+     */
+    200: unknown;
+};
 
 export type SelectGraphData = {
     body?: never;
