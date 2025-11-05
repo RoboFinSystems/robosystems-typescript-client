@@ -6091,12 +6091,24 @@ export type ExecuteCypherQueryResponses = {
     /**
      * Query executed successfully
      */
-    200: unknown;
+    200: {
+        success?: boolean;
+        data?: Array<{
+            [key: string]: unknown;
+        }>;
+        columns?: Array<string>;
+        row_count?: number;
+        execution_time_ms?: number;
+        graph_id?: string;
+        timestamp?: string;
+    };
     /**
      * Query queued for execution
      */
     202: unknown;
 };
+
+export type ExecuteCypherQueryResponse = ExecuteCypherQueryResponses[keyof ExecuteCypherQueryResponses];
 
 export type GetGraphSchemaData = {
     body?: never;
