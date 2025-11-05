@@ -474,6 +474,18 @@ export type AvailableExtensionsResponse = {
 };
 
 /**
+ * AvailableGraphTiersResponse
+ * Response containing available graph tiers.
+ */
+export type AvailableGraphTiersResponse = {
+    /**
+     * Tiers
+     * List of available tiers
+     */
+    tiers: Array<GraphTierInfo>;
+};
+
+/**
  * BackupCreateRequest
  * Request model for creating a backup.
  */
@@ -2117,6 +2129,300 @@ export type GraphMetricsResponse = {
 };
 
 /**
+ * GraphSubscriptionTier
+ * Information about a graph subscription tier.
+ */
+export type GraphSubscriptionTier = {
+    /**
+     * Name
+     * Tier name
+     */
+    name: string;
+    /**
+     * Display Name
+     * Display name for UI
+     */
+    display_name: string;
+    /**
+     * Description
+     * Tier description
+     */
+    description: string;
+    /**
+     * Monthly Price
+     * Monthly price in USD
+     */
+    monthly_price: number;
+    /**
+     * Monthly Credits
+     * Monthly AI credits
+     */
+    monthly_credits: number;
+    /**
+     * Storage Included Gb
+     * Storage included in GB
+     */
+    storage_included_gb: number;
+    /**
+     * Storage Overage Per Gb
+     * Overage cost per GB per month
+     */
+    storage_overage_per_gb: number;
+    /**
+     * Allowed Graph Tiers
+     * Allowed graph tier identifiers
+     */
+    allowed_graph_tiers: Array<string>;
+    /**
+     * Features
+     * List of features
+     */
+    features: Array<string>;
+    /**
+     * Backup Retention Days
+     * Backup retention in days
+     */
+    backup_retention_days: number;
+    /**
+     * Priority Support
+     * Whether priority support is included
+     */
+    priority_support: boolean;
+    /**
+     * Max Queries Per Hour
+     * Maximum queries per hour
+     */
+    max_queries_per_hour?: number | null;
+    /**
+     * Max Subgraphs
+     * Maximum subgraphs
+     */
+    max_subgraphs?: number | null;
+    /**
+     * Api Rate Multiplier
+     * API rate multiplier
+     */
+    api_rate_multiplier: number;
+    /**
+     * Backend
+     * Database backend (kuzu or neo4j)
+     */
+    backend: string;
+    /**
+     * Instance Type
+     * Instance type
+     */
+    instance_type?: string | null;
+};
+
+/**
+ * GraphSubscriptions
+ * Graph subscription offerings.
+ */
+export type GraphSubscriptions = {
+    /**
+     * Description
+     * Description of graph subscriptions
+     */
+    description: string;
+    /**
+     * Tiers
+     * Available tiers
+     */
+    tiers: Array<GraphSubscriptionTier>;
+    /**
+     * Storage information
+     */
+    storage: StorageInfo;
+    /**
+     * Notes
+     * Important notes
+     */
+    notes: Array<string>;
+};
+
+/**
+ * GraphTierBackup
+ * Backup configuration for a tier.
+ */
+export type GraphTierBackup = {
+    /**
+     * Max Backup Size Gb
+     * Maximum backup size in GB
+     */
+    max_backup_size_gb: number;
+    /**
+     * Backup Retention Days
+     * Backup retention period in days
+     */
+    backup_retention_days: number;
+    /**
+     * Max Backups Per Day
+     * Maximum backups per day
+     */
+    max_backups_per_day: number;
+};
+
+/**
+ * GraphTierCopyOperations
+ * Copy operation limits for a tier.
+ */
+export type GraphTierCopyOperations = {
+    /**
+     * Max File Size Gb
+     * Maximum file size in GB
+     */
+    max_file_size_gb: number;
+    /**
+     * Timeout Seconds
+     * Operation timeout in seconds
+     */
+    timeout_seconds: number;
+    /**
+     * Concurrent Operations
+     * Maximum concurrent operations
+     */
+    concurrent_operations: number;
+    /**
+     * Max Files Per Operation
+     * Maximum files per operation
+     */
+    max_files_per_operation: number;
+    /**
+     * Daily Copy Operations
+     * Daily operation limit
+     */
+    daily_copy_operations: number;
+};
+
+/**
+ * GraphTierInfo
+ * Complete information about a graph database tier.
+ */
+export type GraphTierInfo = {
+    /**
+     * Tier
+     * Tier identifier
+     */
+    tier: string;
+    /**
+     * Name
+     * Tier name
+     */
+    name: string;
+    /**
+     * Display Name
+     * Display name for UI
+     */
+    display_name: string;
+    /**
+     * Description
+     * Tier description
+     */
+    description: string;
+    /**
+     * Backend
+     * Database backend (kuzu or neo4j)
+     */
+    backend: string;
+    /**
+     * Enabled
+     * Whether tier is available
+     */
+    enabled: boolean;
+    /**
+     * Max Subgraphs
+     * Maximum subgraphs allowed
+     */
+    max_subgraphs: number | null;
+    /**
+     * Storage Limit Gb
+     * Storage limit in GB
+     */
+    storage_limit_gb: number;
+    /**
+     * Monthly Credits
+     * Monthly AI credits
+     */
+    monthly_credits: number;
+    /**
+     * Api Rate Multiplier
+     * API rate limit multiplier
+     */
+    api_rate_multiplier: number;
+    /**
+     * Monthly Price
+     * Monthly price in USD
+     */
+    monthly_price?: number | null;
+    /**
+     * Features
+     * List of tier features
+     */
+    features: Array<string>;
+    /**
+     * Instance specifications
+     */
+    instance: GraphTierInstance;
+    /**
+     * Resource limits
+     */
+    limits: GraphTierLimits;
+};
+
+/**
+ * GraphTierInstance
+ * Instance specifications for a tier.
+ */
+export type GraphTierInstance = {
+    /**
+     * Type
+     * Instance type identifier
+     */
+    type: string;
+    /**
+     * Memory Mb
+     * Memory in megabytes
+     */
+    memory_mb: number;
+    /**
+     * Databases Per Instance
+     * Databases per instance
+     */
+    databases_per_instance: number;
+};
+
+/**
+ * GraphTierLimits
+ * Resource limits for a tier.
+ */
+export type GraphTierLimits = {
+    /**
+     * Storage Gb
+     * Storage limit in GB
+     */
+    storage_gb: number;
+    /**
+     * Monthly Credits
+     * Monthly credit allocation
+     */
+    monthly_credits: number;
+    /**
+     * Max Subgraphs
+     * Maximum subgraphs (null for unlimited)
+     */
+    max_subgraphs: number | null;
+    /**
+     * Copy operation limits
+     */
+    copy_operations: GraphTierCopyOperations;
+    /**
+     * Backup configuration
+     */
+    backup: GraphTierBackup;
+};
+
+/**
  * GraphUsageResponse
  * Response model for graph usage statistics.
  */
@@ -2479,6 +2785,86 @@ export type OAuthInitResponse = {
 };
 
 /**
+ * OfferingRepositoryPlan
+ * Information about a repository plan.
+ */
+export type OfferingRepositoryPlan = {
+    /**
+     * Plan
+     * Plan identifier
+     */
+    plan: string;
+    /**
+     * Name
+     * Plan name
+     */
+    name: string;
+    /**
+     * Monthly Price
+     * Monthly price in USD
+     */
+    monthly_price: number;
+    /**
+     * Monthly Credits
+     * Monthly credit allocation
+     */
+    monthly_credits: number;
+    /**
+     * Access Level
+     * Access level
+     */
+    access_level: string;
+    /**
+     * Features
+     * List of features
+     */
+    features: Array<string>;
+    /**
+     * Rate Limits
+     * Rate limits for this plan
+     */
+    rate_limits?: {
+        [key: string]: number | null;
+    } | null;
+};
+
+/**
+ * OperationCosts
+ * Operation cost information.
+ */
+export type OperationCosts = {
+    /**
+     * Description
+     * Description of operation costs
+     */
+    description: string;
+    /**
+     * Ai Operations
+     * Base costs for AI operations
+     */
+    ai_operations: {
+        [key: string]: number;
+    };
+    /**
+     * Token Pricing
+     * Token pricing by model
+     */
+    token_pricing: {
+        [key: string]: TokenPricing;
+    };
+    /**
+     * Included Operations
+     * Operations that don't consume credits
+     */
+    included_operations: Array<string>;
+    /**
+     * Notes
+     * Important notes about costs
+     */
+    notes: Array<string>;
+};
+
+/**
  * PasswordCheckRequest
  * Password strength check request model.
  */
@@ -2704,10 +3090,69 @@ export type RepositoryCreditsResponse = {
 };
 
 /**
+ * RepositoryInfo
+ * Information about a shared repository.
+ */
+export type RepositoryInfo = {
+    /**
+     * Type
+     * Repository type identifier
+     */
+    type: string;
+    /**
+     * Name
+     * Repository name
+     */
+    name: string;
+    /**
+     * Description
+     * Repository description
+     */
+    description: string;
+    /**
+     * Enabled
+     * Whether repository is enabled
+     */
+    enabled: boolean;
+    /**
+     * Coming Soon
+     * Whether repository is coming soon
+     */
+    coming_soon: boolean;
+    /**
+     * Plans
+     * Available plans
+     */
+    plans: Array<OfferingRepositoryPlan>;
+};
+
+/**
  * RepositoryPlan
  * Repository access plans for shared data.
  */
 export type RepositoryPlan = 'starter' | 'advanced' | 'unlimited';
+
+/**
+ * RepositorySubscriptions
+ * Repository subscription offerings.
+ */
+export type RepositorySubscriptions = {
+    /**
+     * Description
+     * Description of repository subscriptions
+     */
+    description: string;
+    /**
+     * Repositories
+     * Available repositories
+     */
+    repositories: Array<RepositoryInfo>;
+    /**
+     * Notes
+     * Important notes
+     */
+    notes: Array<string>;
+};
 
 /**
  * RepositoryType
@@ -3002,6 +3447,77 @@ export type SelectionCriteria = {
      * Agents to exclude from selection
      */
     excluded_agents?: Array<string>;
+};
+
+/**
+ * ServiceOfferingSummary
+ * Summary of service offerings.
+ */
+export type ServiceOfferingSummary = {
+    /**
+     * Total Graph Tiers
+     * Total number of graph tiers
+     */
+    total_graph_tiers: number;
+    /**
+     * Total Repositories
+     * Total number of repositories
+     */
+    total_repositories: number;
+    /**
+     * Enabled Repositories
+     * Number of enabled repositories
+     */
+    enabled_repositories: number;
+    /**
+     * Coming Soon Repositories
+     * Number of coming soon repositories
+     */
+    coming_soon_repositories: number;
+};
+
+/**
+ * ServiceOfferingsResponse
+ * Complete service offerings response.
+ */
+export type ServiceOfferingsResponse = {
+    /**
+     * Graph subscription offerings
+     */
+    graph_subscriptions: GraphSubscriptions;
+    /**
+     * Repository subscription offerings
+     */
+    repository_subscriptions: RepositorySubscriptions;
+    /**
+     * Operation cost information
+     */
+    operation_costs: OperationCosts;
+    /**
+     * Summary information
+     */
+    summary: ServiceOfferingSummary;
+};
+
+/**
+ * StorageInfo
+ * Storage pricing information.
+ */
+export type StorageInfo = {
+    /**
+     * Included Per Tier
+     * Storage included per tier in GB
+     */
+    included_per_tier: {
+        [key: string]: number;
+    };
+    /**
+     * Overage Pricing
+     * Overage pricing per GB per tier
+     */
+    overage_pricing: {
+        [key: string]: number;
+    };
 };
 
 /**
@@ -3508,6 +4024,23 @@ export type TierUpgradeRequest = {
      * New repository plan
      */
     new_plan: RepositoryPlan;
+};
+
+/**
+ * TokenPricing
+ * AI token pricing for a specific model.
+ */
+export type TokenPricing = {
+    /**
+     * Input Per 1K Tokens
+     * Credits per 1K input tokens
+     */
+    input_per_1k_tokens: number;
+    /**
+     * Output Per 1K Tokens
+     * Credits per 1K output tokens
+     */
+    output_per_1k_tokens: number;
 };
 
 /**
@@ -7601,8 +8134,10 @@ export type GetAvailableGraphTiersResponses = {
     /**
      * Tiers retrieved successfully
      */
-    200: unknown;
+    200: AvailableGraphTiersResponse;
 };
+
+export type GetAvailableGraphTiersResponse = GetAvailableGraphTiersResponses[keyof GetAvailableGraphTiersResponses];
 
 export type SelectGraphData = {
     body?: never;
@@ -7666,8 +8201,10 @@ export type GetServiceOfferingsResponses = {
     /**
      * Complete service offerings retrieved successfully
      */
-    200: unknown;
+    200: ServiceOfferingsResponse;
 };
+
+export type GetServiceOfferingsResponse = GetServiceOfferingsResponses[keyof GetServiceOfferingsResponses];
 
 export type StreamOperationEventsData = {
     body?: never;
