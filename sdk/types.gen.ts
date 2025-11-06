@@ -1970,7 +1970,7 @@ export type GraphInfo = {
     graphName: string;
     /**
      * Role
-     * User's role in this graph
+     * User's role/access level
      */
     role: string;
     /**
@@ -1983,6 +1983,16 @@ export type GraphInfo = {
      * Creation timestamp
      */
     createdAt: string;
+    /**
+     * Isrepository
+     * Whether this is a shared repository (vs user graph)
+     */
+    isRepository?: boolean;
+    /**
+     * Repositorytype
+     * Repository type if isRepository=true
+     */
+    repositoryType?: string | null;
 };
 
 /**

@@ -3020,38 +3020,45 @@ export const queryTables = <ThrowOnError extends boolean = false>(options: Optio
 };
 
 /**
- * Get User Graphs
- * List all graph databases accessible to the current user with roles and selection status.
+ * Get User Graphs and Repositories
+ * List all graph databases and shared repositories accessible to the current user.
  *
- * Returns a comprehensive list of all graphs the user can access, including their
- * role in each graph (admin or member) and which graph is currently selected as
- * the active workspace.
+ * Returns a unified list of both user-created graphs and shared repositories (like SEC data)
+ * that the user has access to, including their role/access level and selection status.
  *
  * **Returned Information:**
- * - Graph ID and display name for each accessible graph
- * - User's role (admin/member) indicating permission level
- * - Selection status (one graph can be marked as "selected")
- * - Creation timestamp for each graph
+ * - Graph/Repository ID and display name
+ * - User's role/access level (admin/member for graphs, read/write/admin for repositories)
+ * - Selection status (only user graphs can be selected)
+ * - Creation timestamp
+ * - Repository type indicator (isRepository: true for shared repositories)
  *
- * **Graph Roles:**
- * - `admin`: Full access - can manage graph settings, invite users, delete graph
- * - `member`: Read/write access - can query and modify data, cannot manage settings
+ * **User Graphs (isRepository: false):**
+ * - Collaborative workspaces that can be shared with other users
+ * - Roles: `admin` (full access, can invite users) or `member` (read/write access)
+ * - Can be selected as active workspace
+ * - Graphs you create or have been invited to
+ *
+ * **Shared Repositories (isRepository: true):**
+ * - Read-only data repositories like SEC filings, industry benchmarks
+ * - Access levels: `read`, `write` (for data contributions), `admin`
+ * - Cannot be selected (each has separate subscription)
+ * - Require separate subscriptions (personal, cannot be shared)
  *
  * **Selected Graph Concept:**
- * The "selected" graph is the user's currently active workspace. Many API operations
- * default to the selected graph if no graph_id is provided. Users can change their
- * selected graph via the `POST /v1/graphs/{graph_id}/select` endpoint.
+ * The "selected" graph is the user's currently active workspace (user graphs only).
+ * Many API operations default to the selected graph if no graph_id is provided.
+ * Users can change their selected graph via `POST /v1/graphs/{graph_id}/select`.
  *
  * **Use Cases:**
- * - Display graph selector in UI
- * - Show user's accessible workspaces
- * - Identify which graph is currently active
- * - Filter graphs by role for permission-based features
+ * - Display unified graph/repository selector in UI
+ * - Show all accessible data sources (both owned graphs and subscribed repositories)
+ * - Identify currently active workspace
+ * - Filter by type (user graphs vs repositories)
  *
  * **Empty Response:**
- * New users or users without graph access will receive an empty list with
- * `selectedGraphId: null`. Users should create a new graph or request access
- * to an existing graph.
+ * New users receive an empty list with `selectedGraphId: null`. Users should create
+ * a graph or subscribe to a repository.
  *
  * **Note:**
  * Graph listing is included - no credit consumption required.
