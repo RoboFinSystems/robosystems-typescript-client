@@ -2382,14 +2382,14 @@ export type GraphTierInstance = {
     type: string;
     /**
      * Memory Mb
-     * Memory in megabytes
+     * Memory allocated to your graph in megabytes
      */
     memory_mb: number;
     /**
-     * Databases Per Instance
-     * Databases per instance
+     * Is Multitenant
+     * Whether this tier shares infrastructure with other graphs
      */
-    databases_per_instance: number;
+    is_multitenant: boolean;
 };
 
 /**
