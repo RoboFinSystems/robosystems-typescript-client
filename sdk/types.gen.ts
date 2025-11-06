@@ -1970,7 +1970,7 @@ export type GraphInfo = {
     graphName: string;
     /**
      * Role
-     * User's role in this graph
+     * User's role/access level
      */
     role: string;
     /**
@@ -1983,6 +1983,16 @@ export type GraphInfo = {
      * Creation timestamp
      */
     createdAt: string;
+    /**
+     * Isrepository
+     * Whether this is a shared repository (vs user graph)
+     */
+    isRepository?: boolean;
+    /**
+     * Repositorytype
+     * Repository type if isRepository=true
+     */
+    repositoryType?: string | null;
 };
 
 /**
@@ -2382,14 +2392,14 @@ export type GraphTierInstance = {
     type: string;
     /**
      * Memory Mb
-     * Memory in megabytes
+     * Memory allocated to your graph in megabytes
      */
     memory_mb: number;
     /**
-     * Databases Per Instance
-     * Databases per instance
+     * Is Multitenant
+     * Whether this tier shares infrastructure with other graphs
      */
-    databases_per_instance: number;
+    is_multitenant: boolean;
 };
 
 /**
