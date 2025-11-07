@@ -82,53 +82,6 @@ export type AccountInfo = {
 };
 
 /**
- * AddOnCreditInfo
- * Credit information for a specific add-on.
- */
-export type AddOnCreditInfo = {
-    /**
-     * Subscription Id
-     * Subscription ID
-     */
-    subscription_id: string;
-    /**
-     * Addon Type
-     * Add-on type (e.g., sec_data)
-     */
-    addon_type: string;
-    /**
-     * Name
-     * Display name of the add-on
-     */
-    name: string;
-    /**
-     * Tier
-     * Subscription tier
-     */
-    tier: string;
-    /**
-     * Credits Remaining
-     * Credits remaining
-     */
-    credits_remaining: number;
-    /**
-     * Credits Allocated
-     * Monthly credit allocation
-     */
-    credits_allocated: number;
-    /**
-     * Credits Consumed
-     * Credits consumed this month
-     */
-    credits_consumed: number;
-    /**
-     * Rollover Amount
-     * Credits rolled over from previous month
-     */
-    rollover_amount?: number;
-};
-
-/**
  * AgentListResponse
  * Response for listing available agents.
  */
@@ -1135,6 +1088,18 @@ export type CreateGraphRequest = {
 };
 
 /**
+ * CreateRepositorySubscriptionRequest
+ * Request to create a repository subscription.
+ */
+export type CreateRepositorySubscriptionRequest = {
+    /**
+     * Plan Name
+     * Plan name for the repository subscription
+     */
+    plan_name: string;
+};
+
+/**
  * CreateSubgraphRequest
  * Request model for creating a subgraph.
  */
@@ -1201,54 +1166,46 @@ export type CreditLimits = {
 
 /**
  * CreditSummary
- * Credit balance summary.
+ * Credit consumption summary.
  */
 export type CreditSummary = {
     /**
-     * Current Balance
-     * Current credit balance
+     * Graph Tier
+     * Subscription tier
      */
-    current_balance: number;
+    graph_tier: string;
     /**
-     * Monthly Allocation
-     * Monthly credit allocation
+     * Total Credits Consumed
+     * Total credits consumed
      */
-    monthly_allocation: number;
+    total_credits_consumed: number;
     /**
-     * Consumed This Month
-     * Credits consumed this month
+     * Total Base Cost
+     * Total base cost before multipliers
      */
-    consumed_this_month: number;
+    total_base_cost: number;
     /**
-     * Usage Percentage
-     * Usage percentage of monthly allocation
+     * Operation Breakdown
+     * Credit usage by operation type
      */
-    usage_percentage: number;
+    operation_breakdown: {
+        [key: string]: unknown;
+    };
     /**
-     * Rollover Credits
-     * Credits rolled over from previous month
+     * Cached Operations
+     * Number of cached operations
      */
-    rollover_credits: number;
+    cached_operations: number;
     /**
-     * Allows Rollover
-     * Whether rollover is allowed
+     * Billable Operations
+     * Number of billable operations
      */
-    allows_rollover: boolean;
+    billable_operations: number;
     /**
-     * Last Allocation Date
-     * Last allocation date (ISO format)
+     * Transaction Count
+     * Total transaction count
      */
-    last_allocation_date?: string | null;
-    /**
-     * Next Allocation Date
-     * Next allocation date (ISO format)
-     */
-    next_allocation_date?: string | null;
-    /**
-     * Is Active
-     * Whether credit pool is active
-     */
-    is_active: boolean;
+    transaction_count: number;
 };
 
 /**
@@ -1288,36 +1245,6 @@ export type CreditSummaryResponse = {
      * Last Allocation Date
      */
     last_allocation_date?: string | null;
-};
-
-/**
- * CreditsSummaryResponse
- * Response for credits summary.
- */
-export type CreditsSummaryResponse = {
-    /**
-     * Add Ons
-     * Credits breakdown by add-on
-     */
-    add_ons: Array<AddOnCreditInfo>;
-    /**
-     * Total Credits
-     * Total credits remaining across all subscriptions
-     */
-    total_credits: number;
-    /**
-     * Credits By Addon
-     * Legacy field - Credits breakdown by add-on
-     * @deprecated
-     */
-    credits_by_addon?: Array<{
-        [key: string]: unknown;
-    }> | null;
-    /**
-     * Addon Count
-     * Number of active add-ons
-     */
-    addon_count: number;
 };
 
 /**
@@ -2139,6 +2066,73 @@ export type GraphMetricsResponse = {
 };
 
 /**
+ * GraphSubscriptionResponse
+ * Response for graph or repository subscription details.
+ */
+export type GraphSubscriptionResponse = {
+    /**
+     * Id
+     * Subscription ID
+     */
+    id: string;
+    /**
+     * Resource Type
+     * Resource type (graph or repository)
+     */
+    resource_type: string;
+    /**
+     * Resource Id
+     * Resource identifier
+     */
+    resource_id: string;
+    /**
+     * Plan Name
+     * Current plan name
+     */
+    plan_name: string;
+    /**
+     * Billing Interval
+     * Billing interval
+     */
+    billing_interval: string;
+    /**
+     * Status
+     * Subscription status
+     */
+    status: string;
+    /**
+     * Base Price Cents
+     * Base price in cents
+     */
+    base_price_cents: number;
+    /**
+     * Current Period Start
+     * Current billing period start
+     */
+    current_period_start?: string | null;
+    /**
+     * Current Period End
+     * Current billing period end
+     */
+    current_period_end?: string | null;
+    /**
+     * Started At
+     * Subscription start date
+     */
+    started_at?: string | null;
+    /**
+     * Canceled At
+     * Cancellation date
+     */
+    canceled_at?: string | null;
+    /**
+     * Created At
+     * Creation timestamp
+     */
+    created_at: string;
+};
+
+/**
  * GraphSubscriptionTier
  * Information about a graph subscription tier.
  */
@@ -2443,26 +2437,29 @@ export type GraphUsageResponse = {
      */
     graph_id: string;
     /**
-     * Storage Usage
-     * Storage usage information
+     * Time Range
+     * Time range for usage data
      */
-    storage_usage: {
-        [key: string]: unknown;
-    };
+    time_range: string;
     /**
-     * Query Statistics
-     * Query statistics
+     * Storage usage summary
      */
-    query_statistics: {
-        [key: string]: unknown;
-    };
+    storage_summary?: StorageSummary | null;
     /**
-     * Recent Activity
-     * Recent activity summary
+     * Credit consumption summary
      */
-    recent_activity: {
+    credit_summary?: CreditSummary | null;
+    /**
+     * Performance analytics
+     */
+    performance_insights?: PerformanceInsights | null;
+    /**
+     * Recent Events
+     * Recent usage events
+     */
+    recent_events?: Array<{
         [key: string]: unknown;
-    };
+    }>;
     /**
      * Timestamp
      * Usage collection timestamp
@@ -2945,6 +2942,42 @@ export type PasswordPolicyResponse = {
 };
 
 /**
+ * PerformanceInsights
+ * Performance analytics.
+ */
+export type PerformanceInsights = {
+    /**
+     * Analysis Period Days
+     * Analysis period in days
+     */
+    analysis_period_days: number;
+    /**
+     * Total Operations
+     * Total operations analyzed
+     */
+    total_operations: number;
+    /**
+     * Operation Stats
+     * Performance stats by operation type
+     */
+    operation_stats: {
+        [key: string]: unknown;
+    };
+    /**
+     * Slow Queries
+     * Top slow queries (over 5 seconds)
+     */
+    slow_queries: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Performance Score
+     * Performance score (0-100)
+     */
+    performance_score: number;
+};
+
+/**
  * PlaidConnectionConfig
  * Plaid-specific connection configuration.
  */
@@ -3074,32 +3107,6 @@ export type RegisterRequest = {
 };
 
 /**
- * RepositoryCreditsResponse
- * Response for repository-specific credits.
- */
-export type RepositoryCreditsResponse = {
-    /**
-     * Repository
-     * Repository identifier
-     */
-    repository: string;
-    /**
-     * Has Access
-     * Whether user has access
-     */
-    has_access: boolean;
-    /**
-     * Message
-     * Access message
-     */
-    message?: string | null;
-    /**
-     * Credit summary if access available
-     */
-    credits?: CreditSummary | null;
-};
-
-/**
  * RepositoryInfo
  * Information about a shared repository.
  */
@@ -3137,12 +3144,6 @@ export type RepositoryInfo = {
 };
 
 /**
- * RepositoryPlan
- * Repository access plans for shared data.
- */
-export type RepositoryPlan = 'starter' | 'advanced' | 'unlimited';
-
-/**
  * RepositorySubscriptions
  * Repository subscription offerings.
  */
@@ -3163,12 +3164,6 @@ export type RepositorySubscriptions = {
      */
     notes: Array<string>;
 };
-
-/**
- * RepositoryType
- * Types of shared repositories.
- */
-export type RepositoryType = 'sec' | 'industry' | 'economic';
 
 /**
  * ResetPasswordRequest
@@ -3596,6 +3591,43 @@ export type StorageLimits = {
 };
 
 /**
+ * StorageSummary
+ * Storage usage summary.
+ */
+export type StorageSummary = {
+    /**
+     * Graph Tier
+     * Subscription tier
+     */
+    graph_tier: string;
+    /**
+     * Avg Storage Gb
+     * Average storage in GB
+     */
+    avg_storage_gb: number;
+    /**
+     * Max Storage Gb
+     * Peak storage in GB
+     */
+    max_storage_gb: number;
+    /**
+     * Min Storage Gb
+     * Minimum storage in GB
+     */
+    min_storage_gb: number;
+    /**
+     * Total Gb Hours
+     * Total GB-hours for billing
+     */
+    total_gb_hours: number;
+    /**
+     * Measurement Count
+     * Number of measurements taken
+     */
+    measurement_count: number;
+};
+
+/**
  * SubgraphQuotaResponse
  * Response model for subgraph quota information.
  */
@@ -3773,96 +3805,6 @@ export type SubgraphSummary = {
 export type SubgraphType = 'static' | 'temporal' | 'versioned' | 'memory';
 
 /**
- * SubscriptionInfo
- * User subscription information.
- */
-export type SubscriptionInfo = {
-    /**
-     * Id
-     * Subscription ID
-     */
-    id: string;
-    /**
-     * User Id
-     * User ID
-     */
-    user_id: string;
-    /**
-     * Addon Type
-     * Add-on type
-     */
-    addon_type: string;
-    /**
-     * Addon Tier
-     * Subscription tier
-     */
-    addon_tier: string;
-    /**
-     * Is Active
-     * Whether subscription is active
-     */
-    is_active: boolean;
-    /**
-     * Activated At
-     * Activation date (ISO format)
-     */
-    activated_at: string;
-    /**
-     * Expires At
-     * Expiration date (ISO format)
-     */
-    expires_at?: string | null;
-    /**
-     * Monthly Price Cents
-     * Monthly price in cents
-     */
-    monthly_price_cents: number;
-    /**
-     * Features
-     * List of features
-     */
-    features: Array<string>;
-    /**
-     * Metadata
-     * Additional metadata
-     */
-    metadata: {
-        [key: string]: unknown;
-    };
-};
-
-/**
- * SubscriptionRequest
- * Request to create a new subscription.
- */
-export type SubscriptionRequest = {
-    /**
-     * Type of repository to subscribe to
-     */
-    repository_type: RepositoryType;
-    /**
-     * Repository plan
-     */
-    repository_plan?: RepositoryPlan;
-};
-
-/**
- * SubscriptionResponse
- * Response for subscription creation.
- */
-export type SubscriptionResponse = {
-    /**
-     * Message
-     * Success message
-     */
-    message: string;
-    /**
-     * Created subscription details
-     */
-    subscription: SubscriptionInfo;
-};
-
-/**
  * SuccessResponse
  * Standard success response for operations without specific return data.
  */
@@ -4026,17 +3968,6 @@ export type TableQueryResponse = {
 };
 
 /**
- * TierUpgradeRequest
- * Request to upgrade subscription tier.
- */
-export type TierUpgradeRequest = {
-    /**
-     * New repository plan
-     */
-    new_plan: RepositoryPlan;
-};
-
-/**
  * TokenPricing
  * AI token pricing for a specific model.
  */
@@ -4141,92 +4072,15 @@ export type UpdateUserRequest = {
 };
 
 /**
- * UserAnalyticsResponse
- * Response model for comprehensive user analytics.
+ * UpgradeSubscriptionRequest
+ * Request to upgrade a subscription.
  */
-export type UserAnalyticsResponse = {
+export type UpgradeSubscriptionRequest = {
     /**
-     * User Info
-     * User information
+     * New Plan Name
+     * New plan name to upgrade to
      */
-    user_info: {
-        [key: string]: unknown;
-    };
-    /**
-     * Graph Usage
-     * Graph usage statistics
-     */
-    graph_usage: {
-        [key: string]: unknown;
-    };
-    /**
-     * Api Usage
-     * API usage statistics
-     */
-    api_usage: {
-        [key: string]: unknown;
-    };
-    /**
-     * Limits
-     * Current limits and restrictions
-     */
-    limits: {
-        [key: string]: unknown;
-    };
-    /**
-     * Recent Activity
-     * Recent user activity
-     */
-    recent_activity: Array<{
-        [key: string]: unknown;
-    }>;
-    /**
-     * Timestamp
-     * Analytics generation timestamp
-     */
-    timestamp: string;
-};
-
-/**
- * UserGraphSummary
- * Summary of a single graph for user analytics.
- */
-export type UserGraphSummary = {
-    /**
-     * Graph Id
-     * Graph database identifier
-     */
-    graph_id: string;
-    /**
-     * Graph Name
-     * Display name for the graph
-     */
-    graph_name?: string | null;
-    /**
-     * Role
-     * User's role in this graph
-     */
-    role: string;
-    /**
-     * Total Nodes
-     * Total number of nodes
-     */
-    total_nodes: number;
-    /**
-     * Total Relationships
-     * Total number of relationships
-     */
-    total_relationships: number;
-    /**
-     * Estimated Size Mb
-     * Estimated database size in MB
-     */
-    estimated_size_mb: number;
-    /**
-     * Last Accessed
-     * Last access timestamp
-     */
-    last_accessed?: string | null;
+    new_plan_name: string;
 };
 
 /**
@@ -4309,28 +4163,6 @@ export type UserResponse = {
 };
 
 /**
- * UserSubscriptionsResponse
- * Response for user subscriptions.
- */
-export type UserSubscriptionsResponse = {
-    /**
-     * Subscriptions
-     * List of user subscriptions
-     */
-    subscriptions: Array<SubscriptionInfo>;
-    /**
-     * Total Count
-     * Total number of subscriptions
-     */
-    total_count: number;
-    /**
-     * Active Count
-     * Number of active subscriptions
-     */
-    active_count: number;
-};
-
-/**
  * UserUsageResponse
  * Response model for user usage statistics.
  *
@@ -4354,50 +4186,6 @@ export type UserUsageResponse = {
      * Current user limits
      */
     limits: UserLimitsResponse;
-};
-
-/**
- * UserUsageSummaryResponse
- * Response model for user usage summary.
- */
-export type UserUsageSummaryResponse = {
-    /**
-     * User Id
-     * User identifier
-     */
-    user_id: string;
-    /**
-     * Graph Count
-     * Number of accessible graphs
-     */
-    graph_count: number;
-    /**
-     * Total Nodes
-     * Total nodes across all graphs
-     */
-    total_nodes: number;
-    /**
-     * Total Relationships
-     * Total relationships across all graphs
-     */
-    total_relationships: number;
-    /**
-     * Usage Vs Limits
-     * Usage compared to limits
-     */
-    usage_vs_limits: {
-        [key: string]: unknown;
-    };
-    /**
-     * Graphs
-     * Summary of each graph
-     */
-    graphs: Array<UserGraphSummary>;
-    /**
-     * Timestamp
-     * Summary generation timestamp
-     */
-    timestamp: string;
 };
 
 /**
@@ -4920,34 +4708,6 @@ export type UpdateUserResponses = {
 
 export type UpdateUserResponse = UpdateUserResponses[keyof UpdateUserResponses];
 
-export type GetAllCreditSummariesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/user/credits';
-};
-
-export type GetAllCreditSummariesErrors = {
-    /**
-     * Failed to retrieve credit summaries
-     */
-    500: ErrorResponse;
-};
-
-export type GetAllCreditSummariesError = GetAllCreditSummariesErrors[keyof GetAllCreditSummariesErrors];
-
-export type GetAllCreditSummariesResponses = {
-    /**
-     * Response Getallcreditsummaries
-     * Credit summaries retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetAllCreditSummariesResponse = GetAllCreditSummariesResponses[keyof GetAllCreditSummariesResponses];
-
 export type UpdateUserPasswordData = {
     body: UpdatePasswordRequest;
     path?: never;
@@ -5101,369 +4861,14 @@ export type GetUserLimitsData = {
     url: '/v1/user/limits';
 };
 
-export type GetUserLimitsErrors = {
-    /**
-     * User limits not found
-     */
-    404: unknown;
-};
-
 export type GetUserLimitsResponses = {
     /**
-     * User limits retrieved successfully
-     */
-    200: UserLimitsResponse;
-};
-
-export type GetUserLimitsResponse = GetUserLimitsResponses[keyof GetUserLimitsResponses];
-
-export type GetUserUsageData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/user/limits/usage';
-};
-
-export type GetUserUsageResponses = {
-    /**
-     * User usage statistics retrieved successfully
+     * User limits and usage retrieved successfully
      */
     200: UserUsageResponse;
 };
 
-export type GetUserUsageResponse = GetUserUsageResponses[keyof GetUserUsageResponses];
-
-export type GetAllSharedRepositoryLimitsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/user/limits/shared-repositories/summary';
-};
-
-export type GetAllSharedRepositoryLimitsResponses = {
-    /**
-     * Response Getallsharedrepositorylimits
-     * Successful Response
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetAllSharedRepositoryLimitsResponse = GetAllSharedRepositoryLimitsResponses[keyof GetAllSharedRepositoryLimitsResponses];
-
-export type GetSharedRepositoryLimitsData = {
-    body?: never;
-    path: {
-        /**
-         * Repository
-         * Repository name (e.g., 'sec')
-         */
-        repository: string;
-    };
-    query?: never;
-    url: '/v1/user/limits/shared-repositories/{repository}';
-};
-
-export type GetSharedRepositoryLimitsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetSharedRepositoryLimitsError = GetSharedRepositoryLimitsErrors[keyof GetSharedRepositoryLimitsErrors];
-
-export type GetSharedRepositoryLimitsResponses = {
-    /**
-     * Response Getsharedrepositorylimits
-     * Successful Response
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetSharedRepositoryLimitsResponse = GetSharedRepositoryLimitsResponses[keyof GetSharedRepositoryLimitsResponses];
-
-export type GetUserUsageOverviewData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/user/analytics/overview';
-};
-
-export type GetUserUsageOverviewResponses = {
-    /**
-     * Successful Response
-     */
-    200: UserUsageSummaryResponse;
-};
-
-export type GetUserUsageOverviewResponse = GetUserUsageOverviewResponses[keyof GetUserUsageOverviewResponses];
-
-export type GetDetailedUserAnalyticsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Include Api Stats
-         * Include API usage statistics
-         */
-        include_api_stats?: boolean;
-        /**
-         * Include Recent Activity
-         * Include recent activity
-         */
-        include_recent_activity?: boolean;
-    };
-    url: '/v1/user/analytics/detailed';
-};
-
-export type GetDetailedUserAnalyticsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetDetailedUserAnalyticsError = GetDetailedUserAnalyticsErrors[keyof GetDetailedUserAnalyticsErrors];
-
-export type GetDetailedUserAnalyticsResponses = {
-    /**
-     * Successful Response
-     */
-    200: UserAnalyticsResponse;
-};
-
-export type GetDetailedUserAnalyticsResponse = GetDetailedUserAnalyticsResponses[keyof GetDetailedUserAnalyticsResponses];
-
-export type GetUserSharedSubscriptionsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Active Only
-         * Only return active subscriptions
-         */
-        active_only?: boolean;
-    };
-    url: '/v1/user/subscriptions/shared-repositories';
-};
-
-export type GetUserSharedSubscriptionsErrors = {
-    /**
-     * Authentication required
-     */
-    401: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type GetUserSharedSubscriptionsError = GetUserSharedSubscriptionsErrors[keyof GetUserSharedSubscriptionsErrors];
-
-export type GetUserSharedSubscriptionsResponses = {
-    /**
-     * Successfully retrieved user subscriptions
-     */
-    200: UserSubscriptionsResponse;
-};
-
-export type GetUserSharedSubscriptionsResponse = GetUserSharedSubscriptionsResponses[keyof GetUserSharedSubscriptionsResponses];
-
-export type SubscribeToSharedRepositoryData = {
-    body: SubscriptionRequest;
-    path?: never;
-    query?: never;
-    url: '/v1/user/subscriptions/shared-repositories/subscribe';
-};
-
-export type SubscribeToSharedRepositoryErrors = {
-    /**
-     * Invalid add-on type or tier, or user already has active subscription
-     */
-    400: unknown;
-    /**
-     * Authentication required
-     */
-    401: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type SubscribeToSharedRepositoryError = SubscribeToSharedRepositoryErrors[keyof SubscribeToSharedRepositoryErrors];
-
-export type SubscribeToSharedRepositoryResponses = {
-    /**
-     * Successfully subscribed to shared repository
-     */
-    201: SubscriptionResponse;
-};
-
-export type SubscribeToSharedRepositoryResponse = SubscribeToSharedRepositoryResponses[keyof SubscribeToSharedRepositoryResponses];
-
-export type UpgradeSharedRepositorySubscriptionData = {
-    body: TierUpgradeRequest;
-    path: {
-        /**
-         * Subscription Id
-         */
-        subscription_id: string;
-    };
-    query?: never;
-    url: '/v1/user/subscriptions/shared-repositories/{subscription_id}/upgrade';
-};
-
-export type UpgradeSharedRepositorySubscriptionErrors = {
-    /**
-     * Invalid tier for add-on type
-     */
-    400: unknown;
-    /**
-     * Authentication required
-     */
-    401: unknown;
-    /**
-     * Subscription not found or not owned by user
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type UpgradeSharedRepositorySubscriptionError = UpgradeSharedRepositorySubscriptionErrors[keyof UpgradeSharedRepositorySubscriptionErrors];
-
-export type UpgradeSharedRepositorySubscriptionResponses = {
-    /**
-     * Successfully upgraded subscription tier
-     */
-    200: unknown;
-};
-
-export type CancelSharedRepositorySubscriptionData = {
-    body?: never;
-    path: {
-        /**
-         * Subscription Id
-         */
-        subscription_id: string;
-    };
-    query?: never;
-    url: '/v1/user/subscriptions/shared-repositories/{subscription_id}';
-};
-
-export type CancelSharedRepositorySubscriptionErrors = {
-    /**
-     * Authentication required
-     */
-    401: unknown;
-    /**
-     * Subscription not found or not owned by user
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type CancelSharedRepositorySubscriptionError = CancelSharedRepositorySubscriptionErrors[keyof CancelSharedRepositorySubscriptionErrors];
-
-export type CancelSharedRepositorySubscriptionResponses = {
-    /**
-     * Successfully cancelled subscription
-     */
-    200: CancellationResponse;
-};
-
-export type CancelSharedRepositorySubscriptionResponse = CancelSharedRepositorySubscriptionResponses[keyof CancelSharedRepositorySubscriptionResponses];
-
-export type GetSharedRepositoryCreditsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/user/subscriptions/shared-repositories/credits';
-};
-
-export type GetSharedRepositoryCreditsErrors = {
-    /**
-     * Authentication required
-     */
-    401: unknown;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type GetSharedRepositoryCreditsResponses = {
-    /**
-     * Successfully retrieved credit balances
-     */
-    200: CreditsSummaryResponse;
-};
-
-export type GetSharedRepositoryCreditsResponse = GetSharedRepositoryCreditsResponses[keyof GetSharedRepositoryCreditsResponses];
-
-export type GetRepositoryCreditsData = {
-    body?: never;
-    path: {
-        /**
-         * Repository
-         */
-        repository: string;
-    };
-    query?: never;
-    url: '/v1/user/subscriptions/shared-repositories/credits/{repository}';
-};
-
-export type GetRepositoryCreditsErrors = {
-    /**
-     * Authentication required
-     */
-    401: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type GetRepositoryCreditsError = GetRepositoryCreditsErrors[keyof GetRepositoryCreditsErrors];
-
-export type GetRepositoryCreditsResponses = {
-    /**
-     * Successfully retrieved repository credits
-     */
-    200: RepositoryCreditsResponse;
-};
-
-export type GetRepositoryCreditsResponse = GetRepositoryCreditsResponses[keyof GetRepositoryCreditsResponses];
+export type GetUserLimitsResponse = GetUserLimitsResponses[keyof GetUserLimitsResponses];
 
 export type ListConnectionsData = {
     body?: never;
@@ -6525,7 +5930,7 @@ export type GetGraphMetricsResponses = {
 
 export type GetGraphMetricsResponse = GetGraphMetricsResponses[keyof GetGraphMetricsResponses];
 
-export type GetGraphUsageStatsData = {
+export type GetGraphUsageAnalyticsData = {
     body?: never;
     path: {
         /**
@@ -6535,15 +5940,35 @@ export type GetGraphUsageStatsData = {
     };
     query?: {
         /**
-         * Include Details
-         * Include detailed metrics (may be slower)
+         * Time Range
+         * Time range: 24h, 7d, 30d, current_month, last_month
          */
-        include_details?: boolean;
+        time_range?: string;
+        /**
+         * Include Storage
+         * Include storage usage summary
+         */
+        include_storage?: boolean;
+        /**
+         * Include Credits
+         * Include credit consumption summary
+         */
+        include_credits?: boolean;
+        /**
+         * Include Performance
+         * Include performance insights (may be slower)
+         */
+        include_performance?: boolean;
+        /**
+         * Include Events
+         * Include recent usage events
+         */
+        include_events?: boolean;
     };
     url: '/v1/graphs/{graph_id}/analytics/usage';
 };
 
-export type GetGraphUsageStatsErrors = {
+export type GetGraphUsageAnalyticsErrors = {
     /**
      * Access denied to graph
      */
@@ -6553,21 +5978,21 @@ export type GetGraphUsageStatsErrors = {
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve usage statistics
+     * Failed to retrieve usage analytics
      */
     500: ErrorResponse;
 };
 
-export type GetGraphUsageStatsError = GetGraphUsageStatsErrors[keyof GetGraphUsageStatsErrors];
+export type GetGraphUsageAnalyticsError = GetGraphUsageAnalyticsErrors[keyof GetGraphUsageAnalyticsErrors];
 
-export type GetGraphUsageStatsResponses = {
+export type GetGraphUsageAnalyticsResponses = {
     /**
-     * Usage statistics retrieved successfully
+     * Usage analytics retrieved successfully
      */
     200: GraphUsageResponse;
 };
 
-export type GetGraphUsageStatsResponse = GetGraphUsageStatsResponses[keyof GetGraphUsageStatsResponses];
+export type GetGraphUsageAnalyticsResponse = GetGraphUsageAnalyticsResponses[keyof GetGraphUsageAnalyticsResponses];
 
 export type ExecuteCypherQueryData = {
     body: CypherQueryRequest;
@@ -6792,221 +6217,6 @@ export type ValidateSchemaResponses = {
 };
 
 export type ValidateSchemaResponse = ValidateSchemaResponses[keyof ValidateSchemaResponses];
-
-export type GetCurrentGraphBillData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/billing/current';
-};
-
-export type GetCurrentGraphBillErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to calculate bill
-     */
-    500: ErrorResponse;
-};
-
-export type GetCurrentGraphBillError = GetCurrentGraphBillErrors[keyof GetCurrentGraphBillErrors];
-
-export type GetCurrentGraphBillResponses = {
-    /**
-     * Response Getcurrentgraphbill
-     * Current bill retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetCurrentGraphBillResponse = GetCurrentGraphBillResponses[keyof GetCurrentGraphBillResponses];
-
-export type GetGraphUsageDetailsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Year
-         * Year (defaults to current)
-         */
-        year?: number | null;
-        /**
-         * Month
-         * Month (defaults to current)
-         */
-        month?: number | null;
-    };
-    url: '/v1/graphs/{graph_id}/billing/usage';
-};
-
-export type GetGraphUsageDetailsErrors = {
-    /**
-     * Invalid year or month
-     */
-    400: ErrorResponse;
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve usage
-     */
-    500: ErrorResponse;
-};
-
-export type GetGraphUsageDetailsError = GetGraphUsageDetailsErrors[keyof GetGraphUsageDetailsErrors];
-
-export type GetGraphUsageDetailsResponses = {
-    /**
-     * Response Getgraphusagedetails
-     * Usage details retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetGraphUsageDetailsResponse = GetGraphUsageDetailsResponses[keyof GetGraphUsageDetailsResponses];
-
-export type GetGraphBillingHistoryData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Months
-         * Number of months to retrieve (1-24)
-         */
-        months?: number;
-    };
-    url: '/v1/graphs/{graph_id}/billing/history';
-};
-
-export type GetGraphBillingHistoryErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve history
-     */
-    500: ErrorResponse;
-};
-
-export type GetGraphBillingHistoryError = GetGraphBillingHistoryErrors[keyof GetGraphBillingHistoryErrors];
-
-export type GetGraphBillingHistoryResponses = {
-    /**
-     * Response Getgraphbillinghistory
-     * Billing history retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetGraphBillingHistoryResponse = GetGraphBillingHistoryResponses[keyof GetGraphBillingHistoryResponses];
-
-export type GetGraphMonthlyBillData = {
-    body?: never;
-    path: {
-        /**
-         * Year
-         * Year (2024-2030)
-         */
-        year: number;
-        /**
-         * Month
-         * Month (1-12)
-         */
-        month: number;
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/billing/history/{year}/{month}';
-};
-
-export type GetGraphMonthlyBillErrors = {
-    /**
-     * Invalid year or month
-     */
-    400: ErrorResponse;
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found or no data for period
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to calculate bill
-     */
-    500: ErrorResponse;
-};
-
-export type GetGraphMonthlyBillError = GetGraphMonthlyBillErrors[keyof GetGraphMonthlyBillErrors];
-
-export type GetGraphMonthlyBillResponses = {
-    /**
-     * Response Getgraphmonthlybill
-     * Monthly bill retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetGraphMonthlyBillResponse = GetGraphMonthlyBillResponses[keyof GetGraphMonthlyBillResponses];
 
 export type GetCreditSummaryData = {
     body?: never;
@@ -7617,6 +6827,154 @@ export type GetSubgraphQuotaResponses = {
 };
 
 export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgraphQuotaResponses];
+
+export type CancelSubscriptionData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         * Graph ID or repository name
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/subscriptions';
+};
+
+export type CancelSubscriptionErrors = {
+    /**
+     * Cannot cancel graph subscriptions directly
+     */
+    400: unknown;
+    /**
+     * No subscription found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CancelSubscriptionError = CancelSubscriptionErrors[keyof CancelSubscriptionErrors];
+
+export type CancelSubscriptionResponses = {
+    /**
+     * Subscription canceled successfully
+     */
+    200: CancellationResponse;
+};
+
+export type CancelSubscriptionResponse = CancelSubscriptionResponses[keyof CancelSubscriptionResponses];
+
+export type GetGraphSubscriptionData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         * Graph ID or repository name
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/subscriptions';
+};
+
+export type GetGraphSubscriptionErrors = {
+    /**
+     * No subscription found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetGraphSubscriptionError = GetGraphSubscriptionErrors[keyof GetGraphSubscriptionErrors];
+
+export type GetGraphSubscriptionResponses = {
+    /**
+     * Subscription retrieved successfully
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type GetGraphSubscriptionResponse = GetGraphSubscriptionResponses[keyof GetGraphSubscriptionResponses];
+
+export type CreateRepositorySubscriptionData = {
+    body: CreateRepositorySubscriptionRequest;
+    path: {
+        /**
+         * Graph Id
+         * Repository name (e.g., 'sec', 'industry')
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/subscriptions';
+};
+
+export type CreateRepositorySubscriptionErrors = {
+    /**
+     * Invalid request - cannot create subscription for user graphs
+     */
+    400: unknown;
+    /**
+     * User already has a subscription to this repository
+     */
+    409: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateRepositorySubscriptionError = CreateRepositorySubscriptionErrors[keyof CreateRepositorySubscriptionErrors];
+
+export type CreateRepositorySubscriptionResponses = {
+    /**
+     * Repository subscription created successfully
+     */
+    201: GraphSubscriptionResponse;
+};
+
+export type CreateRepositorySubscriptionResponse = CreateRepositorySubscriptionResponses[keyof CreateRepositorySubscriptionResponses];
+
+export type UpgradeSubscriptionData = {
+    body: UpgradeSubscriptionRequest;
+    path: {
+        /**
+         * Graph Id
+         * Graph ID or repository name
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/subscriptions/upgrade';
+};
+
+export type UpgradeSubscriptionErrors = {
+    /**
+     * No subscription found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpgradeSubscriptionError = UpgradeSubscriptionErrors[keyof UpgradeSubscriptionErrors];
+
+export type UpgradeSubscriptionResponses = {
+    /**
+     * Subscription upgraded successfully
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type UpgradeSubscriptionResponse = UpgradeSubscriptionResponses[keyof UpgradeSubscriptionResponses];
 
 export type ListTablesData = {
     body?: never;
