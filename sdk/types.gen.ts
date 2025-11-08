@@ -733,6 +733,43 @@ export type BatchAgentResponse = {
 };
 
 /**
+ * BillingCustomer
+ * Billing customer information.
+ */
+export type BillingCustomer = {
+    /**
+     * User Id
+     * User ID
+     */
+    user_id: string;
+    /**
+     * Has Payment Method
+     * Whether customer has a payment method on file
+     */
+    has_payment_method: boolean;
+    /**
+     * Invoice Billing Enabled
+     * Whether invoice billing is enabled (enterprise customers)
+     */
+    invoice_billing_enabled: boolean;
+    /**
+     * Payment Methods
+     * List of payment methods on file
+     */
+    payment_methods: Array<PaymentMethod>;
+    /**
+     * Stripe Customer Id
+     * Stripe customer ID if applicable
+     */
+    stripe_customer_id?: string | null;
+    /**
+     * Created At
+     * Customer creation timestamp (ISO format)
+     */
+    created_at: string;
+};
+
+/**
  * BulkIngestRequest
  */
 export type BulkIngestRequest = {
@@ -819,6 +856,65 @@ export type CancellationResponse = {
      * Cancellation timestamp (ISO format)
      */
     cancelled_at: string;
+};
+
+/**
+ * CheckoutResponse
+ * Response from checkout session creation.
+ */
+export type CheckoutResponse = {
+    /**
+     * Checkout Url
+     * URL to redirect user to for payment
+     */
+    checkout_url: string;
+    /**
+     * Session Id
+     * Checkout session ID for status polling
+     */
+    session_id: string;
+    /**
+     * Subscription Id
+     * Internal subscription ID
+     */
+    subscription_id: string;
+    /**
+     * Requires Checkout
+     * Whether checkout is required
+     */
+    requires_checkout?: boolean;
+};
+
+/**
+ * CheckoutStatusResponse
+ * Status of a checkout session.
+ */
+export type CheckoutStatusResponse = {
+    /**
+     * Status
+     * Checkout status: 'pending_payment', 'provisioning', 'completed', 'failed'
+     */
+    status: string;
+    /**
+     * Subscription Id
+     * Internal subscription ID
+     */
+    subscription_id: string;
+    /**
+     * Resource Id
+     * Resource ID (graph_id or repository name) once provisioned
+     */
+    resource_id?: string | null;
+    /**
+     * Operation Id
+     * SSE operation ID for monitoring provisioning progress
+     */
+    operation_id?: string | null;
+    /**
+     * Error
+     * Error message if checkout failed
+     */
+    error?: string | null;
 };
 
 /**
@@ -1027,6 +1123,30 @@ export type CreateApiKeyResponse = {
      * The actual API key (only shown once)
      */
     key: string;
+};
+
+/**
+ * CreateCheckoutRequest
+ * Request to create a checkout session for payment collection.
+ */
+export type CreateCheckoutRequest = {
+    /**
+     * Plan Name
+     * Billing plan name (e.g., 'kuzu-standard')
+     */
+    plan_name: string;
+    /**
+     * Resource Type
+     * Resource type ('graph' or 'repository')
+     */
+    resource_type: string;
+    /**
+     * Resource Config
+     * Configuration for the resource to be provisioned
+     */
+    resource_config: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -2557,6 +2677,132 @@ export type InitialEntityData = {
 };
 
 /**
+ * Invoice
+ * Invoice information.
+ */
+export type Invoice = {
+    /**
+     * Id
+     * Invoice ID
+     */
+    id: string;
+    /**
+     * Number
+     * Invoice number
+     */
+    number?: string | null;
+    /**
+     * Status
+     * Invoice status (paid, open, void, uncollectible)
+     */
+    status: string;
+    /**
+     * Amount Due
+     * Amount due in cents
+     */
+    amount_due: number;
+    /**
+     * Amount Paid
+     * Amount paid in cents
+     */
+    amount_paid: number;
+    /**
+     * Currency
+     * Currency code (usd)
+     */
+    currency: string;
+    /**
+     * Created
+     * Invoice creation date (ISO format)
+     */
+    created: string;
+    /**
+     * Due Date
+     * Invoice due date (ISO format)
+     */
+    due_date?: string | null;
+    /**
+     * Paid At
+     * Payment date (ISO format)
+     */
+    paid_at?: string | null;
+    /**
+     * Invoice Pdf
+     * PDF download URL
+     */
+    invoice_pdf?: string | null;
+    /**
+     * Hosted Invoice Url
+     * Hosted invoice URL
+     */
+    hosted_invoice_url?: string | null;
+    /**
+     * Line Items
+     * Invoice line items
+     */
+    line_items: Array<InvoiceLineItem>;
+    /**
+     * Subscription Id
+     * Associated subscription ID
+     */
+    subscription_id?: string | null;
+};
+
+/**
+ * InvoiceLineItem
+ * Invoice line item.
+ */
+export type InvoiceLineItem = {
+    /**
+     * Description
+     * Line item description
+     */
+    description: string;
+    /**
+     * Amount
+     * Amount in cents
+     */
+    amount: number;
+    /**
+     * Quantity
+     * Quantity
+     */
+    quantity: number;
+    /**
+     * Period Start
+     * Billing period start
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     * Billing period end
+     */
+    period_end?: string | null;
+};
+
+/**
+ * InvoicesResponse
+ * Response for invoice list.
+ */
+export type InvoicesResponse = {
+    /**
+     * Invoices
+     * List of invoices
+     */
+    invoices: Array<Invoice>;
+    /**
+     * Total Count
+     * Total number of invoices
+     */
+    total_count: number;
+    /**
+     * Has More
+     * Whether more invoices are available
+     */
+    has_more: boolean;
+};
+
+/**
  * LinkTokenRequest
  * Request to create a link token for embedded authentication.
  */
@@ -2939,6 +3185,48 @@ export type PasswordPolicyResponse = {
     policy: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * PaymentMethod
+ * Payment method information.
+ */
+export type PaymentMethod = {
+    /**
+     * Id
+     * Payment method ID
+     */
+    id: string;
+    /**
+     * Type
+     * Payment method type (card, bank_account, etc.)
+     */
+    type: string;
+    /**
+     * Brand
+     * Card brand (visa, mastercard, etc.)
+     */
+    brand?: string | null;
+    /**
+     * Last4
+     * Last 4 digits
+     */
+    last4?: string | null;
+    /**
+     * Exp Month
+     * Expiration month
+     */
+    exp_month?: number | null;
+    /**
+     * Exp Year
+     * Expiration year
+     */
+    exp_year?: number | null;
+    /**
+     * Is Default
+     * Whether this is the default payment method
+     */
+    is_default: boolean;
 };
 
 /**
@@ -4016,6 +4304,43 @@ export type TransactionSummaryResponse = {
 };
 
 /**
+ * UpcomingInvoice
+ * Upcoming invoice preview.
+ */
+export type UpcomingInvoice = {
+    /**
+     * Amount Due
+     * Estimated amount due in cents
+     */
+    amount_due: number;
+    /**
+     * Currency
+     * Currency code
+     */
+    currency: string;
+    /**
+     * Period Start
+     * Billing period start
+     */
+    period_start: string;
+    /**
+     * Period End
+     * Billing period end
+     */
+    period_end: string;
+    /**
+     * Line Items
+     * Estimated line items
+     */
+    line_items: Array<InvoiceLineItem>;
+    /**
+     * Subscription Id
+     * Associated subscription ID
+     */
+    subscription_id?: string | null;
+};
+
+/**
  * UpdateAPIKeyRequest
  * Request model for updating an API key.
  */
@@ -4052,6 +4377,34 @@ export type UpdatePasswordRequest = {
      * Confirm new password
      */
     confirm_password: string;
+};
+
+/**
+ * UpdatePaymentMethodRequest
+ * Request to update default payment method.
+ */
+export type UpdatePaymentMethodRequest = {
+    /**
+     * Payment Method Id
+     * Payment method ID to set as default
+     */
+    payment_method_id: string;
+};
+
+/**
+ * UpdatePaymentMethodResponse
+ * Response for payment method update.
+ */
+export type UpdatePaymentMethodResponse = {
+    /**
+     * Message
+     * Success message
+     */
+    message: string;
+    /**
+     * Updated payment method
+     */
+    payment_method: PaymentMethod;
 };
 
 /**
@@ -7727,6 +8080,227 @@ export type CancelOperationResponses = {
 };
 
 export type CancelOperationResponse = CancelOperationResponses[keyof CancelOperationResponses];
+
+export type CreateCheckoutSessionData = {
+    body: CreateCheckoutRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/billing/checkout';
+};
+
+export type CreateCheckoutSessionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateCheckoutSessionError = CreateCheckoutSessionErrors[keyof CreateCheckoutSessionErrors];
+
+export type CreateCheckoutSessionResponses = {
+    /**
+     * Successful Response
+     */
+    201: CheckoutResponse;
+};
+
+export type CreateCheckoutSessionResponse = CreateCheckoutSessionResponses[keyof CreateCheckoutSessionResponses];
+
+export type GetCheckoutStatusData = {
+    body?: never;
+    path: {
+        /**
+         * Session Id
+         */
+        session_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/checkout/{session_id}/status';
+};
+
+export type GetCheckoutStatusErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCheckoutStatusError = GetCheckoutStatusErrors[keyof GetCheckoutStatusErrors];
+
+export type GetCheckoutStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: CheckoutStatusResponse;
+};
+
+export type GetCheckoutStatusResponse = GetCheckoutStatusResponses[keyof GetCheckoutStatusResponses];
+
+export type GetBillingCustomerData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/billing/customer';
+};
+
+export type GetBillingCustomerResponses = {
+    /**
+     * Successful Response
+     */
+    200: BillingCustomer;
+};
+
+export type GetBillingCustomerResponse = GetBillingCustomerResponses[keyof GetBillingCustomerResponses];
+
+export type UpdatePaymentMethodData = {
+    body: UpdatePaymentMethodRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/billing/customer/payment-method';
+};
+
+export type UpdatePaymentMethodErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePaymentMethodError = UpdatePaymentMethodErrors[keyof UpdatePaymentMethodErrors];
+
+export type UpdatePaymentMethodResponses = {
+    /**
+     * Successful Response
+     */
+    200: UpdatePaymentMethodResponse;
+};
+
+export type UpdatePaymentMethodResponse2 = UpdatePaymentMethodResponses[keyof UpdatePaymentMethodResponses];
+
+export type ListInvoicesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Limit
+         * Number of invoices to return
+         */
+        limit?: number;
+    };
+    url: '/v1/billing/invoices';
+};
+
+export type ListInvoicesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListInvoicesError = ListInvoicesErrors[keyof ListInvoicesErrors];
+
+export type ListInvoicesResponses = {
+    /**
+     * Successful Response
+     */
+    200: InvoicesResponse;
+};
+
+export type ListInvoicesResponse = ListInvoicesResponses[keyof ListInvoicesResponses];
+
+export type GetUpcomingInvoiceData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/billing/invoices/upcoming';
+};
+
+export type GetUpcomingInvoiceResponses = {
+    /**
+     * Response Getupcominginvoice
+     * Successful Response
+     */
+    200: UpcomingInvoice | null;
+};
+
+export type GetUpcomingInvoiceResponse = GetUpcomingInvoiceResponses[keyof GetUpcomingInvoiceResponses];
+
+export type ListSubscriptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/billing/subscriptions';
+};
+
+export type ListSubscriptionsResponses = {
+    /**
+     * Response Listsubscriptions
+     * Successful Response
+     */
+    200: Array<GraphSubscriptionResponse>;
+};
+
+export type ListSubscriptionsResponse = ListSubscriptionsResponses[keyof ListSubscriptionsResponses];
+
+export type GetSubscriptionData = {
+    body?: never;
+    path: {
+        /**
+         * Subscription Id
+         */
+        subscription_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/subscriptions/{subscription_id}';
+};
+
+export type GetSubscriptionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetSubscriptionError = GetSubscriptionErrors[keyof GetSubscriptionErrors];
+
+export type GetSubscriptionResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type GetSubscriptionResponse = GetSubscriptionResponses[keyof GetSubscriptionResponses];
+
+export type CancelSubscription2Data = {
+    body?: never;
+    path: {
+        /**
+         * Subscription Id
+         */
+        subscription_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/subscriptions/{subscription_id}/cancel';
+};
+
+export type CancelSubscription2Errors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CancelSubscription2Error = CancelSubscription2Errors[keyof CancelSubscription2Errors];
+
+export type CancelSubscription2Responses = {
+    /**
+     * Successful Response
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type CancelSubscription2Response = CancelSubscription2Responses[keyof CancelSubscription2Responses];
 
 export type ClientOptions = {
     baseUrl: 'http://localhost:8000';
