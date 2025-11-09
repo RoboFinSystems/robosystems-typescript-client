@@ -377,6 +377,13 @@ export type AuthResponse = {
         [key: string]: unknown;
     };
     /**
+     * Org
+     * Organization information (personal org created automatically on registration)
+     */
+    org?: {
+        [key: string]: unknown;
+    } | null;
+    /**
      * Message
      * Success message
      */
@@ -734,17 +741,17 @@ export type BatchAgentResponse = {
 
 /**
  * BillingCustomer
- * Billing customer information.
+ * Billing customer information for an organization.
  */
 export type BillingCustomer = {
     /**
-     * User Id
-     * User ID
+     * Org Id
+     * Organization ID
      */
-    user_id: string;
+    org_id: string;
     /**
      * Has Payment Method
-     * Whether customer has a payment method on file
+     * Whether organization has a payment method on file
      */
     has_payment_method: boolean;
     /**
@@ -867,22 +874,27 @@ export type CheckoutResponse = {
      * Checkout Url
      * URL to redirect user to for payment
      */
-    checkout_url: string;
+    checkout_url?: string | null;
     /**
      * Session Id
      * Checkout session ID for status polling
      */
-    session_id: string;
+    session_id?: string | null;
     /**
      * Subscription Id
      * Internal subscription ID
      */
-    subscription_id: string;
+    subscription_id?: string | null;
     /**
      * Requires Checkout
      * Whether checkout is required
      */
     requires_checkout?: boolean;
+    /**
+     * Billing Disabled
+     * Whether billing is disabled on this instance
+     */
+    billing_disabled?: boolean;
 };
 
 /**
@@ -1205,6 +1217,18 @@ export type CreateGraphRequest = {
      * Optional tags for organization
      */
     tags?: Array<string>;
+};
+
+/**
+ * CreateOrgRequest
+ * Request to create an organization.
+ */
+export type CreateOrgRequest = {
+    /**
+     * Name
+     */
+    name: string;
+    org_type?: OrgType;
 };
 
 /**
@@ -2254,12 +2278,15 @@ export type GraphSubscriptionResponse = {
 
 /**
  * GraphSubscriptionTier
- * Information about a graph subscription tier.
+ * Information about a graph infrastructure tier.
+ *
+ * Each tier represents a per-graph subscription option with specific
+ * infrastructure, performance, and pricing characteristics.
  */
 export type GraphSubscriptionTier = {
     /**
      * Name
-     * Tier name
+     * Infrastructure tier identifier (e.g., kuzu-standard)
      */
     name: string;
     /**
@@ -2273,15 +2300,15 @@ export type GraphSubscriptionTier = {
      */
     description: string;
     /**
-     * Monthly Price
-     * Monthly price in USD
+     * Monthly Price Per Graph
+     * Monthly price in USD per graph
      */
-    monthly_price: number;
+    monthly_price_per_graph: number;
     /**
-     * Monthly Credits
-     * Monthly AI credits
+     * Monthly Credits Per Graph
+     * Monthly AI credits per graph
      */
-    monthly_credits: number;
+    monthly_credits_per_graph: number;
     /**
      * Storage Included Gb
      * Storage included in GB
@@ -2293,10 +2320,10 @@ export type GraphSubscriptionTier = {
      */
     storage_overage_per_gb: number;
     /**
-     * Allowed Graph Tiers
-     * Allowed graph tier identifiers
+     * Infrastructure
+     * Infrastructure description
      */
-    allowed_graph_tiers: Array<string>;
+    infrastructure: string;
     /**
      * Features
      * List of features
@@ -2319,9 +2346,9 @@ export type GraphSubscriptionTier = {
     max_queries_per_hour?: number | null;
     /**
      * Max Subgraphs
-     * Maximum subgraphs
+     * Maximum subgraphs supported
      */
-    max_subgraphs?: number | null;
+    max_subgraphs?: number;
     /**
      * Api Rate Multiplier
      * API rate multiplier
@@ -2342,6 +2369,10 @@ export type GraphSubscriptionTier = {
 /**
  * GraphSubscriptions
  * Graph subscription offerings.
+ *
+ * Graph subscriptions are per-graph, not per-organization. Each graph
+ * created by an organization has its own subscription with its own
+ * infrastructure tier, pricing, and credit allocation.
  */
 export type GraphSubscriptions = {
     /**
@@ -2350,8 +2381,13 @@ export type GraphSubscriptions = {
      */
     description: string;
     /**
+     * Pricing Model
+     * Pricing model type (per_graph or per_organization)
+     */
+    pricing_model: string;
+    /**
      * Tiers
-     * Available tiers
+     * Available infrastructure tiers
      */
     tiers: Array<GraphSubscriptionTier>;
     /**
@@ -2674,6 +2710,18 @@ export type InitialEntityData = {
      * Employer Identification Number
      */
     ein?: string | null;
+};
+
+/**
+ * InviteMemberRequest
+ * Request to invite a member to an organization.
+ */
+export type InviteMemberRequest = {
+    /**
+     * Email
+     */
+    email: string;
+    role?: OrgRole | null;
 };
 
 /**
@@ -3118,6 +3166,270 @@ export type OperationCosts = {
 };
 
 /**
+ * OrgDetailResponse
+ * Detailed organization response.
+ */
+export type OrgDetailResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    org_type: OrgType;
+    user_role: OrgRole;
+    /**
+     * Members
+     */
+    members: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Graphs
+     */
+    graphs: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Limits
+     */
+    limits: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * OrgLimitsResponse
+ * Organization limits response.
+ */
+export type OrgLimitsResponse = {
+    /**
+     * Org Id
+     */
+    org_id: string;
+    /**
+     * Max Graphs
+     */
+    max_graphs: number;
+    /**
+     * Current Usage
+     */
+    current_usage: {
+        [key: string]: unknown;
+    };
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
+    /**
+     * Can Create Graph
+     */
+    can_create_graph: boolean;
+};
+
+/**
+ * OrgListResponse
+ * List of organizations response.
+ */
+export type OrgListResponse = {
+    /**
+     * Orgs
+     */
+    orgs: Array<OrgResponse>;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
+ * OrgMemberListResponse
+ * List of organization members response.
+ */
+export type OrgMemberListResponse = {
+    /**
+     * Members
+     */
+    members: Array<OrgMemberResponse>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Org Id
+     */
+    org_id: string;
+};
+
+/**
+ * OrgMemberResponse
+ * Organization member response.
+ */
+export type OrgMemberResponse = {
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email
+     */
+    email: string;
+    role: OrgRole;
+    /**
+     * Joined At
+     */
+    joined_at: string;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+};
+
+/**
+ * OrgResponse
+ * Organization summary response.
+ */
+export type OrgResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    org_type: OrgType;
+    role: OrgRole;
+    /**
+     * Member Count
+     */
+    member_count: number;
+    /**
+     * Graph Count
+     */
+    graph_count: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Joined At
+     */
+    joined_at: string;
+};
+
+/**
+ * OrgRole
+ */
+export type OrgRole = 'owner' | 'admin' | 'member';
+
+/**
+ * OrgType
+ */
+export type OrgType = 'personal' | 'team' | 'enterprise';
+
+/**
+ * OrgUsageResponse
+ * Organization usage response.
+ */
+export type OrgUsageResponse = {
+    /**
+     * Org Id
+     */
+    org_id: string;
+    /**
+     * Period Days
+     */
+    period_days: number;
+    /**
+     * Start Date
+     */
+    start_date: string;
+    /**
+     * End Date
+     */
+    end_date: string;
+    summary: OrgUsageSummary;
+    /**
+     * Graph Details
+     */
+    graph_details: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Daily Trend
+     */
+    daily_trend: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+/**
+ * OrgUsageSummary
+ * Organization usage summary.
+ */
+export type OrgUsageSummary = {
+    /**
+     * Total Credits Used
+     */
+    total_credits_used: number;
+    /**
+     * Total Ai Operations
+     */
+    total_ai_operations: number;
+    /**
+     * Total Storage Gb
+     */
+    total_storage_gb: number;
+    /**
+     * Total Api Calls
+     */
+    total_api_calls: number;
+    /**
+     * Daily Avg Credits
+     */
+    daily_avg_credits: number;
+    /**
+     * Daily Avg Api Calls
+     */
+    daily_avg_api_calls: number;
+    /**
+     * Projected Monthly Credits
+     */
+    projected_monthly_credits: number;
+    /**
+     * Projected Monthly Api Calls
+     */
+    projected_monthly_api_calls: number;
+    /**
+     * Credits Limit
+     */
+    credits_limit: number | null;
+    /**
+     * Api Calls Limit
+     */
+    api_calls_limit: number | null;
+    /**
+     * Storage Limit Gb
+     */
+    storage_limit_gb: number | null;
+};
+
+/**
  * PasswordCheckRequest
  * Password strength check request model.
  */
@@ -3434,6 +3746,9 @@ export type RepositoryInfo = {
 /**
  * RepositorySubscriptions
  * Repository subscription offerings.
+ *
+ * Repository subscriptions are per-organization, not per-graph. All members
+ * of an organization share access to subscribed repositories.
  */
 export type RepositorySubscriptions = {
     /**
@@ -3441,6 +3756,11 @@ export type RepositorySubscriptions = {
      * Description of repository subscriptions
      */
     description: string;
+    /**
+     * Pricing Model
+     * Pricing model type (per_graph or per_organization)
+     */
+    pricing_model: string;
     /**
      * Repositories
      * Available repositories
@@ -3774,6 +4094,11 @@ export type ServiceOfferingSummary = {
  * Complete service offerings response.
  */
 export type ServiceOfferingsResponse = {
+    /**
+     * Billing Enabled
+     * Whether billing and payments are enabled
+     */
+    billing_enabled: boolean;
     /**
      * Graph subscription offerings
      */
@@ -4358,6 +4683,26 @@ export type UpdateApiKeyRequest = {
 };
 
 /**
+ * UpdateMemberRoleRequest
+ * Request to update a member's role.
+ */
+export type UpdateMemberRoleRequest = {
+    role: OrgRole;
+};
+
+/**
+ * UpdateOrgRequest
+ * Request to update organization details.
+ */
+export type UpdateOrgRequest = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    org_type?: OrgType | null;
+};
+
+/**
  * UpdatePasswordRequest
  * Request model for updating user password.
  */
@@ -4454,41 +4799,6 @@ export type UserGraphsResponse = {
 };
 
 /**
- * UserLimitsResponse
- * Response model for user limits information.
- *
- * UserLimits is now a simple safety valve to prevent runaway graph creation.
- * Subscription tiers and rate limits are handled at the graph level.
- */
-export type UserLimitsResponse = {
-    /**
-     * Id
-     * Unique limits identifier
-     */
-    id: string;
-    /**
-     * User Id
-     * Associated user ID
-     */
-    user_id: string;
-    /**
-     * Max User Graphs
-     * Maximum number of user graphs allowed (safety limit)
-     */
-    max_user_graphs: number;
-    /**
-     * Created At
-     * Limits creation timestamp
-     */
-    created_at: string;
-    /**
-     * Updated At
-     * Last update timestamp
-     */
-    updated_at: string;
-};
-
-/**
  * UserResponse
  * User information response model.
  */
@@ -4513,32 +4823,6 @@ export type UserResponse = {
      * User's authentication accounts
      */
     accounts?: Array<AccountInfo>;
-};
-
-/**
- * UserUsageResponse
- * Response model for user usage statistics.
- *
- * Simplified to only show graph usage as UserLimits is now just a safety valve.
- * Other usage tracking (MCP, Agent calls) happens at the graph level.
- */
-export type UserUsageResponse = {
-    /**
-     * User Id
-     * User identifier
-     */
-    user_id: string;
-    /**
-     * Graphs
-     * Graph usage statistics (current/limit/remaining)
-     */
-    graphs: {
-        [key: string]: unknown;
-    };
-    /**
-     * Current user limits
-     */
-    limits: UserLimitsResponse;
 };
 
 /**
@@ -5207,21 +5491,332 @@ export type UpdateUserApiKeyResponses = {
 
 export type UpdateUserApiKeyResponse = UpdateUserApiKeyResponses[keyof UpdateUserApiKeyResponses];
 
-export type GetUserLimitsData = {
+export type ListUserOrgsData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/v1/user/limits';
+    url: '/v1/orgs';
 };
 
-export type GetUserLimitsResponses = {
+export type ListUserOrgsResponses = {
     /**
-     * User limits and usage retrieved successfully
+     * Successful Response
      */
-    200: UserUsageResponse;
+    200: OrgListResponse;
 };
 
-export type GetUserLimitsResponse = GetUserLimitsResponses[keyof GetUserLimitsResponses];
+export type ListUserOrgsResponse = ListUserOrgsResponses[keyof ListUserOrgsResponses];
+
+export type CreateOrgData = {
+    body: CreateOrgRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/orgs';
+};
+
+export type CreateOrgErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateOrgError = CreateOrgErrors[keyof CreateOrgErrors];
+
+export type CreateOrgResponses = {
+    /**
+     * Successful Response
+     */
+    201: OrgDetailResponse;
+};
+
+export type CreateOrgResponse = CreateOrgResponses[keyof CreateOrgResponses];
+
+export type GetOrgData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}';
+};
+
+export type GetOrgErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetOrgError = GetOrgErrors[keyof GetOrgErrors];
+
+export type GetOrgResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgDetailResponse;
+};
+
+export type GetOrgResponse = GetOrgResponses[keyof GetOrgResponses];
+
+export type UpdateOrgData = {
+    body: UpdateOrgRequest;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}';
+};
+
+export type UpdateOrgErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateOrgError = UpdateOrgErrors[keyof UpdateOrgErrors];
+
+export type UpdateOrgResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgDetailResponse;
+};
+
+export type UpdateOrgResponse = UpdateOrgResponses[keyof UpdateOrgResponses];
+
+export type ListOrgGraphsData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/graphs';
+};
+
+export type ListOrgGraphsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListOrgGraphsError = ListOrgGraphsErrors[keyof ListOrgGraphsErrors];
+
+export type ListOrgGraphsResponses = {
+    /**
+     * Response Listorggraphs
+     * Successful Response
+     */
+    200: Array<{
+        [key: string]: unknown;
+    }>;
+};
+
+export type ListOrgGraphsResponse = ListOrgGraphsResponses[keyof ListOrgGraphsResponses];
+
+export type ListOrgMembersData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/members';
+};
+
+export type ListOrgMembersErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListOrgMembersError = ListOrgMembersErrors[keyof ListOrgMembersErrors];
+
+export type ListOrgMembersResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgMemberListResponse;
+};
+
+export type ListOrgMembersResponse = ListOrgMembersResponses[keyof ListOrgMembersResponses];
+
+export type InviteOrgMemberData = {
+    body: InviteMemberRequest;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/members';
+};
+
+export type InviteOrgMemberErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type InviteOrgMemberError = InviteOrgMemberErrors[keyof InviteOrgMemberErrors];
+
+export type InviteOrgMemberResponses = {
+    /**
+     * Successful Response
+     */
+    201: OrgMemberResponse;
+};
+
+export type InviteOrgMemberResponse = InviteOrgMemberResponses[keyof InviteOrgMemberResponses];
+
+export type RemoveOrgMemberData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/members/{user_id}';
+};
+
+export type RemoveOrgMemberErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RemoveOrgMemberError = RemoveOrgMemberErrors[keyof RemoveOrgMemberErrors];
+
+export type RemoveOrgMemberResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type RemoveOrgMemberResponse = RemoveOrgMemberResponses[keyof RemoveOrgMemberResponses];
+
+export type UpdateOrgMemberRoleData = {
+    body: UpdateMemberRoleRequest;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+        /**
+         * User Id
+         */
+        user_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/members/{user_id}';
+};
+
+export type UpdateOrgMemberRoleErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateOrgMemberRoleError = UpdateOrgMemberRoleErrors[keyof UpdateOrgMemberRoleErrors];
+
+export type UpdateOrgMemberRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgMemberResponse;
+};
+
+export type UpdateOrgMemberRoleResponse = UpdateOrgMemberRoleResponses[keyof UpdateOrgMemberRoleResponses];
+
+export type GetOrgLimitsData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/limits';
+};
+
+export type GetOrgLimitsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetOrgLimitsError = GetOrgLimitsErrors[keyof GetOrgLimitsErrors];
+
+export type GetOrgLimitsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgLimitsResponse;
+};
+
+export type GetOrgLimitsResponse = GetOrgLimitsResponses[keyof GetOrgLimitsResponses];
+
+export type GetOrgUsageData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: {
+        /**
+         * Days
+         */
+        days?: number;
+    };
+    url: '/v1/orgs/{org_id}/usage';
+};
+
+export type GetOrgUsageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetOrgUsageError = GetOrgUsageErrors[keyof GetOrgUsageErrors];
+
+export type GetOrgUsageResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgUsageResponse;
+};
+
+export type GetOrgUsageResponse = GetOrgUsageResponses[keyof GetOrgUsageResponses];
 
 export type ListConnectionsData = {
     body?: never;
@@ -8081,6 +8676,232 @@ export type CancelOperationResponses = {
 
 export type CancelOperationResponse = CancelOperationResponses[keyof CancelOperationResponses];
 
+export type GetOrgBillingCustomerData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/customer/{org_id}';
+};
+
+export type GetOrgBillingCustomerErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetOrgBillingCustomerError = GetOrgBillingCustomerErrors[keyof GetOrgBillingCustomerErrors];
+
+export type GetOrgBillingCustomerResponses = {
+    /**
+     * Successful Response
+     */
+    200: BillingCustomer;
+};
+
+export type GetOrgBillingCustomerResponse = GetOrgBillingCustomerResponses[keyof GetOrgBillingCustomerResponses];
+
+export type UpdateOrgPaymentMethodData = {
+    body: UpdatePaymentMethodRequest;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/customer/{org_id}/payment-method';
+};
+
+export type UpdateOrgPaymentMethodErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateOrgPaymentMethodError = UpdateOrgPaymentMethodErrors[keyof UpdateOrgPaymentMethodErrors];
+
+export type UpdateOrgPaymentMethodResponses = {
+    /**
+     * Successful Response
+     */
+    200: UpdatePaymentMethodResponse;
+};
+
+export type UpdateOrgPaymentMethodResponse = UpdateOrgPaymentMethodResponses[keyof UpdateOrgPaymentMethodResponses];
+
+export type ListOrgSubscriptionsData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/subscriptions/{org_id}';
+};
+
+export type ListOrgSubscriptionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListOrgSubscriptionsError = ListOrgSubscriptionsErrors[keyof ListOrgSubscriptionsErrors];
+
+export type ListOrgSubscriptionsResponses = {
+    /**
+     * Response Listorgsubscriptions
+     * Successful Response
+     */
+    200: Array<GraphSubscriptionResponse>;
+};
+
+export type ListOrgSubscriptionsResponse = ListOrgSubscriptionsResponses[keyof ListOrgSubscriptionsResponses];
+
+export type GetOrgSubscriptionData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+        /**
+         * Subscription Id
+         */
+        subscription_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/subscriptions/{org_id}/subscription/{subscription_id}';
+};
+
+export type GetOrgSubscriptionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetOrgSubscriptionError = GetOrgSubscriptionErrors[keyof GetOrgSubscriptionErrors];
+
+export type GetOrgSubscriptionResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type GetOrgSubscriptionResponse = GetOrgSubscriptionResponses[keyof GetOrgSubscriptionResponses];
+
+export type CancelOrgSubscriptionData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+        /**
+         * Subscription Id
+         */
+        subscription_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/subscriptions/{org_id}/subscription/{subscription_id}/cancel';
+};
+
+export type CancelOrgSubscriptionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CancelOrgSubscriptionError = CancelOrgSubscriptionErrors[keyof CancelOrgSubscriptionErrors];
+
+export type CancelOrgSubscriptionResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type CancelOrgSubscriptionResponse = CancelOrgSubscriptionResponses[keyof CancelOrgSubscriptionResponses];
+
+export type ListOrgInvoicesData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: {
+        /**
+         * Limit
+         * Number of invoices to return
+         */
+        limit?: number;
+    };
+    url: '/v1/billing/invoices/{org_id}';
+};
+
+export type ListOrgInvoicesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListOrgInvoicesError = ListOrgInvoicesErrors[keyof ListOrgInvoicesErrors];
+
+export type ListOrgInvoicesResponses = {
+    /**
+     * Successful Response
+     */
+    200: InvoicesResponse;
+};
+
+export type ListOrgInvoicesResponse = ListOrgInvoicesResponses[keyof ListOrgInvoicesResponses];
+
+export type GetOrgUpcomingInvoiceData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/invoices/{org_id}/upcoming';
+};
+
+export type GetOrgUpcomingInvoiceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetOrgUpcomingInvoiceError = GetOrgUpcomingInvoiceErrors[keyof GetOrgUpcomingInvoiceErrors];
+
+export type GetOrgUpcomingInvoiceResponses = {
+    /**
+     * Response Getorgupcominginvoice
+     * Successful Response
+     */
+    200: UpcomingInvoice | null;
+};
+
+export type GetOrgUpcomingInvoiceResponse = GetOrgUpcomingInvoiceResponses[keyof GetOrgUpcomingInvoiceResponses];
+
 export type CreateCheckoutSessionData = {
     body: CreateCheckoutRequest;
     path?: never;
@@ -8135,172 +8956,6 @@ export type GetCheckoutStatusResponses = {
 };
 
 export type GetCheckoutStatusResponse = GetCheckoutStatusResponses[keyof GetCheckoutStatusResponses];
-
-export type GetBillingCustomerData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/billing/customer';
-};
-
-export type GetBillingCustomerResponses = {
-    /**
-     * Successful Response
-     */
-    200: BillingCustomer;
-};
-
-export type GetBillingCustomerResponse = GetBillingCustomerResponses[keyof GetBillingCustomerResponses];
-
-export type UpdatePaymentMethodData = {
-    body: UpdatePaymentMethodRequest;
-    path?: never;
-    query?: never;
-    url: '/v1/billing/customer/payment-method';
-};
-
-export type UpdatePaymentMethodErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UpdatePaymentMethodError = UpdatePaymentMethodErrors[keyof UpdatePaymentMethodErrors];
-
-export type UpdatePaymentMethodResponses = {
-    /**
-     * Successful Response
-     */
-    200: UpdatePaymentMethodResponse;
-};
-
-export type UpdatePaymentMethodResponse2 = UpdatePaymentMethodResponses[keyof UpdatePaymentMethodResponses];
-
-export type ListInvoicesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Limit
-         * Number of invoices to return
-         */
-        limit?: number;
-    };
-    url: '/v1/billing/invoices';
-};
-
-export type ListInvoicesErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListInvoicesError = ListInvoicesErrors[keyof ListInvoicesErrors];
-
-export type ListInvoicesResponses = {
-    /**
-     * Successful Response
-     */
-    200: InvoicesResponse;
-};
-
-export type ListInvoicesResponse = ListInvoicesResponses[keyof ListInvoicesResponses];
-
-export type GetUpcomingInvoiceData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/billing/invoices/upcoming';
-};
-
-export type GetUpcomingInvoiceResponses = {
-    /**
-     * Response Getupcominginvoice
-     * Successful Response
-     */
-    200: UpcomingInvoice | null;
-};
-
-export type GetUpcomingInvoiceResponse = GetUpcomingInvoiceResponses[keyof GetUpcomingInvoiceResponses];
-
-export type ListSubscriptionsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/v1/billing/subscriptions';
-};
-
-export type ListSubscriptionsResponses = {
-    /**
-     * Response Listsubscriptions
-     * Successful Response
-     */
-    200: Array<GraphSubscriptionResponse>;
-};
-
-export type ListSubscriptionsResponse = ListSubscriptionsResponses[keyof ListSubscriptionsResponses];
-
-export type GetSubscriptionData = {
-    body?: never;
-    path: {
-        /**
-         * Subscription Id
-         */
-        subscription_id: string;
-    };
-    query?: never;
-    url: '/v1/billing/subscriptions/{subscription_id}';
-};
-
-export type GetSubscriptionErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetSubscriptionError = GetSubscriptionErrors[keyof GetSubscriptionErrors];
-
-export type GetSubscriptionResponses = {
-    /**
-     * Successful Response
-     */
-    200: GraphSubscriptionResponse;
-};
-
-export type GetSubscriptionResponse = GetSubscriptionResponses[keyof GetSubscriptionResponses];
-
-export type CancelSubscription2Data = {
-    body?: never;
-    path: {
-        /**
-         * Subscription Id
-         */
-        subscription_id: string;
-    };
-    query?: never;
-    url: '/v1/billing/subscriptions/{subscription_id}/cancel';
-};
-
-export type CancelSubscription2Errors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CancelSubscription2Error = CancelSubscription2Errors[keyof CancelSubscription2Errors];
-
-export type CancelSubscription2Responses = {
-    /**
-     * Successful Response
-     */
-    200: GraphSubscriptionResponse;
-};
-
-export type CancelSubscription2Response = CancelSubscription2Responses[keyof CancelSubscription2Responses];
 
 export type ClientOptions = {
     baseUrl: 'http://localhost:8000';
