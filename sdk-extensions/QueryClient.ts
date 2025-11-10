@@ -75,19 +75,31 @@ export class QueryClient {
         mode: options.mode,
         test_mode: options.testMode,
       },
+      // For streaming mode, don't parse response - get raw Response object
+      ...(options.mode === 'stream' ? { parseAs: 'stream' as const } : {}),
     }
 
-    // Execute the query
     const response = await executeCypherQuery(data)
 
-    // Check if this is an NDJSON streaming response
-    // The SDK returns the response object which includes the raw Response
-    if (response.response) {
+    // Check if this is a raw stream response (when parseAs: 'stream')
+    if (options.mode === 'stream' && response.response) {
       const contentType = response.response.headers.get('content-type') || ''
-      const streamFormat = response.response.headers.get('x-stream-format')
 
-      if (contentType.includes('application/x-ndjson') || streamFormat === 'ndjson') {
+      if (contentType.includes('application/x-ndjson')) {
         return this.parseNDJSONResponse(response.response, graphId)
+      } else if (contentType.includes('application/json')) {
+        // Fallback: parse JSON manually
+        const data = await response.response.json()
+        if (data.data !== undefined && data.columns) {
+          return {
+            data: data.data,
+            columns: data.columns,
+            row_count: data.row_count || data.data.length,
+            execution_time_ms: data.execution_time_ms || 0,
+            graph_id: graphId,
+            timestamp: data.timestamp || new Date().toISOString(),
+          }
+        }
       }
     }
 
@@ -118,11 +130,7 @@ export class QueryClient {
       }
 
       // Use SSE to monitor the operation
-      if (options.mode === 'stream') {
-        return this.streamQueryResults(queuedResponse.operation_id, options)
-      } else {
-        return this.waitForQueryCompletion(queuedResponse.operation_id, options)
-      }
+      return this.waitForQueryCompletion(queuedResponse.operation_id, options)
     }
 
     // Unexpected response format
@@ -135,37 +143,77 @@ export class QueryClient {
     let totalRows = 0
     let executionTimeMs = 0
 
-    // Parse NDJSON line by line
-    const text = await response.text()
-    const lines = text.trim().split('\n')
+    // Use streaming reader to avoid "body already read" error
+    const reader = response.body?.getReader()
+    if (!reader) {
+      throw new Error('Response body is not readable')
+    }
 
-    for (const line of lines) {
-      if (!line.trim()) continue
+    const decoder = new TextDecoder()
+    let buffer = ''
 
-      try {
-        const chunk = JSON.parse(line)
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
 
-        // Extract columns from first chunk
-        if (columns === null && chunk.columns) {
-          columns = chunk.columns
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (!line.trim()) continue
+
+          try {
+            const chunk = JSON.parse(line)
+
+            // Extract columns from first chunk
+            if (columns === null && chunk.columns) {
+              columns = chunk.columns
+            }
+
+            // Aggregate data rows (NDJSON uses "rows", regular JSON uses "data")
+            if (chunk.rows) {
+              allData.push(...chunk.rows)
+              totalRows += chunk.rows.length
+            } else if (chunk.data) {
+              allData.push(...chunk.data)
+              totalRows += chunk.data.length
+            }
+
+            // Track execution time (use max from all chunks)
+            if (chunk.execution_time_ms) {
+              executionTimeMs = Math.max(executionTimeMs, chunk.execution_time_ms)
+            }
+          } catch (error) {
+            console.error('Failed to parse NDJSON line:', error)
+          }
         }
-
-        // Aggregate data rows (NDJSON uses "rows", regular JSON uses "data")
-        if (chunk.rows) {
-          allData.push(...chunk.rows)
-          totalRows += chunk.rows.length
-        } else if (chunk.data) {
-          allData.push(...chunk.data)
-          totalRows += chunk.data.length
-        }
-
-        // Track execution time (use max from all chunks)
-        if (chunk.execution_time_ms) {
-          executionTimeMs = Math.max(executionTimeMs, chunk.execution_time_ms)
-        }
-      } catch (error) {
-        throw new Error(`Failed to parse NDJSON line: ${error}`)
       }
+
+      // Parse any remaining buffer
+      if (buffer.trim()) {
+        try {
+          const chunk = JSON.parse(buffer)
+          if (columns === null && chunk.columns) {
+            columns = chunk.columns
+          }
+          if (chunk.rows) {
+            allData.push(...chunk.rows)
+            totalRows += chunk.rows.length
+          } else if (chunk.data) {
+            allData.push(...chunk.data)
+            totalRows += chunk.data.length
+          }
+          if (chunk.execution_time_ms) {
+            executionTimeMs = Math.max(executionTimeMs, chunk.execution_time_ms)
+          }
+        } catch (error) {
+          console.error('Failed to parse final NDJSON line:', error)
+        }
+      }
+    } catch (error) {
+      throw new Error(`NDJSON stream reading error: ${error}`)
     }
 
     // Return aggregated result

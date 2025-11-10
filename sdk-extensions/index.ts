@@ -7,6 +7,7 @@ import { client } from '../sdk/client.gen'
 import { extractTokenFromSDKClient } from './config'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
+import { AgentClient } from './AgentClient'
 import { SSEClient } from './SSEClient'
 import { TableIngestClient } from './TableIngestClient'
 import { GraphClient } from './GraphClient'
@@ -32,6 +33,7 @@ interface ResolvedConfig {
 
 export class RoboSystemsExtensions {
   public readonly query: QueryClient
+  public readonly agent: AgentClient
   public readonly operations: OperationClient
   public readonly tables: TableIngestClient
   public readonly graphs: GraphClient
@@ -54,6 +56,13 @@ export class RoboSystemsExtensions {
     }
 
     this.query = new QueryClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
+
+    this.agent = new AgentClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
@@ -109,6 +118,7 @@ export class RoboSystemsExtensions {
    */
   close(): void {
     this.query.close()
+    this.agent.close()
     this.operations.closeAll()
     this.graphs.close()
   }
@@ -117,10 +127,11 @@ export class RoboSystemsExtensions {
 // Export all types and classes
 export * from './OperationClient'
 export * from './QueryClient'
+export * from './AgentClient'
 export * from './SSEClient'
 export * from './TableIngestClient'
 export * from './GraphClient'
-export { OperationClient, QueryClient, SSEClient, TableIngestClient, GraphClient }
+export { OperationClient, QueryClient, AgentClient, SSEClient, TableIngestClient, GraphClient }
 
 // Export React hooks
 export {
@@ -145,6 +156,9 @@ function getExtensions(): RoboSystemsExtensions {
 export const extensions = {
   get query() {
     return getExtensions().query
+  },
+  get agent() {
+    return getExtensions().agent
   },
   get operations() {
     return getExtensions().operations
@@ -171,3 +185,9 @@ export const streamQuery = (
   parameters?: Record<string, any>,
   chunkSize?: number
 ) => getExtensions().query.streamQuery(graphId, query, parameters, chunkSize)
+
+export const agentQuery = (graphId: string, message: string, context?: Record<string, any>) =>
+  getExtensions().agent.query(graphId, message, context)
+
+export const analyzeFinancials = (graphId: string, message: string) =>
+  getExtensions().agent.analyzeFinancials(graphId, message)
