@@ -914,7 +914,7 @@ export type CheckoutStatusResponse = {
     subscription_id: string;
     /**
      * Resource Id
-     * Resource ID (graph_id or repository name) once provisioned
+     * Resource ID (graph_id for both graphs and repositories) once provisioned. For repositories, this is the repository slug (e.g., 'sec')
      */
     resource_id?: string | null;
     /**
@@ -1154,7 +1154,7 @@ export type CreateCheckoutRequest = {
     resource_type: string;
     /**
      * Resource Config
-     * Configuration for the resource to be provisioned
+     * Configuration for the resource to be provisioned. For repositories: {'repository_name': 'graph_id'} where graph_id is the repository slug (e.g., 'sec')
      */
     resource_config: {
         [key: string]: unknown;
@@ -6255,6 +6255,46 @@ export type SyncConnectionResponses = {
 
 export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
 
+export type ListAgentsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Capability
+         * Filter by capability (e.g., 'financial_analysis', 'rag_search')
+         */
+        capability?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/agent';
+};
+
+export type ListAgentsErrors = {
+    /**
+     * Unauthorized - Invalid or missing authentication
+     */
+    401: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListAgentsError = ListAgentsErrors[keyof ListAgentsErrors];
+
+export type ListAgentsResponses = {
+    /**
+     * List of agents retrieved successfully
+     */
+    200: AgentListResponse;
+};
+
+export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
+
 export type AutoSelectAgentData = {
     body: AgentRequest;
     path: {
@@ -6263,7 +6303,13 @@ export type AutoSelectAgentData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Mode
+         * Override execution mode: sync, async, stream, or auto
+         */
+        mode?: ResponseMode | null;
+    };
     url: '/v1/graphs/{graph_id}/agent';
 };
 
@@ -6297,9 +6343,52 @@ export type AutoSelectAgentResponses = {
      * Query successfully processed by selected agent
      */
     200: AgentResponse;
+    /**
+     * Query queued for async processing with operation tracking
+     */
+    202: unknown;
 };
 
 export type AutoSelectAgentResponse = AutoSelectAgentResponses[keyof AutoSelectAgentResponses];
+
+export type GetAgentMetadataData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Agent Type
+         * Agent type identifier (e.g., 'financial', 'research', 'rag')
+         */
+        agent_type: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/agent/{agent_type}';
+};
+
+export type GetAgentMetadataErrors = {
+    /**
+     * Agent type not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetAgentMetadataError = GetAgentMetadataErrors[keyof GetAgentMetadataErrors];
+
+export type GetAgentMetadataResponses = {
+    /**
+     * Agent metadata retrieved successfully
+     */
+    200: AgentMetadataResponse;
+};
+
+export type GetAgentMetadataResponse = GetAgentMetadataResponses[keyof GetAgentMetadataResponses];
 
 export type ExecuteSpecificAgentData = {
     body: AgentRequest;
@@ -6313,7 +6402,13 @@ export type ExecuteSpecificAgentData = {
          */
         graph_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Mode
+         * Override execution mode: sync, async, stream, or auto
+         */
+        mode?: ResponseMode | null;
+    };
     url: '/v1/graphs/{graph_id}/agent/{agent_type}';
 };
 
@@ -6351,6 +6446,10 @@ export type ExecuteSpecificAgentResponses = {
      * Query successfully processed by specified agent
      */
     200: AgentResponse;
+    /**
+     * Query queued for async processing with operation tracking
+     */
+    202: unknown;
 };
 
 export type ExecuteSpecificAgentResponse = ExecuteSpecificAgentResponses[keyof ExecuteSpecificAgentResponses];
@@ -6396,85 +6495,6 @@ export type BatchProcessQueriesResponses = {
 };
 
 export type BatchProcessQueriesResponse = BatchProcessQueriesResponses[keyof BatchProcessQueriesResponses];
-
-export type ListAgentsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Capability
-         * Filter by capability (e.g., 'financial_analysis', 'rag_search')
-         */
-        capability?: string | null;
-    };
-    url: '/v1/graphs/{graph_id}/agent/list';
-};
-
-export type ListAgentsErrors = {
-    /**
-     * Unauthorized - Invalid or missing authentication
-     */
-    401: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListAgentsError = ListAgentsErrors[keyof ListAgentsErrors];
-
-export type ListAgentsResponses = {
-    /**
-     * List of agents retrieved successfully
-     */
-    200: AgentListResponse;
-};
-
-export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
-
-export type GetAgentMetadataData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Agent Type
-         * Agent type identifier (e.g., 'financial', 'research', 'rag')
-         */
-        agent_type: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/agent/{agent_type}/metadata';
-};
-
-export type GetAgentMetadataErrors = {
-    /**
-     * Agent type not found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetAgentMetadataError = GetAgentMetadataErrors[keyof GetAgentMetadataErrors];
-
-export type GetAgentMetadataResponses = {
-    /**
-     * Agent metadata retrieved successfully
-     */
-    200: AgentMetadataResponse;
-};
-
-export type GetAgentMetadataResponse = GetAgentMetadataResponses[keyof GetAgentMetadataResponses];
 
 export type RecommendAgentData = {
     body: AgentRecommendationRequest;
@@ -7214,6 +7234,7 @@ export type ListCreditTransactionsData = {
     path: {
         /**
          * Graph Id
+         * Graph database identifier
          */
         graph_id: string;
     };
