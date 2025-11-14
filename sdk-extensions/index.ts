@@ -131,6 +131,7 @@ export * from './AgentClient'
 export * from './SSEClient'
 export * from './TableIngestClient'
 export * from './GraphClient'
+export * from './config'
 export { OperationClient, QueryClient, AgentClient, SSEClient, TableIngestClient, GraphClient }
 
 // Export React hooks

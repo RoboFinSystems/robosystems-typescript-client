@@ -844,28 +844,6 @@ export type BulkIngestResponse = {
 };
 
 /**
- * CancellationResponse
- * Response for subscription cancellation.
- */
-export type CancellationResponse = {
-    /**
-     * Message
-     * Cancellation confirmation message
-     */
-    message: string;
-    /**
-     * Subscription Id
-     * ID of the cancelled subscription
-     */
-    subscription_id: string;
-    /**
-     * Cancelled At
-     * Cancellation timestamp (ISO format)
-     */
-    cancelled_at: string;
-};
-
-/**
  * CheckoutResponse
  * Response from checkout session creation.
  */
@@ -1267,7 +1245,7 @@ export type CreateSubgraphRequest = {
      * Schema Extensions
      * Schema extensions to include (inherits from parent by default)
      */
-    schema_extensions?: Array<string> | null;
+    schema_extensions?: Array<string>;
     /**
      * Type of subgraph (currently only 'static' is supported)
      */
@@ -2270,6 +2248,11 @@ export type GraphSubscriptionResponse = {
      */
     canceled_at?: string | null;
     /**
+     * Ends At
+     * Subscription end date (when access will be revoked, especially relevant for cancelled subscriptions)
+     */
+    ends_at?: string | null;
+    /**
      * Created At
      * Creation timestamp
      */
@@ -2904,6 +2887,11 @@ export type ListSubgraphsResponse = {
      * Parent graph tier
      */
     parent_graph_tier: string;
+    /**
+     * Subgraphs Enabled
+     * Whether subgraphs are enabled for this tier (requires Kuzu Large/XLarge or Neo4j Enterprise XLarge)
+     */
+    subgraphs_enabled: boolean;
     /**
      * Subgraph Count
      * Total number of subgraphs
@@ -3611,6 +3599,18 @@ export type PlaidConnectionConfig = {
     accounts?: Array<{
         [key: string]: unknown;
     }> | null;
+};
+
+/**
+ * PortalSessionResponse
+ * Response for customer portal session creation.
+ */
+export type PortalSessionResponse = {
+    /**
+     * Portal Url
+     * Stripe Customer Portal URL where user can manage payment methods
+     */
+    portal_url: string;
 };
 
 /**
@@ -4722,34 +4722,6 @@ export type UpdatePasswordRequest = {
      * Confirm new password
      */
     confirm_password: string;
-};
-
-/**
- * UpdatePaymentMethodRequest
- * Request to update default payment method.
- */
-export type UpdatePaymentMethodRequest = {
-    /**
-     * Payment Method Id
-     * Payment method ID to set as default
-     */
-    payment_method_id: string;
-};
-
-/**
- * UpdatePaymentMethodResponse
- * Response for payment method update.
- */
-export type UpdatePaymentMethodResponse = {
-    /**
-     * Message
-     * Success message
-     */
-    message: string;
-    /**
-     * Updated payment method
-     */
-    payment_method: PaymentMethod;
 };
 
 /**
@@ -7797,45 +7769,6 @@ export type GetSubgraphQuotaResponses = {
 
 export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgraphQuotaResponses];
 
-export type CancelSubscriptionData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         * Graph ID or repository name
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/subscriptions';
-};
-
-export type CancelSubscriptionErrors = {
-    /**
-     * Cannot cancel graph subscriptions directly
-     */
-    400: unknown;
-    /**
-     * No subscription found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CancelSubscriptionError = CancelSubscriptionErrors[keyof CancelSubscriptionErrors];
-
-export type CancelSubscriptionResponses = {
-    /**
-     * Subscription canceled successfully
-     */
-    200: CancellationResponse;
-};
-
-export type CancelSubscriptionResponse = CancelSubscriptionResponses[keyof CancelSubscriptionResponses];
-
 export type GetGraphSubscriptionData = {
     body?: never;
     path: {
@@ -8727,8 +8660,8 @@ export type GetOrgBillingCustomerResponses = {
 
 export type GetOrgBillingCustomerResponse = GetOrgBillingCustomerResponses[keyof GetOrgBillingCustomerResponses];
 
-export type UpdateOrgPaymentMethodData = {
-    body: UpdatePaymentMethodRequest;
+export type CreatePortalSessionData = {
+    body?: never;
     path: {
         /**
          * Org Id
@@ -8736,26 +8669,26 @@ export type UpdateOrgPaymentMethodData = {
         org_id: string;
     };
     query?: never;
-    url: '/v1/billing/customer/{org_id}/payment-method';
+    url: '/v1/billing/customer/{org_id}/portal';
 };
 
-export type UpdateOrgPaymentMethodErrors = {
+export type CreatePortalSessionErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type UpdateOrgPaymentMethodError = UpdateOrgPaymentMethodErrors[keyof UpdateOrgPaymentMethodErrors];
+export type CreatePortalSessionError = CreatePortalSessionErrors[keyof CreatePortalSessionErrors];
 
-export type UpdateOrgPaymentMethodResponses = {
+export type CreatePortalSessionResponses = {
     /**
      * Successful Response
      */
-    200: UpdatePaymentMethodResponse;
+    200: PortalSessionResponse;
 };
 
-export type UpdateOrgPaymentMethodResponse = UpdateOrgPaymentMethodResponses[keyof UpdateOrgPaymentMethodResponses];
+export type CreatePortalSessionResponse = CreatePortalSessionResponses[keyof CreatePortalSessionResponses];
 
 export type ListOrgSubscriptionsData = {
     body?: never;
