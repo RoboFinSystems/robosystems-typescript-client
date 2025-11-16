@@ -1116,6 +1116,13 @@ export const listAgents = <ThrowOnError extends boolean = false>(options: Option
  * - Leverage conversation history for contextual understanding
  * - Enable RAG for knowledge base enrichment
  *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Agents operate on the specified graph/subgraph's data independently. RAG enrichment
+ * and knowledge base search are scoped to the specific graph/subgraph.
+ *
  * See request/response examples in the "Examples" dropdown below.
  */
 export const autoSelectAgent = <ThrowOnError extends boolean = false>(options: Options<AutoSelectAgentData, ThrowOnError>) => {
@@ -1300,6 +1307,13 @@ export const recommendAgent = <ThrowOnError extends boolean = false>(options: Op
  * - User permissions and subscription tier
  * - Backend capabilities (Kuzu, Neo4j, etc.)
  *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * The returned tool list is identical for parent graphs and subgraphs, as all
+ * MCP tools work uniformly across graph boundaries.
+ *
  * **Note:**
  * MCP tool listing is included - no credit consumption required.
  */
@@ -1353,6 +1367,13 @@ export const listMcpTools = <ThrowOnError extends boolean = false>(options: Opti
  * - `503 Service Unavailable`: SSE system temporarily disabled
  * - `408 Request Timeout`: Tool execution exceeded timeout
  * - Clients should implement exponential backoff on errors
+ *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * MCP tools operate on the specified graph/subgraph independently. Each subgraph
+ * has its own schema, data, and can be queried separately via MCP.
  *
  * **Credit Model:**
  * MCP tool execution is included - no credit consumption required. Database
@@ -1761,6 +1782,12 @@ export const getGraphUsageAnalytics = <ThrowOnError extends boolean = false>(opt
  * - `503 Service Unavailable`: Circuit breaker open or SSE disabled
  * - Clients should implement exponential backoff
  *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Subgraphs share the same instance as their parent graph and have independent data.
+ *
  * **Note:**
  * Query operations are included - no credit consumption required.
  * Queue position is based on subscription tier for priority.
@@ -1822,6 +1849,14 @@ export const executeCypherQuery = <ThrowOnError extends boolean = false>(options
  *
  * Property discovery is limited to 10 properties per node type for performance.
  * For complete schema definitions, use `/schema/export`.
+ *
+ * ## Subgraph Support
+ *
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Each subgraph has independent schema and data. The returned schema reflects
+ * only the specified graph/subgraph's actual structure.
  *
  * This operation is included - no credit consumption required.
  */
@@ -1931,6 +1966,13 @@ export const exportGraphSchema = <ThrowOnError extends boolean = false>(options:
  * - Data integrity issues
  * - Performance problems
  * - Naming conflicts
+ *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Schema validation is performed against the specified graph/subgraph's current
+ * schema and data structure.
  *
  * This operation is included - no credit consumption required.
  */
@@ -2128,6 +2170,13 @@ export const checkStorageLimits = <ThrowOnError extends boolean = false>(options
  * - **Resource Usage**: Memory and storage consumption
  * - **Alerts**: Active warnings or issues
  *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Health metrics are specific to the requested graph/subgraph. Subgraphs share the
+ * same physical instance as their parent but have independent health indicators.
+ *
  * This endpoint provides essential monitoring data for operational visibility.
  */
 export const getDatabaseHealth = <ThrowOnError extends boolean = false>(options: Options<GetDatabaseHealthData, ThrowOnError>) => {
@@ -2166,6 +2215,13 @@ export const getDatabaseHealth = <ThrowOnError extends boolean = false>(options:
  * - **Backup Status**: Backup availability and recency
  * - **Timestamps**: Creation and modification dates
  *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Returned metrics are specific to the requested graph/subgraph. Subgraphs have
+ * independent size, node/relationship counts, and backup status.
+ *
  * This endpoint provides essential database information for capacity planning and monitoring.
  */
 export const getDatabaseInfo = <ThrowOnError extends boolean = false>(options: Options<GetDatabaseInfoData, ThrowOnError>) => {
@@ -2199,7 +2255,7 @@ export const getDatabaseInfo = <ThrowOnError extends boolean = false>(options: O
  *
  * This unified endpoint provides all limits in one place for easier client integration.
  *
- * **Note**: Limits vary based on subscription tier (Standard, Enterprise, Premium).
+ * **Note**: Limits vary based on subscription tier (kuzu-standard, kuzu-large, kuzu-xlarge).
  */
 export const getGraphLimits = <ThrowOnError extends boolean = false>(options: Options<GetGraphLimitsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetGraphLimitsResponses, GetGraphLimitsErrors, ThrowOnError>({
@@ -2262,6 +2318,12 @@ export const listSubgraphs = <ThrowOnError extends boolean = false>(options: Opt
  *
  * **Returns:**
  * - Created subgraph details including its unique ID
+ * - Subgraph ID format: `{parent_id}_{subgraph_name}` (e.g., kg1234567890abcdef_dev)
+ *
+ * **Usage:**
+ * - Subgraphs share parent's credit pool
+ * - Subgraph ID can be used in all standard `/v1/graphs/{graph_id}*` endpoints
+ * - Permissions inherited from parent graph
  */
 export const createSubgraph = <ThrowOnError extends boolean = false>(options: Options<CreateSubgraphData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<CreateSubgraphResponses, CreateSubgraphErrors, ThrowOnError>({
@@ -2291,6 +2353,7 @@ export const createSubgraph = <ThrowOnError extends boolean = false>(options: Op
  * **Requirements:**
  * - Must be a valid subgraph (not parent graph)
  * - User must have admin access to parent graph
+ * - Subgraph name must be alphanumeric (1-20 characters)
  * - Optional backup before deletion
  *
  * **Deletion Options:**
@@ -2304,6 +2367,11 @@ export const createSubgraph = <ThrowOnError extends boolean = false>(options: Op
  * **Backup Location:**
  * If backup requested, stored in S3 Kuzu database bucket at:
  * `s3://{kuzu_s3_bucket}/{instance_id}/{database_name}_{timestamp}.backup`
+ *
+ * **Notes:**
+ * - Use the subgraph name (e.g., 'dev', 'staging') not the full subgraph ID
+ * - Deletion does not affect parent graph's credit pool or permissions
+ * - Backup creation consumes credits from parent graph's allocation
  */
 export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Options<DeleteSubgraphData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).delete<DeleteSubgraphResponses, DeleteSubgraphErrors, ThrowOnError>({
@@ -2317,7 +2385,7 @@ export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Op
                 type: 'http'
             }
         ],
-        url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}',
+        url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}',
         ...options,
         headers: {
             'Content-Type': 'application/json',
@@ -2332,6 +2400,7 @@ export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Requirements:**
  * - User must have read access to parent graph
+ * - Subgraph name must be alphanumeric (1-20 characters)
  *
  * **Response includes:**
  * - Full subgraph metadata
@@ -2347,6 +2416,10 @@ export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Op
  * - Edge count
  * - Database size on disk
  * - Schema information
+ *
+ * **Note:**
+ * Use the subgraph name (e.g., 'dev', 'staging') not the full subgraph ID.
+ * The full ID is returned in the response (e.g., 'kg0123456789abcdef_dev').
  */
 export const getSubgraphInfo = <ThrowOnError extends boolean = false>(options: Options<GetSubgraphInfoData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetSubgraphInfoResponses, GetSubgraphInfoErrors, ThrowOnError>({
@@ -2360,7 +2433,7 @@ export const getSubgraphInfo = <ThrowOnError extends boolean = false>(options: O
                 type: 'http'
             }
         ],
-        url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}/info',
+        url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}/info',
         ...options
     });
 };
@@ -2624,6 +2697,13 @@ export const listTableFiles = <ThrowOnError extends boolean = false>(options: Op
  * Tables are automatically created on first file upload with type inferred from name
  * (e.g., "Transaction" → relationship) and empty schema populated during ingestion.
  *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Each subgraph has completely isolated S3 staging areas and tables. Files uploaded
+ * to one subgraph do not appear in other subgraphs.
+ *
  * **Important Notes:**
  * - Presigned URLs expire (default: 1 hour)
  * - Use appropriate Content-Type header when uploading to S3
@@ -2815,7 +2895,7 @@ export const updateFileStatus = <ThrowOnError extends boolean = false>(options: 
  * 2. Files are validated and marked as 'uploaded'
  * 3. Trigger ingestion: `POST /tables/ingest`
  * 4. DuckDB staging tables created from S3 patterns
- * 5. Data copied row-by-row from DuckDB to Kuzu
+ * 5. Data copied from DuckDB to Kuzu
  * 6. Per-table results and metrics returned
  *
  * **Rebuild Feature:**
@@ -2845,6 +2925,13 @@ export const updateFileStatus = <ThrowOnError extends boolean = false>(options: 
  * Only one ingestion can run per graph at a time. If another ingestion is in progress,
  * you'll receive a 409 Conflict error. The distributed lock automatically expires after
  * the configured TTL (default: 1 hour) to prevent deadlocks from failed ingestions.
+ *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Each subgraph has independent staging tables and graph data. Ingestion operates
+ * on the specified graph/subgraph only and does not affect other subgraphs.
  *
  * **Important Notes:**
  * - Only files with 'uploaded' status are processed
@@ -2921,6 +3008,12 @@ export const ingestTables = <ThrowOnError extends boolean = false>(options: Opti
  * - Result limit: 10,000 rows (use LIMIT clause)
  * - Read-only: No INSERT, UPDATE, DELETE
  * - User's tables only: Cannot query other users' data
+ *
+ * **Subgraph Support:**
+ * This endpoint accepts both parent graph IDs and subgraph IDs.
+ * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
+ * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
+ * Each subgraph has its own independent staging tables.
  *
  * **Shared Repositories:**
  * Shared repositories (SEC, etc.) do not allow direct SQL queries.
