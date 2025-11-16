@@ -3509,17 +3509,17 @@ export type PaymentMethod = {
     brand?: string | null;
     /**
      * Last4
-     * Last 4 digits
+     * Last 4 digits of the card or account number
      */
     last4?: string | null;
     /**
      * Exp Month
-     * Expiration month
+     * Expiration month of the card
      */
     exp_month?: number | null;
     /**
      * Exp Year
-     * Expiration year
+     * Expiration year of the card
      */
     exp_year?: number | null;
     /**
@@ -7617,13 +7617,13 @@ export type DeleteSubgraphData = {
          */
         graph_id: string;
         /**
-         * Subgraph Id
-         * Subgraph identifier to delete
+         * Subgraph Name
+         * Subgraph name to delete (e.g., 'dev', 'staging')
          */
-        subgraph_id: string;
+        subgraph_name: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}';
+    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}';
 };
 
 export type DeleteSubgraphErrors = {
@@ -7676,13 +7676,13 @@ export type GetSubgraphInfoData = {
          */
         graph_id: string;
         /**
-         * Subgraph Id
-         * Subgraph identifier
+         * Subgraph Name
+         * Subgraph name (e.g., 'dev', 'staging')
          */
-        subgraph_id: string;
+        subgraph_name: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_id}/info';
+    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}/info';
 };
 
 export type GetSubgraphInfoErrors = {
