@@ -777,73 +777,6 @@ export type BillingCustomer = {
 };
 
 /**
- * BulkIngestRequest
- */
-export type BulkIngestRequest = {
-    /**
-     * Ignore Errors
-     * Continue ingestion on row errors
-     */
-    ignore_errors?: boolean;
-    /**
-     * Rebuild
-     * Rebuild graph database from scratch before ingestion. Safe operation - staged data is the source of truth, graph can always be regenerated.
-     */
-    rebuild?: boolean;
-};
-
-/**
- * BulkIngestResponse
- */
-export type BulkIngestResponse = {
-    /**
-     * Status
-     * Overall ingestion status
-     */
-    status: string;
-    /**
-     * Graph Id
-     * Graph database identifier
-     */
-    graph_id: string;
-    /**
-     * Total Tables
-     * Total number of tables processed
-     */
-    total_tables: number;
-    /**
-     * Successful Tables
-     * Number of successfully ingested tables
-     */
-    successful_tables: number;
-    /**
-     * Failed Tables
-     * Number of failed table ingestions
-     */
-    failed_tables: number;
-    /**
-     * Skipped Tables
-     * Number of skipped tables (no files)
-     */
-    skipped_tables: number;
-    /**
-     * Total Rows Ingested
-     * Total rows ingested across all tables
-     */
-    total_rows_ingested: number;
-    /**
-     * Total Execution Time Ms
-     * Total execution time in milliseconds
-     */
-    total_execution_time_ms: number;
-    /**
-     * Results
-     * Per-table ingestion results
-     */
-    results: Array<TableIngestResult>;
-};
-
-/**
  * CheckoutResponse
  * Response from checkout session creation.
  */
@@ -1257,6 +1190,40 @@ export type CreateSubgraphRequest = {
     metadata?: {
         [key: string]: unknown;
     } | null;
+    /**
+     * Fork Parent
+     * If true, copy all data from parent graph to create a 'fork'
+     */
+    fork_parent?: boolean;
+};
+
+/**
+ * CreateViewRequest
+ */
+export type CreateViewRequest = {
+    /**
+     * Name
+     * Optional name for the view
+     */
+    name?: string | null;
+    /**
+     * Data source configuration
+     */
+    source: ViewSource;
+    /**
+     * View configuration
+     */
+    view_config?: ViewConfig;
+    /**
+     * Presentation Formats
+     * Presentation formats to generate
+     */
+    presentation_formats?: Array<string>;
+    /**
+     * Mapping Structure Id
+     * Optional mapping structure ID to aggregate Chart of Accounts elements into reporting taxonomy elements
+     */
+    mapping_structure_id?: string | null;
 };
 
 /**
@@ -1608,6 +1575,21 @@ export type DeleteFileResponse = {
      * Operation message
      */
     message: string;
+    /**
+     * Cascade Deleted
+     * Whether cascade deletion was performed
+     */
+    cascade_deleted?: boolean;
+    /**
+     * Tables Affected
+     * Tables from which file data was deleted (if cascade=true)
+     */
+    tables_affected?: Array<string> | null;
+    /**
+     * Graph Marked Stale
+     * Whether graph was marked as stale
+     */
+    graph_marked_stale?: boolean;
 };
 
 /**
@@ -1757,6 +1739,24 @@ export type EnhancedCreditTransactionResponse = {
 };
 
 /**
+ * EnhancedFileStatusLayers
+ */
+export type EnhancedFileStatusLayers = {
+    /**
+     * S3 layer status (immutable source)
+     */
+    s3: FileLayerStatus;
+    /**
+     * DuckDB layer status (mutable staging)
+     */
+    duckdb: FileLayerStatus;
+    /**
+     * Graph layer status (immutable materialized view)
+     */
+    graph: FileLayerStatus;
+};
+
+/**
  * ErrorResponse
  * Standard error response format used across all API endpoints.
  *
@@ -1808,6 +1808,40 @@ export type ExchangeTokenRequest = {
     metadata?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * FactDetail
+ */
+export type FactDetail = {
+    /**
+     * Fact Id
+     */
+    fact_id: string;
+    /**
+     * Element Uri
+     */
+    element_uri: string;
+    /**
+     * Element Name
+     */
+    element_name: string;
+    /**
+     * Numeric Value
+     */
+    numeric_value: number;
+    /**
+     * Unit
+     */
+    unit: string;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
 };
 
 /**
@@ -1867,6 +1901,32 @@ export type FileInfo = {
 };
 
 /**
+ * FileLayerStatus
+ */
+export type FileLayerStatus = {
+    /**
+     * Status
+     * Layer status
+     */
+    status: string;
+    /**
+     * Timestamp
+     * Status timestamp
+     */
+    timestamp?: string | null;
+    /**
+     * Row Count
+     * Row count (if available)
+     */
+    row_count?: number | null;
+    /**
+     * Size Bytes
+     * Size in bytes (S3 layer only)
+     */
+    size_bytes?: number | null;
+};
+
+/**
  * FileStatusUpdate
  */
 export type FileStatusUpdate = {
@@ -1875,6 +1935,11 @@ export type FileStatusUpdate = {
      * File status: 'uploaded' (ready for ingest), 'disabled' (exclude from ingest), 'archived' (soft deleted)
      */
     status: string;
+    /**
+     * Ingest To Graph
+     * Auto-ingest to graph after DuckDB staging. Default=false (batch mode). Set to true for real-time incremental updates.
+     */
+    ingest_to_graph?: boolean;
 };
 
 /**
@@ -1891,6 +1956,11 @@ export type FileUploadRequest = {
      * File MIME type
      */
     content_type?: string;
+    /**
+     * Table Name
+     * Table name to associate file with (required for first-class /files endpoint)
+     */
+    table_name?: string | null;
 };
 
 /**
@@ -2000,6 +2070,10 @@ export type GetFileInfoResponse = {
      * S3 object key
      */
     s3_key: string;
+    /**
+     * Multi-layer pipeline status (S3 → DuckDB → Graph). Shows status, timestamps, and row counts for each layer independently.
+     */
+    layers?: EnhancedFileStatusLayers | null;
 };
 
 /**
@@ -2925,9 +2999,9 @@ export type ListTableFilesResponse = {
     graph_id: string;
     /**
      * Table Name
-     * Table name
+     * Table name (null if listing all files in graph)
      */
-    table_name: string;
+    table_name?: string | null;
     /**
      * Files
      * List of files in the table
@@ -2993,6 +3067,119 @@ export type McpToolsResponse = {
     tools: Array<{
         [key: string]: unknown;
     }>;
+};
+
+/**
+ * MaterializeRequest
+ */
+export type MaterializeRequest = {
+    /**
+     * Force
+     * Force materialization even if graph is not stale
+     */
+    force?: boolean;
+    /**
+     * Rebuild
+     * Delete and recreate graph database before materialization
+     */
+    rebuild?: boolean;
+    /**
+     * Ignore Errors
+     * Continue ingestion on row errors
+     */
+    ignore_errors?: boolean;
+};
+
+/**
+ * MaterializeResponse
+ */
+export type MaterializeResponse = {
+    /**
+     * Status
+     * Materialization status
+     */
+    status: string;
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Was Stale
+     * Whether graph was stale before materialization
+     */
+    was_stale: boolean;
+    /**
+     * Stale Reason
+     * Reason graph was stale
+     */
+    stale_reason?: string | null;
+    /**
+     * Tables Materialized
+     * List of tables successfully materialized
+     */
+    tables_materialized: Array<string>;
+    /**
+     * Total Rows
+     * Total rows materialized across all tables
+     */
+    total_rows: number;
+    /**
+     * Execution Time Ms
+     * Total materialization time
+     */
+    execution_time_ms: number;
+    /**
+     * Message
+     * Human-readable status message
+     */
+    message: string;
+};
+
+/**
+ * MaterializeStatusResponse
+ */
+export type MaterializeStatusResponse = {
+    /**
+     * Graph Id
+     * Graph database identifier
+     */
+    graph_id: string;
+    /**
+     * Is Stale
+     * Whether graph is currently stale
+     */
+    is_stale: boolean;
+    /**
+     * Stale Reason
+     * Reason for staleness if applicable
+     */
+    stale_reason?: string | null;
+    /**
+     * Stale Since
+     * When graph became stale (ISO timestamp)
+     */
+    stale_since?: string | null;
+    /**
+     * Last Materialized At
+     * When graph was last materialized (ISO timestamp)
+     */
+    last_materialized_at?: string | null;
+    /**
+     * Materialization Count
+     * Total number of materializations performed
+     */
+    materialization_count?: number;
+    /**
+     * Hours Since Materialization
+     * Hours since last materialization
+     */
+    hours_since_materialization?: number | null;
+    /**
+     * Message
+     * Human-readable status summary
+     */
+    message: string;
 };
 
 /**
@@ -3909,6 +4096,107 @@ export type SsoTokenResponse = {
 };
 
 /**
+ * SaveViewRequest
+ */
+export type SaveViewRequest = {
+    /**
+     * Report Id
+     * Existing report ID to update (if provided, deletes existing facts/structures and creates new ones)
+     */
+    report_id?: string | null;
+    /**
+     * Report Type
+     * Type of report (e.g., 'Annual Report', 'Quarterly Report', '10-K')
+     */
+    report_type: string;
+    /**
+     * Period Start
+     * Period start date (YYYY-MM-DD)
+     */
+    period_start: string;
+    /**
+     * Period End
+     * Period end date (YYYY-MM-DD)
+     */
+    period_end: string;
+    /**
+     * Entity Id
+     * Entity identifier (defaults to primary entity)
+     */
+    entity_id?: string | null;
+    /**
+     * Include Presentation
+     * Create presentation structures
+     */
+    include_presentation?: boolean;
+    /**
+     * Include Calculation
+     * Create calculation structures
+     */
+    include_calculation?: boolean;
+};
+
+/**
+ * SaveViewResponse
+ */
+export type SaveViewResponse = {
+    /**
+     * Report Id
+     * Unique report identifier (used as parquet export prefix)
+     */
+    report_id: string;
+    /**
+     * Report Type
+     */
+    report_type: string;
+    /**
+     * Entity Id
+     */
+    entity_id: string;
+    /**
+     * Entity Name
+     */
+    entity_name: string;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Fact Count
+     */
+    fact_count: number;
+    /**
+     * Presentation Count
+     */
+    presentation_count: number;
+    /**
+     * Calculation Count
+     */
+    calculation_count: number;
+    /**
+     * Facts
+     */
+    facts: Array<FactDetail>;
+    /**
+     * Structures
+     */
+    structures: Array<StructureDetail>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Parquet Export Prefix
+     * Prefix for parquet file exports
+     */
+    parquet_export_prefix: string;
+};
+
+/**
  * SchemaExportResponse
  * Response model for schema export.
  */
@@ -4241,6 +4529,28 @@ export type StorageSummary = {
 };
 
 /**
+ * StructureDetail
+ */
+export type StructureDetail = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Structure Type
+     */
+    structure_type: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Element Count
+     */
+    element_count: number;
+};
+
+/**
  * SubgraphQuotaResponse
  * Response model for subgraph quota information.
  */
@@ -4489,37 +4799,6 @@ export type TableInfo = {
      * S3 location for external tables
      */
     s3_location?: string | null;
-};
-
-/**
- * TableIngestResult
- */
-export type TableIngestResult = {
-    /**
-     * Table Name
-     * Table name
-     */
-    table_name: string;
-    /**
-     * Status
-     * Ingestion status (success/failed/skipped)
-     */
-    status: string;
-    /**
-     * Rows Ingested
-     * Number of rows ingested
-     */
-    rows_ingested?: number;
-    /**
-     * Execution Time Ms
-     * Ingestion time in milliseconds
-     */
-    execution_time_ms?: number;
-    /**
-     * Error
-     * Error message if failed
-     */
-    error?: string | null;
 };
 
 /**
@@ -4814,6 +5093,122 @@ export type ValidationError = {
      */
     type: string;
 };
+
+/**
+ * ViewAxisConfig
+ */
+export type ViewAxisConfig = {
+    /**
+     * Type
+     * Axis type: 'element', 'period', 'dimension', 'entity'
+     */
+    type: string;
+    /**
+     * Dimension Axis
+     * Dimension axis name for dimension-type axes
+     */
+    dimension_axis?: string | null;
+    /**
+     * Include Null Dimension
+     * Include facts where this dimension is NULL (default: false)
+     */
+    include_null_dimension?: boolean;
+    /**
+     * Selected Members
+     * Specific members to include (e.g., ['2024-12-31', '2023-12-31'])
+     */
+    selected_members?: Array<string> | null;
+    /**
+     * Member Order
+     * Explicit ordering of members (overrides default sort)
+     */
+    member_order?: Array<string> | null;
+    /**
+     * Member Labels
+     * Custom labels for members (e.g., {'2024-12-31': 'Current Year'})
+     */
+    member_labels?: {
+        [key: string]: string;
+    } | null;
+    /**
+     * Element Order
+     * Element ordering for hierarchy display (e.g., ['us-gaap:Assets', 'us-gaap:Cash', ...])
+     */
+    element_order?: Array<string> | null;
+    /**
+     * Element Labels
+     * Custom labels for elements (e.g., {'us-gaap:Cash': 'Cash and Cash Equivalents'})
+     */
+    element_labels?: {
+        [key: string]: string;
+    } | null;
+};
+
+/**
+ * ViewConfig
+ */
+export type ViewConfig = {
+    /**
+     * Rows
+     * Row axis configuration
+     */
+    rows?: Array<ViewAxisConfig>;
+    /**
+     * Columns
+     * Column axis configuration
+     */
+    columns?: Array<ViewAxisConfig>;
+    /**
+     * Values
+     * Field to use for values (default: numeric_value)
+     */
+    values?: string;
+    /**
+     * Aggregation Function
+     * Aggregation function: sum, average, count
+     */
+    aggregation_function?: string;
+    /**
+     * Fill Value
+     * Value to use for missing data
+     */
+    fill_value?: number;
+};
+
+/**
+ * ViewSource
+ */
+export type ViewSource = {
+    /**
+     * Type of data source
+     */
+    type: ViewSourceType;
+    /**
+     * Period Start
+     * Start date for transaction aggregation (YYYY-MM-DD)
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     * End date for transaction aggregation (YYYY-MM-DD)
+     */
+    period_end?: string | null;
+    /**
+     * Fact Set Id
+     * FactSet ID for existing facts mode
+     */
+    fact_set_id?: string | null;
+    /**
+     * Entity Id
+     * Filter by entity (optional)
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * ViewSourceType
+ */
+export type ViewSourceType = 'transactions' | 'fact_set';
 
 export type RegisterUserData = {
     body: RegisterRequest;
@@ -7604,7 +7999,7 @@ export type CreateSubgraphResponses = {
     /**
      * Successful Response
      */
-    201: SubgraphResponse;
+    200: SubgraphResponse;
 };
 
 export type CreateSubgraphResponse = CreateSubgraphResponses[keyof CreateSubgraphResponses];
@@ -7924,331 +8319,6 @@ export type ListTablesResponses = {
 
 export type ListTablesResponse = ListTablesResponses[keyof ListTablesResponses];
 
-export type ListTableFilesData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Table Name
-         * Table name
-         */
-        table_name: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
-};
-
-export type ListTableFilesErrors = {
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied - insufficient permissions for this graph
-     */
-    403: ErrorResponse;
-    /**
-     * Graph or table not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type ListTableFilesError = ListTableFilesErrors[keyof ListTableFilesErrors];
-
-export type ListTableFilesResponses = {
-    /**
-     * Files retrieved successfully with full metadata
-     */
-    200: ListTableFilesResponse;
-};
-
-export type ListTableFilesResponse2 = ListTableFilesResponses[keyof ListTableFilesResponses];
-
-export type GetUploadUrlData = {
-    /**
-     * Upload request
-     */
-    body: FileUploadRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Table Name
-         * Table name
-         */
-        table_name: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/tables/{table_name}/files';
-};
-
-export type GetUploadUrlErrors = {
-    /**
-     * Invalid file format, name, or extension mismatch
-     */
-    400: ErrorResponse;
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied - shared repositories or insufficient permissions
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type GetUploadUrlError = GetUploadUrlErrors[keyof GetUploadUrlErrors];
-
-export type GetUploadUrlResponses = {
-    /**
-     * Upload URL generated successfully
-     */
-    200: FileUploadResponse;
-};
-
-export type GetUploadUrlResponse = GetUploadUrlResponses[keyof GetUploadUrlResponses];
-
-export type DeleteFileData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * File Id
-         * File ID
-         */
-        file_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
-};
-
-export type DeleteFileErrors = {
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied - shared repositories or insufficient permissions
-     */
-    403: ErrorResponse;
-    /**
-     * File not found in graph
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type DeleteFileError = DeleteFileErrors[keyof DeleteFileErrors];
-
-export type DeleteFileResponses = {
-    /**
-     * File deleted successfully
-     */
-    200: DeleteFileResponse;
-};
-
-export type DeleteFileResponse2 = DeleteFileResponses[keyof DeleteFileResponses];
-
-export type GetFileInfoData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * File Id
-         * File ID
-         */
-        file_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
-};
-
-export type GetFileInfoErrors = {
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied - insufficient permissions for this graph
-     */
-    403: ErrorResponse;
-    /**
-     * File not found in graph
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetFileInfoError = GetFileInfoErrors[keyof GetFileInfoErrors];
-
-export type GetFileInfoResponses = {
-    /**
-     * File information retrieved successfully
-     */
-    200: GetFileInfoResponse;
-};
-
-export type GetFileInfoResponse2 = GetFileInfoResponses[keyof GetFileInfoResponses];
-
-export type UpdateFileStatusData = {
-    /**
-     * Status update
-     */
-    body: FileStatusUpdate;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * File Id
-         * File identifier
-         */
-        file_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/tables/files/{file_id}';
-};
-
-export type UpdateFileStatusErrors = {
-    /**
-     * Invalid status, file too large, or empty file
-     */
-    400: ErrorResponse;
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied - shared repositories or insufficient permissions
-     */
-    403: ErrorResponse;
-    /**
-     * Graph, file, or S3 object not found
-     */
-    404: ErrorResponse;
-    /**
-     * Storage limit exceeded for tier
-     */
-    413: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type UpdateFileStatusError = UpdateFileStatusErrors[keyof UpdateFileStatusErrors];
-
-export type UpdateFileStatusResponses = {
-    /**
-     * Response Updatefilestatus
-     * File status updated successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type UpdateFileStatusResponse = UpdateFileStatusResponses[keyof UpdateFileStatusResponses];
-
-export type IngestTablesData = {
-    /**
-     * Ingestion request
-     */
-    body: BulkIngestRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/tables/ingest';
-};
-
-export type IngestTablesErrors = {
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied - shared repositories or insufficient permissions
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Conflict - another ingestion is already in progress for this graph
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Ingestion failed - check per-table results for details
-     */
-    500: ErrorResponse;
-};
-
-export type IngestTablesError = IngestTablesErrors[keyof IngestTablesErrors];
-
-export type IngestTablesResponses = {
-    /**
-     * Ingestion completed with detailed per-table results
-     */
-    200: BulkIngestResponse;
-};
-
-export type IngestTablesResponse = IngestTablesResponses[keyof IngestTablesResponses];
-
 export type QueryTablesData = {
     /**
      * SQL query request
@@ -8305,6 +8375,419 @@ export type QueryTablesResponses = {
 };
 
 export type QueryTablesResponse = QueryTablesResponses[keyof QueryTablesResponses];
+
+export type CreateViewData = {
+    body: CreateViewRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/views';
+};
+
+export type CreateViewErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateViewError = CreateViewErrors[keyof CreateViewErrors];
+
+export type CreateViewResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type SaveViewData = {
+    body: SaveViewRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/views/save';
+};
+
+export type SaveViewErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SaveViewError = SaveViewErrors[keyof SaveViewErrors];
+
+export type SaveViewResponses = {
+    /**
+     * Successful Response
+     */
+    200: SaveViewResponse;
+};
+
+export type SaveViewResponse2 = SaveViewResponses[keyof SaveViewResponses];
+
+export type GetMaterializationStatusData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/materialize/status';
+};
+
+export type GetMaterializationStatusErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied - insufficient permissions
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetMaterializationStatusError = GetMaterializationStatusErrors[keyof GetMaterializationStatusErrors];
+
+export type GetMaterializationStatusResponses = {
+    /**
+     * Materialization status retrieved successfully
+     */
+    200: MaterializeStatusResponse;
+};
+
+export type GetMaterializationStatusResponse = GetMaterializationStatusResponses[keyof GetMaterializationStatusResponses];
+
+export type MaterializeGraphData = {
+    body: MaterializeRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/materialize';
+};
+
+export type MaterializeGraphErrors = {
+    /**
+     * Graph not stale and force=false
+     */
+    400: ErrorResponse;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied - shared repositories or insufficient permissions
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
+    /**
+     * Conflict - another materialization is already in progress for this graph
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type MaterializeGraphError = MaterializeGraphErrors[keyof MaterializeGraphErrors];
+
+export type MaterializeGraphResponses = {
+    /**
+     * Graph materialized successfully
+     */
+    200: MaterializeResponse;
+};
+
+export type MaterializeGraphResponse = MaterializeGraphResponses[keyof MaterializeGraphResponses];
+
+export type ListFilesData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Table Name
+         * Filter by table name (optional)
+         */
+        table_name?: string | null;
+        /**
+         * Status
+         * Filter by upload status (optional)
+         */
+        status?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/files';
+};
+
+export type ListFilesErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied - insufficient permissions
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListFilesError = ListFilesErrors[keyof ListFilesErrors];
+
+export type ListFilesResponses = {
+    /**
+     * Files retrieved successfully
+     */
+    200: ListTableFilesResponse;
+};
+
+export type ListFilesResponse = ListFilesResponses[keyof ListFilesResponses];
+
+export type CreateFileUploadData = {
+    /**
+     * Upload request with table_name
+     */
+    body: FileUploadRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/files';
+};
+
+export type CreateFileUploadErrors = {
+    /**
+     * Invalid file format or parameters
+     */
+    400: ErrorResponse;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied - shared repositories or insufficient permissions
+     */
+    403: ErrorResponse;
+    /**
+     * Graph not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateFileUploadError = CreateFileUploadErrors[keyof CreateFileUploadErrors];
+
+export type CreateFileUploadResponses = {
+    /**
+     * Upload URL generated successfully
+     */
+    200: FileUploadResponse;
+};
+
+export type CreateFileUploadResponse = CreateFileUploadResponses[keyof CreateFileUploadResponses];
+
+export type DeleteFileData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * File Id
+         * File ID
+         */
+        file_id: string;
+    };
+    query?: {
+        /**
+         * Cascade
+         * If true, delete from all layers including DuckDB and mark graph stale
+         */
+        cascade?: boolean;
+    };
+    url: '/v1/graphs/{graph_id}/files/{file_id}';
+};
+
+export type DeleteFileErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied - shared repositories or insufficient permissions
+     */
+    403: ErrorResponse;
+    /**
+     * File not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteFileError = DeleteFileErrors[keyof DeleteFileErrors];
+
+export type DeleteFileResponses = {
+    /**
+     * File deleted successfully
+     */
+    200: DeleteFileResponse;
+};
+
+export type DeleteFileResponse2 = DeleteFileResponses[keyof DeleteFileResponses];
+
+export type GetFileData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * File Id
+         * File ID
+         */
+        file_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/files/{file_id}';
+};
+
+export type GetFileErrors = {
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied - insufficient permissions
+     */
+    403: ErrorResponse;
+    /**
+     * File not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetFileError = GetFileErrors[keyof GetFileErrors];
+
+export type GetFileResponses = {
+    /**
+     * File information retrieved successfully
+     */
+    200: GetFileInfoResponse;
+};
+
+export type GetFileResponse = GetFileResponses[keyof GetFileResponses];
+
+export type UpdateFileData = {
+    /**
+     * Status update request
+     */
+    body: FileStatusUpdate;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * File Id
+         * File ID
+         */
+        file_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/files/{file_id}';
+};
+
+export type UpdateFileErrors = {
+    /**
+     * Invalid status or file not in S3
+     */
+    400: ErrorResponse;
+    /**
+     * Not authenticated
+     */
+    401: unknown;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * File not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateFileError = UpdateFileErrors[keyof UpdateFileErrors];
+
+export type UpdateFileResponses = {
+    /**
+     * Response Updatefile
+     * File status updated successfully
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type UpdateFileResponse = UpdateFileResponses[keyof UpdateFileResponses];
 
 export type GetGraphsData = {
     body?: never;

@@ -7,12 +7,12 @@
  * Supports File (browser), Blob (browser), Buffer (Node.js), and ReadableStream.
  */
 
-import { getUploadUrl, ingestTables, listTables, updateFileStatus } from '../sdk/sdk.gen'
+import { createFileUpload, listTables, materializeGraph, updateFile } from '../sdk/sdk.gen'
 import type {
-  BulkIngestRequest,
   FileStatusUpdate,
   FileUploadRequest,
   FileUploadResponse,
+  MaterializeRequest,
   TableListResponse,
 } from '../sdk/types.gen'
 
@@ -97,10 +97,11 @@ export class TableIngestClient {
       const uploadRequest: FileUploadRequest = {
         file_name: fileName,
         content_type: 'application/x-parquet',
+        table_name: tableName,
       }
 
-      const uploadUrlResponse = await getUploadUrl({
-        path: { graph_id: graphId, table_name: tableName },
+      const uploadUrlResponse = await createFileUpload({
+        path: { graph_id: graphId },
         body: uploadRequest,
       })
 
@@ -158,7 +159,7 @@ export class TableIngestClient {
         status: 'uploaded',
       }
 
-      const updateResponse = await updateFileStatus({
+      const updateResponse = await updateFile({
         path: { graph_id: graphId, file_id: fileId },
         body: statusUpdate,
       })
@@ -242,12 +243,12 @@ export class TableIngestClient {
     try {
       options.onProgress?.('Starting table ingestion...')
 
-      const ingestRequest: BulkIngestRequest = {
+      const ingestRequest: MaterializeRequest = {
         ignore_errors: options.ignoreErrors ?? true,
         rebuild: options.rebuild ?? false,
       }
 
-      const response = await ingestTables({
+      const response = await materializeGraph({
         path: { graph_id: graphId },
         body: ingestRequest,
       })
