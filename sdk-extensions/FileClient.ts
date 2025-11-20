@@ -1,34 +1,23 @@
 'use client'
 
 /**
- * Table Ingest Client for RoboSystems API
+ * File Client for RoboSystems API
  *
- * Simplifies uploading Parquet files to staging tables and ingesting them into graphs.
- * Supports File (browser), Blob (browser), Buffer (Node.js), and ReadableStream.
+ * Manages file upload operations including presigned URLs, S3 uploads,
+ * and file status tracking.
  */
 
-import { createFileUpload, listTables, materializeGraph, updateFile } from '../sdk/sdk.gen'
-import type {
-  FileStatusUpdate,
-  FileUploadRequest,
-  FileUploadResponse,
-  MaterializeRequest,
-  TableListResponse,
-} from '../sdk/types.gen'
+import { createFileUpload, deleteFile, getFile, listFiles, updateFile } from '../sdk/sdk.gen'
+import type { FileStatusUpdate, FileUploadRequest, FileUploadResponse } from '../sdk/types.gen'
 
-export interface UploadOptions {
+export interface FileUploadOptions {
   onProgress?: (message: string) => void
-  fixLocalStackUrl?: boolean // Auto-fix LocalStack URLs for localhost
-  fileName?: string // Override file name (useful for buffer/blob uploads)
+  fixLocalStackUrl?: boolean
+  fileName?: string
+  ingestToGraph?: boolean
 }
 
-export interface IngestOptions {
-  ignoreErrors?: boolean
-  rebuild?: boolean
-  onProgress?: (message: string) => void
-}
-
-export interface UploadResult {
+export interface FileUploadResult {
   fileId: string
   fileSize: number
   rowCount: number
@@ -38,24 +27,19 @@ export interface UploadResult {
   error?: string
 }
 
-export interface TableInfo {
+export interface FileInfo {
+  fileId: string
+  fileName: string
   tableName: string
+  status: string
+  fileSize: number
   rowCount: number
-  fileCount: number
-  totalSizeBytes: number
+  createdAt: string
 }
 
-export interface IngestResult {
-  success: boolean
-  operationId?: string
-  message?: string
-  error?: string
-}
-
-// Union type for all supported file inputs
 export type FileInput = File | Blob | Buffer | ReadableStream<Uint8Array>
 
-export class TableIngestClient {
+export class FileClient {
   private config: {
     baseUrl: string
     credentials?: 'include' | 'same-origin' | 'omit'
@@ -73,25 +57,22 @@ export class TableIngestClient {
   }
 
   /**
-   * Upload a Parquet file to a staging table
+   * Upload a Parquet file to staging
    *
-   * This method handles the complete 3-step upload process:
+   * Handles the complete 3-step upload process:
    * 1. Get presigned upload URL
    * 2. Upload file to S3
    * 3. Mark file as 'uploaded' (backend validates, calculates size/row count)
-   *
-   * Supports File (browser), Blob (browser), Buffer (Node.js), and ReadableStream.
    */
-  async uploadParquetFile(
+  async upload(
     graphId: string,
     tableName: string,
     fileOrBuffer: FileInput,
-    options: UploadOptions = {}
-  ): Promise<UploadResult> {
+    options: FileUploadOptions = {}
+  ): Promise<FileUploadResult> {
     const fileName = this.getFileName(fileOrBuffer, options.fileName)
 
     try {
-      // Step 1: Get presigned upload URL
       options.onProgress?.(`Getting upload URL for ${fileName} -> table '${tableName}'...`)
 
       const uploadRequest: FileUploadRequest = {
@@ -121,12 +102,10 @@ export class TableIngestClient {
       let uploadUrl = uploadData.upload_url
       const fileId = uploadData.file_id
 
-      // Fix LocalStack URL if needed
       if (options.fixLocalStackUrl && uploadUrl.includes('localstack:4566')) {
         uploadUrl = uploadUrl.replace('localstack:4566', 'localhost:4566')
       }
 
-      // Step 2: Upload file to S3
       options.onProgress?.(`Uploading ${fileName} to S3...`)
 
       const fileContent = await this.getFileContent(fileOrBuffer)
@@ -152,7 +131,6 @@ export class TableIngestClient {
         }
       }
 
-      // Step 3: Mark file as uploaded (backend validates and calculates size/row count)
       options.onProgress?.(`Marking ${fileName} as uploaded...`)
 
       const statusUpdate: FileStatusUpdate = {
@@ -176,7 +154,6 @@ export class TableIngestClient {
         }
       }
 
-      // Extract size and row count from response (calculated by backend)
       const responseData = updateResponse.data as any
       const actualFileSize = responseData.file_size_bytes || 0
       const actualRowCount = responseData.row_count || 0
@@ -207,135 +184,105 @@ export class TableIngestClient {
   }
 
   /**
-   * List all staging tables in a graph
+   * List files in a graph
    */
-  async listStagingTables(graphId: string): Promise<TableInfo[]> {
+  async list(graphId: string, tableName?: string, status?: string): Promise<FileInfo[]> {
     try {
-      const response = await listTables({
+      const response = await listFiles({
         path: { graph_id: graphId },
+        query: {
+          table_name: tableName,
+          status: status as any,
+        },
       })
 
       if (response.error || !response.data) {
-        console.error('Failed to list tables:', response.error)
+        console.error('Failed to list files:', response.error)
         return []
       }
 
-      const tableData = response.data as TableListResponse
+      const fileData = response.data as any
 
       return (
-        tableData.tables?.map((table) => ({
-          tableName: table.table_name,
-          rowCount: table.row_count,
-          fileCount: table.file_count || 0,
-          totalSizeBytes: table.total_size_bytes || 0,
+        fileData.files?.map((file: any) => ({
+          fileId: file.file_id,
+          fileName: file.file_name,
+          tableName: file.table_name,
+          status: file.status,
+          fileSize: file.file_size_bytes || 0,
+          rowCount: file.row_count || 0,
+          createdAt: file.created_at,
         })) || []
       )
     } catch (error) {
-      console.error('Failed to list tables:', error)
+      console.error('Failed to list files:', error)
       return []
     }
   }
 
   /**
-   * Ingest all staging tables into the graph
+   * Get file information
    */
-  async ingestAllTables(graphId: string, options: IngestOptions = {}): Promise<IngestResult> {
+  async get(graphId: string, fileId: string): Promise<FileInfo | null> {
     try {
-      options.onProgress?.('Starting table ingestion...')
-
-      const ingestRequest: MaterializeRequest = {
-        ignore_errors: options.ignoreErrors ?? true,
-        rebuild: options.rebuild ?? false,
-      }
-
-      const response = await materializeGraph({
-        path: { graph_id: graphId },
-        body: ingestRequest,
+      const response = await getFile({
+        path: { graph_id: graphId, file_id: fileId },
       })
 
       if (response.error || !response.data) {
-        return {
-          success: false,
-          error: `Failed to ingest tables: ${response.error}`,
-        }
+        console.error('Failed to get file:', response.error)
+        return null
       }
 
-      const result = response.data as any
-
-      options.onProgress?.('✅ Table ingestion completed')
+      const file = response.data as any
 
       return {
-        success: true,
-        operationId: result.operation_id,
-        message: result.message || 'Ingestion started',
+        fileId: file.file_id,
+        fileName: file.file_name,
+        tableName: file.table_name,
+        status: file.status,
+        fileSize: file.file_size_bytes || 0,
+        rowCount: file.row_count || 0,
+        createdAt: file.created_at,
       }
     } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-      }
+      console.error('Failed to get file:', error)
+      return null
     }
   }
 
   /**
-   * Convenience method to upload a file and immediately ingest it
+   * Delete a file
    */
-  async uploadAndIngest(
-    graphId: string,
-    tableName: string,
-    fileOrBuffer: FileInput,
-    uploadOptions: UploadOptions = {},
-    ingestOptions: IngestOptions = {}
-  ): Promise<{ upload: UploadResult; ingest: IngestResult | null }> {
-    // Upload the file
-    const uploadResult = await this.uploadParquetFile(
-      graphId,
-      tableName,
-      fileOrBuffer,
-      uploadOptions
-    )
+  async delete(graphId: string, fileId: string, cascade: boolean = false): Promise<boolean> {
+    try {
+      const response = await deleteFile({
+        path: { graph_id: graphId, file_id: fileId },
+        query: { cascade },
+      })
 
-    if (!uploadResult.success) {
-      return {
-        upload: uploadResult,
-        ingest: null,
-      }
-    }
-
-    // Ingest the table
-    const ingestResult = await this.ingestAllTables(graphId, ingestOptions)
-
-    return {
-      upload: uploadResult,
-      ingest: ingestResult,
+      return !response.error
+    } catch (error) {
+      console.error('Failed to delete file:', error)
+      return false
     }
   }
 
-  /**
-   * Get file name from input or use provided override
-   */
   private getFileName(fileOrBuffer: FileInput, override?: string): string {
     if (override) return override
 
-    // File object (browser)
     if ('name' in fileOrBuffer && typeof fileOrBuffer.name === 'string') {
       return fileOrBuffer.name
     }
 
-    // Default name for buffers/blobs/streams
     return 'data.parquet'
   }
 
-  /**
-   * Convert various file inputs to ArrayBuffer for upload
-   */
   private async getFileContent(fileOrBuffer: FileInput): Promise<ArrayBuffer> {
-    // File or Blob (browser)
     if (fileOrBuffer instanceof Blob || fileOrBuffer instanceof File) {
       return fileOrBuffer.arrayBuffer()
     }
 
-    // Buffer (Node.js)
     if (Buffer.isBuffer(fileOrBuffer)) {
       return fileOrBuffer.buffer.slice(
         fileOrBuffer.byteOffset,
@@ -343,7 +290,6 @@ export class TableIngestClient {
       )
     }
 
-    // ReadableStream
     if ('getReader' in fileOrBuffer) {
       const reader = fileOrBuffer.getReader()
       const chunks: Uint8Array[] = []
@@ -354,7 +300,6 @@ export class TableIngestClient {
         if (value) chunks.push(value)
       }
 
-      // Concatenate chunks
       const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0)
       const result = new Uint8Array(totalLength)
       let offset = 0
