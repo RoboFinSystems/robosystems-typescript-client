@@ -7,8 +7,8 @@
  * and file status tracking.
  */
 
-import { createFileUpload, deleteFile, getFile, listFiles, updateFile } from '../sdk.gen'
-import type { FileStatusUpdate, FileUploadRequest, FileUploadResponse } from '../types.gen'
+import { createFileUpload, deleteFile, getFile, listFiles, updateFile } from '../sdk/sdk.gen'
+import type { FileStatusUpdate, FileUploadRequest, FileUploadResponse } from '../sdk/types.gen'
 
 export interface FileUploadOptions {
   onProgress?: (message: string) => void

@@ -7,8 +7,8 @@
  * Treats the graph database as a materialized view of the mutable DuckDB data lake.
  */
 
-import { getMaterializationStatus, materializeGraph } from '../sdk.gen'
-import type { MaterializeRequest } from '../types.gen'
+import { getMaterializationStatus, materializeGraph } from '../sdk/sdk.gen'
+import type { MaterializeRequest } from '../sdk/types.gen'
 
 export interface MaterializationOptions {
   ignoreErrors?: boolean

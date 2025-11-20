@@ -7,8 +7,8 @@
  * Tables provide SQL-queryable staging layer before graph materialization.
  */
 
-import { listTables, queryTables } from '../sdk.gen'
-import type { TableListResponse, TableQueryRequest } from '../types.gen'
+import { listTables, queryTables } from '../sdk/sdk.gen'
+import type { TableListResponse, TableQueryRequest } from '../sdk/types.gen'
 
 export interface TableInfo {
   tableName: string
