@@ -9,7 +9,9 @@ import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { AgentClient } from './AgentClient'
 import { SSEClient } from './SSEClient'
-import { TableIngestClient } from './TableIngestClient'
+import { FileClient } from './FileClient'
+import { MaterializationClient } from './MaterializationClient'
+import { TableClient } from './TableClient'
 import { GraphClient } from './GraphClient'
 
 export interface RoboSystemsExtensionConfig {
@@ -35,7 +37,9 @@ export class RoboSystemsExtensions {
   public readonly query: QueryClient
   public readonly agent: AgentClient
   public readonly operations: OperationClient
-  public readonly tables: TableIngestClient
+  public readonly files: FileClient
+  public readonly materialization: MaterializationClient
+  public readonly tables: TableClient
   public readonly graphs: GraphClient
   private config: ResolvedConfig
 
@@ -77,7 +81,21 @@ export class RoboSystemsExtensions {
       retryDelay: this.config.retryDelay,
     })
 
-    this.tables = new TableIngestClient({
+    this.files = new FileClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
+
+    this.materialization = new MaterializationClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
+
+    this.tables = new TableClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
@@ -129,10 +147,24 @@ export * from './OperationClient'
 export * from './QueryClient'
 export * from './AgentClient'
 export * from './SSEClient'
-export * from './TableIngestClient'
+export * from './FileClient'
+export * from './MaterializationClient'
 export * from './GraphClient'
 export * from './config'
-export { OperationClient, QueryClient, AgentClient, SSEClient, TableIngestClient, GraphClient }
+
+// Export TableClient types individually to avoid conflicts with QueryClient's QueryResult
+export type { TableInfo, TableQueryResult } from './TableClient'
+export { TableClient } from './TableClient'
+
+export {
+  OperationClient,
+  QueryClient,
+  AgentClient,
+  SSEClient,
+  FileClient,
+  MaterializationClient,
+  GraphClient,
+}
 
 // Export React hooks
 export {
@@ -163,6 +195,15 @@ export const extensions = {
   },
   get operations() {
     return getExtensions().operations
+  },
+  get files() {
+    return getExtensions().files
+  },
+  get materialization() {
+    return getExtensions().materialization
+  },
+  get tables() {
+    return getExtensions().tables
   },
   get graphs() {
     return getExtensions().graphs

@@ -8,12 +8,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { client } from '../sdk/client.gen'
 import { extractTokenFromSDKClient, getSDKExtensionsConfig } from './config'
+import type { FileInput, FileUploadOptions, FileUploadResult } from './FileClient'
+import { FileClient } from './FileClient'
+import type { MaterializationOptions } from './MaterializationClient'
+import { MaterializationClient } from './MaterializationClient'
 import type { OperationProgress, OperationResult } from './OperationClient'
 import { OperationClient } from './OperationClient'
 import type { QueryOptions, QueryResult } from './QueryClient'
 import { QueryClient } from './QueryClient'
-import type { FileInput, IngestOptions, UploadOptions, UploadResult } from './TableIngestClient'
-import { TableIngestClient } from './TableIngestClient'
+import type { TableInfo } from './TableClient'
+import { TableClient } from './TableClient'
 
 /**
  * Hook for executing Cypher queries with loading states and error handling
@@ -461,11 +465,11 @@ export function useSDKClients() {
 }
 
 /**
- * Hook for uploading Parquet files to staging tables
+ * Hook for uploading Parquet files to staging and materializing graphs
  *
  * @example
  * ```tsx
- * const { upload, uploadAndIngest, loading, error, progress } = useTableUpload('graph_123')
+ * const { upload, listTables, materialize, loading, error, progress } = useTableUpload('graph_123')
  *
  * const handleFileUpload = async (file: File) => {
  *   const result = await upload('Entity', file, {
@@ -483,31 +487,35 @@ export function useTableUpload(graphId: string) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [progress, setProgress] = useState<string | null>(null)
-  const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
-  const clientRef = useRef<TableIngestClient>(null)
+  const [uploadResult, setUploadResult] = useState<FileUploadResult | null>(null)
+  const fileClientRef = useRef<FileClient | null>(null)
+  const materializationClientRef = useRef<MaterializationClient | null>(null)
+  const tableClientRef = useRef<TableClient | null>(null)
 
   useEffect(() => {
     const sdkConfig = getSDKExtensionsConfig()
     const clientConfig = client.getConfig()
-
-    // Extract JWT token (uses centralized logic)
     const token = extractTokenFromSDKClient()
 
-    clientRef.current = new TableIngestClient({
+    const baseConfig = {
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       token,
       headers: sdkConfig.headers,
-    })
+    }
+
+    fileClientRef.current = new FileClient(baseConfig)
+    materializationClientRef.current = new MaterializationClient(baseConfig)
+    tableClientRef.current = new TableClient(baseConfig)
   }, [])
 
   const upload = useCallback(
     async (
       tableName: string,
       fileOrBuffer: FileInput,
-      options?: UploadOptions
-    ): Promise<UploadResult | null> => {
-      if (!clientRef.current) return null
+      options?: FileUploadOptions
+    ): Promise<FileUploadResult | null> => {
+      if (!fileClientRef.current) return null
 
       setLoading(true)
       setError(null)
@@ -515,7 +523,7 @@ export function useTableUpload(graphId: string) {
       setProgress(null)
 
       try {
-        const result = await clientRef.current.uploadParquetFile(graphId, tableName, fileOrBuffer, {
+        const result = await fileClientRef.current.upload(graphId, tableName, fileOrBuffer, {
           ...options,
           onProgress: (msg) => {
             setProgress(msg)
@@ -542,83 +550,27 @@ export function useTableUpload(graphId: string) {
     [graphId]
   )
 
-  const uploadAndIngest = useCallback(
-    async (
-      tableName: string,
-      fileOrBuffer: FileInput,
-      uploadOptions?: UploadOptions,
-      ingestOptions?: IngestOptions
-    ): Promise<{ upload: UploadResult; ingest: any } | null> => {
-      if (!clientRef.current) return null
-
-      setLoading(true)
-      setError(null)
-      setUploadResult(null)
-      setProgress(null)
-
-      try {
-        const result = await clientRef.current.uploadAndIngest(
-          graphId,
-          tableName,
-          fileOrBuffer,
-          {
-            ...uploadOptions,
-            onProgress: (msg) => {
-              setProgress(msg)
-              uploadOptions?.onProgress?.(msg)
-            },
-          },
-          {
-            ...ingestOptions,
-            onProgress: (msg) => {
-              setProgress(msg)
-              ingestOptions?.onProgress?.(msg)
-            },
-          }
-        )
-
-        setUploadResult(result.upload)
-
-        if (!result.upload.success && result.upload.error) {
-          setError(new Error(result.upload.error))
-        } else if (result.ingest && !result.ingest.success && result.ingest.error) {
-          setError(new Error(result.ingest.error))
-        }
-
-        return result
-      } catch (err) {
-        const error = err as Error
-        setError(error)
-        return null
-      } finally {
-        setLoading(false)
-        setProgress(null)
-      }
-    },
-    [graphId]
-  )
-
-  const listTables = useCallback(async () => {
-    if (!clientRef.current) return []
+  const listTables = useCallback(async (): Promise<TableInfo[]> => {
+    if (!tableClientRef.current) return []
 
     try {
-      return await clientRef.current.listStagingTables(graphId)
+      return await tableClientRef.current.list(graphId)
     } catch (err) {
       setError(err as Error)
       return []
     }
   }, [graphId])
 
-  const ingestAllTables = useCallback(
-    async (options?: IngestOptions) => {
-      if (!clientRef.current) return null
+  const materialize = useCallback(
+    async (options?: MaterializationOptions) => {
+      if (!materializationClientRef.current) return null
 
       setLoading(true)
       setError(null)
       setProgress(null)
 
       try {
-        const result = await clientRef.current.ingestAllTables(graphId, {
+        const result = await materializationClientRef.current.materialize(graphId, {
           ...options,
           onProgress: (msg) => {
             setProgress(msg)
@@ -645,9 +597,8 @@ export function useTableUpload(graphId: string) {
 
   return {
     upload,
-    uploadAndIngest,
     listTables,
-    ingestAllTables,
+    materialize,
     loading,
     error,
     progress,
