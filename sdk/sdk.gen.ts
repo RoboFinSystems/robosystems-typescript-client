@@ -1305,7 +1305,7 @@ export const recommendAgent = <ThrowOnError extends boolean = false>(options: Op
  * The tool list is customized based on:
  * - Graph type (shared repository vs user graph)
  * - User permissions and subscription tier
- * - Backend capabilities (Kuzu, Neo4j, etc.)
+ * - Backend capabilities (LadybugDB, Neo4j, etc.)
  *
  * **Subgraph Support:**
  * This endpoint accepts both parent graph IDs and subgraph IDs.
@@ -1427,8 +1427,8 @@ export const listBackups = <ThrowOnError extends boolean = false>(options: Optio
  * Create Backup
  * Create a backup of the graph database.
  *
- * Creates a complete backup of the graph database (.kuzu file) with:
- * - **Format**: Full database backup only (complete .kuzu file)
+ * Creates a complete backup of the graph database (.lbug file) with:
+ * - **Format**: Full database backup only (complete .lbug file)
  * - **Compression**: Always enabled for optimal storage
  * - **Encryption**: Optional AES-256 encryption for security
  * - **Retention**: Configurable retention period (1-2555 days)
@@ -1509,7 +1509,7 @@ export const createBackup = <ThrowOnError extends boolean = false>(options: Opti
 
 /**
  * Get temporary download URL for backup
- * Generate a temporary download URL for a backup (unencrypted, compressed .kuzu files only)
+ * Generate a temporary download URL for a backup (unencrypted, compressed .lbug files only)
  */
 export const getBackupDownloadUrl = <ThrowOnError extends boolean = false>(options: Options<GetBackupDownloadUrlData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetBackupDownloadUrlResponses, GetBackupDownloadUrlErrors, ThrowOnError>({
@@ -2258,7 +2258,7 @@ export const getDatabaseInfo = <ThrowOnError extends boolean = false>(options: O
  *
  * This unified endpoint provides all limits in one place for easier client integration.
  *
- * **Note**: Limits vary based on subscription tier (kuzu-standard, kuzu-large, kuzu-xlarge).
+ * **Note**: Limits vary based on subscription tier (ladybug-standard, ladybug-large, ladybug-xlarge).
  */
 export const getGraphLimits = <ThrowOnError extends boolean = false>(options: Options<GetGraphLimitsData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetGraphLimitsResponses, GetGraphLimitsErrors, ThrowOnError>({
@@ -2315,7 +2315,7 @@ export const listSubgraphs = <ThrowOnError extends boolean = false>(options: Opt
  * - Valid authentication
  * - Parent graph must exist and be accessible to the user
  * - User must have 'admin' permission on the parent graph
- * - Parent graph tier must support subgraphs (Kuzu Large/XLarge or Neo4j Enterprise XLarge)
+ * - Parent graph tier must support subgraphs (LadybugDB Large/XLarge or Neo4j Enterprise XLarge)
  * - Must be within subgraph quota limits
  * - Subgraph name must be unique within the parent graph
  *
@@ -2377,8 +2377,8 @@ export const createSubgraph = <ThrowOnError extends boolean = false>(options: Op
  * All data in the subgraph will be lost.
  *
  * **Backup Location:**
- * If backup requested, stored in S3 Kuzu database bucket at:
- * `s3://{kuzu_s3_bucket}/{instance_id}/{database_name}_{timestamp}.backup`
+ * If backup requested, stored in S3 graph database bucket at:
+ * `s3://{graph_s3_bucket}/{instance_id}/{database_name}_{timestamp}.backup`
  *
  * **Notes:**
  * - Use the subgraph name (e.g., 'dev', 'staging') not the full subgraph ID
@@ -2423,7 +2423,7 @@ export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Op
  * - Last access time (when available)
  *
  * **Statistics:**
- * Real-time statistics queried from Kuzu:
+ * Real-time statistics queried from LadybugDB:
  * - Node count
  * - Edge count
  * - Database size on disk
@@ -3268,7 +3268,7 @@ export const getGraphs = <ThrowOnError extends boolean = false>(options?: Option
  *
  * **Required Fields:**
  * - `metadata.graph_name`: Unique name for the graph
- * - `instance_tier`: Resource tier (kuzu-standard, kuzu-large, kuzu-xlarge)
+ * - `instance_tier`: Resource tier (ladybug-standard, ladybug-large, ladybug-xlarge)
  *
  * **Optional Fields:**
  * - `metadata.description`: Human-readable description of the graph's purpose
@@ -3393,9 +3393,9 @@ export const getAvailableExtensions = <ThrowOnError extends boolean = false>(opt
  * - Availability status
  *
  * **Available Tiers:**
- * - **kuzu-standard**: Multi-tenant entry-level tier
- * - **kuzu-large**: Dedicated professional tier with subgraph support
- * - **kuzu-xlarge**: Enterprise tier with maximum resources
+ * - **ladybug-standard**: Multi-tenant entry-level tier
+ * - **ladybug-large**: Dedicated professional tier with subgraph support
+ * - **ladybug-xlarge**: Enterprise tier with maximum resources
  * - **neo4j-community-large**: Neo4j Community Edition (optional, if enabled)
  * - **neo4j-enterprise-xlarge**: Neo4j Enterprise Edition (optional, if enabled)
  *
@@ -3489,7 +3489,7 @@ export const selectGraph = <ThrowOnError extends boolean = false>(options: Optio
  * - Credits are allocated per-graph, not shared across organization
  *
  * Includes:
- * - Graph infrastructure tiers (kuzu-standard, kuzu-large, kuzu-xlarge) - per-graph pricing
+ * - Graph infrastructure tiers (ladybug-standard, ladybug-large, ladybug-xlarge) - per-graph pricing
  * - Shared repository subscriptions (SEC, industry, economic data) - org-level
  * - Operation costs and credit information
  * - Features and capabilities for each tier
