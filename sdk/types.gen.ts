@@ -452,7 +452,7 @@ export type AvailableGraphTiersResponse = {
 export type BackupCreateRequest = {
     /**
      * Backup Format
-     * Backup format - only 'full_dump' is supported (complete .kuzu database file)
+     * Backup format - only 'full_dump' is supported (complete .lbug database file)
      */
     backup_format?: string;
     /**
@@ -1055,7 +1055,7 @@ export type CreateApiKeyResponse = {
 export type CreateCheckoutRequest = {
     /**
      * Plan Name
-     * Billing plan name (e.g., 'kuzu-standard')
+     * Billing plan name (e.g., 'ladybug-standard')
      */
     plan_name: string;
     /**
@@ -1107,7 +1107,7 @@ export type CreateGraphRequest = {
     metadata: GraphMetadata;
     /**
      * Instance Tier
-     * Instance tier: kuzu-standard, kuzu-large, kuzu-xlarge, neo4j-community-large, neo4j-enterprise-xlarge
+     * Instance tier: ladybug-standard, ladybug-large, ladybug-xlarge, neo4j-community-large, neo4j-enterprise-xlarge
      */
     instance_tier?: string;
     /**
@@ -2343,7 +2343,7 @@ export type GraphSubscriptionResponse = {
 export type GraphSubscriptionTier = {
     /**
      * Name
-     * Infrastructure tier identifier (e.g., kuzu-standard)
+     * Infrastructure tier identifier (e.g., ladybug-standard)
      */
     name: string;
     /**
@@ -2413,7 +2413,7 @@ export type GraphSubscriptionTier = {
     api_rate_multiplier: number;
     /**
      * Backend
-     * Database backend (kuzu or neo4j)
+     * Database backend (ladybug or neo4j)
      */
     backend: string;
     /**
@@ -2539,7 +2539,7 @@ export type GraphTierInfo = {
     description: string;
     /**
      * Backend
-     * Database backend (kuzu or neo4j)
+     * Database backend (ladybug or neo4j)
      */
     backend: string;
     /**
@@ -2963,7 +2963,7 @@ export type ListSubgraphsResponse = {
     parent_graph_tier: string;
     /**
      * Subgraphs Enabled
-     * Whether subgraphs are enabled for this tier (requires Kuzu Large/XLarge or Neo4j Enterprise XLarge)
+     * Whether subgraphs are enabled for this tier (requires LadybugDB Large/XLarge or Neo4j Enterprise XLarge)
      */
     subgraphs_enabled: boolean;
     /**
