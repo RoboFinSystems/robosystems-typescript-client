@@ -2116,6 +2116,26 @@ export type GraphInfo = {
      * Repository type if isRepository=true
      */
     repositoryType?: string | null;
+    /**
+     * Schemaextensions
+     * List of schema extensions installed on this graph
+     */
+    schemaExtensions?: Array<string>;
+    /**
+     * Issubgraph
+     * Whether this is a subgraph (vs a main graph)
+     */
+    isSubgraph?: boolean;
+    /**
+     * Parentgraphid
+     * Parent graph ID if this is a subgraph
+     */
+    parentGraphId?: string | null;
+    /**
+     * Graphtype
+     * Type of graph: generic, entity, or repository
+     */
+    graphType?: string;
 };
 
 /**
