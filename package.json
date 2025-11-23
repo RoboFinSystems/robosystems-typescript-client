@@ -1,6 +1,6 @@
 {
   "name": "@robosystems/client",
-  "version": "0.2.17",
+  "version": "0.2.18",
   "description": "TypeScript client library for RoboSystems Financial Knowledge Graph API",
   "main": "index.js",
   "types": "index.d.ts",
