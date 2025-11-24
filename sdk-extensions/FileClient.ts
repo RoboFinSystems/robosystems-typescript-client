@@ -284,10 +284,18 @@ export class FileClient {
     }
 
     if (Buffer.isBuffer(fileOrBuffer)) {
-      return fileOrBuffer.buffer.slice(
+      const buffer = fileOrBuffer.buffer.slice(
         fileOrBuffer.byteOffset,
         fileOrBuffer.byteOffset + fileOrBuffer.byteLength
       )
+      // Convert SharedArrayBuffer to ArrayBuffer if needed
+      if (buffer instanceof ArrayBuffer) {
+        return buffer
+      }
+      // Handle SharedArrayBuffer by copying to ArrayBuffer
+      const arrayBuffer = new ArrayBuffer(buffer.byteLength)
+      new Uint8Array(arrayBuffer).set(new Uint8Array(buffer))
+      return arrayBuffer
     }
 
     if ('getReader' in fileOrBuffer) {
