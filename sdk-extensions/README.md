@@ -708,12 +708,9 @@ const extensions = new RoboSystemsExtensions({
 })
 
 // File uploads will now use LocalStack instead of AWS S3
-const result = await extensions.files.upload(
-  'graph-id',
-  'TableName',
-  fileBuffer,
-  { onProgress: (msg) => console.log(msg) }
-)
+const result = await extensions.files.upload('graph-id', 'TableName', fileBuffer, {
+  onProgress: (msg) => console.log(msg),
+})
 ```
 
 ## 📊 Performance Optimization
