@@ -21,6 +21,7 @@ export interface RoboSystemsExtensionConfig {
   headers?: Record<string, string>
   maxRetries?: number
   retryDelay?: number
+  s3EndpointUrl?: string // Override S3 endpoint (e.g., for LocalStack)
 }
 
 // Properly typed configuration interface
@@ -31,6 +32,7 @@ interface ResolvedConfig {
   headers?: Record<string, string>
   maxRetries: number
   retryDelay: number
+  s3EndpointUrl?: string
 }
 
 export class RoboSystemsExtensions {
@@ -57,6 +59,7 @@ export class RoboSystemsExtensions {
       headers: config.headers,
       maxRetries: config.maxRetries || 5,
       retryDelay: config.retryDelay || 1000,
+      s3EndpointUrl: config.s3EndpointUrl,
     }
 
     this.query = new QueryClient({
@@ -86,6 +89,7 @@ export class RoboSystemsExtensions {
       credentials: this.config.credentials,
       token: this.config.token,
       headers: this.config.headers,
+      s3EndpointUrl: this.config.s3EndpointUrl,
     })
 
     this.materialization = new MaterializationClient({
