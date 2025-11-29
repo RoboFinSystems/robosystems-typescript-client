@@ -114,7 +114,6 @@ const result = await tableClient.uploadParquetFile(
     onProgress: (message) => {
       console.log(`Upload progress: ${message}`)
     },
-    fixLocalStackUrl: true, // Auto-fix for local development
   }
 )
 
@@ -248,7 +247,6 @@ import { readFileSync } from 'fs'
 const fileBuffer = readFileSync('data/entities.parquet')
 const result = await tableClient.uploadParquetFile('graph-id', 'Entity', Buffer.from(fileBuffer), {
   onProgress: (msg) => console.log(msg),
-  fixLocalStackUrl: true, // Auto-fix for local development
 })
 
 if (result.success) {
@@ -673,14 +671,15 @@ NEXT_PUBLIC_PREFER_STREAMING=true
 ### Custom Configuration
 
 ```typescript
-import { createSSEClient } from '@robosystems/client/extensions'
+import { RoboSystemsExtensions } from '@robosystems/client/extensions'
 
-const sseClient = createSSEClient({
+const extensions = new RoboSystemsExtensions({
   // API Configuration
   baseUrl: process.env.NEXT_PUBLIC_ROBOSYSTEMS_API_URL,
 
   // Authentication
   credentials: 'include', // For cookies
+  token: 'your-jwt-token', // Or use JWT token
   headers: {
     'X-API-Key': process.env.ROBOSYSTEMS_API_KEY,
   },
@@ -688,13 +687,33 @@ const sseClient = createSSEClient({
   // Connection Settings
   maxRetries: 5,
   retryDelay: 1000,
-  heartbeatInterval: 30000,
 
-  // Advanced Options
-  eventSourceOptions: {
-    withCredentials: true,
-  },
+  // S3 Configuration (for local development with LocalStack)
+  s3EndpointUrl: process.env.S3_ENDPOINT_URL, // e.g., 'http://localhost:4566'
 })
+```
+
+#### Local Development with LocalStack
+
+For local development using LocalStack, configure the S3 endpoint URL:
+
+```typescript
+import { RoboSystemsExtensions } from '@robosystems/client/extensions'
+
+const extensions = new RoboSystemsExtensions({
+  baseUrl: 'http://localhost:8000',
+  credentials: 'include',
+  // Override S3 endpoint for LocalStack
+  s3EndpointUrl: 'http://localhost:4566',
+})
+
+// File uploads will now use LocalStack instead of AWS S3
+const result = await extensions.files.upload(
+  'graph-id',
+  'TableName',
+  fileBuffer,
+  { onProgress: (msg) => console.log(msg) }
+)
 ```
 
 ## 📊 Performance Optimization

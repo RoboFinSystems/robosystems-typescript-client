@@ -474,13 +474,21 @@ export function useSDKClients() {
  * const handleFileUpload = async (file: File) => {
  *   const result = await upload('Entity', file, {
  *     onProgress: (msg) => console.log(msg),
- *     fixLocalStackUrl: true,
  *   })
  *
  *   if (result?.success) {
  *     console.log(`Uploaded ${result.rowCount} rows`)
  *   }
  * }
+ * ```
+ *
+ * @remarks
+ * For local development with LocalStack, configure s3EndpointUrl when initializing RoboSystemsExtensions:
+ * ```tsx
+ * const extensions = new RoboSystemsExtensions({
+ *   baseUrl: 'http://localhost:8000',
+ *   s3EndpointUrl: 'http://localhost:4566', // LocalStack endpoint
+ * })
  * ```
  */
 export function useTableUpload(graphId: string) {
