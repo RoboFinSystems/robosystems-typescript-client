@@ -12,7 +12,6 @@ import type { FileStatusUpdate, FileUploadRequest, FileUploadResponse } from '..
 
 export interface FileUploadOptions {
   onProgress?: (message: string) => void
-  fixLocalStackUrl?: boolean
   fileName?: string
   ingestToGraph?: boolean
 }
@@ -45,6 +44,7 @@ export class FileClient {
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
     token?: string
+    s3EndpointUrl?: string // Override S3 endpoint (e.g., for LocalStack)
   }
 
   constructor(config: {
@@ -52,6 +52,7 @@ export class FileClient {
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
     token?: string
+    s3EndpointUrl?: string
   }) {
     this.config = config
   }
@@ -102,8 +103,14 @@ export class FileClient {
       let uploadUrl = uploadData.upload_url
       const fileId = uploadData.file_id
 
-      if (options.fixLocalStackUrl && uploadUrl.includes('localstack:4566')) {
-        uploadUrl = uploadUrl.replace('localstack:4566', 'localhost:4566')
+      // Override S3 endpoint if configured (e.g., for LocalStack)
+      if (this.config.s3EndpointUrl) {
+        const originalUrl = new URL(uploadUrl)
+        const overrideUrl = new URL(this.config.s3EndpointUrl)
+        // Replace scheme, host, and port with the override endpoint
+        originalUrl.protocol = overrideUrl.protocol
+        originalUrl.host = overrideUrl.host
+        uploadUrl = originalUrl.toString()
       }
 
       options.onProgress?.(`Uploading ${fileName} to S3...`)
