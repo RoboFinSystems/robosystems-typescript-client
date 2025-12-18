@@ -102,7 +102,7 @@ export class AgentClient {
       }
     }
 
-    // Check if this is a queued response (async Celery execution)
+    // Check if this is a queued response (async background task execution)
     if (responseData?.operation_id) {
       const queuedResponse = responseData as QueuedAgentResponse
 
@@ -158,7 +158,7 @@ export class AgentClient {
       }
     }
 
-    // Check if this is a queued response (async Celery execution)
+    // Check if this is a queued response (async background task execution)
     if (responseData?.operation_id) {
       const queuedResponse = responseData as QueuedAgentResponse
 
