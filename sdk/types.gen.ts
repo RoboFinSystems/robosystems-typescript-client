@@ -3112,43 +3112,24 @@ export type MaterializeRequest = {
 
 /**
  * MaterializeResponse
+ * Response for queued materialization operation.
  */
 export type MaterializeResponse = {
     /**
      * Status
-     * Materialization status
+     * Operation status
      */
-    status: string;
+    status?: string;
     /**
      * Graph Id
      * Graph database identifier
      */
     graph_id: string;
     /**
-     * Was Stale
-     * Whether graph was stale before materialization
+     * Operation Id
+     * SSE operation ID for progress tracking
      */
-    was_stale: boolean;
-    /**
-     * Stale Reason
-     * Reason graph was stale
-     */
-    stale_reason?: string | null;
-    /**
-     * Tables Materialized
-     * List of tables successfully materialized
-     */
-    tables_materialized: Array<string>;
-    /**
-     * Total Rows
-     * Total rows materialized across all tables
-     */
-    total_rows: number;
-    /**
-     * Execution Time Ms
-     * Total materialization time
-     */
-    execution_time_ms: number;
+    operation_id: string;
     /**
      * Message
      * Human-readable status message
