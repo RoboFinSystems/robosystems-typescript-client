@@ -1,6 +1,6 @@
 # RoboSystems Typescript Client Extensions
 
-🚀 **Enhanced SSE and Real-time Features** for the RoboSystems Typescript Client
+**Enhanced SSE and Real-time Features** for the RoboSystems Typescript Client
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -17,7 +17,7 @@ The RoboSystems Typescript Client Extensions provide production-ready enhancemen
 - **React Hooks** for seamless UI integration
 - **Full TypeScript Support** with comprehensive type definitions
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -137,7 +137,7 @@ if (result.success) {
 }
 ```
 
-## 📊 SSE Event Types
+## SSE Event Types
 
 The SDK supports all RoboSystems SSE event types:
 
@@ -162,7 +162,7 @@ enum EventType {
 }
 ```
 
-## 🔄 Advanced SSE Features
+## Advanced SSE Features
 
 ### Automatic Reconnection
 
@@ -227,7 +227,7 @@ try {
 }
 ```
 
-## 📤 Table Ingestion
+## Table Ingestion
 
 ### TableIngestClient for Parquet File Uploads
 
@@ -250,9 +250,9 @@ const result = await tableClient.uploadParquetFile('graph-id', 'Entity', Buffer.
 })
 
 if (result.success) {
-  console.log(`✅ Uploaded ${result.rowCount} rows to ${result.tableName}`)
+  console.log(`Uploaded ${result.rowCount} rows to ${result.tableName}`)
 } else {
-  console.error(`❌ Upload failed: ${result.error}`)
+  console.error(`Upload failed: ${result.error}`)
 }
 ```
 
@@ -331,7 +331,7 @@ if (result.success) {
 }
 ```
 
-## 🎯 Operation Monitoring
+## Operation Monitoring
 
 ### OperationClient for Long-Running Tasks
 
@@ -420,7 +420,7 @@ await operationClient.monitor('operation-id', {
 })
 ```
 
-## ⚛️ React Integration
+## React Integration
 
 ### useSSE Hook
 
@@ -569,7 +569,7 @@ function DataImporter({ graphId }: { graphId: string }) {
 
       {result && result.status === 'completed' && (
         <div style={{ color: 'green' }}>
-          <p>✅ Successfully imported {result.rowsImported} rows</p>
+          <p>Successfully imported {result.rowsImported} rows</p>
           <p>Execution time: {(result.executionTimeMs / 1000).toFixed(2)}s</p>
         </div>
       )}
@@ -578,7 +578,7 @@ function DataImporter({ graphId }: { graphId: string }) {
 }
 ```
 
-## 🛡️ Error Handling & Resilience
+## Error Handling & Resilience
 
 ### Circuit Breaker Pattern
 
@@ -649,7 +649,7 @@ sseClient.on('connection_recycled', ({ old, new }) => {
 })
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Environment Variables
 
@@ -713,7 +713,7 @@ const result = await extensions.files.upload('graph-id', 'TableName', fileBuffer
 })
 ```
 
-## 📊 Performance Optimization
+## Performance Optimization
 
 ### Stream Processing for Large Datasets
 
@@ -761,7 +761,7 @@ cachedClient.on('cache_invalidated', (query) => {
 })
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Mock SSE for Testing
 
@@ -796,7 +796,7 @@ describe('SSE Integration', () => {
 })
 ```
 
-## 📚 API Reference
+## API Reference
 
 ### Core Classes
 
@@ -826,7 +826,7 @@ describe('SSE Integration', () => {
 - **`formatDuration`** - Human-readable duration formatting
 - **`parseSSEEvent`** - SSE event parsing utility
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -882,15 +882,15 @@ sseClient.on('*', (event, data) => {
 })
 ```
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](../../LICENSE) file for details.
 
-## 🤝 Contributing
+## Contributing
 
 See the [Contributing Guide](../../CONTRIBUTING.md) for development setup and guidelines.
 
-## 📞 Support
+## Support
 
 - **API Reference**: [api.robosystems.ai/docs](https://api.robosystems.ai/docs)
 - **Discord**: [Join our community](https://discord.gg/V9vjcqstxX)
@@ -899,5 +899,3 @@ See the [Contributing Guide](../../CONTRIBUTING.md) for development setup and gu
 ---
 
 **RoboSystems Typescript Client Extensions** - Production-ready SSE streaming and real-time monitoring for financial knowledge graphs.
-
-_Built with ❤️ by the RoboSystems team_
