@@ -32,6 +32,7 @@ Create a GitHub issue for the robosystems-typescript-client repository based on 
    - Appropriate metadata labels (see below)
 
 6. **Set Issue Type** - After creation, set the issue type via GraphQL:
+
    ```bash
    # Get issue ID
    gh api graphql -f query='{ repository(owner: "RoboFinSystems", name: "robosystems-typescript-client") { issue(number: NUMBER) { id } } }'
@@ -52,6 +53,7 @@ Create a GitHub issue for the robosystems-typescript-client repository based on 
 Issue types handle primary categorization. Use labels for metadata.
 
 **Area** (which part of the SDK):
+
 - `area:sdk` - Core SDK methods
 - `area:extensions` - SDK extensions
 - `area:generated` - Generated code issues
@@ -63,22 +65,26 @@ Issue types handle primary categorization. Use labels for metadata.
 - `area:ci-cd` - Workflows, releases
 
 **Priority** (when to do it):
+
 - `priority:critical` - Drop everything
 - `priority:high` - Next up
 - `priority:low` - Backlog
 
 **Size** (how long):
+
 - `size:small` - < 1 day
 - `size:medium` - 1-3 days
 - `size:large` - > 3 days
 
 **Status**:
+
 - `blocked` - Waiting on something
 - `needs-review` - Ready for review
 
 ## Output Format
 
 After creating the issue, provide:
+
 1. The issue URL
 2. Brief summary of what was created
 3. Issue type and labels applied
