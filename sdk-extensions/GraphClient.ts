@@ -286,15 +286,15 @@ export class GraphClient {
           }
           return graphId
         } else {
-          throw new Error('Operation completed but no graph_id in result')
+          throw new GraphOperationError('Operation completed but no graph_id in result')
         }
       } else if (status === 'failed') {
         const error = statusData?.error || statusData?.message || 'Unknown error'
-        throw new Error(`Graph creation failed: ${error}`)
+        throw new GraphOperationError(`Graph creation failed: ${error}`)
       }
     }
 
-    throw new Error(`Graph creation timed out after ${timeout}ms`)
+    throw new GraphOperationError(`Graph creation timed out after ${timeout}ms`)
   }
 
   /**
