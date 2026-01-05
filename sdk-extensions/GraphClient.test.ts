@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest'
 import type { GraphMetadataInput, InitialEntityInput } from './GraphClient'
 import { GraphClient } from './GraphClient'
 
@@ -19,20 +19,29 @@ function createMockResponse(data: any, options: { ok?: boolean; status?: number 
 describe('GraphClient', () => {
   let graphClient: GraphClient
   let mockFetch: any
+  let mockMonitorOperation: MockInstance
+  let mockCloseAll: MockInstance
 
   beforeEach(() => {
+    // Mock global fetch first
+    mockFetch = vi.fn()
+    global.fetch = mockFetch
+
+    // Create graphClient
     graphClient = new GraphClient({
       baseUrl: 'http://localhost:8000',
       token: 'test-api-key',
       headers: { 'X-API-Key': 'test-api-key' },
     })
 
-    // Mock global fetch
-    mockFetch = vi.fn()
-    global.fetch = mockFetch
+    // Access the internal operationClient and spy on its methods
+    const internalOperationClient = (graphClient as any).operationClient
+    mockMonitorOperation = vi.spyOn(internalOperationClient, 'monitorOperation')
+    mockCloseAll = vi.spyOn(internalOperationClient, 'closeAll').mockImplementation(() => {})
+  })
 
-    // Reset all mocks
-    vi.clearAllMocks()
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe('createGraphAndWait', () => {
@@ -173,6 +182,167 @@ describe('GraphClient', () => {
       await expect(clientNoToken.createGraphAndWait(mockMetadata)).rejects.toThrow(
         'No API key provided'
       )
+    })
+
+    describe('SSE mode', () => {
+      it('should use SSE when operation_id is returned and SSE succeeds', async () => {
+        // createGraph returns operation_id
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            operation_id: 'op_sse_success',
+          })
+        )
+
+        mockMonitorOperation.mockResolvedValueOnce({
+          success: true,
+          result: { graph_id: 'graph_from_sse' },
+        })
+
+        const graphId = await graphClient.createGraphAndWait(mockMetadata)
+
+        expect(graphId).toBe('graph_from_sse')
+        expect(mockMonitorOperation).toHaveBeenCalledWith(
+          'op_sse_success',
+          expect.objectContaining({ timeout: 60000 })
+        )
+        // Should only call fetch once (createGraph), no polling calls
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+      })
+
+      it('should format SSE progress with percentage', async () => {
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            operation_id: 'op_progress',
+          })
+        )
+
+        mockMonitorOperation.mockImplementationOnce(
+          async (_opId: string, options: { onProgress?: (p: any) => void }) => {
+            // Simulate progress callback with percentage
+            if (options.onProgress) {
+              options.onProgress({ message: 'Processing', progressPercent: 50 })
+            }
+            return { success: true, result: { graph_id: 'graph_progress' } }
+          }
+        )
+
+        const onProgress = vi.fn()
+        await graphClient.createGraphAndWait(mockMetadata, undefined, { onProgress })
+
+        expect(onProgress).toHaveBeenCalledWith('Processing (50%)')
+      })
+
+      it('should format SSE progress without percentage', async () => {
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            operation_id: 'op_no_percent',
+          })
+        )
+
+        mockMonitorOperation.mockImplementationOnce(
+          async (_opId: string, options: { onProgress?: (p: any) => void }) => {
+            if (options.onProgress) {
+              options.onProgress({ message: 'Initializing' })
+            }
+            return { success: true, result: { graph_id: 'graph_init' } }
+          }
+        )
+
+        const onProgress = vi.fn()
+        await graphClient.createGraphAndWait(mockMetadata, undefined, { onProgress })
+
+        expect(onProgress).toHaveBeenCalledWith('Initializing')
+      })
+
+      it('should fall back to polling when SSE fails', async () => {
+        // createGraph returns operation_id
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            operation_id: 'op_sse_fail',
+          })
+        )
+
+        // SSE fails
+        mockMonitorOperation.mockRejectedValueOnce(new Error('SSE connection failed'))
+
+        // Polling succeeds
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            status: 'completed',
+            result: { graph_id: 'graph_from_polling' },
+          })
+        )
+
+        const onProgress = vi.fn()
+        const graphId = await graphClient.createGraphAndWait(mockMetadata, undefined, {
+          pollInterval: 100,
+          onProgress,
+        })
+
+        expect(graphId).toBe('graph_from_polling')
+        expect(onProgress).toHaveBeenCalledWith('SSE unavailable, using polling...')
+        // createGraph + 1 polling call
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+      })
+
+      it('should skip SSE when useSSE is false', async () => {
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            operation_id: 'op_no_sse',
+          })
+        )
+
+        // Polling succeeds
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            status: 'completed',
+            result: { graph_id: 'graph_polling_only' },
+          })
+        )
+
+        const graphId = await graphClient.createGraphAndWait(mockMetadata, undefined, {
+          useSSE: false,
+          pollInterval: 100,
+        })
+
+        expect(graphId).toBe('graph_polling_only')
+        // SSE should never be called
+        expect(mockMonitorOperation).not.toHaveBeenCalled()
+      })
+
+      it('should throw error when SSE operation fails', async () => {
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            operation_id: 'op_sse_error',
+          })
+        )
+
+        mockMonitorOperation.mockResolvedValueOnce({
+          success: false,
+          error: 'Operation failed on server',
+        })
+
+        await expect(
+          graphClient.createGraphAndWait(mockMetadata, undefined, { useSSE: true })
+        ).rejects.toThrow('Operation failed on server')
+      })
+
+      it('should throw error when SSE completes but no graph_id in result', async () => {
+        mockFetch.mockResolvedValueOnce(
+          createMockResponse({
+            operation_id: 'op_no_graph_id',
+          })
+        )
+
+        mockMonitorOperation.mockResolvedValueOnce({
+          success: true,
+          result: {}, // No graph_id
+        })
+
+        await expect(graphClient.createGraphAndWait(mockMetadata)).rejects.toThrow(
+          'Operation completed but no graph_id in result'
+        )
+      })
     })
   })
 
