@@ -10,6 +10,17 @@ import { createGraph, getGraphs, getOperationStatus } from '../sdk/sdk.gen'
 import type { GraphMetadata, InitialEntityData } from '../sdk/types.gen'
 import { OperationClient } from './OperationClient'
 
+/**
+ * Error thrown when a graph operation fails (as reported by the server)
+ * This is distinct from connection/SSE errors
+ */
+export class GraphOperationError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'GraphOperationError'
+  }
+}
+
 // API Response Types
 interface GraphCreateResponse {
   graph_id?: string
@@ -187,7 +198,12 @@ export class GraphClient {
       try {
         return await this.waitWithSSE(operationId, timeout, onProgress)
       } catch (error) {
-        // SSE failed, fall back to polling
+        // Only fall back to polling for SSE connection failures
+        // If it's a GraphOperationError, the operation actually failed - don't retry with polling
+        if (error instanceof GraphOperationError) {
+          throw error
+        }
+        // SSE connection failed, fall back to polling
         if (onProgress) {
           onProgress('SSE unavailable, using polling...')
         }
@@ -220,12 +236,12 @@ export class GraphClient {
     })
 
     if (!result.success) {
-      throw new Error(result.error || 'Graph creation failed')
+      throw new GraphOperationError(result.error || 'Graph creation failed')
     }
 
     const graphId = result.result?.graph_id
     if (!graphId) {
-      throw new Error('Operation completed but no graph_id in result')
+      throw new GraphOperationError('Operation completed but no graph_id in result')
     }
 
     if (onProgress) {
