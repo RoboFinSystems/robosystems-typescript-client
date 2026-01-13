@@ -21,18 +21,19 @@ Official TypeScript Client for the RoboSystems Financial Knowledge Graph API. Ac
 npm install @robosystems/client
 ```
 
-## API Reference
+## Resources
 
-- [API reference](https://api.robosystems.ai)
-- [API documentation](https://api.robosystems.ai/docs)
-- [OpenAPI specification](https://api.robosystems.ai/openapi.json)
+- [RoboSystems Platform](https://robosystems.ai)
+- [GitHub Repository](https://github.com/RoboFinSystems/robosystems)
+- [API Documentation](https://api.robosystems.ai/docs)
+- [OpenAPI Specification](https://api.robosystems.ai/openapi.json)
 
 ## Support
 
 - [Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)
-- [Discussions](https://github.com/RoboFinSystems/robosystems/discussions)
-- [Projects](https://github.com/RoboFinSystems/robosystems/projects)
 - [Wiki](https://github.com/RoboFinSystems/robosystems/wiki)
+- [Projects](https://github.com/orgs/RoboFinSystems/projects)
+- [Discussions](https://github.com/orgs/RoboFinSystems/discussions)
 
 ## License
 
