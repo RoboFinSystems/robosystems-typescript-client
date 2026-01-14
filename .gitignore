@@ -77,7 +77,8 @@ Thumbs.db
 .temp/
 tmp/
 
-# Lock files (keep package-lock.json for npm ci)
+# Lock files (not needed for published packages)
+package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
