@@ -5,7 +5,7 @@
   "main": "index.js",
   "types": "index.d.ts",
   "bin": {
-    "create-feature": "./bin/create-feature"
+    "create-feature": "./bin/create-feature.sh"
   },
   "exports": {
     ".": {
@@ -71,9 +71,9 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "validate": "npm run validate:fix && npm run lint && npm run typecheck",
-    "feature:create": "./bin/create-feature",
-    "release:create": "./bin/create-release",
-    "pr:create": "./bin/create-pr",
+    "feature:create": "./bin/create-feature.sh",
+    "release:create": "./bin/create-release.sh",
+    "pr:create": "./bin/create-pr.sh",
     "validate:fix": "npm run format && npm run lint:fix",
     "test": "vitest run",
     "test:watch": "vitest",
