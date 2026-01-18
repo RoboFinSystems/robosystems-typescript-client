@@ -10,6 +10,10 @@ beforeAll(() => {
   if (!global.fetch) {
     global.fetch = vi.fn()
   }
+  // Ensure globalThis.fetch is also available (used by SDK client)
+  if (!globalThis.fetch) {
+    globalThis.fetch = global.fetch
+  }
 })
 
 // Clean up after each test

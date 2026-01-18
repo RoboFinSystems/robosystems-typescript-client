@@ -81,6 +81,12 @@ export class QueryClient {
 
     const response = await executeCypherQuery(data)
 
+    // Check for errors in the response (network errors, etc.)
+    if ('error' in response && response.error) {
+      const error = response.error as Error
+      throw error instanceof Error ? error : new Error(String(error))
+    }
+
     // Check if this is a raw stream response (when parseAs: 'stream')
     if (options.mode === 'stream' && response.response) {
       const contentType = response.response.headers.get('content-type') || ''
