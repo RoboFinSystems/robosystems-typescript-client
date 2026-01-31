@@ -19,12 +19,12 @@ sdk-extensions/**/*.d.ts
 sdk-extensions/**/*.d.ts.map
 
 # Generated files from prepare script (DO NOT COMMIT)
-*.gen.ts
-*.gen.js
-*.gen.d.ts
-client/
-core/
-extensions/
+/*.gen.ts
+/*.gen.js
+/*.gen.d.ts
+/client/
+/core/
+/extensions/
 index.js
 index.d.ts
 index.ts

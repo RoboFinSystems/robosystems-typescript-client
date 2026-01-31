@@ -25,9 +25,10 @@ describe('QueryClient', () => {
       headers: { 'X-API-Key': 'test-key' },
     })
 
-    // Mock global fetch
+    // Mock global fetch (also set globalThis for SDK client compatibility)
     mockFetch = vi.fn()
     global.fetch = mockFetch
+    globalThis.fetch = mockFetch
 
     // Reset all mocks
     vi.clearAllMocks()
