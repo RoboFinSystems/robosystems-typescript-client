@@ -148,6 +148,8 @@ export class QueryClient {
     let columns: string[] | null = null
     let totalRows = 0
     let executionTimeMs = 0
+    const parseErrors: { line: number; error: string }[] = []
+    let lineNumber = 0
 
     // Use streaming reader to avoid "body already read" error
     const reader = response.body?.getReader()
@@ -168,6 +170,7 @@ export class QueryClient {
         buffer = lines.pop() || ''
 
         for (const line of lines) {
+          lineNumber++
           if (!line.trim()) continue
 
           try {
@@ -192,13 +195,17 @@ export class QueryClient {
               executionTimeMs = Math.max(executionTimeMs, chunk.execution_time_ms)
             }
           } catch (error) {
-            console.error('Failed to parse NDJSON line:', error)
+            parseErrors.push({
+              line: lineNumber,
+              error: error instanceof Error ? error.message : String(error),
+            })
           }
         }
       }
 
       // Parse any remaining buffer
       if (buffer.trim()) {
+        lineNumber++
         try {
           const chunk = JSON.parse(buffer)
           if (columns === null && chunk.columns) {
@@ -215,11 +222,23 @@ export class QueryClient {
             executionTimeMs = Math.max(executionTimeMs, chunk.execution_time_ms)
           }
         } catch (error) {
-          console.error('Failed to parse final NDJSON line:', error)
+          parseErrors.push({
+            line: lineNumber,
+            error: error instanceof Error ? error.message : String(error),
+          })
         }
       }
     } catch (error) {
       throw new Error(`NDJSON stream reading error: ${error}`)
+    }
+
+    // Report parse errors if any occurred
+    if (parseErrors.length > 0) {
+      const errorDetails = parseErrors.slice(0, 3).map((e) => `line ${e.line}: ${e.error}`)
+      const moreErrors = parseErrors.length > 3 ? ` (and ${parseErrors.length - 3} more)` : ''
+      throw new Error(
+        `NDJSON parsing failed for ${parseErrors.length} line(s): ${errorDetails.join('; ')}${moreErrors}`
+      )
     }
 
     // Return aggregated result
