@@ -49,6 +49,14 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+        env:
+          NODE_AUTH_TOKEN: ''  # Clear default token to use OIDC
+
+      - name: Upgrade npm for OIDC support
+        if: steps.check-published.outputs.already_published == 'false'
+        run: |
+          npm install -g npm@11
+          npm --version
       
       - name: Install dependencies
         if: steps.check-published.outputs.already_published == 'false'
