@@ -26,8 +26,7 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          token: ${{ secrets.ACTIONS_TOKEN }}
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -65,10 +64,24 @@ jobs:
           
           NEW_VERSION="${major}.${minor}.${patch}"
           BRANCH_NAME="release/${NEW_VERSION}"
-          
+
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-      
+          echo "New version: $NEW_VERSION"
+          echo "Branch name: $BRANCH_NAME"
+
+      - name: Check if branch already exists
+        run: |
+          BRANCH_NAME="${{ steps.new-version.outputs.branch_name }}"
+
+          # Check if branch exists locally or remotely
+          if git show-ref --verify --quiet refs/heads/$BRANCH_NAME || git show-ref --verify --quiet refs/remotes/origin/$BRANCH_NAME; then
+            echo "❌ Branch $BRANCH_NAME already exists"
+            exit 1
+          else
+            echo "✅ Branch $BRANCH_NAME does not exist, proceeding..."
+          fi
+
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
