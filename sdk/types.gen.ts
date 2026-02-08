@@ -647,6 +647,16 @@ export type BackupListResponse = {
      * Graph Id
      */
     graph_id: string;
+    /**
+     * Is Shared Repository
+     *
+     * Whether this is a shared repository (limits apply)
+     */
+    is_shared_repository?: boolean;
+    /**
+     * Download quota for shared repositories
+     */
+    download_quota?: DownloadQuota | null;
 };
 
 /**
@@ -1124,6 +1134,62 @@ export type ConnectionResponse = {
 };
 
 /**
+ * ContentLimits
+ *
+ * Graph content limits (nodes, relationships, rows).
+ */
+export type ContentLimits = {
+    /**
+     * Max Nodes
+     *
+     * Maximum nodes allowed
+     */
+    max_nodes: number;
+    /**
+     * Current Nodes
+     *
+     * Current node count
+     */
+    current_nodes?: number | null;
+    /**
+     * Max Relationships
+     *
+     * Maximum relationships allowed
+     */
+    max_relationships: number;
+    /**
+     * Current Relationships
+     *
+     * Current relationship count
+     */
+    current_relationships?: number | null;
+    /**
+     * Max Rows Per Copy
+     *
+     * Maximum rows per copy/materialization operation
+     */
+    max_rows_per_copy: number;
+    /**
+     * Max Single Table Rows
+     *
+     * Maximum rows per staging table
+     */
+    max_single_table_rows: number;
+    /**
+     * Chunk Size Rows
+     *
+     * Rows per materialization chunk
+     */
+    chunk_size_rows: number;
+    /**
+     * Approaching Limits
+     *
+     * List of limits being approached (>80%)
+     */
+    approaching_limits?: Array<string>;
+};
+
+/**
  * CopyOperationLimits
  *
  * Copy/ingestion operation limits.
@@ -1279,7 +1345,7 @@ export type CreateGraphRequest = {
     /**
      * Instance Tier
      *
-     * Instance tier: ladybug-standard, ladybug-large, ladybug-xlarge, neo4j-community-large, neo4j-enterprise-xlarge
+     * Instance tier: ladybug-standard, ladybug-large, ladybug-xlarge
      */
     instance_tier?: string;
     /**
@@ -1431,18 +1497,6 @@ export type CreditLimits = {
      * Current credit balance
      */
     current_balance: number;
-    /**
-     * Storage Billing Enabled
-     *
-     * Whether storage billing is enabled
-     */
-    storage_billing_enabled: boolean;
-    /**
-     * Storage Rate Per Gb Per Day
-     *
-     * Storage billing rate per GB per day
-     */
-    storage_rate_per_gb_per_day: number;
 };
 
 /**
@@ -1933,6 +1987,38 @@ export type DetailedTransactionsResponse = {
     date_range: {
         [key: string]: string;
     };
+};
+
+/**
+ * DownloadQuota
+ *
+ * Download quota information for shared repository backups.
+ */
+export type DownloadQuota = {
+    /**
+     * Limit Per Day
+     *
+     * Maximum downloads allowed per day
+     */
+    limit_per_day: number;
+    /**
+     * Used Today
+     *
+     * Number of downloads used today
+     */
+    used_today: number;
+    /**
+     * Remaining
+     *
+     * Downloads remaining today
+     */
+    remaining: number;
+    /**
+     * Resets At
+     *
+     * When the daily limit resets (UTC)
+     */
+    resets_at: string;
 };
 
 /**
@@ -2512,6 +2598,10 @@ export type GraphLimitsResponse = {
      * AI credit limits (if applicable)
      */
     credits?: CreditLimits | null;
+    /**
+     * Graph content limits (if applicable)
+     */
+    content?: ContentLimits | null;
 };
 
 /**
@@ -2748,17 +2838,11 @@ export type GraphSubscriptionTier = {
      */
     monthly_credits_per_graph: number;
     /**
-     * Storage Included Gb
+     * Storage Included
      *
-     * Storage included in GB
+     * Whether storage is included in the tier
      */
-    storage_included_gb: number;
-    /**
-     * Storage Overage Per Gb
-     *
-     * Overage cost per GB per month
-     */
-    storage_overage_per_gb: number;
+    storage_included?: boolean;
     /**
      * Infrastructure
      *
@@ -3591,6 +3675,12 @@ export type MaterializeRequest = {
      * Continue ingestion on row errors
      */
     ignore_errors?: boolean;
+    /**
+     * Dry Run
+     *
+     * Validate limits without executing materialization. Returns usage, limits, and warnings.
+     */
+    dry_run?: boolean;
 };
 
 /**
@@ -3623,6 +3713,14 @@ export type MaterializeResponse = {
      * Human-readable status message
      */
     message: string;
+    /**
+     * Limit Check
+     *
+     * Limit check results (only present for dry_run requests)
+     */
+    limit_check?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -5069,25 +5167,15 @@ export type ServiceOfferingsResponse = {
 /**
  * StorageInfo
  *
- * Storage pricing information.
+ * Storage information.
  */
 export type StorageInfo = {
     /**
-     * Included Per Tier
+     * Description
      *
-     * Storage included per tier in GB
+     * Storage billing description
      */
-    included_per_tier: {
-        [key: string]: number;
-    };
-    /**
-     * Overage Pricing
-     *
-     * Overage pricing per GB per tier
-     */
-    overage_pricing: {
-        [key: string]: number;
-    };
+    description?: string;
 };
 
 /**
@@ -5853,6 +5941,16 @@ export type ValidationError = {
      * Error Type
      */
     type: string;
+    /**
+     * Input
+     */
+    input?: unknown;
+    /**
+     * Context
+     */
+    ctx?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -9343,6 +9441,10 @@ export type MaterializeGraphErrors = {
      * Conflict - another materialization is already in progress for this graph
      */
     409: ErrorResponse;
+    /**
+     * Graph content limit exceeded - data too large for current tier
+     */
+    413: ErrorResponse;
     /**
      * Validation Error
      */
