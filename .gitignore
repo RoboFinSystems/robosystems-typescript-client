@@ -77,7 +77,8 @@ Thumbs.db
 .temp/
 tmp/
 
-# Lock files (keep package-lock.json for CI caching)
+# Lock files
+package-lock.json
 yarn.lock
 pnpm-lock.yaml
 

@@ -1672,6 +1672,7 @@ export const getDatabaseInfo = <ThrowOnError extends boolean = false>(options: O
  * - **Backup Limits**: Frequency, retention, size limits
  * - **Rate Limits**: Requests per minute/hour based on tier
  * - **Credit Limits**: AI operation credits (if applicable)
+ * - **Content Limits**: Node, relationship, and row limits (if applicable)
  *
  * This unified endpoint provides all limits in one place for easier client integration.
  *
@@ -2170,6 +2171,10 @@ export const getMaterializationStatus = <ThrowOnError extends boolean = false>(o
  * Full graph materialization can take minutes for large datasets. Consider running
  * during off-peak hours for production systems.
  *
+ * **Dry Run:**
+ * Set `dry_run=true` to validate limits without executing. Returns current usage, tier limits,
+ * and any warnings or errors. No lock is acquired, no SSE operation is created.
+ *
  * **Credits:**
  * Materialization is included - no credit consumption
  */
@@ -2580,11 +2585,9 @@ export const getAvailableExtensions = <ThrowOnError extends boolean = false>(opt
  * - Availability status
  *
  * **Available Tiers:**
- * - **ladybug-standard**: Multi-tenant entry-level tier
+ * - **ladybug-standard**: Dedicated entry-level tier
  * - **ladybug-large**: Dedicated professional tier with subgraph support
  * - **ladybug-xlarge**: Enterprise tier with maximum resources
- * - **neo4j-community-large**: Neo4j Community Edition (optional, if enabled)
- * - **neo4j-enterprise-xlarge**: Neo4j Enterprise Edition (optional, if enabled)
  *
  * **Use Cases:**
  * - Display tier options in graph creation UI
