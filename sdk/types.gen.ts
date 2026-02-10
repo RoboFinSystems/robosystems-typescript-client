@@ -946,7 +946,7 @@ export type CheckoutStatusResponse = {
     /**
      * Status
      *
-     * Checkout status: 'pending_payment', 'provisioning', 'completed', 'failed'
+     * Checkout status: 'pending_payment', 'provisioning', 'active', 'failed', 'canceled'
      */
     status: string;
     /**
@@ -973,164 +973,6 @@ export type CheckoutStatusResponse = {
      * Error message if checkout failed
      */
     error?: string | null;
-};
-
-/**
- * ConnectionOptionsResponse
- *
- * Response with all available connection options.
- */
-export type ConnectionOptionsResponse = {
-    /**
-     * Providers
-     *
-     * Available connection providers
-     */
-    providers: Array<ConnectionProviderInfo>;
-    /**
-     * Total Providers
-     *
-     * Total number of providers
-     */
-    total_providers: number;
-};
-
-/**
- * ConnectionProviderInfo
- *
- * Information about a connection provider.
- */
-export type ConnectionProviderInfo = {
-    /**
-     * Provider
-     *
-     * Provider identifier
-     */
-    provider: 'sec' | 'quickbooks' | 'plaid';
-    /**
-     * Display Name
-     *
-     * Human-readable provider name
-     */
-    display_name: string;
-    /**
-     * Description
-     *
-     * Provider description
-     */
-    description: string;
-    /**
-     * Auth Type
-     *
-     * Authentication type
-     */
-    auth_type: 'none' | 'oauth' | 'link' | 'api_key';
-    /**
-     * Auth Flow
-     *
-     * Description of authentication flow
-     */
-    auth_flow?: string | null;
-    /**
-     * Required Config
-     *
-     * Required configuration fields
-     */
-    required_config: Array<string>;
-    /**
-     * Optional Config
-     *
-     * Optional configuration fields
-     */
-    optional_config?: Array<string>;
-    /**
-     * Features
-     *
-     * Supported features
-     */
-    features: Array<string>;
-    /**
-     * Sync Frequency
-     *
-     * Typical sync frequency
-     */
-    sync_frequency?: string | null;
-    /**
-     * Data Types
-     *
-     * Types of data available
-     */
-    data_types: Array<string>;
-    /**
-     * Setup Instructions
-     *
-     * Setup instructions
-     */
-    setup_instructions?: string | null;
-    /**
-     * Documentation Url
-     *
-     * Link to documentation
-     */
-    documentation_url?: string | null;
-};
-
-/**
- * ConnectionResponse
- *
- * Connection response model.
- */
-export type ConnectionResponse = {
-    /**
-     * Connection Id
-     *
-     * Unique connection identifier
-     */
-    connection_id: string;
-    /**
-     * Provider
-     *
-     * Connection provider type
-     */
-    provider: 'sec' | 'quickbooks' | 'plaid';
-    /**
-     * Entity Id
-     *
-     * Entity identifier
-     */
-    entity_id: string;
-    /**
-     * Status
-     *
-     * Connection status
-     */
-    status: string;
-    /**
-     * Created At
-     *
-     * Creation timestamp
-     */
-    created_at: string;
-    /**
-     * Updated At
-     *
-     * Last update timestamp
-     */
-    updated_at?: string | null;
-    /**
-     * Last Sync
-     *
-     * Last sync timestamp
-     */
-    last_sync?: string | null;
-    /**
-     * Metadata
-     *
-     * Provider-specific metadata
-     */
-    metadata: {
-        [key: string]: unknown;
-    };
 };
 
 /**
@@ -1306,29 +1148,6 @@ export type CreateCheckoutRequest = {
 };
 
 /**
- * CreateConnectionRequest
- *
- * Request to create a new connection.
- */
-export type CreateConnectionRequest = {
-    /**
-     * Provider
-     *
-     * Connection provider type
-     */
-    provider: 'sec' | 'quickbooks' | 'plaid';
-    /**
-     * Entity Id
-     *
-     * Entity identifier
-     */
-    entity_id: string;
-    sec_config?: SecConnectionConfig | null;
-    quickbooks_config?: QuickBooksConnectionConfig | null;
-    plaid_config?: PlaidConnectionConfig | null;
-};
-
-/**
  * CreateGraphRequest
  *
  * Request model for creating a new graph.
@@ -1445,38 +1264,6 @@ export type CreateSubgraphRequest = {
      * If true, copy all data from parent graph to create a 'fork'
      */
     fork_parent?: boolean;
-};
-
-/**
- * CreateViewRequest
- */
-export type CreateViewRequest = {
-    /**
-     * Name
-     *
-     * Optional name for the view
-     */
-    name?: string | null;
-    /**
-     * Data source configuration
-     */
-    source: ViewSource;
-    /**
-     * View configuration
-     */
-    view_config?: ViewConfig;
-    /**
-     * Presentation Formats
-     *
-     * Presentation formats to generate
-     */
-    presentation_formats?: Array<string>;
-    /**
-     * Mapping Structure Id
-     *
-     * Optional mapping structure ID to aggregate Chart of Accounts elements into reporting taxonomy elements
-     */
-    mapping_structure_id?: string | null;
 };
 
 /**
@@ -2139,68 +1926,6 @@ export type ErrorResponse = {
 };
 
 /**
- * ExchangeTokenRequest
- *
- * Exchange temporary token for permanent credentials.
- */
-export type ExchangeTokenRequest = {
-    /**
-     * Connection Id
-     *
-     * Connection ID to update
-     */
-    connection_id: string;
-    /**
-     * Public Token
-     *
-     * Temporary token from embedded auth
-     */
-    public_token: string;
-    /**
-     * Metadata
-     *
-     * Provider-specific metadata
-     */
-    metadata?: {
-        [key: string]: unknown;
-    } | null;
-};
-
-/**
- * FactDetail
- */
-export type FactDetail = {
-    /**
-     * Fact Id
-     */
-    fact_id: string;
-    /**
-     * Element Uri
-     */
-    element_uri: string;
-    /**
-     * Element Name
-     */
-    element_name: string;
-    /**
-     * Numeric Value
-     */
-    numeric_value: number;
-    /**
-     * Unit
-     */
-    unit: string;
-    /**
-     * Period Start
-     */
-    period_start: string;
-    /**
-     * Period End
-     */
-    period_end: string;
-};
-
-/**
  * FileInfo
  */
 export type FileInfo = {
@@ -2743,6 +2468,12 @@ export type GraphSubscriptionResponse = {
      */
     plan_name: string;
     /**
+     * Plan Display Name
+     *
+     * Human-readable plan name for UI display
+     */
+    plan_display_name: string;
+    /**
      * Billing Interval
      *
      * Billing interval
@@ -2838,12 +2569,6 @@ export type GraphSubscriptionTier = {
      */
     monthly_credits_per_graph: number;
     /**
-     * Storage Included
-     *
-     * Whether storage is included in the tier
-     */
-    storage_included?: boolean;
-    /**
      * Infrastructure
      *
      * Infrastructure description
@@ -2927,10 +2652,6 @@ export type GraphSubscriptions = {
      * Available infrastructure tiers
      */
     tiers: Array<GraphSubscriptionTier>;
-    /**
-     * Storage information
-     */
-    storage: StorageInfo;
     /**
      * Notes
      *
@@ -3052,12 +2773,6 @@ export type GraphTierInfo = {
      */
     max_subgraphs: number | null;
     /**
-     * Storage Limit Gb
-     *
-     * Storage limit in GB
-     */
-    storage_limit_gb: number;
-    /**
      * Monthly Credits
      *
      * Monthly AI credits
@@ -3123,12 +2838,6 @@ export type GraphTierInstance = {
  * Resource limits for a tier.
  */
 export type GraphTierLimits = {
-    /**
-     * Storage Gb
-     *
-     * Storage limit in GB
-     */
-    storage_gb: number;
     /**
      * Monthly Credits
      *
@@ -3464,46 +3173,6 @@ export type InvoicesResponse = {
 };
 
 /**
- * LinkTokenRequest
- *
- * Request to create a link token for embedded authentication.
- */
-export type LinkTokenRequest = {
-    /**
-     * Entity Id
-     *
-     * Entity identifier
-     */
-    entity_id: string;
-    /**
-     * User Id
-     *
-     * User identifier
-     */
-    user_id: string;
-    /**
-     * Provider
-     *
-     * Provider type (defaults based on connection)
-     */
-    provider?: 'sec' | 'quickbooks' | 'plaid' | null;
-    /**
-     * Products
-     *
-     * Data products to request (provider-specific)
-     */
-    products?: Array<string> | null;
-    /**
-     * Options
-     *
-     * Provider-specific options
-     */
-    options?: {
-        [key: string]: unknown;
-    } | null;
-};
-
-/**
  * ListSubgraphsResponse
  *
  * Response model for listing subgraphs.
@@ -3775,98 +3444,6 @@ export type MaterializeStatusResponse = {
      * Human-readable status summary
      */
     message: string;
-};
-
-/**
- * OAuthCallbackRequest
- *
- * OAuth callback parameters.
- */
-export type OAuthCallbackRequest = {
-    /**
-     * Code
-     *
-     * Authorization code from OAuth provider
-     */
-    code: string;
-    /**
-     * State
-     *
-     * OAuth state for verification
-     */
-    state: string;
-    /**
-     * Realm Id
-     *
-     * QuickBooks-specific realm ID
-     */
-    realm_id?: string | null;
-    /**
-     * Error
-     *
-     * OAuth error if authorization failed
-     */
-    error?: string | null;
-    /**
-     * Error Description
-     *
-     * OAuth error details
-     */
-    error_description?: string | null;
-};
-
-/**
- * OAuthInitRequest
- *
- * Request to initiate OAuth flow.
- */
-export type OAuthInitRequest = {
-    /**
-     * Connection Id
-     *
-     * Connection ID to link OAuth to
-     */
-    connection_id: string;
-    /**
-     * Redirect Uri
-     *
-     * Override default redirect URI
-     */
-    redirect_uri?: string | null;
-    /**
-     * Additional Params
-     *
-     * Provider-specific parameters
-     */
-    additional_params?: {
-        [key: string]: string;
-    } | null;
-};
-
-/**
- * OAuthInitResponse
- *
- * Response with OAuth authorization URL.
- */
-export type OAuthInitResponse = {
-    /**
-     * Auth Url
-     *
-     * URL to redirect user for authorization
-     */
-    auth_url: string;
-    /**
-     * State
-     *
-     * OAuth state for security
-     */
-    state: string;
-    /**
-     * Expires At
-     *
-     * When this OAuth request expires
-     */
-    expires_at: string;
 };
 
 /**
@@ -4410,48 +3987,6 @@ export type PerformanceInsights = {
 };
 
 /**
- * PlaidConnectionConfig
- *
- * Plaid-specific connection configuration.
- */
-export type PlaidConnectionConfig = {
-    /**
-     * Public Token
-     *
-     * Plaid public token for exchange
-     */
-    public_token?: string | null;
-    /**
-     * Access Token
-     *
-     * Plaid access token (set after exchange)
-     */
-    access_token?: string | null;
-    /**
-     * Item Id
-     *
-     * Plaid item ID
-     */
-    item_id?: string | null;
-    /**
-     * Institution
-     *
-     * Institution information
-     */
-    institution?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Accounts
-     *
-     * Connected accounts
-     */
-    accounts?: Array<{
-        [key: string]: unknown;
-    }> | null;
-};
-
-/**
  * PortalSessionResponse
  *
  * Response for customer portal session creation.
@@ -4495,26 +4030,6 @@ export type QueryLimits = {
      * Maximum concurrent queries allowed
      */
     concurrent_queries: number;
-};
-
-/**
- * QuickBooksConnectionConfig
- *
- * QuickBooks-specific connection configuration.
- */
-export type QuickBooksConnectionConfig = {
-    /**
-     * Realm Id
-     *
-     * QuickBooks Realm ID
-     */
-    realm_id?: string | null;
-    /**
-     * Refresh Token
-     *
-     * OAuth refresh token
-     */
-    refresh_token?: string | null;
 };
 
 /**
@@ -4702,26 +4217,6 @@ export type ResetPasswordValidateResponse = {
 export type ResponseMode = 'auto' | 'sync' | 'async' | 'stream';
 
 /**
- * SECConnectionConfig
- *
- * SEC-specific connection configuration.
- */
-export type SecConnectionConfig = {
-    /**
-     * Cik
-     *
-     * 10-digit CIK number
-     */
-    cik: string;
-    /**
-     * Entity Name
-     *
-     * Entity name from SEC
-     */
-    entity_name?: string | null;
-};
-
-/**
  * SSOCompleteRequest
  *
  * SSO completion request model.
@@ -4811,116 +4306,6 @@ export type SsoTokenResponse = {
      * Available apps for this user
      */
     apps: Array<string>;
-};
-
-/**
- * SaveViewRequest
- */
-export type SaveViewRequest = {
-    /**
-     * Report Id
-     *
-     * Existing report ID to update (if provided, deletes existing facts/structures and creates new ones)
-     */
-    report_id?: string | null;
-    /**
-     * Report Type
-     *
-     * Type of report (e.g., 'Annual Report', 'Quarterly Report', '10-K')
-     */
-    report_type: string;
-    /**
-     * Period Start
-     *
-     * Period start date (YYYY-MM-DD)
-     */
-    period_start: string;
-    /**
-     * Period End
-     *
-     * Period end date (YYYY-MM-DD)
-     */
-    period_end: string;
-    /**
-     * Entity Id
-     *
-     * Entity identifier (defaults to primary entity)
-     */
-    entity_id?: string | null;
-    /**
-     * Include Presentation
-     *
-     * Create presentation structures
-     */
-    include_presentation?: boolean;
-    /**
-     * Include Calculation
-     *
-     * Create calculation structures
-     */
-    include_calculation?: boolean;
-};
-
-/**
- * SaveViewResponse
- */
-export type SaveViewResponse = {
-    /**
-     * Report Id
-     *
-     * Unique report identifier (used as parquet export prefix)
-     */
-    report_id: string;
-    /**
-     * Report Type
-     */
-    report_type: string;
-    /**
-     * Entity Id
-     */
-    entity_id: string;
-    /**
-     * Entity Name
-     */
-    entity_name: string;
-    /**
-     * Period Start
-     */
-    period_start: string;
-    /**
-     * Period End
-     */
-    period_end: string;
-    /**
-     * Fact Count
-     */
-    fact_count: number;
-    /**
-     * Presentation Count
-     */
-    presentation_count: number;
-    /**
-     * Calculation Count
-     */
-    calculation_count: number;
-    /**
-     * Facts
-     */
-    facts: Array<FactDetail>;
-    /**
-     * Structures
-     */
-    structures: Array<StructureDetail>;
-    /**
-     * Created At
-     */
-    created_at: string;
-    /**
-     * Parquet Export Prefix
-     *
-     * Prefix for parquet file exports
-     */
-    parquet_export_prefix: string;
 };
 
 /**
@@ -5165,20 +4550,6 @@ export type ServiceOfferingsResponse = {
 };
 
 /**
- * StorageInfo
- *
- * Storage information.
- */
-export type StorageInfo = {
-    /**
-     * Description
-     *
-     * Storage billing description
-     */
-    description?: string;
-};
-
-/**
  * StorageLimitResponse
  *
  * Storage limit information response.
@@ -5290,28 +4661,6 @@ export type StorageSummary = {
      * Number of measurements taken
      */
     measurement_count: number;
-};
-
-/**
- * StructureDetail
- */
-export type StructureDetail = {
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * Structure Type
-     */
-    structure_type: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Element Count
-     */
-    element_count: number;
 };
 
 /**
@@ -5547,28 +4896,6 @@ export type SuccessResponse = {
      * Optional additional data related to the operation
      */
     data?: {
-        [key: string]: unknown;
-    } | null;
-};
-
-/**
- * SyncConnectionRequest
- *
- * Request to sync a connection.
- */
-export type SyncConnectionRequest = {
-    /**
-     * Full Sync
-     *
-     * Perform full sync vs incremental
-     */
-    full_sync?: boolean;
-    /**
-     * Sync Options
-     *
-     * Provider-specific sync options
-     */
-    sync_options?: {
         [key: string]: unknown;
     } | null;
 };
@@ -5952,139 +5279,6 @@ export type ValidationError = {
         [key: string]: unknown;
     };
 };
-
-/**
- * ViewAxisConfig
- */
-export type ViewAxisConfig = {
-    /**
-     * Type
-     *
-     * Axis type: 'element', 'period', 'dimension', 'entity'
-     */
-    type: string;
-    /**
-     * Dimension Axis
-     *
-     * Dimension axis name for dimension-type axes
-     */
-    dimension_axis?: string | null;
-    /**
-     * Include Null Dimension
-     *
-     * Include facts where this dimension is NULL (default: false)
-     */
-    include_null_dimension?: boolean;
-    /**
-     * Selected Members
-     *
-     * Specific members to include (e.g., ['2024-12-31', '2023-12-31'])
-     */
-    selected_members?: Array<string> | null;
-    /**
-     * Member Order
-     *
-     * Explicit ordering of members (overrides default sort)
-     */
-    member_order?: Array<string> | null;
-    /**
-     * Member Labels
-     *
-     * Custom labels for members (e.g., {'2024-12-31': 'Current Year'})
-     */
-    member_labels?: {
-        [key: string]: string;
-    } | null;
-    /**
-     * Element Order
-     *
-     * Element ordering for hierarchy display (e.g., ['us-gaap:Assets', 'us-gaap:Cash', ...])
-     */
-    element_order?: Array<string> | null;
-    /**
-     * Element Labels
-     *
-     * Custom labels for elements (e.g., {'us-gaap:Cash': 'Cash and Cash Equivalents'})
-     */
-    element_labels?: {
-        [key: string]: string;
-    } | null;
-};
-
-/**
- * ViewConfig
- */
-export type ViewConfig = {
-    /**
-     * Rows
-     *
-     * Row axis configuration
-     */
-    rows?: Array<ViewAxisConfig>;
-    /**
-     * Columns
-     *
-     * Column axis configuration
-     */
-    columns?: Array<ViewAxisConfig>;
-    /**
-     * Values
-     *
-     * Field to use for values (default: numeric_value)
-     */
-    values?: string;
-    /**
-     * Aggregation Function
-     *
-     * Aggregation function: sum, average, count
-     */
-    aggregation_function?: string;
-    /**
-     * Fill Value
-     *
-     * Value to use for missing data
-     */
-    fill_value?: number;
-};
-
-/**
- * ViewSource
- */
-export type ViewSource = {
-    /**
-     * Type of data source
-     */
-    type: ViewSourceType;
-    /**
-     * Period Start
-     *
-     * Start date for transaction aggregation (YYYY-MM-DD)
-     */
-    period_start?: string | null;
-    /**
-     * Period End
-     *
-     * End date for transaction aggregation (YYYY-MM-DD)
-     */
-    period_end?: string | null;
-    /**
-     * Fact Set Id
-     *
-     * FactSet ID for existing facts mode
-     */
-    fact_set_id?: string | null;
-    /**
-     * Entity Id
-     *
-     * Filter by entity (optional)
-     */
-    entity_id?: string | null;
-};
-
-/**
- * ViewSourceType
- */
-export type ViewSourceType = 'transactions' | 'fact_set';
 
 export type RegisterUserData = {
     body: RegisterRequest;
@@ -7066,451 +6260,6 @@ export type GetOrgUsageResponses = {
 };
 
 export type GetOrgUsageResponse = GetOrgUsageResponses[keyof GetOrgUsageResponses];
-
-export type ListConnectionsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Entity Id
-         *
-         * Filter by entity ID
-         */
-        entity_id?: string | null;
-        /**
-         * Provider
-         *
-         * Filter by provider type
-         */
-        provider?: 'sec' | 'quickbooks' | 'plaid' | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections';
-};
-
-export type ListConnectionsErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to list connections
-     */
-    500: ErrorResponse;
-};
-
-export type ListConnectionsError = ListConnectionsErrors[keyof ListConnectionsErrors];
-
-export type ListConnectionsResponses = {
-    /**
-     * Response Listconnections
-     *
-     * Connections retrieved successfully
-     */
-    200: Array<ConnectionResponse>;
-};
-
-export type ListConnectionsResponse = ListConnectionsResponses[keyof ListConnectionsResponses];
-
-export type CreateConnectionData = {
-    body: CreateConnectionRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections';
-};
-
-export type CreateConnectionErrors = {
-    /**
-     * Invalid connection configuration
-     */
-    400: ErrorResponse;
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Connection already exists
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to create connection
-     */
-    500: ErrorResponse;
-};
-
-export type CreateConnectionError = CreateConnectionErrors[keyof CreateConnectionErrors];
-
-export type CreateConnectionResponses = {
-    /**
-     * Connection created successfully
-     */
-    201: ConnectionResponse;
-};
-
-export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateConnectionResponses];
-
-export type GetConnectionOptionsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/options';
-};
-
-export type GetConnectionOptionsErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve options
-     */
-    500: ErrorResponse;
-};
-
-export type GetConnectionOptionsError = GetConnectionOptionsErrors[keyof GetConnectionOptionsErrors];
-
-export type GetConnectionOptionsResponses = {
-    /**
-     * Connection options retrieved successfully
-     */
-    200: ConnectionOptionsResponse;
-};
-
-export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof GetConnectionOptionsResponses];
-
-export type ExchangeLinkTokenData = {
-    body: ExchangeTokenRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/link/exchange';
-};
-
-export type ExchangeLinkTokenErrors = {
-    /**
-     * Invalid token or provider
-     */
-    400: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Token exchange failed
-     */
-    500: ErrorResponse;
-};
-
-export type ExchangeLinkTokenError = ExchangeLinkTokenErrors[keyof ExchangeLinkTokenErrors];
-
-export type ExchangeLinkTokenResponses = {
-    /**
-     * Token exchanged successfully
-     */
-    200: unknown;
-};
-
-export type CreateLinkTokenData = {
-    body: LinkTokenRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/link/token';
-};
-
-export type CreateLinkTokenErrors = {
-    /**
-     * Invalid provider or request
-     */
-    400: ErrorResponse;
-    /**
-     * Entity not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to create link token
-     */
-    500: ErrorResponse;
-};
-
-export type CreateLinkTokenError = CreateLinkTokenErrors[keyof CreateLinkTokenErrors];
-
-export type CreateLinkTokenResponses = {
-    /**
-     * Link token created successfully
-     */
-    200: unknown;
-};
-
-export type InitOAuthData = {
-    body: OAuthInitRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/oauth/init';
-};
-
-export type InitOAuthErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type InitOAuthError = InitOAuthErrors[keyof InitOAuthErrors];
-
-export type InitOAuthResponses = {
-    /**
-     * Successful Response
-     */
-    200: OAuthInitResponse;
-};
-
-export type InitOAuthResponse = InitOAuthResponses[keyof InitOAuthResponses];
-
-export type OauthCallbackData = {
-    body: OAuthCallbackRequest;
-    path: {
-        /**
-         * Provider
-         *
-         * OAuth provider name
-         */
-        provider: string;
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/oauth/callback/{provider}';
-};
-
-export type OauthCallbackErrors = {
-    /**
-     * OAuth error or invalid state
-     */
-    400: ErrorResponse;
-    /**
-     * State does not match user
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * OAuth callback processing failed
-     */
-    500: ErrorResponse;
-};
-
-export type OauthCallbackError = OauthCallbackErrors[keyof OauthCallbackErrors];
-
-export type OauthCallbackResponses = {
-    /**
-     * OAuth flow completed successfully
-     */
-    200: unknown;
-};
-
-export type DeleteConnectionData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         *
-         * Connection identifier
-         */
-        connection_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/{connection_id}';
-};
-
-export type DeleteConnectionErrors = {
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to delete connection
-     */
-    500: ErrorResponse;
-};
-
-export type DeleteConnectionError = DeleteConnectionErrors[keyof DeleteConnectionErrors];
-
-export type DeleteConnectionResponses = {
-    /**
-     * Connection deleted successfully
-     */
-    200: SuccessResponse;
-};
-
-export type DeleteConnectionResponse = DeleteConnectionResponses[keyof DeleteConnectionResponses];
-
-export type GetConnectionData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         *
-         * Unique connection identifier
-         */
-        connection_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/{connection_id}';
-};
-
-export type GetConnectionErrors = {
-    /**
-     * Access denied to connection
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve connection
-     */
-    500: ErrorResponse;
-};
-
-export type GetConnectionError = GetConnectionErrors[keyof GetConnectionErrors];
-
-export type GetConnectionResponses = {
-    /**
-     * Connection details retrieved successfully
-     */
-    200: ConnectionResponse;
-};
-
-export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionResponses];
-
-export type SyncConnectionData = {
-    body: SyncConnectionRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         *
-         * Connection identifier
-         */
-        connection_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
-};
-
-export type SyncConnectionErrors = {
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Connection not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to start sync
-     */
-    500: ErrorResponse;
-};
-
-export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
-
-export type SyncConnectionResponses = {
-    /**
-     * Response Syncconnection
-     *
-     * Sync started successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
 
 export type ListAgentsData = {
     body?: never;
@@ -9307,64 +8056,6 @@ export type QueryTablesResponses = {
 };
 
 export type QueryTablesResponse = QueryTablesResponses[keyof QueryTablesResponses];
-
-export type CreateViewData = {
-    body: CreateViewRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/views';
-};
-
-export type CreateViewErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateViewError = CreateViewErrors[keyof CreateViewErrors];
-
-export type CreateViewResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-};
-
-export type SaveViewData = {
-    body: SaveViewRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/views/save';
-};
-
-export type SaveViewErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type SaveViewError = SaveViewErrors[keyof SaveViewErrors];
-
-export type SaveViewResponses = {
-    /**
-     * Successful Response
-     */
-    200: SaveViewResponse;
-};
-
-export type SaveViewResponse2 = SaveViewResponses[keyof SaveViewResponses];
 
 export type GetMaterializationStatusData = {
     body?: never;
