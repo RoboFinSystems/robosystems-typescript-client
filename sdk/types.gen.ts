@@ -2196,6 +2196,20 @@ export type GetFileInfoResponse = {
 };
 
 /**
+ * GraphCapacityResponse
+ *
+ * Response containing capacity status for all customer-facing tiers.
+ */
+export type GraphCapacityResponse = {
+    /**
+     * Tiers
+     *
+     * Capacity status per tier
+     */
+    tiers: Array<TierCapacity>;
+};
+
+/**
  * GraphInfo
  *
  * Graph information for user.
@@ -2267,6 +2281,12 @@ export type GraphInfo = {
      * Type of graph: generic, entity, or repository
      */
     graphType?: string;
+    /**
+     * Status
+     *
+     * Graph lifecycle status: queued, provisioning, active, suspended
+     */
+    status?: string;
 };
 
 /**
@@ -5000,6 +5020,38 @@ export type TableQueryResponse = {
      * Query execution time
      */
     execution_time_ms: number;
+};
+
+/**
+ * TierCapacity
+ *
+ * Capacity status for a single tier.
+ */
+export type TierCapacity = {
+    /**
+     * Tier
+     *
+     * Tier identifier (e.g. ladybug-standard)
+     */
+    tier: string;
+    /**
+     * Display Name
+     *
+     * Human-readable tier name
+     */
+    display_name: string;
+    /**
+     * Status
+     *
+     * Capacity status: ready, scalable, or at_capacity
+     */
+    status: string;
+    /**
+     * Message
+     *
+     * Human-readable status message for frontend display
+     */
+    message: string;
 };
 
 /**
@@ -8525,6 +8577,29 @@ export type GetAvailableGraphTiersResponses = {
 };
 
 export type GetAvailableGraphTiersResponse = GetAvailableGraphTiersResponses[keyof GetAvailableGraphTiersResponses];
+
+export type GetGraphCapacityData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/graphs/capacity';
+};
+
+export type GetGraphCapacityErrors = {
+    /**
+     * Failed to check capacity
+     */
+    500: unknown;
+};
+
+export type GetGraphCapacityResponses = {
+    /**
+     * Capacity status retrieved successfully
+     */
+    200: GraphCapacityResponse;
+};
+
+export type GetGraphCapacityResponse = GetGraphCapacityResponses[keyof GetGraphCapacityResponses];
 
 export type SelectGraphData = {
     body?: never;
