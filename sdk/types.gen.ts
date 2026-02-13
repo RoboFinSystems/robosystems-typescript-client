@@ -1190,19 +1190,6 @@ export type CreateGraphRequest = {
 };
 
 /**
- * CreateOrgRequest
- *
- * Request to create an organization.
- */
-export type CreateOrgRequest = {
-    /**
-     * Name
-     */
-    name: string;
-    org_type?: OrgType;
-};
-
-/**
  * CreateRepositorySubscriptionRequest
  *
  * Request to create a repository subscription.
@@ -6000,31 +5987,6 @@ export type ListUserOrgsResponses = {
 };
 
 export type ListUserOrgsResponse = ListUserOrgsResponses[keyof ListUserOrgsResponses];
-
-export type CreateOrgData = {
-    body: CreateOrgRequest;
-    path?: never;
-    query?: never;
-    url: '/v1/orgs';
-};
-
-export type CreateOrgErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateOrgError = CreateOrgErrors[keyof CreateOrgErrors];
-
-export type CreateOrgResponses = {
-    /**
-     * Successful Response
-     */
-    201: OrgDetailResponse;
-};
-
-export type CreateOrgResponse = CreateOrgResponses[keyof CreateOrgResponses];
 
 export type GetOrgData = {
     body?: never;
