@@ -1006,7 +1006,7 @@ export type ConnectionProviderInfo = {
      *
      * Provider identifier
      */
-    provider: 'sec' | 'quickbooks' | 'plaid';
+    provider: 'sec' | 'quickbooks';
     /**
      * Display Name
      *
@@ -1098,7 +1098,7 @@ export type ConnectionResponse = {
      *
      * Entity identifier
      */
-    entity_id: string;
+    entity_id?: string | null;
     /**
      * Status
      *
@@ -1316,16 +1316,15 @@ export type CreateConnectionRequest = {
      *
      * Connection provider type
      */
-    provider: 'sec' | 'quickbooks' | 'plaid';
+    provider: 'sec' | 'quickbooks';
     /**
      * Entity Id
      *
-     * Entity identifier
+     * Entity identifier. Required for QuickBooks, optional for SEC (SEC creates the entity from filing data).
      */
-    entity_id: string;
+    entity_id?: string | null;
     sec_config?: SecConnectionConfig | null;
     quickbooks_config?: QuickBooksConnectionConfig | null;
-    plaid_config?: PlaidConnectionConfig | null;
 };
 
 /**
@@ -1432,6 +1431,76 @@ export type CreateSubgraphRequest = {
      * If true, copy all data from parent graph to create a 'fork'
      */
     fork_parent?: boolean;
+};
+
+/**
+ * CreateViewRequest
+ */
+export type CreateViewRequest = {
+    /**
+     * Elements
+     *
+     * Element qnames (e.g., 'us-gaap:Assets'). Can combine with canonical_concepts.
+     */
+    elements?: Array<string>;
+    /**
+     * Canonical Concepts
+     *
+     * Canonical concept names (e.g., 'revenue', 'net_income'). Matches all mapped qnames.
+     */
+    canonical_concepts?: Array<string>;
+    /**
+     * Periods
+     *
+     * Period end dates (YYYY-MM-DD format)
+     */
+    periods?: Array<string>;
+    /**
+     * Entity
+     *
+     * Filter by entity ticker, CIK, or name
+     */
+    entity?: string | null;
+    /**
+     * Entities
+     *
+     * Filter by multiple entity tickers (e.g., ['NVDA', 'AAPL'])
+     */
+    entities?: Array<string>;
+    /**
+     * Form
+     *
+     * Filter by SEC filing form type (e.g., '10-K', '10-Q')
+     */
+    form?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Filter by fiscal year (e.g., 2024)
+     */
+    fiscal_year?: number | null;
+    /**
+     * Fiscal Period
+     *
+     * Filter by fiscal period (e.g., 'FY', 'Q1', 'Q2', 'Q3')
+     */
+    fiscal_period?: string | null;
+    /**
+     * Period Type
+     *
+     * Filter by period type: 'annual', 'quarterly', or 'instant'
+     */
+    period_type?: string | null;
+    /**
+     * Include Summary
+     *
+     * Include summary statistics per element
+     */
+    include_summary?: boolean;
+    /**
+     * View/pivot configuration
+     */
+    view_config?: ViewConfig;
 };
 
 /**
@@ -4267,48 +4336,6 @@ export type PerformanceInsights = {
 };
 
 /**
- * PlaidConnectionConfig
- *
- * Plaid-specific connection configuration.
- */
-export type PlaidConnectionConfig = {
-    /**
-     * Public Token
-     *
-     * Plaid public token for exchange
-     */
-    public_token?: string | null;
-    /**
-     * Access Token
-     *
-     * Plaid access token (set after exchange)
-     */
-    access_token?: string | null;
-    /**
-     * Item Id
-     *
-     * Plaid item ID
-     */
-    item_id?: string | null;
-    /**
-     * Institution
-     *
-     * Institution information
-     */
-    institution?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Accounts
-     *
-     * Connected accounts
-     */
-    accounts?: Array<{
-        [key: string]: unknown;
-    }> | null;
-};
-
-/**
  * PortalSessionResponse
  *
  * Response for customer portal session creation.
@@ -4567,15 +4594,9 @@ export type SecConnectionConfig = {
     /**
      * Cik
      *
-     * 10-digit CIK number
+     * SEC Central Index Key
      */
     cik: string;
-    /**
-     * Entity Name
-     *
-     * Entity name from SEC
-     */
-    entity_name?: string | null;
 };
 
 /**
@@ -5696,6 +5717,100 @@ export type ValidationError = {
     };
 };
 
+/**
+ * ViewAxisConfig
+ */
+export type ViewAxisConfig = {
+    /**
+     * Type
+     *
+     * Axis type: 'element', 'period', 'dimension', 'entity'
+     */
+    type: string;
+    /**
+     * Dimension Axis
+     *
+     * Dimension axis name for dimension-type axes
+     */
+    dimension_axis?: string | null;
+    /**
+     * Include Null Dimension
+     *
+     * Include facts where this dimension is NULL (default: false)
+     */
+    include_null_dimension?: boolean;
+    /**
+     * Selected Members
+     *
+     * Specific members to include (e.g., ['2024-12-31', '2023-12-31'])
+     */
+    selected_members?: Array<string> | null;
+    /**
+     * Member Order
+     *
+     * Explicit ordering of members (overrides default sort)
+     */
+    member_order?: Array<string> | null;
+    /**
+     * Member Labels
+     *
+     * Custom labels for members (e.g., {'2024-12-31': 'Current Year'})
+     */
+    member_labels?: {
+        [key: string]: string;
+    } | null;
+    /**
+     * Element Order
+     *
+     * Element ordering for hierarchy display (e.g., ['us-gaap:Assets', 'us-gaap:Cash', ...])
+     */
+    element_order?: Array<string> | null;
+    /**
+     * Element Labels
+     *
+     * Custom labels for elements (e.g., {'us-gaap:Cash': 'Cash and Cash Equivalents'})
+     */
+    element_labels?: {
+        [key: string]: string;
+    } | null;
+};
+
+/**
+ * ViewConfig
+ */
+export type ViewConfig = {
+    /**
+     * Rows
+     *
+     * Row axis configuration
+     */
+    rows?: Array<ViewAxisConfig>;
+    /**
+     * Columns
+     *
+     * Column axis configuration
+     */
+    columns?: Array<ViewAxisConfig>;
+    /**
+     * Values
+     *
+     * Field to use for values (default: numeric_value)
+     */
+    values?: string;
+    /**
+     * Aggregation Function
+     *
+     * Aggregation function: sum, average, count
+     */
+    aggregation_function?: string;
+    /**
+     * Fill Value
+     *
+     * Value to use for missing data
+     */
+    fill_value?: number;
+};
+
 export type RegisterUserData = {
     body: RegisterRequest;
     path?: never;
@@ -6672,7 +6787,7 @@ export type ListConnectionsData = {
          *
          * Filter by provider type
          */
-        provider?: 'sec' | 'quickbooks' | 'plaid' | null;
+        provider?: 'sec' | 'quickbooks' | null;
     };
     url: '/v1/graphs/{graph_id}/connections';
 };
@@ -8812,6 +8927,34 @@ export type QueryTablesResponses = {
 };
 
 export type QueryTablesResponse = QueryTablesResponses[keyof QueryTablesResponses];
+
+export type CreateViewData = {
+    body: CreateViewRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/views';
+};
+
+export type CreateViewErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateViewError = CreateViewErrors[keyof CreateViewErrors];
+
+export type CreateViewResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type GetMaterializationStatusData = {
     body?: never;
