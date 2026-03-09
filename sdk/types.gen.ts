@@ -5632,7 +5632,7 @@ export type UpgradeSubscriptionRequest = {
     /**
      * New Plan Name
      *
-     * New plan name to upgrade to
+     * New plan name to change to
      */
     new_plan_name: string;
 };
@@ -8749,6 +8749,46 @@ export type GetGraphSubscriptionResponses = {
 
 export type GetGraphSubscriptionResponse = GetGraphSubscriptionResponses[keyof GetGraphSubscriptionResponses];
 
+export type ChangeRepositoryPlanData = {
+    body: UpgradeSubscriptionRequest;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Repository name (e.g., 'sec')
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/subscriptions';
+};
+
+export type ChangeRepositoryPlanErrors = {
+    /**
+     * Invalid plan or not a repository subscription
+     */
+    400: unknown;
+    /**
+     * No subscription found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ChangeRepositoryPlanError = ChangeRepositoryPlanErrors[keyof ChangeRepositoryPlanErrors];
+
+export type ChangeRepositoryPlanResponses = {
+    /**
+     * Plan changed successfully
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type ChangeRepositoryPlanResponse = ChangeRepositoryPlanResponses[keyof ChangeRepositoryPlanResponses];
+
 export type CreateRepositorySubscriptionData = {
     body: CreateRepositorySubscriptionRequest;
     path: {
@@ -8788,42 +8828,6 @@ export type CreateRepositorySubscriptionResponses = {
 };
 
 export type CreateRepositorySubscriptionResponse = CreateRepositorySubscriptionResponses[keyof CreateRepositorySubscriptionResponses];
-
-export type UpgradeSubscriptionData = {
-    body: UpgradeSubscriptionRequest;
-    path: {
-        /**
-         * Graph Id
-         *
-         * Graph ID or repository name
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/subscriptions/upgrade';
-};
-
-export type UpgradeSubscriptionErrors = {
-    /**
-     * No subscription found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UpgradeSubscriptionError = UpgradeSubscriptionErrors[keyof UpgradeSubscriptionErrors];
-
-export type UpgradeSubscriptionResponses = {
-    /**
-     * Subscription upgraded successfully
-     */
-    200: GraphSubscriptionResponse;
-};
-
-export type UpgradeSubscriptionResponse = UpgradeSubscriptionResponses[keyof UpgradeSubscriptionResponses];
 
 export type ListTablesData = {
     body?: never;
