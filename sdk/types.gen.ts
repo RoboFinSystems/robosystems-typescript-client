@@ -5682,6 +5682,12 @@ export type UserResponse = {
      */
     email?: string | null;
     /**
+     * Email Verified
+     *
+     * Whether user's email is verified
+     */
+    email_verified?: boolean;
+    /**
      * Accounts
      *
      * User's authentication accounts
