@@ -2285,7 +2285,7 @@ export const updateFile = <ThrowOnError extends boolean = false>(options: Option
  * - Graphs you create or have been invited to
  *
  * **Shared Repositories (isRepository: true):**
- * - Read-only data repositories like SEC filings, industry benchmarks
+ * - Read-only data repositories (e.g., SEC filings)
  * - Access levels: `read`, `write` (for data contributions), `admin`
  * - Cannot be selected (each has separate subscription)
  * - Require separate subscriptions (personal, cannot be shared)
@@ -2553,7 +2553,7 @@ export const selectGraph = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Includes:
  * - Graph infrastructure tiers (ladybug-standard, ladybug-large, ladybug-xlarge) - per-graph pricing
- * - Shared repository subscriptions (SEC, industry, economic data) - org-level
+ * - Shared repository subscriptions - org-level
  * - Operation costs and credit information
  * - Features and capabilities for each tier
  * - Enabled/disabled status for repositories
