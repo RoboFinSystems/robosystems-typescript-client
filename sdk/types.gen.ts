@@ -101,6 +101,131 @@ export type AccountInfo = {
 };
 
 /**
+ * AccountListResponse
+ */
+export type AccountListResponse = {
+    /**
+     * Accounts
+     */
+    accounts: Array<AccountResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * AccountResponse
+ */
+export type AccountResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Sub Classification
+     */
+    sub_classification?: string | null;
+    /**
+     * Balance Type
+     */
+    balance_type: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Depth
+     */
+    depth: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Is Placeholder
+     */
+    is_placeholder: boolean;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * External Source
+     */
+    external_source?: string | null;
+};
+
+/**
+ * AccountTreeNode
+ */
+export type AccountTreeNode = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Balance Type
+     */
+    balance_type: string;
+    /**
+     * Depth
+     */
+    depth: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Children
+     */
+    children?: Array<AccountTreeNode>;
+};
+
+/**
+ * AccountTreeResponse
+ */
+export type AccountTreeResponse = {
+    /**
+     * Roots
+     */
+    roots: Array<AccountTreeNode>;
+    /**
+     * Total Accounts
+     */
+    total_accounts: number;
+};
+
+/**
  * AgentListResponse
  *
  * Response for listing available agents.
@@ -3430,6 +3555,263 @@ export type InvoicesResponse = {
 };
 
 /**
+ * LedgerEntryResponse
+ */
+export type LedgerEntryResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Number
+     */
+    number?: string | null;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Posting Date
+     */
+    posting_date: string;
+    /**
+     * Memo
+     */
+    memo?: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Posted At
+     */
+    posted_at?: string | null;
+    /**
+     * Line Items
+     */
+    line_items: Array<LedgerLineItemResponse>;
+};
+
+/**
+ * LedgerLineItemResponse
+ */
+export type LedgerLineItemResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Account Id
+     */
+    account_id: string;
+    /**
+     * Account Name
+     */
+    account_name?: string | null;
+    /**
+     * Account Code
+     */
+    account_code?: string | null;
+    /**
+     * Debit Amount
+     */
+    debit_amount: number;
+    /**
+     * Credit Amount
+     */
+    credit_amount: number;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Line Order
+     */
+    line_order: number;
+};
+
+/**
+ * LedgerSummaryResponse
+ */
+export type LedgerSummaryResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Account Count
+     */
+    account_count: number;
+    /**
+     * Transaction Count
+     */
+    transaction_count: number;
+    /**
+     * Entry Count
+     */
+    entry_count: number;
+    /**
+     * Line Item Count
+     */
+    line_item_count: number;
+    /**
+     * Earliest Transaction Date
+     */
+    earliest_transaction_date?: string | null;
+    /**
+     * Latest Transaction Date
+     */
+    latest_transaction_date?: string | null;
+    /**
+     * Connection Count
+     */
+    connection_count?: number;
+    /**
+     * Last Sync At
+     */
+    last_sync_at?: string | null;
+};
+
+/**
+ * LedgerTransactionDetailResponse
+ */
+export type LedgerTransactionDetailResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Number
+     */
+    number?: string | null;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Due Date
+     */
+    due_date?: string | null;
+    /**
+     * Merchant Name
+     */
+    merchant_name?: string | null;
+    /**
+     * Reference Number
+     */
+    reference_number?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * Source Id
+     */
+    source_id?: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Posted At
+     */
+    posted_at?: string | null;
+    /**
+     * Entries
+     */
+    entries: Array<LedgerEntryResponse>;
+};
+
+/**
+ * LedgerTransactionListResponse
+ */
+export type LedgerTransactionListResponse = {
+    /**
+     * Transactions
+     */
+    transactions: Array<LedgerTransactionSummaryResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * LedgerTransactionSummaryResponse
+ */
+export type LedgerTransactionSummaryResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Number
+     */
+    number?: string | null;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Due Date
+     */
+    due_date?: string | null;
+    /**
+     * Merchant Name
+     */
+    merchant_name?: string | null;
+    /**
+     * Reference Number
+     */
+    reference_number?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * Status
+     */
+    status: string;
+};
+
+/**
  * ListSubgraphsResponse
  *
  * Response model for listing subgraphs.
@@ -4159,6 +4541,38 @@ export type OrgUsageSummary = {
      * Storage Limit Gb
      */
     storage_limit_gb: number | null;
+};
+
+/**
+ * PaginationInfo
+ *
+ * Pagination information for list responses.
+ */
+export type PaginationInfo = {
+    /**
+     * Total
+     *
+     * Total number of items available
+     */
+    total: number;
+    /**
+     * Limit
+     *
+     * Maximum number of items returned in this response
+     */
+    limit: number;
+    /**
+     * Offset
+     *
+     * Number of items skipped
+     */
+    offset: number;
+    /**
+     * Has More
+     *
+     * Whether more items are available
+     */
+    has_more: boolean;
 };
 
 /**
@@ -5489,6 +5903,58 @@ export type TransactionSummaryResponse = {
      * Last Transaction
      */
     last_transaction?: string | null;
+};
+
+/**
+ * TrialBalanceResponse
+ */
+export type TrialBalanceResponse = {
+    /**
+     * Rows
+     */
+    rows: Array<TrialBalanceRow>;
+    /**
+     * Total Debits
+     */
+    total_debits: number;
+    /**
+     * Total Credits
+     */
+    total_credits: number;
+};
+
+/**
+ * TrialBalanceRow
+ */
+export type TrialBalanceRow = {
+    /**
+     * Account Id
+     */
+    account_id: string;
+    /**
+     * Account Code
+     */
+    account_code: string;
+    /**
+     * Account Name
+     */
+    account_name: string;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Total Debits
+     */
+    total_debits: number;
+    /**
+     * Total Credits
+     */
+    total_credits: number;
+    /**
+     * Net Balance
+     */
+    net_balance: number;
 };
 
 /**
@@ -9969,3 +10435,248 @@ export type GetCheckoutStatusResponses = {
 };
 
 export type GetCheckoutStatusResponse = GetCheckoutStatusResponses[keyof GetCheckoutStatusResponses];
+
+export type ListLedgerAccountsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Classification
+         *
+         * Filter by classification
+         */
+        classification?: string | null;
+        /**
+         * Is Active
+         *
+         * Filter by active status
+         */
+        is_active?: boolean | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/ledger/{graph_id}/accounts';
+};
+
+export type ListLedgerAccountsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListLedgerAccountsError = ListLedgerAccountsErrors[keyof ListLedgerAccountsErrors];
+
+export type ListLedgerAccountsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccountListResponse;
+};
+
+export type ListLedgerAccountsResponse = ListLedgerAccountsResponses[keyof ListLedgerAccountsResponses];
+
+export type GetLedgerAccountTreeData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/accounts/tree';
+};
+
+export type GetLedgerAccountTreeErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerAccountTreeError = GetLedgerAccountTreeErrors[keyof GetLedgerAccountTreeErrors];
+
+export type GetLedgerAccountTreeResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccountTreeResponse;
+};
+
+export type GetLedgerAccountTreeResponse = GetLedgerAccountTreeResponses[keyof GetLedgerAccountTreeResponses];
+
+export type ListLedgerTransactionsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Type
+         *
+         * Filter by transaction type
+         */
+        type?: string | null;
+        /**
+         * Start Date
+         *
+         * Start date (inclusive)
+         */
+        start_date?: string | null;
+        /**
+         * End Date
+         *
+         * End date (inclusive)
+         */
+        end_date?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/ledger/{graph_id}/transactions';
+};
+
+export type ListLedgerTransactionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListLedgerTransactionsError = ListLedgerTransactionsErrors[keyof ListLedgerTransactionsErrors];
+
+export type ListLedgerTransactionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerTransactionListResponse;
+};
+
+export type ListLedgerTransactionsResponse = ListLedgerTransactionsResponses[keyof ListLedgerTransactionsResponses];
+
+export type GetLedgerTransactionData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Transaction Id
+         */
+        transaction_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/transactions/{transaction_id}';
+};
+
+export type GetLedgerTransactionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerTransactionError = GetLedgerTransactionErrors[keyof GetLedgerTransactionErrors];
+
+export type GetLedgerTransactionResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerTransactionDetailResponse;
+};
+
+export type GetLedgerTransactionResponse = GetLedgerTransactionResponses[keyof GetLedgerTransactionResponses];
+
+export type GetLedgerTrialBalanceData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Start Date
+         *
+         * Start date (inclusive)
+         */
+        start_date?: string | null;
+        /**
+         * End Date
+         *
+         * End date (inclusive)
+         */
+        end_date?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/trial-balance';
+};
+
+export type GetLedgerTrialBalanceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerTrialBalanceError = GetLedgerTrialBalanceErrors[keyof GetLedgerTrialBalanceErrors];
+
+export type GetLedgerTrialBalanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: TrialBalanceResponse;
+};
+
+export type GetLedgerTrialBalanceResponse = GetLedgerTrialBalanceResponses[keyof GetLedgerTrialBalanceResponses];
+
+export type GetLedgerSummaryData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/summary';
+};
+
+export type GetLedgerSummaryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerSummaryError = GetLedgerSummaryErrors[keyof GetLedgerSummaryErrors];
+
+export type GetLedgerSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerSummaryResponse;
+};
+
+export type GetLedgerSummaryResponse = GetLedgerSummaryResponses[keyof GetLedgerSummaryResponses];
