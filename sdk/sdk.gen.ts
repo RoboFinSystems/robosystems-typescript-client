@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeRepositoryPlanData, ChangeRepositoryPlanErrors, ChangeRepositoryPlanResponses, CheckCreditBalanceData, CheckCreditBalanceErrors, CheckCreditBalanceResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CheckStorageLimitsData, CheckStorageLimitsErrors, CheckStorageLimitsResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, CreateViewData, CreateViewErrors, CreateViewResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetMaterializationStatusData, GetMaterializationStatusErrors, GetMaterializationStatusResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetStorageUsageData, GetStorageUsageErrors, GetStorageUsageResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, MaterializeGraphData, MaterializeGraphErrors, MaterializeGraphResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
+import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeRepositoryPlanData, ChangeRepositoryPlanErrors, ChangeRepositoryPlanResponses, CheckCreditBalanceData, CheckCreditBalanceErrors, CheckCreditBalanceResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CheckStorageLimitsData, CheckStorageLimitsErrors, CheckStorageLimitsResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, CreateViewData, CreateViewErrors, CreateViewResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetLedgerAccountTreeData, GetLedgerAccountTreeErrors, GetLedgerAccountTreeResponses, GetLedgerSummaryData, GetLedgerSummaryErrors, GetLedgerSummaryResponses, GetLedgerTransactionData, GetLedgerTransactionErrors, GetLedgerTransactionResponses, GetLedgerTrialBalanceData, GetLedgerTrialBalanceErrors, GetLedgerTrialBalanceResponses, GetMaterializationStatusData, GetMaterializationStatusErrors, GetMaterializationStatusResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetStorageUsageData, GetStorageUsageErrors, GetStorageUsageResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListLedgerAccountsData, ListLedgerAccountsErrors, ListLedgerAccountsResponses, ListLedgerTransactionsData, ListLedgerTransactionsErrors, ListLedgerTransactionsResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, MaterializeGraphData, MaterializeGraphErrors, MaterializeGraphResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -1949,6 +1949,84 @@ export const createView = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
+ * Search Documents
+ *
+ * Search filing narratives and text content within a graph.
+ */
+export const searchDocuments = <ThrowOnError extends boolean = false>(options: Options<SearchDocumentsData, ThrowOnError>) => (options.client ?? client).post<SearchDocumentsResponses, SearchDocumentsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/search',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Document Section
+ *
+ * Retrieve the full text of a document section by ID.
+ */
+export const getDocumentSection = <ThrowOnError extends boolean = false>(options: Options<GetDocumentSectionData, ThrowOnError>) => (options.client ?? client).get<GetDocumentSectionResponses, GetDocumentSectionErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/search/{document_id}',
+    ...options
+});
+
+/**
+ * List Documents
+ *
+ * List indexed documents for a graph.
+ */
+export const listDocuments = <ThrowOnError extends boolean = false>(options: Options<ListDocumentsData, ThrowOnError>) => (options.client ?? client).get<ListDocumentsResponses, ListDocumentsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/documents',
+    ...options
+});
+
+/**
+ * Upload Document
+ *
+ * Upload a markdown document for text indexing.
+ */
+export const uploadDocument = <ThrowOnError extends boolean = false>(options: Options<UploadDocumentData, ThrowOnError>) => (options.client ?? client).post<UploadDocumentResponses, UploadDocumentErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/documents',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Upload Documents Bulk
+ *
+ * Upload multiple markdown documents for text indexing (max 50).
+ */
+export const uploadDocumentsBulk = <ThrowOnError extends boolean = false>(options: Options<UploadDocumentsBulkData, ThrowOnError>) => (options.client ?? client).post<UploadDocumentsBulkResponses, UploadDocumentsBulkErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/documents/bulk',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete Document
+ *
+ * Delete a document and all its sections.
+ */
+export const deleteDocument = <ThrowOnError extends boolean = false>(options: Options<DeleteDocumentData, ThrowOnError>) => (options.client ?? client).delete<DeleteDocumentResponses, DeleteDocumentErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/documents/{document_id}',
+    ...options
+});
+
+/**
  * Get Materialization Status
  *
  * Get current materialization status for the graph.
@@ -2836,5 +2914,59 @@ export const createCheckoutSession = <ThrowOnError extends boolean = false>(opti
 export const getCheckoutStatus = <ThrowOnError extends boolean = false>(options: Options<GetCheckoutStatusData, ThrowOnError>) => (options.client ?? client).get<GetCheckoutStatusResponses, GetCheckoutStatusErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/billing/checkout/{session_id}/status',
+    ...options
+});
+
+/**
+ * List Accounts
+ */
+export const listLedgerAccounts = <ThrowOnError extends boolean = false>(options: Options<ListLedgerAccountsData, ThrowOnError>) => (options.client ?? client).get<ListLedgerAccountsResponses, ListLedgerAccountsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/accounts',
+    ...options
+});
+
+/**
+ * Account Tree
+ */
+export const getLedgerAccountTree = <ThrowOnError extends boolean = false>(options: Options<GetLedgerAccountTreeData, ThrowOnError>) => (options.client ?? client).get<GetLedgerAccountTreeResponses, GetLedgerAccountTreeErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/accounts/tree',
+    ...options
+});
+
+/**
+ * List Transactions
+ */
+export const listLedgerTransactions = <ThrowOnError extends boolean = false>(options: Options<ListLedgerTransactionsData, ThrowOnError>) => (options.client ?? client).get<ListLedgerTransactionsResponses, ListLedgerTransactionsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/transactions',
+    ...options
+});
+
+/**
+ * Transaction Detail
+ */
+export const getLedgerTransaction = <ThrowOnError extends boolean = false>(options: Options<GetLedgerTransactionData, ThrowOnError>) => (options.client ?? client).get<GetLedgerTransactionResponses, GetLedgerTransactionErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/transactions/{transaction_id}',
+    ...options
+});
+
+/**
+ * Trial Balance
+ */
+export const getLedgerTrialBalance = <ThrowOnError extends boolean = false>(options: Options<GetLedgerTrialBalanceData, ThrowOnError>) => (options.client ?? client).get<GetLedgerTrialBalanceResponses, GetLedgerTrialBalanceErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/trial-balance',
+    ...options
+});
+
+/**
+ * Ledger Summary
+ */
+export const getLedgerSummary = <ThrowOnError extends boolean = false>(options: Options<GetLedgerSummaryData, ThrowOnError>) => (options.client ?? client).get<GetLedgerSummaryResponses, GetLedgerSummaryErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/summary',
     ...options
 });

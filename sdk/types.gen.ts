@@ -101,6 +101,139 @@ export type AccountInfo = {
 };
 
 /**
+ * AccountListResponse
+ */
+export type AccountListResponse = {
+    /**
+     * Accounts
+     */
+    accounts: Array<AccountResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * AccountResponse
+ */
+export type AccountResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Sub Classification
+     */
+    sub_classification?: string | null;
+    /**
+     * Balance Type
+     */
+    balance_type: string;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Depth
+     */
+    depth: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Is Placeholder
+     */
+    is_placeholder: boolean;
+    /**
+     * Account Type
+     */
+    account_type?: string | null;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * External Source
+     */
+    external_source?: string | null;
+};
+
+/**
+ * AccountTreeNode
+ */
+export type AccountTreeNode = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Account Type
+     */
+    account_type?: string | null;
+    /**
+     * Balance Type
+     */
+    balance_type: string;
+    /**
+     * Depth
+     */
+    depth: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Children
+     */
+    children?: Array<AccountTreeNode>;
+};
+
+/**
+ * AccountTreeResponse
+ */
+export type AccountTreeResponse = {
+    /**
+     * Roots
+     */
+    roots: Array<AccountTreeNode>;
+    /**
+     * Total Accounts
+     */
+    total_accounts: number;
+};
+
+/**
  * AgentListResponse
  *
  * Response for listing available agents.
@@ -897,6 +1030,46 @@ export type BillingCustomer = {
      * Customer creation timestamp (ISO format)
      */
     created_at: string;
+};
+
+/**
+ * BulkDocumentUploadRequest
+ *
+ * Bulk upload multiple markdown documents.
+ */
+export type BulkDocumentUploadRequest = {
+    /**
+     * Documents
+     *
+     * Documents to upload (max 50)
+     */
+    documents: Array<DocumentUploadRequest>;
+};
+
+/**
+ * BulkDocumentUploadResponse
+ *
+ * Response from bulk document upload.
+ */
+export type BulkDocumentUploadResponse = {
+    /**
+     * Total Documents
+     */
+    total_documents: number;
+    /**
+     * Total Sections Indexed
+     */
+    total_sections_indexed: number;
+    /**
+     * Results
+     */
+    results: Array<DocumentUploadResponse>;
+    /**
+     * Errors
+     */
+    errors?: Array<{
+        [key: string]: unknown;
+    }> | null;
 };
 
 /**
@@ -2011,6 +2184,212 @@ export type DetailedTransactionsResponse = {
     date_range: {
         [key: string]: string;
     };
+};
+
+/**
+ * DocumentListItem
+ *
+ * A document in the document list.
+ */
+export type DocumentListItem = {
+    /**
+     * Document Title
+     */
+    document_title: string;
+    /**
+     * Section Count
+     */
+    section_count: number;
+    /**
+     * Source Type
+     */
+    source_type: string;
+    /**
+     * Folder
+     */
+    folder?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Last Indexed
+     */
+    last_indexed?: string | null;
+};
+
+/**
+ * DocumentListResponse
+ *
+ * Response from listing indexed documents.
+ */
+export type DocumentListResponse = {
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Documents
+     */
+    documents: Array<DocumentListItem>;
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+};
+
+/**
+ * DocumentSection
+ *
+ * Full document section retrieved by ID.
+ */
+export type DocumentSection = {
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Source Type
+     */
+    source_type: string;
+    /**
+     * Entity Ticker
+     */
+    entity_ticker?: string | null;
+    /**
+     * Entity Name
+     */
+    entity_name?: string | null;
+    /**
+     * Entity Cik
+     */
+    entity_cik?: string | null;
+    /**
+     * Section Label
+     */
+    section_label?: string | null;
+    /**
+     * Section Id
+     */
+    section_id?: string | null;
+    /**
+     * Element Qname
+     */
+    element_qname?: string | null;
+    /**
+     * Filing Date
+     */
+    filing_date?: string | null;
+    /**
+     * Fiscal Year
+     */
+    fiscal_year?: number | null;
+    /**
+     * Fiscal Period
+     */
+    fiscal_period?: string | null;
+    /**
+     * Form Type
+     */
+    form_type?: string | null;
+    /**
+     * Accession Number
+     */
+    accession_number?: string | null;
+    /**
+     * Xbrl Elements
+     */
+    xbrl_elements?: Array<string> | null;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Content Url
+     */
+    content_url?: string | null;
+    /**
+     * Content Length
+     */
+    content_length?: number;
+    /**
+     * Document Title
+     */
+    document_title?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Folder
+     */
+    folder?: string | null;
+};
+
+/**
+ * DocumentUploadRequest
+ *
+ * Upload a markdown document for text indexing.
+ */
+export type DocumentUploadRequest = {
+    /**
+     * Title
+     *
+     * Document title
+     */
+    title: string;
+    /**
+     * Content
+     *
+     * Markdown content
+     */
+    content: string;
+    /**
+     * Tags
+     *
+     * Optional tags for filtering
+     */
+    tags?: Array<string> | null;
+    /**
+     * Folder
+     *
+     * Optional folder/category
+     */
+    folder?: string | null;
+    /**
+     * External Id
+     *
+     * Optional external identifier for upsert (e.g., Google Drive file ID)
+     */
+    external_id?: string | null;
+};
+
+/**
+ * DocumentUploadResponse
+ *
+ * Response from document upload.
+ */
+export type DocumentUploadResponse = {
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * Sections Indexed
+     */
+    sections_indexed: number;
+    /**
+     * Total Content Length
+     */
+    total_content_length: number;
+    /**
+     * Section Ids
+     */
+    section_ids: Array<string>;
 };
 
 /**
@@ -3430,6 +3809,263 @@ export type InvoicesResponse = {
 };
 
 /**
+ * LedgerEntryResponse
+ */
+export type LedgerEntryResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Number
+     */
+    number?: string | null;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Posting Date
+     */
+    posting_date: string;
+    /**
+     * Memo
+     */
+    memo?: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Posted At
+     */
+    posted_at?: string | null;
+    /**
+     * Line Items
+     */
+    line_items: Array<LedgerLineItemResponse>;
+};
+
+/**
+ * LedgerLineItemResponse
+ */
+export type LedgerLineItemResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Account Id
+     */
+    account_id: string;
+    /**
+     * Account Name
+     */
+    account_name?: string | null;
+    /**
+     * Account Code
+     */
+    account_code?: string | null;
+    /**
+     * Debit Amount
+     */
+    debit_amount: number;
+    /**
+     * Credit Amount
+     */
+    credit_amount: number;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Line Order
+     */
+    line_order: number;
+};
+
+/**
+ * LedgerSummaryResponse
+ */
+export type LedgerSummaryResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Account Count
+     */
+    account_count: number;
+    /**
+     * Transaction Count
+     */
+    transaction_count: number;
+    /**
+     * Entry Count
+     */
+    entry_count: number;
+    /**
+     * Line Item Count
+     */
+    line_item_count: number;
+    /**
+     * Earliest Transaction Date
+     */
+    earliest_transaction_date?: string | null;
+    /**
+     * Latest Transaction Date
+     */
+    latest_transaction_date?: string | null;
+    /**
+     * Connection Count
+     */
+    connection_count?: number;
+    /**
+     * Last Sync At
+     */
+    last_sync_at?: string | null;
+};
+
+/**
+ * LedgerTransactionDetailResponse
+ */
+export type LedgerTransactionDetailResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Number
+     */
+    number?: string | null;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Due Date
+     */
+    due_date?: string | null;
+    /**
+     * Merchant Name
+     */
+    merchant_name?: string | null;
+    /**
+     * Reference Number
+     */
+    reference_number?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * Source Id
+     */
+    source_id?: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Posted At
+     */
+    posted_at?: string | null;
+    /**
+     * Entries
+     */
+    entries: Array<LedgerEntryResponse>;
+};
+
+/**
+ * LedgerTransactionListResponse
+ */
+export type LedgerTransactionListResponse = {
+    /**
+     * Transactions
+     */
+    transactions: Array<LedgerTransactionSummaryResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * LedgerTransactionSummaryResponse
+ */
+export type LedgerTransactionSummaryResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Number
+     */
+    number?: string | null;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Due Date
+     */
+    due_date?: string | null;
+    /**
+     * Merchant Name
+     */
+    merchant_name?: string | null;
+    /**
+     * Reference Number
+     */
+    reference_number?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * Status
+     */
+    status: string;
+};
+
+/**
  * ListSubgraphsResponse
  *
  * Response model for listing subgraphs.
@@ -4162,6 +4798,38 @@ export type OrgUsageSummary = {
 };
 
 /**
+ * PaginationInfo
+ *
+ * Pagination information for list responses.
+ */
+export type PaginationInfo = {
+    /**
+     * Total
+     *
+     * Total number of items available
+     */
+    total: number;
+    /**
+     * Limit
+     *
+     * Maximum number of items returned in this response
+     */
+    limit: number;
+    /**
+     * Offset
+     *
+     * Number of items skipped
+     */
+    offset: number;
+    /**
+     * Has More
+     *
+     * Whether more items are available
+     */
+    has_more: boolean;
+};
+
+/**
  * PasswordCheckRequest
  *
  * Password strength check request model.
@@ -4835,6 +5503,184 @@ export type SchemaValidationResponse = {
 };
 
 /**
+ * SearchHit
+ *
+ * A single search result with snippet.
+ */
+export type SearchHit = {
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * Score
+     */
+    score: number;
+    /**
+     * Source Type
+     */
+    source_type: string;
+    /**
+     * Entity Ticker
+     */
+    entity_ticker?: string | null;
+    /**
+     * Entity Name
+     */
+    entity_name?: string | null;
+    /**
+     * Section Label
+     */
+    section_label?: string | null;
+    /**
+     * Section Id
+     */
+    section_id?: string | null;
+    /**
+     * Element Qname
+     */
+    element_qname?: string | null;
+    /**
+     * Filing Date
+     */
+    filing_date?: string | null;
+    /**
+     * Fiscal Year
+     */
+    fiscal_year?: number | null;
+    /**
+     * Form Type
+     */
+    form_type?: string | null;
+    /**
+     * Xbrl Elements
+     */
+    xbrl_elements?: Array<string> | null;
+    /**
+     * Snippet
+     */
+    snippet: string;
+    /**
+     * Content Length
+     */
+    content_length?: number;
+    /**
+     * Content Url
+     */
+    content_url?: string | null;
+    /**
+     * Document Title
+     */
+    document_title?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Folder
+     */
+    folder?: string | null;
+};
+
+/**
+ * SearchRequest
+ *
+ * Request model for document search.
+ */
+export type SearchRequest = {
+    /**
+     * Query
+     *
+     * Search query
+     */
+    query: string;
+    /**
+     * Entity
+     *
+     * Filter by ticker, CIK, or entity name
+     */
+    entity?: string | null;
+    /**
+     * Form Type
+     *
+     * Filter by SEC form type (10-K, 10-Q)
+     */
+    form_type?: string | null;
+    /**
+     * Section
+     *
+     * Filter by section ID (item_1, item_1a, item_7, etc.)
+     */
+    section?: string | null;
+    /**
+     * Element
+     *
+     * Filter by XBRL element qname (e.g., us-gaap:Goodwill)
+     */
+    element?: string | null;
+    /**
+     * Source Type
+     *
+     * Filter by source type (xbrl_textblock, narrative_section, ixbrl_disclosure, uploaded_doc, memory)
+     */
+    source_type?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Filter by fiscal year
+     */
+    fiscal_year?: number | null;
+    /**
+     * Date From
+     *
+     * Filter filings on or after date (YYYY-MM-DD)
+     */
+    date_from?: string | null;
+    /**
+     * Date To
+     *
+     * Filter filings on or before date (YYYY-MM-DD)
+     */
+    date_to?: string | null;
+    /**
+     * Size
+     *
+     * Max results to return
+     */
+    size?: number;
+    /**
+     * Offset
+     *
+     * Pagination offset
+     */
+    offset?: number;
+};
+
+/**
+ * SearchResponse
+ *
+ * Response model for document search.
+ */
+export type SearchResponse = {
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Hits
+     */
+    hits: Array<SearchHit>;
+    /**
+     * Query
+     */
+    query: string;
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+};
+
+/**
  * SelectionCriteria
  *
  * Criteria for agent selection.
@@ -5489,6 +6335,62 @@ export type TransactionSummaryResponse = {
      * Last Transaction
      */
     last_transaction?: string | null;
+};
+
+/**
+ * TrialBalanceResponse
+ */
+export type TrialBalanceResponse = {
+    /**
+     * Rows
+     */
+    rows: Array<TrialBalanceRow>;
+    /**
+     * Total Debits
+     */
+    total_debits: number;
+    /**
+     * Total Credits
+     */
+    total_credits: number;
+};
+
+/**
+ * TrialBalanceRow
+ */
+export type TrialBalanceRow = {
+    /**
+     * Account Id
+     */
+    account_id: string;
+    /**
+     * Account Code
+     */
+    account_code: string;
+    /**
+     * Account Name
+     */
+    account_name: string;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Account Type
+     */
+    account_type?: string | null;
+    /**
+     * Total Debits
+     */
+    total_debits: number;
+    /**
+     * Total Credits
+     */
+    total_credits: number;
+    /**
+     * Net Balance
+     */
+    net_balance: number;
 };
 
 /**
@@ -8966,6 +9868,199 @@ export type CreateViewResponses = {
     200: unknown;
 };
 
+export type SearchDocumentsData = {
+    body: SearchRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/search';
+};
+
+export type SearchDocumentsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SearchDocumentsError = SearchDocumentsErrors[keyof SearchDocumentsErrors];
+
+export type SearchDocumentsResponses = {
+    /**
+     * Successful Response
+     */
+    200: SearchResponse;
+};
+
+export type SearchDocumentsResponse = SearchDocumentsResponses[keyof SearchDocumentsResponses];
+
+export type GetDocumentSectionData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/search/{document_id}';
+};
+
+export type GetDocumentSectionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetDocumentSectionError = GetDocumentSectionErrors[keyof GetDocumentSectionErrors];
+
+export type GetDocumentSectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentSection;
+};
+
+export type GetDocumentSectionResponse = GetDocumentSectionResponses[keyof GetDocumentSectionResponses];
+
+export type ListDocumentsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Source Type
+         */
+        source_type?: string | null;
+    };
+    url: '/v1/graphs/{graph_id}/documents';
+};
+
+export type ListDocumentsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListDocumentsError = ListDocumentsErrors[keyof ListDocumentsErrors];
+
+export type ListDocumentsResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentListResponse;
+};
+
+export type ListDocumentsResponse = ListDocumentsResponses[keyof ListDocumentsResponses];
+
+export type UploadDocumentData = {
+    body: DocumentUploadRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/documents';
+};
+
+export type UploadDocumentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UploadDocumentError = UploadDocumentErrors[keyof UploadDocumentErrors];
+
+export type UploadDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentUploadResponse;
+};
+
+export type UploadDocumentResponse = UploadDocumentResponses[keyof UploadDocumentResponses];
+
+export type UploadDocumentsBulkData = {
+    body: BulkDocumentUploadRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/documents/bulk';
+};
+
+export type UploadDocumentsBulkErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UploadDocumentsBulkError = UploadDocumentsBulkErrors[keyof UploadDocumentsBulkErrors];
+
+export type UploadDocumentsBulkResponses = {
+    /**
+     * Successful Response
+     */
+    200: BulkDocumentUploadResponse;
+};
+
+export type UploadDocumentsBulkResponse = UploadDocumentsBulkResponses[keyof UploadDocumentsBulkResponses];
+
+export type DeleteDocumentData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/documents/{document_id}';
+};
+
+export type DeleteDocumentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteDocumentError = DeleteDocumentErrors[keyof DeleteDocumentErrors];
+
+export type DeleteDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteDocumentResponse = DeleteDocumentResponses[keyof DeleteDocumentResponses];
+
 export type GetMaterializationStatusData = {
     body?: never;
     path: {
@@ -9969,3 +11064,248 @@ export type GetCheckoutStatusResponses = {
 };
 
 export type GetCheckoutStatusResponse = GetCheckoutStatusResponses[keyof GetCheckoutStatusResponses];
+
+export type ListLedgerAccountsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Classification
+         *
+         * Filter by classification
+         */
+        classification?: string | null;
+        /**
+         * Is Active
+         *
+         * Filter by active status
+         */
+        is_active?: boolean | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/ledger/{graph_id}/accounts';
+};
+
+export type ListLedgerAccountsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListLedgerAccountsError = ListLedgerAccountsErrors[keyof ListLedgerAccountsErrors];
+
+export type ListLedgerAccountsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccountListResponse;
+};
+
+export type ListLedgerAccountsResponse = ListLedgerAccountsResponses[keyof ListLedgerAccountsResponses];
+
+export type GetLedgerAccountTreeData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/accounts/tree';
+};
+
+export type GetLedgerAccountTreeErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerAccountTreeError = GetLedgerAccountTreeErrors[keyof GetLedgerAccountTreeErrors];
+
+export type GetLedgerAccountTreeResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccountTreeResponse;
+};
+
+export type GetLedgerAccountTreeResponse = GetLedgerAccountTreeResponses[keyof GetLedgerAccountTreeResponses];
+
+export type ListLedgerTransactionsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Type
+         *
+         * Filter by transaction type
+         */
+        type?: string | null;
+        /**
+         * Start Date
+         *
+         * Start date (inclusive)
+         */
+        start_date?: string | null;
+        /**
+         * End Date
+         *
+         * End date (inclusive)
+         */
+        end_date?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/ledger/{graph_id}/transactions';
+};
+
+export type ListLedgerTransactionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListLedgerTransactionsError = ListLedgerTransactionsErrors[keyof ListLedgerTransactionsErrors];
+
+export type ListLedgerTransactionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerTransactionListResponse;
+};
+
+export type ListLedgerTransactionsResponse = ListLedgerTransactionsResponses[keyof ListLedgerTransactionsResponses];
+
+export type GetLedgerTransactionData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Transaction Id
+         */
+        transaction_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/transactions/{transaction_id}';
+};
+
+export type GetLedgerTransactionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerTransactionError = GetLedgerTransactionErrors[keyof GetLedgerTransactionErrors];
+
+export type GetLedgerTransactionResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerTransactionDetailResponse;
+};
+
+export type GetLedgerTransactionResponse = GetLedgerTransactionResponses[keyof GetLedgerTransactionResponses];
+
+export type GetLedgerTrialBalanceData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Start Date
+         *
+         * Start date (inclusive)
+         */
+        start_date?: string | null;
+        /**
+         * End Date
+         *
+         * End date (inclusive)
+         */
+        end_date?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/trial-balance';
+};
+
+export type GetLedgerTrialBalanceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerTrialBalanceError = GetLedgerTrialBalanceErrors[keyof GetLedgerTrialBalanceErrors];
+
+export type GetLedgerTrialBalanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: TrialBalanceResponse;
+};
+
+export type GetLedgerTrialBalanceResponse = GetLedgerTrialBalanceResponses[keyof GetLedgerTrialBalanceResponses];
+
+export type GetLedgerSummaryData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/summary';
+};
+
+export type GetLedgerSummaryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerSummaryError = GetLedgerSummaryErrors[keyof GetLedgerSummaryErrors];
+
+export type GetLedgerSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerSummaryResponse;
+};
+
+export type GetLedgerSummaryResponse = GetLedgerSummaryResponses[keyof GetLedgerSummaryResponses];
