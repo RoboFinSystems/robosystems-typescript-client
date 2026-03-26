@@ -5643,12 +5643,6 @@ export type SearchRequest = {
      */
     date_to?: string | null;
     /**
-     * Semantic
-     *
-     * Enable semantic (vector) search if available
-     */
-    semantic?: boolean;
-    /**
      * Size
      *
      * Max results to return
