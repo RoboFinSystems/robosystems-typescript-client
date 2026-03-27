@@ -3809,6 +3809,138 @@ export type InvoicesResponse = {
 };
 
 /**
+ * LedgerEntityResponse
+ *
+ * Entity details from the extensions OLTP database.
+ */
+export type LedgerEntityResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Legal Name
+     */
+    legal_name?: string | null;
+    /**
+     * Uri
+     */
+    uri?: string | null;
+    /**
+     * Cik
+     */
+    cik?: string | null;
+    /**
+     * Ticker
+     */
+    ticker?: string | null;
+    /**
+     * Exchange
+     */
+    exchange?: string | null;
+    /**
+     * Sic
+     */
+    sic?: string | null;
+    /**
+     * Sic Description
+     */
+    sic_description?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * State Of Incorporation
+     */
+    state_of_incorporation?: string | null;
+    /**
+     * Fiscal Year End
+     */
+    fiscal_year_end?: string | null;
+    /**
+     * Tax Id
+     */
+    tax_id?: string | null;
+    /**
+     * Lei
+     */
+    lei?: string | null;
+    /**
+     * Industry
+     */
+    industry?: string | null;
+    /**
+     * Entity Type
+     */
+    entity_type?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Website
+     */
+    website?: string | null;
+    /**
+     * Status
+     */
+    status?: string;
+    /**
+     * Is Parent
+     */
+    is_parent?: boolean;
+    /**
+     * Parent Entity Id
+     */
+    parent_entity_id?: string | null;
+    /**
+     * Source
+     */
+    source?: string;
+    /**
+     * Source Id
+     */
+    source_id?: string | null;
+    /**
+     * Connection Id
+     */
+    connection_id?: string | null;
+    /**
+     * Address Line1
+     */
+    address_line1?: string | null;
+    /**
+     * Address City
+     */
+    address_city?: string | null;
+    /**
+     * Address State
+     */
+    address_state?: string | null;
+    /**
+     * Address Postal Code
+     */
+    address_postal_code?: string | null;
+    /**
+     * Address Country
+     */
+    address_country?: string | null;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
+};
+
+/**
  * LedgerEntryResponse
  */
 export type LedgerEntryResponse = {
@@ -4243,6 +4375,12 @@ export type MaterializeRequest = {
      * Validate limits without executing materialization. Returns usage, limits, and warnings.
      */
     dry_run?: boolean;
+    /**
+     * Source
+     *
+     * Data source for materialization. Auto-detected from graph type if not specified. 'staged' materializes from uploaded files (generic graphs). 'extensions' materializes from the extensions OLTP database (entity graphs).
+     */
+    source?: string | null;
 };
 
 /**
@@ -6455,6 +6593,102 @@ export type UpdateApiKeyRequest = {
      * New description
      */
     description?: string | null;
+};
+
+/**
+ * UpdateEntityRequest
+ *
+ * Request to update entity details. Only provided fields are updated.
+ */
+export type UpdateEntityRequest = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Legal Name
+     */
+    legal_name?: string | null;
+    /**
+     * Uri
+     */
+    uri?: string | null;
+    /**
+     * Cik
+     */
+    cik?: string | null;
+    /**
+     * Ticker
+     */
+    ticker?: string | null;
+    /**
+     * Exchange
+     */
+    exchange?: string | null;
+    /**
+     * Sic
+     */
+    sic?: string | null;
+    /**
+     * Sic Description
+     */
+    sic_description?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * State Of Incorporation
+     */
+    state_of_incorporation?: string | null;
+    /**
+     * Fiscal Year End
+     */
+    fiscal_year_end?: string | null;
+    /**
+     * Tax Id
+     */
+    tax_id?: string | null;
+    /**
+     * Lei
+     */
+    lei?: string | null;
+    /**
+     * Industry
+     */
+    industry?: string | null;
+    /**
+     * Entity Type
+     */
+    entity_type?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Website
+     */
+    website?: string | null;
+    /**
+     * Address Line1
+     */
+    address_line1?: string | null;
+    /**
+     * Address City
+     */
+    address_city?: string | null;
+    /**
+     * Address State
+     */
+    address_state?: string | null;
+    /**
+     * Address Postal Code
+     */
+    address_postal_code?: string | null;
+    /**
+     * Address Country
+     */
+    address_country?: string | null;
 };
 
 /**
@@ -11064,6 +11298,66 @@ export type GetCheckoutStatusResponses = {
 };
 
 export type GetCheckoutStatusResponse = GetCheckoutStatusResponses[keyof GetCheckoutStatusResponses];
+
+export type GetLedgerEntityData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/entity';
+};
+
+export type GetLedgerEntityErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetLedgerEntityError = GetLedgerEntityErrors[keyof GetLedgerEntityErrors];
+
+export type GetLedgerEntityResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerEntityResponse;
+};
+
+export type GetLedgerEntityResponse = GetLedgerEntityResponses[keyof GetLedgerEntityResponses];
+
+export type UpdateLedgerEntityData = {
+    body: UpdateEntityRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/entity';
+};
+
+export type UpdateLedgerEntityErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateLedgerEntityError = UpdateLedgerEntityErrors[keyof UpdateLedgerEntityErrors];
+
+export type UpdateLedgerEntityResponses = {
+    /**
+     * Successful Response
+     */
+    200: LedgerEntityResponse;
+};
+
+export type UpdateLedgerEntityResponse = UpdateLedgerEntityResponses[keyof UpdateLedgerEntityResponses];
 
 export type ListLedgerAccountsData = {
     body?: never;
