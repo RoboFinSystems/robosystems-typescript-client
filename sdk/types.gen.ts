@@ -2193,6 +2193,10 @@ export type DetailedTransactionsResponse = {
  */
 export type DocumentListItem = {
     /**
+     * Document Id
+     */
+    document_id: string;
+    /**
      * Document Title
      */
     document_title: string;

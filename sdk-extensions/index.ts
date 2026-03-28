@@ -13,6 +13,7 @@ import { FileClient } from './FileClient'
 import { MaterializationClient } from './MaterializationClient'
 import { TableClient } from './TableClient'
 import { GraphClient } from './GraphClient'
+import { DocumentClient } from './DocumentClient'
 
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
@@ -43,6 +44,7 @@ export class RoboSystemsExtensions {
   public readonly materialization: MaterializationClient
   public readonly tables: TableClient
   public readonly graphs: GraphClient
+  public readonly documents: DocumentClient
   private config: ResolvedConfig
 
   constructor(config: RoboSystemsExtensionConfig = {}) {
@@ -112,6 +114,13 @@ export class RoboSystemsExtensions {
       token: this.config.token,
       headers: this.config.headers,
     })
+
+    this.documents = new DocumentClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
   }
 
   /**
@@ -154,6 +163,7 @@ export * from './SSEClient'
 export * from './FileClient'
 export * from './MaterializationClient'
 export * from './GraphClient'
+export * from './DocumentClient'
 export * from './config'
 
 // Export TableClient types individually to avoid conflicts with QueryClient's QueryResult
@@ -168,6 +178,7 @@ export {
   FileClient,
   MaterializationClient,
   GraphClient,
+  DocumentClient,
 }
 
 // Export React hooks
@@ -211,6 +222,9 @@ export const extensions = {
   },
   get graphs() {
     return getExtensions().graphs
+  },
+  get documents() {
+    return getExtensions().documents
   },
   monitorOperation: (operationId: string, onProgress?: (progress: any) => void) =>
     getExtensions().monitorOperation(operationId, onProgress),
