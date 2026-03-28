@@ -122,7 +122,7 @@ export type AccountResponse = {
     /**
      * Code
      */
-    code: string;
+    code?: string | null;
     /**
      * Name
      */
@@ -188,7 +188,7 @@ export type AccountTreeNode = {
     /**
      * Code
      */
-    code: string;
+    code?: string | null;
     /**
      * Name
      */
@@ -1451,6 +1451,40 @@ export type CreateApiKeyResponse = {
 };
 
 /**
+ * CreateAssociationRequest
+ */
+export type CreateAssociationRequest = {
+    /**
+     * From Element Id
+     */
+    from_element_id: string;
+    /**
+     * To Element Id
+     */
+    to_element_id: string;
+    /**
+     * Association Type
+     */
+    association_type?: string;
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Weight
+     */
+    weight?: number | null;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+    /**
+     * Suggested By
+     */
+    suggested_by?: string | null;
+};
+
+/**
  * CreateCheckoutRequest
  *
  * Request to create a checkout session for payment collection.
@@ -1557,6 +1591,28 @@ export type CreateRepositorySubscriptionRequest = {
 };
 
 /**
+ * CreateStructureRequest
+ */
+export type CreateStructureRequest = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Structure Type
+     */
+    structure_type: string;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+};
+
+/**
  * CreateSubgraphRequest
  *
  * Request model for creating a subgraph.
@@ -1604,6 +1660,36 @@ export type CreateSubgraphRequest = {
      * If true, copy all data from parent graph to create a 'fork'
      */
     fork_parent?: boolean;
+};
+
+/**
+ * CreateTaxonomyRequest
+ */
+export type CreateTaxonomyRequest = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Taxonomy Type
+     */
+    taxonomy_type: string;
+    /**
+     * Version
+     */
+    version?: string | null;
+    /**
+     * Source Taxonomy Id
+     */
+    source_taxonomy_id?: string | null;
+    /**
+     * Target Taxonomy Id
+     */
+    target_taxonomy_id?: string | null;
 };
 
 /**
@@ -2193,10 +2279,6 @@ export type DetailedTransactionsResponse = {
  */
 export type DocumentListItem = {
     /**
-     * Document Id
-     */
-    document_id: string;
-    /**
      * Document Title
      */
     document_title: string;
@@ -2426,6 +2508,163 @@ export type DownloadQuota = {
      * When the monthly limit resets (UTC)
      */
     resets_at: string;
+};
+
+/**
+ * ElementAssociationResponse
+ */
+export type ElementAssociationResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * From Element Id
+     */
+    from_element_id: string;
+    /**
+     * From Element Name
+     */
+    from_element_name?: string | null;
+    /**
+     * From Element Qname
+     */
+    from_element_qname?: string | null;
+    /**
+     * To Element Id
+     */
+    to_element_id: string;
+    /**
+     * To Element Name
+     */
+    to_element_name?: string | null;
+    /**
+     * To Element Qname
+     */
+    to_element_qname?: string | null;
+    /**
+     * Association Type
+     */
+    association_type: string;
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Weight
+     */
+    weight?: number | null;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+    /**
+     * Suggested By
+     */
+    suggested_by?: string | null;
+    /**
+     * Approved By
+     */
+    approved_by?: string | null;
+};
+
+/**
+ * ElementListResponse
+ */
+export type ElementListResponse = {
+    /**
+     * Elements
+     */
+    elements: Array<ElementResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * ElementResponse
+ *
+ * Element with taxonomy context — extends AccountResponse.
+ */
+export type ElementResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Qname
+     */
+    qname?: string | null;
+    /**
+     * Namespace
+     */
+    namespace?: string | null;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Sub Classification
+     */
+    sub_classification?: string | null;
+    /**
+     * Balance Type
+     */
+    balance_type: string;
+    /**
+     * Period Type
+     */
+    period_type: string;
+    /**
+     * Is Abstract
+     */
+    is_abstract: boolean;
+    /**
+     * Element Type
+     */
+    element_type: string;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id?: string | null;
+    /**
+     * Parent Id
+     */
+    parent_id?: string | null;
+    /**
+     * Depth
+     */
+    depth: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * External Source
+     */
+    external_source?: string | null;
 };
 
 /**
@@ -4352,6 +4591,78 @@ export type McpToolsResponse = {
 };
 
 /**
+ * MappingCoverageResponse
+ *
+ * Coverage stats for a mapping.
+ */
+export type MappingCoverageResponse = {
+    /**
+     * Mapping Id
+     */
+    mapping_id: string;
+    /**
+     * Total Coa Elements
+     */
+    total_coa_elements: number;
+    /**
+     * Mapped Count
+     */
+    mapped_count: number;
+    /**
+     * Unmapped Count
+     */
+    unmapped_count: number;
+    /**
+     * Coverage Percent
+     */
+    coverage_percent: number;
+    /**
+     * High Confidence
+     */
+    high_confidence?: number;
+    /**
+     * Medium Confidence
+     */
+    medium_confidence?: number;
+    /**
+     * Low Confidence
+     */
+    low_confidence?: number;
+};
+
+/**
+ * MappingDetailResponse
+ *
+ * A mapping structure with all its associations.
+ */
+export type MappingDetailResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Structure Type
+     */
+    structure_type: string;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Associations
+     */
+    associations: Array<ElementAssociationResponse>;
+    /**
+     * Total Associations
+     */
+    total_associations: number;
+};
+
+/**
  * MaterializeRequest
  */
 export type MaterializeRequest = {
@@ -6035,6 +6346,46 @@ export type StorageSummary = {
 };
 
 /**
+ * StructureListResponse
+ */
+export type StructureListResponse = {
+    /**
+     * Structures
+     */
+    structures: Array<StructureResponse>;
+};
+
+/**
+ * StructureResponse
+ */
+export type StructureResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Structure Type
+     */
+    structure_type: string;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+};
+
+/**
  * SubgraphQuotaResponse
  *
  * Response model for subgraph quota information.
@@ -6272,6 +6623,30 @@ export type SuccessResponse = {
 };
 
 /**
+ * SuggestedTarget
+ *
+ * A suggested mapping target from the reporting taxonomy.
+ */
+export type SuggestedTarget = {
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Qname
+     */
+    qname: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+};
+
+/**
  * SyncConnectionRequest
  *
  * Request to sync a connection.
@@ -6393,6 +6768,70 @@ export type TableQueryResponse = {
      * Query execution time
      */
     execution_time_ms: number;
+};
+
+/**
+ * TaxonomyListResponse
+ */
+export type TaxonomyListResponse = {
+    /**
+     * Taxonomies
+     */
+    taxonomies: Array<TaxonomyResponse>;
+};
+
+/**
+ * TaxonomyResponse
+ */
+export type TaxonomyResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Taxonomy Type
+     */
+    taxonomy_type: string;
+    /**
+     * Version
+     */
+    version?: string | null;
+    /**
+     * Standard
+     */
+    standard?: string | null;
+    /**
+     * Namespace Uri
+     */
+    namespace_uri?: string | null;
+    /**
+     * Is Shared
+     */
+    is_shared: boolean;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Is Locked
+     */
+    is_locked: boolean;
+    /**
+     * Source Taxonomy Id
+     */
+    source_taxonomy_id?: string | null;
+    /**
+     * Target Taxonomy Id
+     */
+    target_taxonomy_id?: string | null;
 };
 
 /**
@@ -6533,6 +6972,42 @@ export type TrialBalanceRow = {
      * Net Balance
      */
     net_balance: number;
+};
+
+/**
+ * UnmappedElementResponse
+ *
+ * An element not yet mapped to the reporting taxonomy.
+ */
+export type UnmappedElementResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Code
+     */
+    code?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Balance Type
+     */
+    balance_type: string;
+    /**
+     * External Source
+     */
+    external_source?: string | null;
+    /**
+     * Suggested Targets
+     */
+    suggested_targets?: Array<SuggestedTarget>;
 };
 
 /**
@@ -11443,6 +11918,491 @@ export type GetLedgerAccountTreeResponses = {
 };
 
 export type GetLedgerAccountTreeResponse = GetLedgerAccountTreeResponses[keyof GetLedgerAccountTreeResponses];
+
+export type ListTaxonomiesData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Taxonomy Type
+         *
+         * Filter by type
+         */
+        taxonomy_type?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/taxonomies';
+};
+
+export type ListTaxonomiesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListTaxonomiesError = ListTaxonomiesErrors[keyof ListTaxonomiesErrors];
+
+export type ListTaxonomiesResponses = {
+    /**
+     * Successful Response
+     */
+    200: TaxonomyListResponse;
+};
+
+export type ListTaxonomiesResponse = ListTaxonomiesResponses[keyof ListTaxonomiesResponses];
+
+export type CreateTaxonomyData = {
+    body: CreateTaxonomyRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/taxonomies';
+};
+
+export type CreateTaxonomyErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateTaxonomyError = CreateTaxonomyErrors[keyof CreateTaxonomyErrors];
+
+export type CreateTaxonomyResponses = {
+    /**
+     * Successful Response
+     */
+    201: TaxonomyResponse;
+};
+
+export type CreateTaxonomyResponse = CreateTaxonomyResponses[keyof CreateTaxonomyResponses];
+
+export type GetReportingTaxonomyData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/taxonomies/reporting';
+};
+
+export type GetReportingTaxonomyErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetReportingTaxonomyError = GetReportingTaxonomyErrors[keyof GetReportingTaxonomyErrors];
+
+export type GetReportingTaxonomyResponses = {
+    /**
+     * Successful Response
+     */
+    200: TaxonomyResponse;
+};
+
+export type GetReportingTaxonomyResponse = GetReportingTaxonomyResponses[keyof GetReportingTaxonomyResponses];
+
+export type ListElementsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Taxonomy Id
+         *
+         * Filter by taxonomy
+         */
+        taxonomy_id?: string | null;
+        /**
+         * Source
+         *
+         * Filter by source
+         */
+        source?: string | null;
+        /**
+         * Classification
+         *
+         * Filter by classification
+         */
+        classification?: string | null;
+        /**
+         * Is Abstract
+         *
+         * Filter by abstract
+         */
+        is_abstract?: boolean | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/ledger/{graph_id}/elements';
+};
+
+export type ListElementsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListElementsError = ListElementsErrors[keyof ListElementsErrors];
+
+export type ListElementsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ElementListResponse;
+};
+
+export type ListElementsResponse = ListElementsResponses[keyof ListElementsResponses];
+
+export type ListUnmappedElementsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Mapping Id
+         *
+         * Mapping structure to check against
+         */
+        mapping_id?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/elements/unmapped';
+};
+
+export type ListUnmappedElementsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListUnmappedElementsError = ListUnmappedElementsErrors[keyof ListUnmappedElementsErrors];
+
+export type ListUnmappedElementsResponses = {
+    /**
+     * Response Listunmappedelements
+     *
+     * Successful Response
+     */
+    200: Array<UnmappedElementResponse>;
+};
+
+export type ListUnmappedElementsResponse = ListUnmappedElementsResponses[keyof ListUnmappedElementsResponses];
+
+export type ListStructuresData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Taxonomy Id
+         *
+         * Filter by taxonomy
+         */
+        taxonomy_id?: string | null;
+        /**
+         * Structure Type
+         *
+         * Filter by type
+         */
+        structure_type?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/structures';
+};
+
+export type ListStructuresErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListStructuresError = ListStructuresErrors[keyof ListStructuresErrors];
+
+export type ListStructuresResponses = {
+    /**
+     * Successful Response
+     */
+    200: StructureListResponse;
+};
+
+export type ListStructuresResponse = ListStructuresResponses[keyof ListStructuresResponses];
+
+export type CreateStructureData = {
+    body: CreateStructureRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/structures';
+};
+
+export type CreateStructureErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateStructureError = CreateStructureErrors[keyof CreateStructureErrors];
+
+export type CreateStructureResponses = {
+    /**
+     * Successful Response
+     */
+    201: StructureResponse;
+};
+
+export type CreateStructureResponse = CreateStructureResponses[keyof CreateStructureResponses];
+
+export type ListMappingsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/mappings';
+};
+
+export type ListMappingsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListMappingsError = ListMappingsErrors[keyof ListMappingsErrors];
+
+export type ListMappingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: StructureListResponse;
+};
+
+export type ListMappingsResponse = ListMappingsResponses[keyof ListMappingsResponses];
+
+export type GetMappingDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Mapping Id
+         */
+        mapping_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}';
+};
+
+export type GetMappingDetailErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetMappingDetailError = GetMappingDetailErrors[keyof GetMappingDetailErrors];
+
+export type GetMappingDetailResponses = {
+    /**
+     * Successful Response
+     */
+    200: MappingDetailResponse;
+};
+
+export type GetMappingDetailResponse = GetMappingDetailResponses[keyof GetMappingDetailResponses];
+
+export type CreateMappingAssociationData = {
+    body: CreateAssociationRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Mapping Id
+         */
+        mapping_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/associations';
+};
+
+export type CreateMappingAssociationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateMappingAssociationError = CreateMappingAssociationErrors[keyof CreateMappingAssociationErrors];
+
+export type CreateMappingAssociationResponses = {
+    /**
+     * Successful Response
+     */
+    201: ElementAssociationResponse;
+};
+
+export type CreateMappingAssociationResponse = CreateMappingAssociationResponses[keyof CreateMappingAssociationResponses];
+
+export type DeleteMappingAssociationData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Mapping Id
+         */
+        mapping_id: string;
+        /**
+         * Association Id
+         */
+        association_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/associations/{association_id}';
+};
+
+export type DeleteMappingAssociationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteMappingAssociationError = DeleteMappingAssociationErrors[keyof DeleteMappingAssociationErrors];
+
+export type DeleteMappingAssociationResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteMappingAssociationResponse = DeleteMappingAssociationResponses[keyof DeleteMappingAssociationResponses];
+
+export type GetMappingCoverageData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Mapping Id
+         */
+        mapping_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/coverage';
+};
+
+export type GetMappingCoverageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetMappingCoverageError = GetMappingCoverageErrors[keyof GetMappingCoverageErrors];
+
+export type GetMappingCoverageResponses = {
+    /**
+     * Successful Response
+     */
+    200: MappingCoverageResponse;
+};
+
+export type GetMappingCoverageResponse = GetMappingCoverageResponses[keyof GetMappingCoverageResponses];
+
+export type GetMappedTrialBalanceData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query: {
+        /**
+         * Mapping Id
+         *
+         * Mapping structure ID
+         */
+        mapping_id: string;
+        /**
+         * Start Date
+         */
+        start_date?: string | null;
+        /**
+         * End Date
+         */
+        end_date?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/trial-balance/mapped';
+};
+
+export type GetMappedTrialBalanceErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetMappedTrialBalanceError = GetMappedTrialBalanceErrors[keyof GetMappedTrialBalanceErrors];
+
+export type GetMappedTrialBalanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type ListLedgerTransactionsData = {
     body?: never;
