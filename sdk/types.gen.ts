@@ -1465,7 +1465,7 @@ export type CreateAssociationRequest = {
     /**
      * Association Type
      */
-    association_type?: string;
+    association_type?: 'presentation' | 'calculation' | 'mapping';
     /**
      * Order Value
      */
@@ -1605,7 +1605,7 @@ export type CreateStructureRequest = {
     /**
      * Structure Type
      */
-    structure_type: string;
+    structure_type: 'chart_of_accounts' | 'income_statement' | 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'custom';
     /**
      * Taxonomy Id
      */
@@ -1677,7 +1677,7 @@ export type CreateTaxonomyRequest = {
     /**
      * Taxonomy Type
      */
-    taxonomy_type: string;
+    taxonomy_type: 'chart_of_accounts' | 'reporting' | 'mapping';
     /**
      * Version
      */
@@ -3492,7 +3492,7 @@ export type GraphSubscriptionTier = {
     /**
      * Backend
      *
-     * Database backend (ladybug or neo4j)
+     * Database backend identifier
      */
     backend: string;
     /**
@@ -3636,7 +3636,7 @@ export type GraphTierInfo = {
     /**
      * Backend
      *
-     * Database backend (ladybug or neo4j)
+     * Database backend identifier
      */
     backend: string;
     /**
@@ -4467,7 +4467,7 @@ export type ListSubgraphsResponse = {
     /**
      * Subgraphs Enabled
      *
-     * Whether subgraphs are enabled for this tier (requires LadybugDB Large/XLarge or Neo4j Enterprise XLarge)
+     * Whether subgraphs are enabled for this tier (requires LadybugDB Large/XLarge)
      */
     subgraphs_enabled: boolean;
     /**
@@ -12402,6 +12402,40 @@ export type GetMappedTrialBalanceResponses = {
      * Successful Response
      */
     200: unknown;
+};
+
+export type AutoMapElementsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Mapping Id
+         *
+         * Mapping structure ID
+         */
+        mapping_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/auto-map';
+};
+
+export type AutoMapElementsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AutoMapElementsError = AutoMapElementsErrors[keyof AutoMapElementsErrors];
+
+export type AutoMapElementsResponses = {
+    /**
+     * Successful Response
+     */
+    202: unknown;
 };
 
 export type ListLedgerTransactionsData = {
