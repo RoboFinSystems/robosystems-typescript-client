@@ -11,6 +11,7 @@
 import {
   autoMapElements,
   createMappingAssociation,
+  createStructure,
   deleteMappingAssociation,
   getLedgerAccountTree,
   getLedgerEntity,
@@ -331,6 +332,39 @@ export class LedgerClient {
   }
 
   // ── Mappings ────────────────────────────────────────────────────────
+
+  /**
+   * Create a new CoA→GAAP mapping structure.
+   * Returns the created mapping info.
+   */
+  async createMappingStructure(
+    graphId: string,
+    options?: { name?: string; description?: string; taxonomyId?: string }
+  ): Promise<MappingInfo> {
+    const response = await createStructure({
+      path: { graph_id: graphId },
+      body: {
+        name: options?.name ?? 'CoA to Reporting',
+        description: options?.description ?? 'Map Chart of Accounts to US GAAP reporting concepts',
+        structure_type: 'coa_mapping',
+        taxonomy_id: options?.taxonomyId ?? 'tax_usgaap_reporting',
+      },
+    })
+
+    if (response.error) {
+      throw new Error(`Create mapping structure failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as Record<string, unknown>
+    return {
+      id: data.id as string,
+      name: data.name as string,
+      description: (data.description as string) ?? null,
+      structureType: data.structure_type as string,
+      taxonomyId: data.taxonomy_id as string,
+      isActive: (data.is_active as boolean) ?? true,
+    }
+  }
 
   /**
    * List available CoA→GAAP mapping structures.
