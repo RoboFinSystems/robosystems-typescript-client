@@ -1577,6 +1577,54 @@ export type CreateGraphRequest = {
 };
 
 /**
+ * CreateReportRequest
+ */
+export type CreateReportRequest = {
+    /**
+     * Name
+     *
+     * Report name
+     */
+    name: string;
+    /**
+     * Taxonomy Id
+     *
+     * Taxonomy ID — determines which structures are available
+     */
+    taxonomy_id?: string;
+    /**
+     * Mapping Id
+     *
+     * Mapping structure ID for CoA→GAAP rollup
+     */
+    mapping_id: string;
+    /**
+     * Period Start
+     *
+     * Period start date (inclusive)
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * Period end date (inclusive)
+     */
+    period_end: string;
+    /**
+     * Period Type
+     *
+     * Period type: monthly, quarterly, annual
+     */
+    period_type?: string;
+    /**
+     * Comparative
+     *
+     * Include prior period comparison
+     */
+    comparative?: boolean;
+};
+
+/**
  * CreateRepositorySubscriptionRequest
  *
  * Request to create a repository subscription.
@@ -2782,6 +2830,44 @@ export type ErrorResponse = {
      * Timestamp when the error occurred
      */
     timestamp?: string | null;
+};
+
+/**
+ * FactRowResponse
+ */
+export type FactRowResponse = {
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Element Qname
+     */
+    element_qname: string;
+    /**
+     * Element Name
+     */
+    element_name: string;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Current Value
+     */
+    current_value: number;
+    /**
+     * Prior Value
+     */
+    prior_value?: number | null;
+    /**
+     * Is Subtotal
+     */
+    is_subtotal?: boolean;
+    /**
+     * Depth
+     */
+    depth?: number;
 };
 
 /**
@@ -5549,6 +5635,24 @@ export type RateLimits = {
 };
 
 /**
+ * RegenerateReportRequest
+ */
+export type RegenerateReportRequest = {
+    /**
+     * Period Start
+     *
+     * New period start date
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * New period end date
+     */
+    period_end: string;
+};
+
+/**
  * RegisterRequest
  *
  * Registration request model.
@@ -5578,6 +5682,88 @@ export type RegisterRequest = {
      * CAPTCHA verification token (required in production)
      */
     captcha_token?: string | null;
+};
+
+/**
+ * ReportListResponse
+ */
+export type ReportListResponse = {
+    /**
+     * Reports
+     */
+    reports: Array<ReportResponse>;
+};
+
+/**
+ * ReportResponse
+ *
+ * Report definition summary.
+ */
+export type ReportResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Generation Status
+     */
+    generation_status: string;
+    /**
+     * Period Type
+     */
+    period_type: string;
+    /**
+     * Period Start
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     */
+    period_end?: string | null;
+    /**
+     * Comparative
+     */
+    comparative: boolean;
+    /**
+     * Mapping Id
+     */
+    mapping_id?: string | null;
+    /**
+     * Ai Generated
+     */
+    ai_generated?: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Last Generated
+     */
+    last_generated?: string | null;
+    /**
+     * Structures
+     */
+    structures?: Array<StructureSummary>;
+    /**
+     * Source Graph Id
+     */
+    source_graph_id?: string | null;
+    /**
+     * Source Report Id
+     */
+    source_report_id?: string | null;
+    /**
+     * Shared At
+     */
+    shared_at?: string | null;
 };
 
 /**
@@ -6232,6 +6418,103 @@ export type ServiceOfferingsResponse = {
 };
 
 /**
+ * ShareReportRequest
+ */
+export type ShareReportRequest = {
+    /**
+     * Target Graph Ids
+     *
+     * Graph IDs to share the report to
+     */
+    target_graph_ids: Array<string>;
+};
+
+/**
+ * ShareReportResponse
+ */
+export type ShareReportResponse = {
+    /**
+     * Report Id
+     */
+    report_id: string;
+    /**
+     * Results
+     */
+    results: Array<ShareResultItem>;
+};
+
+/**
+ * ShareResultItem
+ */
+export type ShareResultItem = {
+    /**
+     * Target Graph Id
+     */
+    target_graph_id: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Fact Count
+     */
+    fact_count?: number;
+};
+
+/**
+ * StatementResponse
+ *
+ * Rendered financial statement — facts viewed through a structure.
+ */
+export type StatementResponse = {
+    /**
+     * Report Id
+     */
+    report_id: string;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Structure Name
+     */
+    structure_name: string;
+    /**
+     * Structure Type
+     */
+    structure_type: string;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Comparative Period Start
+     */
+    comparative_period_start?: string | null;
+    /**
+     * Comparative Period End
+     */
+    comparative_period_end?: string | null;
+    /**
+     * Rows
+     */
+    rows?: Array<FactRowResponse>;
+    validation?: ValidationCheckResponse | null;
+    /**
+     * Unmapped Count
+     */
+    unmapped_count?: number;
+};
+
+/**
  * StorageLimitResponse
  *
  * Storage limit information response.
@@ -6383,6 +6666,26 @@ export type StructureResponse = {
      * Is Active
      */
     is_active: boolean;
+};
+
+/**
+ * StructureSummary
+ *
+ * A structure available within this report's taxonomy.
+ */
+export type StructureSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Structure Type
+     */
+    structure_type: string;
 };
 
 /**
@@ -7308,6 +7611,28 @@ export type UserResponse = {
      * User's authentication accounts
      */
     accounts?: Array<AccountInfo>;
+};
+
+/**
+ * ValidationCheckResponse
+ */
+export type ValidationCheckResponse = {
+    /**
+     * Passed
+     */
+    passed: boolean;
+    /**
+     * Checks
+     */
+    checks: Array<string>;
+    /**
+     * Failures
+     */
+    failures: Array<string>;
+    /**
+     * Warnings
+     */
+    warnings: Array<string>;
 };
 
 /**
@@ -12601,3 +12926,249 @@ export type GetLedgerSummaryResponses = {
 };
 
 export type GetLedgerSummaryResponse = GetLedgerSummaryResponses[keyof GetLedgerSummaryResponses];
+
+export type ListReportsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/reports';
+};
+
+export type ListReportsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListReportsError = ListReportsErrors[keyof ListReportsErrors];
+
+export type ListReportsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReportListResponse;
+};
+
+export type ListReportsResponse = ListReportsResponses[keyof ListReportsResponses];
+
+export type CreateReportData = {
+    body: CreateReportRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/reports';
+};
+
+export type CreateReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateReportError = CreateReportErrors[keyof CreateReportErrors];
+
+export type CreateReportResponses = {
+    /**
+     * Successful Response
+     */
+    201: ReportResponse;
+};
+
+export type CreateReportResponse = CreateReportResponses[keyof CreateReportResponses];
+
+export type DeleteReportData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Report Id
+         *
+         * Report definition ID
+         */
+        report_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/reports/{report_id}';
+};
+
+export type DeleteReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteReportError = DeleteReportErrors[keyof DeleteReportErrors];
+
+export type DeleteReportResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteReportResponse = DeleteReportResponses[keyof DeleteReportResponses];
+
+export type GetReportData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Report Id
+         *
+         * Report definition ID
+         */
+        report_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/reports/{report_id}';
+};
+
+export type GetReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetReportError = GetReportErrors[keyof GetReportErrors];
+
+export type GetReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReportResponse;
+};
+
+export type GetReportResponse = GetReportResponses[keyof GetReportResponses];
+
+export type GetStatementData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Report Id
+         *
+         * Report definition ID
+         */
+        report_id: string;
+        /**
+         * Structure Type
+         *
+         * Structure type: income_statement, balance_sheet, cash_flow_statement
+         */
+        structure_type: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/reports/{report_id}/statements/{structure_type}';
+};
+
+export type GetStatementErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetStatementError = GetStatementErrors[keyof GetStatementErrors];
+
+export type GetStatementResponses = {
+    /**
+     * Successful Response
+     */
+    200: StatementResponse;
+};
+
+export type GetStatementResponse = GetStatementResponses[keyof GetStatementResponses];
+
+export type RegenerateReportData = {
+    body: RegenerateReportRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Report Id
+         *
+         * Report definition ID
+         */
+        report_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/reports/{report_id}/regenerate';
+};
+
+export type RegenerateReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RegenerateReportError = RegenerateReportErrors[keyof RegenerateReportErrors];
+
+export type RegenerateReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReportResponse;
+};
+
+export type RegenerateReportResponse = RegenerateReportResponses[keyof RegenerateReportResponses];
+
+export type ShareReportData = {
+    body: ShareReportRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Report Id
+         *
+         * Report definition ID
+         */
+        report_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/reports/{report_id}/share';
+};
+
+export type ShareReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ShareReportError = ShareReportErrors[keyof ShareReportErrors];
+
+export type ShareReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: ShareReportResponse;
+};
+
+export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
