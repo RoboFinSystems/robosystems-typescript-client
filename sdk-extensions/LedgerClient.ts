@@ -421,11 +421,7 @@ export class LedgerClient {
   /**
    * Delete a mapping association.
    */
-  async deleteMapping(
-    graphId: string,
-    mappingId: string,
-    associationId: string
-  ): Promise<void> {
+  async deleteMapping(graphId: string, mappingId: string, associationId: string): Promise<void> {
     const response = await deleteMappingAssociation({
       path: { graph_id: graphId, mapping_id: mappingId, association_id: associationId },
     })
