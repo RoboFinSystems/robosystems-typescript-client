@@ -14,6 +14,8 @@ import { MaterializationClient } from './MaterializationClient'
 import { TableClient } from './TableClient'
 import { GraphClient } from './GraphClient'
 import { DocumentClient } from './DocumentClient'
+import { LedgerClient } from './LedgerClient'
+import { ReportClient } from './ReportClient'
 
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
@@ -45,6 +47,8 @@ export class RoboSystemsExtensions {
   public readonly tables: TableClient
   public readonly graphs: GraphClient
   public readonly documents: DocumentClient
+  public readonly ledger: LedgerClient
+  public readonly reports: ReportClient
   private config: ResolvedConfig
 
   constructor(config: RoboSystemsExtensionConfig = {}) {
@@ -121,6 +125,20 @@ export class RoboSystemsExtensions {
       token: this.config.token,
       headers: this.config.headers,
     })
+
+    this.ledger = new LedgerClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
+
+    this.reports = new ReportClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
   }
 
   /**
@@ -164,6 +182,8 @@ export * from './FileClient'
 export * from './MaterializationClient'
 export * from './GraphClient'
 export * from './DocumentClient'
+export * from './LedgerClient'
+export * from './ReportClient'
 export * from './config'
 
 // Export TableClient types individually to avoid conflicts with QueryClient's QueryResult
@@ -179,6 +199,8 @@ export {
   MaterializationClient,
   GraphClient,
   DocumentClient,
+  LedgerClient,
+  ReportClient,
 }
 
 // Export React hooks
@@ -225,6 +247,12 @@ export const extensions = {
   },
   get documents() {
     return getExtensions().documents
+  },
+  get ledger() {
+    return getExtensions().ledger
+  },
+  get reports() {
+    return getExtensions().reports
   },
   monitorOperation: (operationId: string, onProgress?: (progress: any) => void) =>
     getExtensions().monitorOperation(operationId, onProgress),
