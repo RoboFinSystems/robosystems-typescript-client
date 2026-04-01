@@ -47,9 +47,7 @@ jobs:
         if: steps.check-published.outputs.already_published == 'false'
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-        env:
-          NODE_AUTH_TOKEN: ''  # Clear default token to use OIDC
+          node-version: '24'
 
       - name: Install dependencies
         if: steps.check-published.outputs.already_published == 'false'
