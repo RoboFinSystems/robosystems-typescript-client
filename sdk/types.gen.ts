@@ -1577,6 +1577,82 @@ export type CreateGraphRequest = {
 };
 
 /**
+ * CreatePortfolioRequest
+ */
+export type CreatePortfolioRequest = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Strategy
+     */
+    strategy?: string | null;
+    /**
+     * Inception Date
+     */
+    inception_date?: string | null;
+    /**
+     * Base Currency
+     */
+    base_currency?: string;
+};
+
+/**
+ * CreatePositionRequest
+ */
+export type CreatePositionRequest = {
+    /**
+     * Portfolio Id
+     */
+    portfolio_id: string;
+    /**
+     * Security Id
+     */
+    security_id: string;
+    /**
+     * Quantity
+     */
+    quantity: number;
+    /**
+     * Quantity Type
+     */
+    quantity_type?: string;
+    /**
+     * Cost Basis
+     */
+    cost_basis?: number;
+    /**
+     * Currency
+     */
+    currency?: string;
+    /**
+     * Current Value
+     */
+    current_value?: number | null;
+    /**
+     * Valuation Date
+     */
+    valuation_date?: string | null;
+    /**
+     * Valuation Source
+     */
+    valuation_source?: string | null;
+    /**
+     * Acquisition Date
+     */
+    acquisition_date?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+};
+
+/**
  * CreateReportRequest
  */
 export type CreateReportRequest = {
@@ -1636,6 +1712,46 @@ export type CreateRepositorySubscriptionRequest = {
      * Plan name for the repository subscription
      */
     plan_name: string;
+};
+
+/**
+ * CreateSecurityRequest
+ */
+export type CreateSecurityRequest = {
+    /**
+     * Entity Id
+     */
+    entity_id?: string | null;
+    /**
+     * Source Graph Id
+     */
+    source_graph_id?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Security Type
+     */
+    security_type: string;
+    /**
+     * Security Subtype
+     */
+    security_subtype?: string | null;
+    /**
+     * Terms
+     */
+    terms?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Authorized Shares
+     */
+    authorized_shares?: number | null;
+    /**
+     * Outstanding Shares
+     */
+    outstanding_shares?: number | null;
 };
 
 /**
@@ -3910,6 +4026,92 @@ export type HealthStatus = {
 };
 
 /**
+ * HoldingResponse
+ */
+export type HoldingResponse = {
+    /**
+     * Entity Id
+     */
+    entity_id: string;
+    /**
+     * Entity Name
+     */
+    entity_name: string;
+    /**
+     * Source Graph Id
+     */
+    source_graph_id?: string | null;
+    /**
+     * Securities
+     */
+    securities: Array<HoldingSecuritySummary>;
+    /**
+     * Total Cost Basis Dollars
+     */
+    total_cost_basis_dollars: number;
+    /**
+     * Total Current Value Dollars
+     */
+    total_current_value_dollars?: number | null;
+    /**
+     * Position Count
+     */
+    position_count: number;
+};
+
+/**
+ * HoldingSecuritySummary
+ */
+export type HoldingSecuritySummary = {
+    /**
+     * Security Id
+     */
+    security_id: string;
+    /**
+     * Security Name
+     */
+    security_name: string;
+    /**
+     * Security Type
+     */
+    security_type: string;
+    /**
+     * Quantity
+     */
+    quantity: number;
+    /**
+     * Quantity Type
+     */
+    quantity_type: string;
+    /**
+     * Cost Basis Dollars
+     */
+    cost_basis_dollars: number;
+    /**
+     * Current Value Dollars
+     */
+    current_value_dollars?: number | null;
+};
+
+/**
+ * HoldingsListResponse
+ */
+export type HoldingsListResponse = {
+    /**
+     * Holdings
+     */
+    holdings: Array<HoldingResponse>;
+    /**
+     * Total Entities
+     */
+    total_entities: number;
+    /**
+     * Total Positions
+     */
+    total_positions: number;
+};
+
+/**
  * InitialEntityData
  *
  * Initial entity data for entity-focused graph creation.
@@ -5557,6 +5759,152 @@ export type PortalSessionResponse = {
 };
 
 /**
+ * PortfolioListResponse
+ */
+export type PortfolioListResponse = {
+    /**
+     * Portfolios
+     */
+    portfolios: Array<PortfolioResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * PortfolioResponse
+ */
+export type PortfolioResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Strategy
+     */
+    strategy?: string | null;
+    /**
+     * Inception Date
+     */
+    inception_date?: string | null;
+    /**
+     * Base Currency
+     */
+    base_currency: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * PositionListResponse
+ */
+export type PositionListResponse = {
+    /**
+     * Positions
+     */
+    positions: Array<PositionResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * PositionResponse
+ */
+export type PositionResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Portfolio Id
+     */
+    portfolio_id: string;
+    /**
+     * Security Id
+     */
+    security_id: string;
+    /**
+     * Security Name
+     */
+    security_name?: string | null;
+    /**
+     * Entity Name
+     */
+    entity_name?: string | null;
+    /**
+     * Quantity
+     */
+    quantity: number;
+    /**
+     * Quantity Type
+     */
+    quantity_type: string;
+    /**
+     * Cost Basis
+     */
+    cost_basis: number;
+    /**
+     * Cost Basis Dollars
+     */
+    cost_basis_dollars: number;
+    /**
+     * Currency
+     */
+    currency: string;
+    /**
+     * Current Value
+     */
+    current_value?: number | null;
+    /**
+     * Current Value Dollars
+     */
+    current_value_dollars?: number | null;
+    /**
+     * Valuation Date
+     */
+    valuation_date?: string | null;
+    /**
+     * Valuation Source
+     */
+    valuation_source?: string | null;
+    /**
+     * Acquisition Date
+     */
+    acquisition_date?: string | null;
+    /**
+     * Disposition Date
+     */
+    disposition_date?: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
  * QueryLimits
  *
  * Query operation limits.
@@ -6317,6 +6665,73 @@ export type SearchResponse = {
      * Graph Id
      */
     graph_id: string;
+};
+
+/**
+ * SecurityListResponse
+ */
+export type SecurityListResponse = {
+    /**
+     * Securities
+     */
+    securities: Array<SecurityResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * SecurityResponse
+ */
+export type SecurityResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Entity Id
+     */
+    entity_id?: string | null;
+    /**
+     * Entity Name
+     */
+    entity_name?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Security Type
+     */
+    security_type: string;
+    /**
+     * Security Subtype
+     */
+    security_subtype?: string | null;
+    /**
+     * Terms
+     */
+    terms: {
+        [key: string]: unknown;
+    };
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Authorized Shares
+     */
+    authorized_shares?: number | null;
+    /**
+     * Outstanding Shares
+     */
+    outstanding_shares?: number | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
 };
 
 /**
@@ -7519,6 +7934,114 @@ export type UpdatePasswordRequest = {
      * Confirm new password
      */
     confirm_password: string;
+};
+
+/**
+ * UpdatePortfolioRequest
+ */
+export type UpdatePortfolioRequest = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Strategy
+     */
+    strategy?: string | null;
+    /**
+     * Inception Date
+     */
+    inception_date?: string | null;
+    /**
+     * Base Currency
+     */
+    base_currency?: string | null;
+};
+
+/**
+ * UpdatePositionRequest
+ */
+export type UpdatePositionRequest = {
+    /**
+     * Quantity
+     */
+    quantity?: number | null;
+    /**
+     * Quantity Type
+     */
+    quantity_type?: string | null;
+    /**
+     * Cost Basis
+     */
+    cost_basis?: number | null;
+    /**
+     * Current Value
+     */
+    current_value?: number | null;
+    /**
+     * Valuation Date
+     */
+    valuation_date?: string | null;
+    /**
+     * Valuation Source
+     */
+    valuation_source?: string | null;
+    /**
+     * Acquisition Date
+     */
+    acquisition_date?: string | null;
+    /**
+     * Disposition Date
+     */
+    disposition_date?: string | null;
+    /**
+     * Status
+     */
+    status?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+};
+
+/**
+ * UpdateSecurityRequest
+ */
+export type UpdateSecurityRequest = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Security Type
+     */
+    security_type?: string | null;
+    /**
+     * Security Subtype
+     */
+    security_subtype?: string | null;
+    /**
+     * Terms
+     */
+    terms?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Authorized Shares
+     */
+    authorized_shares?: number | null;
+    /**
+     * Outstanding Shares
+     */
+    outstanding_shares?: number | null;
 };
 
 /**
@@ -10492,10 +11015,8 @@ export type CreateSubgraphResponses = {
     /**
      * Successful Response
      */
-    200: SubgraphResponse;
+    200: unknown;
 };
-
-export type CreateSubgraphResponse = CreateSubgraphResponses[keyof CreateSubgraphResponses];
 
 export type DeleteSubgraphData = {
     body: DeleteSubgraphRequest;
@@ -13172,3 +13693,586 @@ export type ShareReportResponses = {
 };
 
 export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
+
+export type ListPortfoliosData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/investor/{graph_id}/portfolios';
+};
+
+export type ListPortfoliosErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListPortfoliosError = ListPortfoliosErrors[keyof ListPortfoliosErrors];
+
+export type ListPortfoliosResponses = {
+    /**
+     * Successful Response
+     */
+    200: PortfolioListResponse;
+};
+
+export type ListPortfoliosResponse = ListPortfoliosResponses[keyof ListPortfoliosResponses];
+
+export type CreatePortfolioData = {
+    body: CreatePortfolioRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/portfolios';
+};
+
+export type CreatePortfolioErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreatePortfolioError = CreatePortfolioErrors[keyof CreatePortfolioErrors];
+
+export type CreatePortfolioResponses = {
+    /**
+     * Successful Response
+     */
+    201: PortfolioResponse;
+};
+
+export type CreatePortfolioResponse = CreatePortfolioResponses[keyof CreatePortfolioResponses];
+
+export type DeletePortfolioData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Portfolio Id
+         */
+        portfolio_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}';
+};
+
+export type DeletePortfolioErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeletePortfolioError = DeletePortfolioErrors[keyof DeletePortfolioErrors];
+
+export type DeletePortfolioResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeletePortfolioResponse = DeletePortfolioResponses[keyof DeletePortfolioResponses];
+
+export type GetPortfolioData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Portfolio Id
+         */
+        portfolio_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}';
+};
+
+export type GetPortfolioErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPortfolioError = GetPortfolioErrors[keyof GetPortfolioErrors];
+
+export type GetPortfolioResponses = {
+    /**
+     * Successful Response
+     */
+    200: PortfolioResponse;
+};
+
+export type GetPortfolioResponse = GetPortfolioResponses[keyof GetPortfolioResponses];
+
+export type UpdatePortfolioData = {
+    body: UpdatePortfolioRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Portfolio Id
+         */
+        portfolio_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}';
+};
+
+export type UpdatePortfolioErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePortfolioError = UpdatePortfolioErrors[keyof UpdatePortfolioErrors];
+
+export type UpdatePortfolioResponses = {
+    /**
+     * Successful Response
+     */
+    200: PortfolioResponse;
+};
+
+export type UpdatePortfolioResponse = UpdatePortfolioResponses[keyof UpdatePortfolioResponses];
+
+export type ListSecuritiesData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Entity Id
+         *
+         * Filter by entity
+         */
+        entity_id?: string | null;
+        /**
+         * Security Type
+         *
+         * Filter by security type
+         */
+        security_type?: string | null;
+        /**
+         * Is Active
+         *
+         * Filter by active status
+         */
+        is_active?: boolean | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/investor/{graph_id}/securities';
+};
+
+export type ListSecuritiesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListSecuritiesError = ListSecuritiesErrors[keyof ListSecuritiesErrors];
+
+export type ListSecuritiesResponses = {
+    /**
+     * Successful Response
+     */
+    200: SecurityListResponse;
+};
+
+export type ListSecuritiesResponse = ListSecuritiesResponses[keyof ListSecuritiesResponses];
+
+export type CreateSecurityData = {
+    body: CreateSecurityRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/securities';
+};
+
+export type CreateSecurityErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateSecurityError = CreateSecurityErrors[keyof CreateSecurityErrors];
+
+export type CreateSecurityResponses = {
+    /**
+     * Successful Response
+     */
+    201: SecurityResponse;
+};
+
+export type CreateSecurityResponse = CreateSecurityResponses[keyof CreateSecurityResponses];
+
+export type DeleteSecurityData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Security Id
+         */
+        security_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/securities/{security_id}';
+};
+
+export type DeleteSecurityErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteSecurityError = DeleteSecurityErrors[keyof DeleteSecurityErrors];
+
+export type DeleteSecurityResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteSecurityResponse = DeleteSecurityResponses[keyof DeleteSecurityResponses];
+
+export type GetSecurityData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Security Id
+         */
+        security_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/securities/{security_id}';
+};
+
+export type GetSecurityErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetSecurityError = GetSecurityErrors[keyof GetSecurityErrors];
+
+export type GetSecurityResponses = {
+    /**
+     * Successful Response
+     */
+    200: SecurityResponse;
+};
+
+export type GetSecurityResponse = GetSecurityResponses[keyof GetSecurityResponses];
+
+export type UpdateSecurityData = {
+    body: UpdateSecurityRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Security Id
+         */
+        security_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/securities/{security_id}';
+};
+
+export type UpdateSecurityErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateSecurityError = UpdateSecurityErrors[keyof UpdateSecurityErrors];
+
+export type UpdateSecurityResponses = {
+    /**
+     * Successful Response
+     */
+    200: SecurityResponse;
+};
+
+export type UpdateSecurityResponse = UpdateSecurityResponses[keyof UpdateSecurityResponses];
+
+export type ListPositionsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Portfolio Id
+         *
+         * Filter by portfolio
+         */
+        portfolio_id?: string | null;
+        /**
+         * Security Id
+         *
+         * Filter by security
+         */
+        security_id?: string | null;
+        /**
+         * Status
+         *
+         * Filter by status
+         */
+        status?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/investor/{graph_id}/positions';
+};
+
+export type ListPositionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListPositionsError = ListPositionsErrors[keyof ListPositionsErrors];
+
+export type ListPositionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PositionListResponse;
+};
+
+export type ListPositionsResponse = ListPositionsResponses[keyof ListPositionsResponses];
+
+export type CreatePositionData = {
+    body: CreatePositionRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/positions';
+};
+
+export type CreatePositionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreatePositionError = CreatePositionErrors[keyof CreatePositionErrors];
+
+export type CreatePositionResponses = {
+    /**
+     * Successful Response
+     */
+    201: PositionResponse;
+};
+
+export type CreatePositionResponse = CreatePositionResponses[keyof CreatePositionResponses];
+
+export type DeletePositionData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Position Id
+         */
+        position_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/positions/{position_id}';
+};
+
+export type DeletePositionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeletePositionError = DeletePositionErrors[keyof DeletePositionErrors];
+
+export type DeletePositionResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeletePositionResponse = DeletePositionResponses[keyof DeletePositionResponses];
+
+export type GetPositionData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Position Id
+         */
+        position_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/positions/{position_id}';
+};
+
+export type GetPositionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPositionError = GetPositionErrors[keyof GetPositionErrors];
+
+export type GetPositionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PositionResponse;
+};
+
+export type GetPositionResponse = GetPositionResponses[keyof GetPositionResponses];
+
+export type UpdatePositionData = {
+    body: UpdatePositionRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Position Id
+         */
+        position_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/positions/{position_id}';
+};
+
+export type UpdatePositionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePositionError = UpdatePositionErrors[keyof UpdatePositionErrors];
+
+export type UpdatePositionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PositionResponse;
+};
+
+export type UpdatePositionResponse = UpdatePositionResponses[keyof UpdatePositionResponses];
+
+export type ListHoldingsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Portfolio Id
+         */
+        portfolio_id: string;
+    };
+    query?: never;
+    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}/holdings';
+};
+
+export type ListHoldingsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListHoldingsError = ListHoldingsErrors[keyof ListHoldingsErrors];
+
+export type ListHoldingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: HoldingsListResponse;
+};
+
+export type ListHoldingsResponse = ListHoldingsResponses[keyof ListHoldingsResponses];
