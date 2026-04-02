@@ -234,6 +234,18 @@ export type AccountTreeResponse = {
 };
 
 /**
+ * AddMembersRequest
+ */
+export type AddMembersRequest = {
+    /**
+     * Target Graph Ids
+     *
+     * Graph IDs to add to this list
+     */
+    target_graph_ids: Array<string>;
+};
+
+/**
  * AgentListResponse
  *
  * Response for listing available agents.
@@ -1650,6 +1662,24 @@ export type CreatePositionRequest = {
      * Notes
      */
     notes?: string | null;
+};
+
+/**
+ * CreatePublishListRequest
+ */
+export type CreatePublishListRequest = {
+    /**
+     * Name
+     *
+     * List name
+     */
+    name: string;
+    /**
+     * Description
+     *
+     * Optional description
+     */
+    description?: string | null;
 };
 
 /**
@@ -4438,6 +4468,10 @@ export type LedgerEntityResponse = {
      */
     source_id?: string | null;
     /**
+     * Source Graph Id
+     */
+    source_graph_id?: string | null;
+    /**
      * Connection Id
      */
     connection_id?: string | null;
@@ -5905,6 +5939,121 @@ export type PositionResponse = {
 };
 
 /**
+ * PublishListDetailResponse
+ *
+ * Full detail including members.
+ */
+export type PublishListDetailResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Member Count
+     */
+    member_count?: number;
+    /**
+     * Created By
+     */
+    created_by: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Members
+     */
+    members?: Array<PublishListMemberResponse>;
+};
+
+/**
+ * PublishListListResponse
+ */
+export type PublishListListResponse = {
+    /**
+     * Publish Lists
+     */
+    publish_lists: Array<PublishListResponse>;
+    pagination: PaginationInfo;
+};
+
+/**
+ * PublishListMemberResponse
+ */
+export type PublishListMemberResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Target Graph Id
+     */
+    target_graph_id: string;
+    /**
+     * Target Graph Name
+     */
+    target_graph_name?: string | null;
+    /**
+     * Target Org Name
+     */
+    target_org_name?: string | null;
+    /**
+     * Added By
+     */
+    added_by: string;
+    /**
+     * Added At
+     */
+    added_at: string;
+};
+
+/**
+ * PublishListResponse
+ */
+export type PublishListResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Member Count
+     */
+    member_count?: number;
+    /**
+     * Created By
+     */
+    created_by: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
  * QueryLimits
  *
  * Query operation limits.
@@ -6100,6 +6249,10 @@ export type ReportResponse = {
      * Structures
      */
     structures?: Array<StructureSummary>;
+    /**
+     * Entity Name
+     */
+    entity_name?: string | null;
     /**
      * Source Graph Id
      */
@@ -6695,6 +6848,10 @@ export type SecurityResponse = {
      */
     entity_name?: string | null;
     /**
+     * Source Graph Id
+     */
+    source_graph_id?: string | null;
+    /**
      * Name
      */
     name: string;
@@ -6837,11 +6994,11 @@ export type ServiceOfferingsResponse = {
  */
 export type ShareReportRequest = {
     /**
-     * Target Graph Ids
+     * Publish List Id
      *
-     * Graph IDs to share the report to
+     * Publish list to share the report to
      */
-    target_graph_ids: Array<string>;
+    publish_list_id: string;
 };
 
 /**
@@ -8009,9 +8166,31 @@ export type UpdatePositionRequest = {
 };
 
 /**
+ * UpdatePublishListRequest
+ */
+export type UpdatePublishListRequest = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+};
+
+/**
  * UpdateSecurityRequest
  */
 export type UpdateSecurityRequest = {
+    /**
+     * Entity Id
+     */
+    entity_id?: string | null;
+    /**
+     * Source Graph Id
+     */
+    source_graph_id?: string | null;
     /**
      * Name
      */
@@ -12684,6 +12863,45 @@ export type UpdateLedgerEntityResponses = {
 
 export type UpdateLedgerEntityResponse = UpdateLedgerEntityResponses[keyof UpdateLedgerEntityResponses];
 
+export type ListLedgerEntitiesData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Source
+         *
+         * Filter by source (e.g., 'linked')
+         */
+        source?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/entities';
+};
+
+export type ListLedgerEntitiesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListLedgerEntitiesError = ListLedgerEntitiesErrors[keyof ListLedgerEntitiesErrors];
+
+export type ListLedgerEntitiesResponses = {
+    /**
+     * Response Listledgerentities
+     *
+     * Successful Response
+     */
+    200: Array<LedgerEntityResponse>;
+};
+
+export type ListLedgerEntitiesResponse = ListLedgerEntitiesResponses[keyof ListLedgerEntitiesResponses];
+
 export type ListLedgerAccountsData = {
     body?: never;
     path: {
@@ -13693,6 +13911,251 @@ export type ShareReportResponses = {
 };
 
 export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
+
+export type ListPublishListsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/ledger/{graph_id}/publish-lists';
+};
+
+export type ListPublishListsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListPublishListsError = ListPublishListsErrors[keyof ListPublishListsErrors];
+
+export type ListPublishListsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PublishListListResponse;
+};
+
+export type ListPublishListsResponse = ListPublishListsResponses[keyof ListPublishListsResponses];
+
+export type CreatePublishListData = {
+    body: CreatePublishListRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/publish-lists';
+};
+
+export type CreatePublishListErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreatePublishListError = CreatePublishListErrors[keyof CreatePublishListErrors];
+
+export type CreatePublishListResponses = {
+    /**
+     * Successful Response
+     */
+    201: PublishListResponse;
+};
+
+export type CreatePublishListResponse = CreatePublishListResponses[keyof CreatePublishListResponses];
+
+export type DeletePublishListData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * List Id
+         */
+        list_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}';
+};
+
+export type DeletePublishListErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeletePublishListError = DeletePublishListErrors[keyof DeletePublishListErrors];
+
+export type DeletePublishListResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeletePublishListResponse = DeletePublishListResponses[keyof DeletePublishListResponses];
+
+export type GetPublishListData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * List Id
+         */
+        list_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}';
+};
+
+export type GetPublishListErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPublishListError = GetPublishListErrors[keyof GetPublishListErrors];
+
+export type GetPublishListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PublishListDetailResponse;
+};
+
+export type GetPublishListResponse = GetPublishListResponses[keyof GetPublishListResponses];
+
+export type UpdatePublishListData = {
+    body: UpdatePublishListRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * List Id
+         */
+        list_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}';
+};
+
+export type UpdatePublishListErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePublishListError = UpdatePublishListErrors[keyof UpdatePublishListErrors];
+
+export type UpdatePublishListResponses = {
+    /**
+     * Successful Response
+     */
+    200: PublishListResponse;
+};
+
+export type UpdatePublishListResponse = UpdatePublishListResponses[keyof UpdatePublishListResponses];
+
+export type AddPublishListMembersData = {
+    body: AddMembersRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * List Id
+         */
+        list_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}/members';
+};
+
+export type AddPublishListMembersErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddPublishListMembersError = AddPublishListMembersErrors[keyof AddPublishListMembersErrors];
+
+export type AddPublishListMembersResponses = {
+    /**
+     * Response Addpublishlistmembers
+     *
+     * Successful Response
+     */
+    201: Array<PublishListMemberResponse>;
+};
+
+export type AddPublishListMembersResponse = AddPublishListMembersResponses[keyof AddPublishListMembersResponses];
+
+export type RemovePublishListMemberData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * List Id
+         */
+        list_id: string;
+        /**
+         * Member Id
+         */
+        member_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}/members/{member_id}';
+};
+
+export type RemovePublishListMemberErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type RemovePublishListMemberError = RemovePublishListMemberErrors[keyof RemovePublishListMemberErrors];
+
+export type RemovePublishListMemberResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type RemovePublishListMemberResponse = RemovePublishListMemberResponses[keyof RemovePublishListMemberResponses];
 
 export type ListPortfoliosData = {
     body?: never;
