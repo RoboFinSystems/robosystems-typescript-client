@@ -10,14 +10,17 @@
 
 import {
   deleteDocument,
+  getDocument,
   getDocumentSection,
   listDocuments,
   searchDocuments,
+  updateDocument,
   uploadDocument,
   uploadDocumentsBulk,
 } from '../sdk/sdk.gen'
 import type {
   BulkDocumentUploadResponse,
+  DocumentDetailResponse,
   DocumentListResponse,
   DocumentSection,
   DocumentUploadResponse,
@@ -54,6 +57,17 @@ export interface DocumentUploadOptions {
   folder?: string
   /** Optional external ID for upsert behavior */
   externalId?: string
+}
+
+export interface DocumentUpdateOptions {
+  /** Updated title */
+  title?: string
+  /** Updated markdown content */
+  content?: string
+  /** Updated tags (null to clear) */
+  tags?: string[] | null
+  /** Updated folder (null to clear) */
+  folder?: string | null
 }
 
 export class DocumentClient {
@@ -98,6 +112,57 @@ export class DocumentClient {
 
     if (response.error) {
       throw new Error(`Document upload failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return response.data as DocumentUploadResponse
+  }
+
+  /**
+   * Get a document with full content by ID.
+   *
+   * Returns the raw markdown content and metadata from PostgreSQL.
+   *
+   * @returns DocumentDetailResponse or null if not found.
+   */
+  async get(graphId: string, documentId: string): Promise<DocumentDetailResponse | null> {
+    const response = await getDocument({
+      path: { graph_id: graphId, document_id: documentId },
+    })
+
+    if (response.response.status === 404) {
+      return null
+    }
+
+    if (response.error) {
+      throw new Error(`Get document failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return response.data as DocumentDetailResponse
+  }
+
+  /**
+   * Update a document's content and/or metadata.
+   *
+   * Only provided fields are updated. Content is re-sectioned,
+   * re-embedded, and re-indexed in OpenSearch.
+   */
+  async update(
+    graphId: string,
+    documentId: string,
+    options: DocumentUpdateOptions
+  ): Promise<DocumentUploadResponse> {
+    const response = await updateDocument({
+      path: { graph_id: graphId, document_id: documentId },
+      body: {
+        title: options.title ?? undefined,
+        content: options.content ?? undefined,
+        tags: options.tags !== undefined ? options.tags : undefined,
+        folder: options.folder !== undefined ? options.folder : undefined,
+      },
+    })
+
+    if (response.error) {
+      throw new Error(`Update document failed: ${JSON.stringify(response.error)}`)
     }
 
     return response.data as DocumentUploadResponse

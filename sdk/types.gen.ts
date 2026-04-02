@@ -2467,11 +2467,75 @@ export type DetailedTransactionsResponse = {
 };
 
 /**
+ * DocumentDetailResponse
+ *
+ * Full document detail with raw content.
+ */
+export type DocumentDetailResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Folder
+     */
+    folder?: string | null;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * Source Type
+     */
+    source_type: string;
+    /**
+     * Source Provider
+     */
+    source_provider?: string | null;
+    /**
+     * Sections Indexed
+     */
+    sections_indexed: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
  * DocumentListItem
  *
  * A document in the document list.
  */
 export type DocumentListItem = {
+    /**
+     * Id
+     */
+    id: string;
     /**
      * Document Title
      */
@@ -2493,9 +2557,13 @@ export type DocumentListItem = {
      */
     tags?: Array<string> | null;
     /**
-     * Last Indexed
+     * Created At
      */
-    last_indexed?: string | null;
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
 };
 
 /**
@@ -2611,6 +2679,30 @@ export type DocumentSection = {
 };
 
 /**
+ * DocumentUpdateRequest
+ *
+ * Update a document's metadata and/or content.
+ */
+export type DocumentUpdateRequest = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Content
+     */
+    content?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Folder
+     */
+    folder?: string | null;
+};
+
+/**
  * DocumentUploadRequest
  *
  * Upload a markdown document for text indexing.
@@ -2654,6 +2746,10 @@ export type DocumentUploadRequest = {
  * Response from document upload.
  */
 export type DocumentUploadResponse = {
+    /**
+     * Id
+     */
+    id: string;
     /**
      * Document Id
      */
@@ -11735,36 +11831,6 @@ export type UploadDocumentResponses = {
 
 export type UploadDocumentResponse = UploadDocumentResponses[keyof UploadDocumentResponses];
 
-export type UploadDocumentsBulkData = {
-    body: BulkDocumentUploadRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/documents/bulk';
-};
-
-export type UploadDocumentsBulkErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UploadDocumentsBulkError = UploadDocumentsBulkErrors[keyof UploadDocumentsBulkErrors];
-
-export type UploadDocumentsBulkResponses = {
-    /**
-     * Successful Response
-     */
-    200: BulkDocumentUploadResponse;
-};
-
-export type UploadDocumentsBulkResponse = UploadDocumentsBulkResponses[keyof UploadDocumentsBulkResponses];
-
 export type DeleteDocumentData = {
     body?: never;
     path: {
@@ -11798,6 +11864,104 @@ export type DeleteDocumentResponses = {
 };
 
 export type DeleteDocumentResponse = DeleteDocumentResponses[keyof DeleteDocumentResponses];
+
+export type GetDocumentData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/documents/{document_id}';
+};
+
+export type GetDocumentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetDocumentError = GetDocumentErrors[keyof GetDocumentErrors];
+
+export type GetDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentDetailResponse;
+};
+
+export type GetDocumentResponse = GetDocumentResponses[keyof GetDocumentResponses];
+
+export type UpdateDocumentData = {
+    body: DocumentUpdateRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/documents/{document_id}';
+};
+
+export type UpdateDocumentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateDocumentError = UpdateDocumentErrors[keyof UpdateDocumentErrors];
+
+export type UpdateDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentUploadResponse;
+};
+
+export type UpdateDocumentResponse = UpdateDocumentResponses[keyof UpdateDocumentResponses];
+
+export type UploadDocumentsBulkData = {
+    body: BulkDocumentUploadRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/documents/bulk';
+};
+
+export type UploadDocumentsBulkErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UploadDocumentsBulkError = UploadDocumentsBulkErrors[keyof UploadDocumentsBulkErrors];
+
+export type UploadDocumentsBulkResponses = {
+    /**
+     * Successful Response
+     */
+    200: BulkDocumentUploadResponse;
+};
+
+export type UploadDocumentsBulkResponse = UploadDocumentsBulkResponses[keyof UploadDocumentsBulkResponses];
 
 export type GetMaterializationStatusData = {
     body?: never;
