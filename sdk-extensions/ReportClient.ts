@@ -133,6 +133,12 @@ export interface PublishListMember {
   addedAt: string
 }
 
+export interface PeriodSpecInput {
+  start: string
+  end: string
+  label: string
+}
+
 export interface CreateReportOptions {
   name: string
   mappingId: string
@@ -141,6 +147,8 @@ export interface CreateReportOptions {
   taxonomyId?: string
   periodType?: string
   comparative?: boolean
+  /** When set, overrides periodStart/periodEnd/comparative with N explicit periods. */
+  periods?: PeriodSpecInput[]
 }
 
 // ── Client ──────────────────────────────────────────────────────────────
@@ -166,17 +174,23 @@ export class ReportClient {
    * Create a report — generates facts for all structures in the taxonomy.
    */
   async create(graphId: string, options: CreateReportOptions): Promise<Report> {
+    const body: CreateReportRequest = {
+      name: options.name,
+      mapping_id: options.mappingId,
+      period_start: options.periodStart,
+      period_end: options.periodEnd,
+      taxonomy_id: options.taxonomyId ?? 'tax_usgaap_reporting',
+      period_type: options.periodType ?? 'quarterly',
+      comparative: options.comparative ?? true,
+    }
+
+    if (options.periods && options.periods.length > 0) {
+      body.periods = options.periods
+    }
+
     const response = await createReport({
       path: { graph_id: graphId },
-      body: {
-        name: options.name,
-        mapping_id: options.mappingId,
-        period_start: options.periodStart,
-        period_end: options.periodEnd,
-        taxonomy_id: options.taxonomyId ?? 'tax_usgaap_reporting',
-        period_type: options.periodType ?? 'quarterly',
-        comparative: options.comparative ?? true,
-      } as CreateReportRequest,
+      body,
     })
 
     if (response.error) {
