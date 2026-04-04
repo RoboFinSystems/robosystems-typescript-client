@@ -68,13 +68,18 @@ export interface Report {
 import type { Structure } from './LedgerClient'
 export type { Structure } from './LedgerClient'
 
+export interface StatementPeriod {
+  start: string
+  end: string
+  label: string
+}
+
 export interface StatementRow {
   elementId: string
   elementQname: string
   elementName: string
   classification: string
-  currentValue: number
-  priorValue: number | null
+  values: (number | null)[]
   isSubtotal: boolean
   depth: number
 }
@@ -84,10 +89,7 @@ export interface StatementData {
   structureId: string
   structureName: string
   structureType: string
-  periodStart: string
-  periodEnd: string
-  comparativePeriodStart: string | null
-  comparativePeriodEnd: string | null
+  periods: StatementPeriod[]
   rows: StatementRow[]
   validation: {
     passed: boolean
@@ -239,17 +241,17 @@ export class ReportClient {
       structureId: data.structure_id,
       structureName: data.structure_name,
       structureType: data.structure_type,
-      periodStart: data.period_start,
-      periodEnd: data.period_end,
-      comparativePeriodStart: data.comparative_period_start ?? null,
-      comparativePeriodEnd: data.comparative_period_end ?? null,
+      periods: (data.periods ?? []).map((p) => ({
+        start: p.start,
+        end: p.end,
+        label: p.label,
+      })),
       rows: (data.rows ?? []).map((r: FactRowResponse) => ({
         elementId: r.element_id,
         elementQname: r.element_qname,
         elementName: r.element_name,
         classification: r.classification,
-        currentValue: r.current_value,
-        priorValue: r.prior_value ?? null,
+        values: r.values ?? [],
         isSubtotal: r.is_subtotal ?? false,
         depth: r.depth ?? 0,
       })),
