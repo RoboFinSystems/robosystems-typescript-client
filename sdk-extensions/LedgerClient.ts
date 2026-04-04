@@ -10,7 +10,9 @@
 
 import {
   autoMapElements,
+  createClosingEntry,
   createMappingAssociation,
+  createSchedule,
   createStructure,
   deleteMappingAssociation,
   getLedgerAccountTree,
@@ -21,21 +23,34 @@ import {
   getMappedTrialBalance,
   getMappingCoverage,
   getMappingDetail,
+  getPeriodCloseStatus,
   getReportingTaxonomy,
+  getScheduleFacts,
   listElements,
   listLedgerAccounts,
   listLedgerTransactions,
   listMappings,
+  listSchedules,
   listStructures,
 } from '../sdk/sdk.gen'
 import type {
   AccountListResponse,
   AccountTreeResponse,
+  ClosingEntryResponse,
+  CreateClosingEntryRequest,
+  CreateScheduleRequest,
   LedgerSummaryResponse,
   LedgerTransactionDetailResponse,
   LedgerTransactionListResponse,
   MappingCoverageResponse,
   MappingDetailResponse,
+  PeriodCloseItemResponse,
+  PeriodCloseStatusResponse,
+  ScheduleCreatedResponse,
+  ScheduleFactResponse,
+  ScheduleFactsResponse,
+  ScheduleListResponse,
+  ScheduleSummaryResponse,
   TrialBalanceResponse,
 } from '../sdk/types.gen'
 
@@ -73,6 +88,81 @@ export interface Structure {
   id: string
   name: string
   structureType: string
+}
+
+export interface Schedule {
+  structureId: string
+  name: string
+  taxonomyName: string
+  entryTemplate: Record<string, unknown> | null
+  scheduleMetadata: Record<string, unknown> | null
+  totalPeriods: number
+  periodsWithEntries: number
+}
+
+export interface ScheduleCreated {
+  structureId: string
+  name: string
+  taxonomyId: string
+  totalPeriods: number
+  totalFacts: number
+}
+
+export interface ScheduleFact {
+  elementId: string
+  elementName: string
+  value: number
+  periodStart: string
+  periodEnd: string
+}
+
+export interface PeriodCloseItem {
+  structureId: string
+  structureName: string
+  amount: number
+  status: string
+  entryId: string | null
+}
+
+export interface PeriodCloseStatus {
+  fiscalPeriodStart: string
+  fiscalPeriodEnd: string
+  periodStatus: string
+  schedules: PeriodCloseItem[]
+  totalDraft: number
+  totalPosted: number
+}
+
+export interface ClosingEntry {
+  entryId: string
+  status: string
+  postingDate: string
+  memo: string
+  debitElementId: string
+  creditElementId: string
+  amount: number
+}
+
+export interface CreateScheduleOptions {
+  name: string
+  elementIds: string[]
+  periodStart: string
+  periodEnd: string
+  monthlyAmount: number
+  entryTemplate: {
+    debitElementId: string
+    creditElementId: string
+    entryType?: string
+    memoTemplate?: string
+  }
+  taxonomyId?: string
+  scheduleMetadata?: {
+    method?: string
+    originalAmount?: number
+    residualValue?: number
+    usefulLifeMonths?: number
+    assetElementId?: string
+  }
 }
 
 // ── Client ──────────────────────────────────────────────────────────────
@@ -481,6 +571,183 @@ export class LedgerClient {
     const data = response.data as Record<string, unknown> | undefined
     return {
       operationId: data?.operation_id as string | undefined,
+    }
+  }
+
+  // ── Schedules ──────────────────────────────────────────────────────
+
+  /**
+   * Create a schedule with pre-generated monthly facts.
+   */
+  async createSchedule(graphId: string, options: CreateScheduleOptions): Promise<ScheduleCreated> {
+    const body: CreateScheduleRequest = {
+      name: options.name,
+      element_ids: options.elementIds,
+      period_start: options.periodStart,
+      period_end: options.periodEnd,
+      monthly_amount: options.monthlyAmount,
+      entry_template: {
+        debit_element_id: options.entryTemplate.debitElementId,
+        credit_element_id: options.entryTemplate.creditElementId,
+        entry_type: options.entryTemplate.entryType,
+        memo_template: options.entryTemplate.memoTemplate,
+      },
+      taxonomy_id: options.taxonomyId,
+      schedule_metadata: options.scheduleMetadata
+        ? {
+            method: options.scheduleMetadata.method,
+            original_amount: options.scheduleMetadata.originalAmount,
+            residual_value: options.scheduleMetadata.residualValue,
+            useful_life_months: options.scheduleMetadata.usefulLifeMonths,
+            asset_element_id: options.scheduleMetadata.assetElementId,
+          }
+        : undefined,
+    }
+
+    const response = await createSchedule({
+      path: { graph_id: graphId },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Create schedule failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as ScheduleCreatedResponse
+    return {
+      structureId: data.structure_id,
+      name: data.name,
+      taxonomyId: data.taxonomy_id,
+      totalPeriods: data.total_periods,
+      totalFacts: data.total_facts,
+    }
+  }
+
+  /**
+   * List all schedules for a graph.
+   */
+  async listSchedules(graphId: string): Promise<Schedule[]> {
+    const response = await listSchedules({
+      path: { graph_id: graphId },
+    })
+
+    if (response.error) {
+      throw new Error(`List schedules failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as ScheduleListResponse
+    return (data.schedules ?? []).map((s: ScheduleSummaryResponse) => ({
+      structureId: s.structure_id,
+      name: s.name,
+      taxonomyName: s.taxonomy_name,
+      entryTemplate: s.entry_template ?? null,
+      scheduleMetadata: s.schedule_metadata ?? null,
+      totalPeriods: s.total_periods,
+      periodsWithEntries: s.periods_with_entries,
+    }))
+  }
+
+  /**
+   * Get facts for a schedule, optionally filtered by period.
+   */
+  async getScheduleFacts(
+    graphId: string,
+    structureId: string,
+    periodStart?: string,
+    periodEnd?: string
+  ): Promise<ScheduleFact[]> {
+    const response = await getScheduleFacts({
+      path: { graph_id: graphId, structure_id: structureId },
+      query: {
+        period_start: periodStart ?? null,
+        period_end: periodEnd ?? null,
+      },
+    })
+
+    if (response.error) {
+      throw new Error(`Get schedule facts failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as ScheduleFactsResponse
+    return (data.facts ?? []).map((f: ScheduleFactResponse) => ({
+      elementId: f.element_id,
+      elementName: f.element_name,
+      value: f.value,
+      periodStart: f.period_start,
+      periodEnd: f.period_end,
+    }))
+  }
+
+  /**
+   * Get close status for all schedules in a fiscal period.
+   */
+  async getPeriodCloseStatus(
+    graphId: string,
+    periodStart: string,
+    periodEnd: string
+  ): Promise<PeriodCloseStatus> {
+    const response = await getPeriodCloseStatus({
+      path: { graph_id: graphId },
+      query: { period_start: periodStart, period_end: periodEnd },
+    })
+
+    if (response.error) {
+      throw new Error(`Get period close status failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as PeriodCloseStatusResponse
+    return {
+      fiscalPeriodStart: data.fiscal_period_start,
+      fiscalPeriodEnd: data.fiscal_period_end,
+      periodStatus: data.period_status,
+      schedules: (data.schedules ?? []).map((s: PeriodCloseItemResponse) => ({
+        structureId: s.structure_id,
+        structureName: s.structure_name,
+        amount: s.amount,
+        status: s.status,
+        entryId: s.entry_id ?? null,
+      })),
+      totalDraft: data.total_draft,
+      totalPosted: data.total_posted,
+    }
+  }
+
+  /**
+   * Create a draft closing entry from a schedule's facts for a period.
+   */
+  async createClosingEntry(
+    graphId: string,
+    structureId: string,
+    postingDate: string,
+    periodStart: string,
+    periodEnd: string,
+    memo?: string
+  ): Promise<ClosingEntry> {
+    const body: CreateClosingEntryRequest = {
+      posting_date: postingDate,
+      period_start: periodStart,
+      period_end: periodEnd,
+      memo: memo ?? undefined,
+    }
+
+    const response = await createClosingEntry({
+      path: { graph_id: graphId, structure_id: structureId },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Create closing entry failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as ClosingEntryResponse
+    return {
+      entryId: data.entry_id,
+      status: data.status,
+      postingDate: data.posting_date,
+      memo: data.memo,
+      debitElementId: data.debit_element_id,
+      creditElementId: data.credit_element_id,
+      amount: data.amount,
     }
   }
 }
