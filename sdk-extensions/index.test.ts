@@ -23,17 +23,11 @@ describe('RoboSystemsExtensions', () => {
       expect(extensions).toBeDefined()
       expect(extensions.query).toBeDefined()
       expect(extensions.operations).toBeDefined()
-      expect(extensions.files).toBeDefined()
-      expect(extensions.materialization).toBeDefined()
-      expect(extensions.tables).toBeDefined()
-      expect(extensions.graphs).toBeDefined()
+      expect(extensions.ledger).toBeDefined()
+      expect(extensions.reports).toBeDefined()
       // Verify clients have expected methods
       expect(typeof extensions.query.executeQuery).toBe('function')
       expect(typeof extensions.operations.monitorOperation).toBe('function')
-      expect(typeof extensions.files.upload).toBe('function')
-      expect(typeof extensions.materialization.materialize).toBe('function')
-      expect(typeof extensions.tables.list).toBe('function')
-      expect(typeof extensions.graphs.createGraphAndWait).toBe('function')
     })
 
     it('should create instance with custom baseUrl', () => {
@@ -43,8 +37,6 @@ describe('RoboSystemsExtensions', () => {
 
       expect(extensions.query).toBeDefined()
       expect(extensions.operations).toBeDefined()
-      expect(extensions.tables).toBeDefined()
-      expect(extensions.graphs).toBeDefined()
     })
 
     it('should create instance with JWT token', () => {
@@ -73,7 +65,6 @@ describe('RoboSystemsExtensions', () => {
       })
 
       expect(extensions.query).toBeDefined()
-      expect(extensions.tables).toBeDefined()
     })
 
     it('should create instance with retry config', () => {
@@ -94,8 +85,6 @@ describe('RoboSystemsExtensions', () => {
       // Should have created clients successfully
       expect(extensions.query).toBeDefined()
       expect(extensions.operations).toBeDefined()
-      expect(extensions.tables).toBeDefined()
-      expect(extensions.graphs).toBeDefined()
     })
   })
 
@@ -160,13 +149,11 @@ describe('RoboSystemsExtensions', () => {
 
       const queryCloseSpy = vi.spyOn(extensions.query, 'close')
       const operationsCloseSpy = vi.spyOn(extensions.operations, 'closeAll')
-      const graphsCloseSpy = vi.spyOn(extensions.graphs, 'close')
 
       extensions.close()
 
       expect(queryCloseSpy).toHaveBeenCalled()
       expect(operationsCloseSpy).toHaveBeenCalled()
-      expect(graphsCloseSpy).toHaveBeenCalled()
     })
 
     it('should not throw when called multiple times', () => {
@@ -197,16 +184,10 @@ describe('RoboSystemsExtensions', () => {
 
       expect(extensions.query).toBeDefined()
       expect(extensions.operations).toBeDefined()
-      expect(extensions.files).toBeDefined()
-      expect(extensions.materialization).toBeDefined()
-      expect(extensions.tables).toBeDefined()
-      expect(extensions.graphs).toBeDefined()
+      expect(extensions.ledger).toBeDefined()
+      expect(extensions.reports).toBeDefined()
       expect(typeof extensions.query.executeQuery).toBe('function')
       expect(typeof extensions.operations.monitorOperation).toBe('function')
-      expect(typeof extensions.files.upload).toBe('function')
-      expect(typeof extensions.materialization.materialize).toBe('function')
-      expect(typeof extensions.tables.list).toBe('function')
-      expect(typeof extensions.graphs.createGraphAndWait).toBe('function')
     })
 
     it('should use SDK client baseUrl when no baseUrl provided', () => {
@@ -215,21 +196,6 @@ describe('RoboSystemsExtensions', () => {
       // Should use the mocked SDK client baseUrl
       expect(extensions.query).toBeDefined()
       expect(extensions.operations).toBeDefined()
-      expect(extensions.tables).toBeDefined()
-      expect(extensions.graphs).toBeDefined()
-    })
-  })
-
-  describe('graphs client', () => {
-    it('should have graphs client with all methods', () => {
-      const extensions = new RoboSystemsExtensions()
-
-      expect(extensions.graphs).toBeDefined()
-      expect(typeof extensions.graphs.createGraphAndWait).toBe('function')
-      expect(typeof extensions.graphs.getGraphInfo).toBe('function')
-      expect(typeof extensions.graphs.listGraphs).toBe('function')
-      expect(typeof extensions.graphs.deleteGraph).toBe('function')
-      expect(typeof extensions.graphs.close).toBe('function')
     })
   })
 })

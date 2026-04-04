@@ -577,6 +577,68 @@ export type AgentResponse = {
 };
 
 /**
+ * AssociationResponse
+ */
+export type AssociationResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * From Element Id
+     */
+    from_element_id: string;
+    /**
+     * From Element Name
+     */
+    from_element_name?: string | null;
+    /**
+     * From Element Qname
+     */
+    from_element_qname?: string | null;
+    /**
+     * To Element Id
+     */
+    to_element_id: string;
+    /**
+     * To Element Name
+     */
+    to_element_name?: string | null;
+    /**
+     * To Element Qname
+     */
+    to_element_qname?: string | null;
+    /**
+     * Association Type
+     */
+    association_type: string;
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Weight
+     */
+    weight?: number | null;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+    /**
+     * Suggested By
+     */
+    suggested_by?: string | null;
+    /**
+     * Approved By
+     */
+    approved_by?: string | null;
+};
+
+/**
  * AuthResponse
  *
  * Authentication response model.
@@ -1161,6 +1223,40 @@ export type CheckoutStatusResponse = {
 };
 
 /**
+ * ClosingEntryResponse
+ */
+export type ClosingEntryResponse = {
+    /**
+     * Entry Id
+     */
+    entry_id: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Posting Date
+     */
+    posting_date: string;
+    /**
+     * Memo
+     */
+    memo: string;
+    /**
+     * Debit Element Id
+     */
+    debit_element_id: string;
+    /**
+     * Credit Element Id
+     */
+    credit_element_id: string;
+    /**
+     * Amount
+     */
+    amount: number;
+};
+
+/**
  * ConnectionOptionsResponse
  *
  * Response with all available connection options.
@@ -1525,6 +1621,36 @@ export type CreateCheckoutRequest = {
 };
 
 /**
+ * CreateClosingEntryRequest
+ */
+export type CreateClosingEntryRequest = {
+    /**
+     * Posting Date
+     *
+     * Posting date for the entry
+     */
+    posting_date: string;
+    /**
+     * Period Start
+     *
+     * Period start
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * Period end
+     */
+    period_end: string;
+    /**
+     * Memo
+     *
+     * Override memo
+     */
+    memo?: string | null;
+};
+
+/**
  * CreateConnectionRequest
  *
  * Request to create a new connection.
@@ -1728,6 +1854,12 @@ export type CreateReportRequest = {
      * Include prior period comparison
      */
     comparative?: boolean;
+    /**
+     * Periods
+     *
+     * Multi-period columns. Overrides period_start/period_end/comparative when set.
+     */
+    periods?: Array<PeriodSpec> | null;
 };
 
 /**
@@ -1742,6 +1874,50 @@ export type CreateRepositorySubscriptionRequest = {
      * Plan name for the repository subscription
      */
     plan_name: string;
+};
+
+/**
+ * CreateScheduleRequest
+ */
+export type CreateScheduleRequest = {
+    /**
+     * Name
+     *
+     * Schedule name
+     */
+    name: string;
+    /**
+     * Taxonomy Id
+     *
+     * Taxonomy ID (auto-creates if omitted)
+     */
+    taxonomy_id?: string | null;
+    /**
+     * Element Ids
+     *
+     * Element IDs to include
+     */
+    element_ids: Array<string>;
+    /**
+     * Period Start
+     *
+     * First period start
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * Last period end
+     */
+    period_end: string;
+    /**
+     * Monthly Amount
+     *
+     * Monthly amount in cents
+     */
+    monthly_amount: number;
+    entry_template: EntryTemplateRequest;
+    schedule_metadata?: ScheduleMetadataRequest | null;
 };
 
 /**
@@ -1799,7 +1975,7 @@ export type CreateStructureRequest = {
     /**
      * Structure Type
      */
-    structure_type: 'chart_of_accounts' | 'income_statement' | 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'custom';
+    structure_type: 'chart_of_accounts' | 'income_statement' | 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'custom';
     /**
      * Taxonomy Id
      */
@@ -1871,7 +2047,7 @@ export type CreateTaxonomyRequest = {
     /**
      * Taxonomy Type
      */
-    taxonomy_type: 'chart_of_accounts' | 'reporting' | 'mapping';
+    taxonomy_type: 'chart_of_accounts' | 'reporting' | 'mapping' | 'schedule';
     /**
      * Version
      */
@@ -2801,68 +2977,6 @@ export type DownloadQuota = {
 };
 
 /**
- * ElementAssociationResponse
- */
-export type ElementAssociationResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * From Element Id
-     */
-    from_element_id: string;
-    /**
-     * From Element Name
-     */
-    from_element_name?: string | null;
-    /**
-     * From Element Qname
-     */
-    from_element_qname?: string | null;
-    /**
-     * To Element Id
-     */
-    to_element_id: string;
-    /**
-     * To Element Name
-     */
-    to_element_name?: string | null;
-    /**
-     * To Element Qname
-     */
-    to_element_qname?: string | null;
-    /**
-     * Association Type
-     */
-    association_type: string;
-    /**
-     * Order Value
-     */
-    order_value?: number | null;
-    /**
-     * Weight
-     */
-    weight?: number | null;
-    /**
-     * Confidence
-     */
-    confidence?: number | null;
-    /**
-     * Suggested By
-     */
-    suggested_by?: string | null;
-    /**
-     * Approved By
-     */
-    approved_by?: string | null;
-};
-
-/**
  * ElementListResponse
  */
 export type ElementListResponse = {
@@ -3040,6 +3154,36 @@ export type EnhancedFileStatusLayers = {
 };
 
 /**
+ * EntryTemplateRequest
+ */
+export type EntryTemplateRequest = {
+    /**
+     * Debit Element Id
+     *
+     * Element to debit (e.g., Depreciation Expense)
+     */
+    debit_element_id: string;
+    /**
+     * Credit Element Id
+     *
+     * Element to credit (e.g., Accumulated Depreciation)
+     */
+    credit_element_id: string;
+    /**
+     * Entry Type
+     *
+     * Entry type for generated entries
+     */
+    entry_type?: string;
+    /**
+     * Memo Template
+     *
+     * Memo template ({structure_name} is replaced)
+     */
+    memo_template?: string;
+};
+
+/**
  * ErrorResponse
  *
  * Standard error response format used across all API endpoints.
@@ -3095,13 +3239,9 @@ export type FactRowResponse = {
      */
     classification: string;
     /**
-     * Current Value
+     * Values
      */
-    current_value: number;
-    /**
-     * Prior Value
-     */
-    prior_value?: number | null;
+    values?: Array<number | null>;
     /**
      * Is Subtotal
      */
@@ -5073,7 +5213,7 @@ export type MappingDetailResponse = {
     /**
      * Associations
      */
-    associations: Array<ElementAssociationResponse>;
+    associations: Array<AssociationResponse>;
     /**
      * Total Associations
      */
@@ -5875,6 +6015,82 @@ export type PerformanceInsights = {
 };
 
 /**
+ * PeriodCloseItemResponse
+ */
+export type PeriodCloseItemResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Structure Name
+     */
+    structure_name: string;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Entry Id
+     */
+    entry_id?: string | null;
+};
+
+/**
+ * PeriodCloseStatusResponse
+ */
+export type PeriodCloseStatusResponse = {
+    /**
+     * Fiscal Period Start
+     */
+    fiscal_period_start: string;
+    /**
+     * Fiscal Period End
+     */
+    fiscal_period_end: string;
+    /**
+     * Period Status
+     */
+    period_status: string;
+    /**
+     * Schedules
+     */
+    schedules: Array<PeriodCloseItemResponse>;
+    /**
+     * Total Draft
+     */
+    total_draft: number;
+    /**
+     * Total Posted
+     */
+    total_posted: number;
+};
+
+/**
+ * PeriodSpec
+ *
+ * A reporting period column.
+ */
+export type PeriodSpec = {
+    /**
+     * Start
+     */
+    start: string;
+    /**
+     * End
+     */
+    end: string;
+    /**
+     * Label
+     */
+    label: string;
+};
+
+/**
  * PortalSessionResponse
  *
  * Response for customer portal session creation.
@@ -6236,13 +6452,19 @@ export type RegenerateReportRequest = {
      *
      * New period start date
      */
-    period_start: string;
+    period_start?: string | null;
     /**
      * Period End
      *
      * New period end date
      */
-    period_end: string;
+    period_end?: string | null;
+    /**
+     * Periods
+     *
+     * New period columns. Overrides period_start/period_end.
+     */
+    periods?: Array<PeriodSpec> | null;
 };
 
 /**
@@ -6325,6 +6547,10 @@ export type ReportResponse = {
      * Comparative
      */
     comparative: boolean;
+    /**
+     * Periods
+     */
+    periods?: Array<PeriodSpec> | null;
     /**
      * Mapping Id
      */
@@ -6593,6 +6819,156 @@ export type SsoTokenResponse = {
      * Available apps for this user
      */
     apps: Array<string>;
+};
+
+/**
+ * ScheduleCreatedResponse
+ */
+export type ScheduleCreatedResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Total Periods
+     */
+    total_periods: number;
+    /**
+     * Total Facts
+     */
+    total_facts: number;
+};
+
+/**
+ * ScheduleFactResponse
+ */
+export type ScheduleFactResponse = {
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Element Name
+     */
+    element_name: string;
+    /**
+     * Value
+     */
+    value: number;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+};
+
+/**
+ * ScheduleFactsResponse
+ */
+export type ScheduleFactsResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Facts
+     */
+    facts: Array<ScheduleFactResponse>;
+};
+
+/**
+ * ScheduleListResponse
+ */
+export type ScheduleListResponse = {
+    /**
+     * Schedules
+     */
+    schedules: Array<ScheduleSummaryResponse>;
+};
+
+/**
+ * ScheduleMetadataRequest
+ */
+export type ScheduleMetadataRequest = {
+    /**
+     * Method
+     *
+     * Calculation method
+     */
+    method?: string;
+    /**
+     * Original Amount
+     *
+     * Cost basis in cents
+     */
+    original_amount?: number;
+    /**
+     * Residual Value
+     *
+     * Salvage value in cents
+     */
+    residual_value?: number;
+    /**
+     * Useful Life Months
+     *
+     * Useful life in months
+     */
+    useful_life_months?: number;
+    /**
+     * Asset Element Id
+     *
+     * BS asset element for net book value
+     */
+    asset_element_id?: string | null;
+};
+
+/**
+ * ScheduleSummaryResponse
+ */
+export type ScheduleSummaryResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Taxonomy Name
+     */
+    taxonomy_name: string;
+    /**
+     * Entry Template
+     */
+    entry_template?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Schedule Metadata
+     */
+    schedule_metadata?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Total Periods
+     */
+    total_periods: number;
+    /**
+     * Periods With Entries
+     */
+    periods_with_entries: number;
 };
 
 /**
@@ -7156,21 +7532,9 @@ export type StatementResponse = {
      */
     structure_type: string;
     /**
-     * Period Start
+     * Periods
      */
-    period_start: string;
-    /**
-     * Period End
-     */
-    period_end: string;
-    /**
-     * Comparative Period Start
-     */
-    comparative_period_start?: string | null;
-    /**
-     * Comparative Period End
-     */
-    comparative_period_end?: string | null;
+    periods?: Array<PeriodSpec>;
     /**
      * Rows
      */
@@ -13512,7 +13876,7 @@ export type CreateMappingAssociationResponses = {
     /**
      * Successful Response
      */
-    201: ElementAssociationResponse;
+    201: AssociationResponse;
 };
 
 export type CreateMappingAssociationResponse = CreateMappingAssociationResponses[keyof CreateMappingAssociationResponses];
@@ -14075,6 +14439,194 @@ export type ShareReportResponses = {
 };
 
 export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
+
+export type ListSchedulesData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/schedules';
+};
+
+export type ListSchedulesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListSchedulesError = ListSchedulesErrors[keyof ListSchedulesErrors];
+
+export type ListSchedulesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScheduleListResponse;
+};
+
+export type ListSchedulesResponse = ListSchedulesResponses[keyof ListSchedulesResponses];
+
+export type CreateScheduleData = {
+    body: CreateScheduleRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/schedules';
+};
+
+export type CreateScheduleErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateScheduleError = CreateScheduleErrors[keyof CreateScheduleErrors];
+
+export type CreateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    201: ScheduleCreatedResponse;
+};
+
+export type CreateScheduleResponse = CreateScheduleResponses[keyof CreateScheduleResponses];
+
+export type GetScheduleFactsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Structure Id
+         *
+         * Schedule structure ID
+         */
+        structure_id: string;
+    };
+    query?: {
+        /**
+         * Period Start
+         *
+         * Filter: period start
+         */
+        period_start?: string | null;
+        /**
+         * Period End
+         *
+         * Filter: period end
+         */
+        period_end?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/facts';
+};
+
+export type GetScheduleFactsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetScheduleFactsError = GetScheduleFactsErrors[keyof GetScheduleFactsErrors];
+
+export type GetScheduleFactsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ScheduleFactsResponse;
+};
+
+export type GetScheduleFactsResponse = GetScheduleFactsResponses[keyof GetScheduleFactsResponses];
+
+export type GetPeriodCloseStatusData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query: {
+        /**
+         * Period Start
+         *
+         * Fiscal period start
+         */
+        period_start: string;
+        /**
+         * Period End
+         *
+         * Fiscal period end
+         */
+        period_end: string;
+    };
+    url: '/v1/ledger/{graph_id}/schedules/close-status';
+};
+
+export type GetPeriodCloseStatusErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPeriodCloseStatusError = GetPeriodCloseStatusErrors[keyof GetPeriodCloseStatusErrors];
+
+export type GetPeriodCloseStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: PeriodCloseStatusResponse;
+};
+
+export type GetPeriodCloseStatusResponse = GetPeriodCloseStatusResponses[keyof GetPeriodCloseStatusResponses];
+
+export type CreateClosingEntryData = {
+    body: CreateClosingEntryRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Structure Id
+         *
+         * Schedule structure ID
+         */
+        structure_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/closing-entry';
+};
+
+export type CreateClosingEntryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateClosingEntryError = CreateClosingEntryErrors[keyof CreateClosingEntryErrors];
+
+export type CreateClosingEntryResponses = {
+    /**
+     * Successful Response
+     */
+    201: ClosingEntryResponse;
+};
+
+export type CreateClosingEntryResponse = CreateClosingEntryResponses[keyof CreateClosingEntryResponses];
 
 export type ListPublishListsData = {
     body?: never;

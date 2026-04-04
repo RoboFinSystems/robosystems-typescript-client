@@ -68,13 +68,18 @@ export interface Report {
 import type { Structure } from './LedgerClient'
 export type { Structure } from './LedgerClient'
 
+export interface StatementPeriod {
+  start: string
+  end: string
+  label: string
+}
+
 export interface StatementRow {
   elementId: string
   elementQname: string
   elementName: string
   classification: string
-  currentValue: number
-  priorValue: number | null
+  values: (number | null)[]
   isSubtotal: boolean
   depth: number
 }
@@ -84,10 +89,7 @@ export interface StatementData {
   structureId: string
   structureName: string
   structureType: string
-  periodStart: string
-  periodEnd: string
-  comparativePeriodStart: string | null
-  comparativePeriodEnd: string | null
+  periods: StatementPeriod[]
   rows: StatementRow[]
   validation: {
     passed: boolean
@@ -131,6 +133,12 @@ export interface PublishListMember {
   addedAt: string
 }
 
+export interface PeriodSpecInput {
+  start: string
+  end: string
+  label: string
+}
+
 export interface CreateReportOptions {
   name: string
   mappingId: string
@@ -139,6 +147,8 @@ export interface CreateReportOptions {
   taxonomyId?: string
   periodType?: string
   comparative?: boolean
+  /** When set, overrides periodStart/periodEnd/comparative with N explicit periods. */
+  periods?: PeriodSpecInput[]
 }
 
 // ── Client ──────────────────────────────────────────────────────────────
@@ -164,17 +174,23 @@ export class ReportClient {
    * Create a report — generates facts for all structures in the taxonomy.
    */
   async create(graphId: string, options: CreateReportOptions): Promise<Report> {
+    const body: CreateReportRequest = {
+      name: options.name,
+      mapping_id: options.mappingId,
+      period_start: options.periodStart,
+      period_end: options.periodEnd,
+      taxonomy_id: options.taxonomyId ?? 'tax_usgaap_reporting',
+      period_type: options.periodType ?? 'quarterly',
+      comparative: options.comparative ?? true,
+    }
+
+    if (options.periods && options.periods.length > 0) {
+      body.periods = options.periods
+    }
+
     const response = await createReport({
       path: { graph_id: graphId },
-      body: {
-        name: options.name,
-        mapping_id: options.mappingId,
-        period_start: options.periodStart,
-        period_end: options.periodEnd,
-        taxonomy_id: options.taxonomyId ?? 'tax_usgaap_reporting',
-        period_type: options.periodType ?? 'quarterly',
-        comparative: options.comparative ?? true,
-      } as CreateReportRequest,
+      body,
     })
 
     if (response.error) {
@@ -239,17 +255,17 @@ export class ReportClient {
       structureId: data.structure_id,
       structureName: data.structure_name,
       structureType: data.structure_type,
-      periodStart: data.period_start,
-      periodEnd: data.period_end,
-      comparativePeriodStart: data.comparative_period_start ?? null,
-      comparativePeriodEnd: data.comparative_period_end ?? null,
+      periods: (data.periods ?? []).map((p) => ({
+        start: p.start,
+        end: p.end,
+        label: p.label,
+      })),
       rows: (data.rows ?? []).map((r: FactRowResponse) => ({
         elementId: r.element_id,
         elementQname: r.element_qname,
         elementName: r.element_name,
         classification: r.classification,
-        currentValue: r.current_value,
-        priorValue: r.prior_value ?? null,
+        values: r.values ?? [],
         isSubtotal: r.is_subtotal ?? false,
         depth: r.depth ?? 0,
       })),
