@@ -1417,33 +1417,9 @@ export type ConnectionResponse = {
 /**
  * ContentLimits
  *
- * Graph content limits (nodes, relationships, rows).
+ * Per-operation materialization limits.
  */
 export type ContentLimits = {
-    /**
-     * Max Nodes
-     *
-     * Maximum nodes allowed
-     */
-    max_nodes: number;
-    /**
-     * Current Nodes
-     *
-     * Current node count
-     */
-    current_nodes?: number | null;
-    /**
-     * Max Relationships
-     *
-     * Maximum relationships allowed
-     */
-    max_relationships: number;
-    /**
-     * Current Relationships
-     *
-     * Current relationship count
-     */
-    current_relationships?: number | null;
     /**
      * Max Rows Per Copy
      *
@@ -1462,12 +1438,6 @@ export type ContentLimits = {
      * Rows per materialization chunk
      */
     chunk_size_rows: number;
-    /**
-     * Approaching Limits
-     *
-     * List of limits being approached (>80%)
-     */
-    approaching_limits?: Array<string>;
 };
 
 /**
@@ -2496,6 +2466,32 @@ export type DatabaseInfoResponse = {
      * Date of last backup
      */
     last_backup_date?: string | null;
+};
+
+/**
+ * DatabaseStorageEntry
+ *
+ * Storage for a single database on the instance.
+ */
+export type DatabaseStorageEntry = {
+    /**
+     * Graph Id
+     *
+     * Database identifier
+     */
+    graph_id: string;
+    /**
+     * Is Parent
+     *
+     * Whether this is the parent graph
+     */
+    is_parent?: boolean;
+    /**
+     * Size Mb
+     *
+     * Database size in MB
+     */
+    size_mb?: number | null;
 };
 
 /**
@@ -3611,7 +3607,7 @@ export type GraphInfo = {
     /**
      * Status
      *
-     * Graph lifecycle status: queued, provisioning, active, suspended
+     * Graph lifecycle status: active, suspended, deprovisioned
      */
     status?: string;
 };
@@ -3671,9 +3667,13 @@ export type GraphLimitsResponse = {
      */
     credits?: CreditLimits | null;
     /**
-     * Graph content limits (if applicable)
+     * Per-operation materialization limits (if applicable)
      */
     content?: ContentLimits | null;
+    /**
+     * Aggregate instance storage usage (user graphs only)
+     */
+    instance?: InstanceUsage | null;
 };
 
 /**
@@ -3939,12 +3939,6 @@ export type GraphSubscriptionTier = {
      * Whether priority support is included
      */
     priority_support: boolean;
-    /**
-     * Max Queries Per Hour
-     *
-     * Maximum queries per hour
-     */
-    max_queries_per_hour?: number | null;
     /**
      * Max Subgraphs
      *
@@ -4440,6 +4434,53 @@ export type InitialEntityData = {
      * Employer Identification Number
      */
     ein?: string | null;
+};
+
+/**
+ * InstanceUsage
+ *
+ * Aggregate storage usage across the dedicated instance.
+ *
+ * Covers the parent graph, all subgraphs, DuckDB staging, and
+ * future LanceDB vector indexes.
+ */
+export type InstanceUsage = {
+    /**
+     * Node Count
+     *
+     * Current node count (informational, no limit enforced)
+     */
+    node_count?: number | null;
+    /**
+     * Total Storage Gb
+     *
+     * Total storage used across all databases in GB
+     */
+    total_storage_gb?: number | null;
+    /**
+     * Limit Gb
+     *
+     * Soft storage limit for this tier in GB
+     */
+    limit_gb: number;
+    /**
+     * Usage Percentage
+     *
+     * Storage usage as percentage of limit (e.g. 105.2)
+     */
+    usage_percentage?: number | null;
+    /**
+     * Status
+     *
+     * Instance status: 'healthy' (<80%), 'approaching' (80-100%), 'over_limit' (>100%)
+     */
+    status: string;
+    /**
+     * Databases
+     *
+     * Per-database storage breakdown
+     */
+    databases?: Array<DatabaseStorageEntry>;
 };
 
 /**
@@ -7255,6 +7296,12 @@ export type SearchRequest = {
      */
     date_to?: string | null;
     /**
+     * Semantic
+     *
+     * Enable hybrid semantic search (BM25 + KNN). Default is BM25-only for speed.
+     */
+    semantic?: boolean;
+    /**
      * Size
      *
      * Max results to return
@@ -7544,50 +7591,6 @@ export type StatementResponse = {
      * Unmapped Count
      */
     unmapped_count?: number;
-};
-
-/**
- * StorageLimitResponse
- *
- * Storage limit information response.
- */
-export type StorageLimitResponse = {
-    /**
-     * Graph Id
-     */
-    graph_id: string;
-    /**
-     * Current Storage Gb
-     */
-    current_storage_gb: number;
-    /**
-     * Effective Limit Gb
-     */
-    effective_limit_gb: number;
-    /**
-     * Usage Percentage
-     */
-    usage_percentage: number;
-    /**
-     * Within Limit
-     */
-    within_limit: boolean;
-    /**
-     * Approaching Limit
-     */
-    approaching_limit: boolean;
-    /**
-     * Needs Warning
-     */
-    needs_warning: boolean;
-    /**
-     * Has Override
-     */
-    has_override: boolean;
-    /**
-     * Recommendations
-     */
-    recommendations?: Array<string> | null;
 };
 
 /**
@@ -11377,101 +11380,6 @@ export type CheckCreditBalanceResponses = {
 };
 
 export type CheckCreditBalanceResponse = CheckCreditBalanceResponses[keyof CheckCreditBalanceResponses];
-
-export type GetStorageUsageData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         *
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Days
-         *
-         * Number of days of history to return
-         */
-        days?: number;
-    };
-    url: '/v1/graphs/{graph_id}/credits/storage/usage';
-};
-
-export type GetStorageUsageErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve storage usage
-     */
-    500: ErrorResponse;
-};
-
-export type GetStorageUsageError = GetStorageUsageErrors[keyof GetStorageUsageErrors];
-
-export type GetStorageUsageResponses = {
-    /**
-     * Response Getstorageusage
-     *
-     * Storage usage retrieved successfully
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type GetStorageUsageResponse = GetStorageUsageResponses[keyof GetStorageUsageResponses];
-
-export type CheckStorageLimitsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         *
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/credits/storage/limits';
-};
-
-export type CheckStorageLimitsErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * No credit pool found for graph
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to retrieve storage limits
-     */
-    500: ErrorResponse;
-};
-
-export type CheckStorageLimitsError = CheckStorageLimitsErrors[keyof CheckStorageLimitsErrors];
-
-export type CheckStorageLimitsResponses = {
-    /**
-     * Storage limit information retrieved successfully
-     */
-    200: StorageLimitResponse;
-};
-
-export type CheckStorageLimitsResponse = CheckStorageLimitsResponses[keyof CheckStorageLimitsResponses];
 
 export type GetDatabaseHealthData = {
     body?: never;
