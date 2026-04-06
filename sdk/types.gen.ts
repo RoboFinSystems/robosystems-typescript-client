@@ -11206,7 +11206,7 @@ export type GetCreditSummaryData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/credits/summary';
+    url: '/v1/graphs/{graph_id}/credits';
 };
 
 export type GetCreditSummaryErrors = {
@@ -11319,67 +11319,6 @@ export type ListCreditTransactionsResponses = {
 };
 
 export type ListCreditTransactionsResponse = ListCreditTransactionsResponses[keyof ListCreditTransactionsResponses];
-
-export type CheckCreditBalanceData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         *
-         * Graph database identifier
-         */
-        graph_id: string;
-    };
-    query: {
-        /**
-         * Operation Type
-         *
-         * Type of operation to check
-         */
-        operation_type: string;
-        /**
-         * Base Cost
-         *
-         * Custom base cost (uses default if not provided)
-         */
-        base_cost?: number | string | null;
-    };
-    url: '/v1/graphs/{graph_id}/credits/balance/check';
-};
-
-export type CheckCreditBalanceErrors = {
-    /**
-     * Access denied to graph
-     */
-    403: ErrorResponse;
-    /**
-     * Credit pool not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Credit check failed
-     */
-    500: ErrorResponse;
-};
-
-export type CheckCreditBalanceError = CheckCreditBalanceErrors[keyof CheckCreditBalanceErrors];
-
-export type CheckCreditBalanceResponses = {
-    /**
-     * Response Checkcreditbalance
-     *
-     * Credit check completed
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type CheckCreditBalanceResponse = CheckCreditBalanceResponses[keyof CheckCreditBalanceResponses];
 
 export type GetDatabaseHealthData = {
     body?: never;
@@ -12244,7 +12183,7 @@ export type GetMaterializationStatusData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/materialize/status';
+    url: '/v1/graphs/{graph_id}/materialize';
 };
 
 export type GetMaterializationStatusErrors = {
