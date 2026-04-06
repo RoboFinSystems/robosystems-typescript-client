@@ -3874,6 +3874,12 @@ export type GraphSubscriptionResponse = {
      * Creation timestamp
      */
     created_at: string;
+    /**
+     * Operation Id
+     *
+     * Operation ID for tracking async tier changes via SSE
+     */
+    operation_id?: string | null;
 };
 
 /**
@@ -11702,13 +11708,13 @@ export type GetGraphSubscriptionResponses = {
 
 export type GetGraphSubscriptionResponse = GetGraphSubscriptionResponses[keyof GetGraphSubscriptionResponses];
 
-export type ChangeRepositoryPlanData = {
+export type ChangeSubscriptionPlanData = {
     body: UpgradeSubscriptionRequest;
     path: {
         /**
          * Graph Id
          *
-         * Repository name (e.g., 'sec')
+         * Graph ID or repository name
          */
         graph_id: string;
     };
@@ -11716,9 +11722,9 @@ export type ChangeRepositoryPlanData = {
     url: '/v1/graphs/{graph_id}/subscriptions';
 };
 
-export type ChangeRepositoryPlanErrors = {
+export type ChangeSubscriptionPlanErrors = {
     /**
-     * Invalid plan or not a repository subscription
+     * Invalid plan, validation failure, or status conflict
      */
     400: unknown;
     /**
@@ -11731,16 +11737,16 @@ export type ChangeRepositoryPlanErrors = {
     422: HttpValidationError;
 };
 
-export type ChangeRepositoryPlanError = ChangeRepositoryPlanErrors[keyof ChangeRepositoryPlanErrors];
+export type ChangeSubscriptionPlanError = ChangeSubscriptionPlanErrors[keyof ChangeSubscriptionPlanErrors];
 
-export type ChangeRepositoryPlanResponses = {
+export type ChangeSubscriptionPlanResponses = {
     /**
      * Plan changed successfully
      */
     200: GraphSubscriptionResponse;
 };
 
-export type ChangeRepositoryPlanResponse = ChangeRepositoryPlanResponses[keyof ChangeRepositoryPlanResponses];
+export type ChangeSubscriptionPlanResponse = ChangeSubscriptionPlanResponses[keyof ChangeSubscriptionPlanResponses];
 
 export type CreateRepositorySubscriptionData = {
     body: CreateRepositorySubscriptionRequest;
