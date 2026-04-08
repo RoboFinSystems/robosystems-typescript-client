@@ -5301,6 +5301,12 @@ export type MaterializeRequest = {
      * Data source for materialization. Auto-detected from graph type if not specified. 'staged' materializes from uploaded files (generic graphs). 'extensions' materializes from the extensions OLTP database (entity graphs).
      */
     source?: string | null;
+    /**
+     * Materialize Embeddings
+     *
+     * Include embedding columns in materialization and build HNSW vector indexes in the graph database. When false (default), embedding columns are NULLed out to save space. Set to true for graphs that need vector search.
+     */
+    materialize_embeddings?: boolean;
 };
 
 /**
