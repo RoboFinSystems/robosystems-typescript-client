@@ -15,6 +15,8 @@ import {
   createSchedule,
   createStructure,
   deleteMappingAssociation,
+  getAccountRollups,
+  getClosingBookStructures,
   getLedgerAccountTree,
   getLedgerEntity,
   getLedgerSummary,
@@ -35,7 +37,9 @@ import {
 } from '../sdk/sdk.gen'
 import type {
   AccountListResponse,
+  AccountRollupsResponse,
   AccountTreeResponse,
+  ClosingBookStructuresResponse,
   ClosingEntryResponse,
   CreateClosingEntryRequest,
   CreateScheduleRequest,
@@ -749,5 +753,48 @@ export class LedgerClient {
       creditElementId: data.credit_element_id,
       amount: data.amount,
     }
+  }
+
+  // ── Closing Book ─────────────────────────────────────────────────────
+
+  /**
+   * Get all closing book structure categories for the sidebar.
+   * Returns statements, account rollups, schedules, trial balance,
+   * and period close grouped into categories.
+   */
+  async getClosingBookStructures(graphId: string): Promise<ClosingBookStructuresResponse> {
+    const response = await getClosingBookStructures({
+      path: { graph_id: graphId },
+    })
+
+    if (response.error) {
+      throw new Error(`Get closing book structures failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return response.data as ClosingBookStructuresResponse
+  }
+
+  /**
+   * Get account rollups — CoA accounts grouped by reporting element with balances.
+   * Shows how company-specific accounts roll up to standardized reporting lines.
+   */
+  async getAccountRollups(
+    graphId: string,
+    options?: { mappingId?: string; startDate?: string; endDate?: string }
+  ): Promise<AccountRollupsResponse> {
+    const response = await getAccountRollups({
+      path: { graph_id: graphId },
+      query: {
+        mapping_id: options?.mappingId,
+        start_date: options?.startDate,
+        end_date: options?.endDate,
+      },
+    })
+
+    if (response.error) {
+      throw new Error(`Get account rollups failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return response.data as AccountRollupsResponse
   }
 }
