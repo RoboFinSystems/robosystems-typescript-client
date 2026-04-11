@@ -178,6 +178,96 @@ export type AccountResponse = {
 };
 
 /**
+ * AccountRollupGroup
+ */
+export type AccountRollupGroup = {
+    /**
+     * Reporting Element Id
+     */
+    reporting_element_id: string;
+    /**
+     * Reporting Name
+     */
+    reporting_name: string;
+    /**
+     * Reporting Qname
+     */
+    reporting_qname: string;
+    /**
+     * Classification
+     */
+    classification: string;
+    /**
+     * Balance Type
+     */
+    balance_type: string;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Accounts
+     */
+    accounts: Array<AccountRollupRow>;
+};
+
+/**
+ * AccountRollupRow
+ */
+export type AccountRollupRow = {
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Account Name
+     */
+    account_name: string;
+    /**
+     * Account Code
+     */
+    account_code?: string | null;
+    /**
+     * Total Debits
+     */
+    total_debits: number;
+    /**
+     * Total Credits
+     */
+    total_credits: number;
+    /**
+     * Net Balance
+     */
+    net_balance: number;
+};
+
+/**
+ * AccountRollupsResponse
+ */
+export type AccountRollupsResponse = {
+    /**
+     * Mapping Id
+     */
+    mapping_id: string;
+    /**
+     * Mapping Name
+     */
+    mapping_name: string;
+    /**
+     * Groups
+     */
+    groups: Array<AccountRollupGroup>;
+    /**
+     * Total Mapped
+     */
+    total_mapped: number;
+    /**
+     * Total Unmapped
+     */
+    total_unmapped: number;
+};
+
+/**
  * AccountTreeNode
  */
 export type AccountTreeNode = {
@@ -1223,6 +1313,64 @@ export type CheckoutStatusResponse = {
 };
 
 /**
+ * ClosingBookCategory
+ */
+export type ClosingBookCategory = {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Items
+     */
+    items: Array<ClosingBookItem>;
+};
+
+/**
+ * ClosingBookItem
+ */
+export type ClosingBookItem = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Item Type
+     */
+    item_type: string;
+    /**
+     * Structure Type
+     */
+    structure_type?: string | null;
+    /**
+     * Report Id
+     */
+    report_id?: string | null;
+    /**
+     * Status
+     */
+    status?: string | null;
+};
+
+/**
+ * ClosingBookStructuresResponse
+ */
+export type ClosingBookStructuresResponse = {
+    /**
+     * Categories
+     */
+    categories: Array<ClosingBookCategory>;
+    /**
+     * Has Data
+     */
+    has_data: boolean;
+};
+
+/**
  * ClosingEntryResponse
  */
 export type ClosingEntryResponse = {
@@ -1254,6 +1402,7 @@ export type ClosingEntryResponse = {
      * Amount
      */
     amount: number;
+    reversal?: ClosingEntryResponse | null;
 };
 
 /**
@@ -3177,6 +3326,12 @@ export type EntryTemplateRequest = {
      * Memo template ({structure_name} is replaced)
      */
     memo_template?: string;
+    /**
+     * Auto Reverse
+     *
+     * Auto-generate a reversing entry on the first day of the next period
+     */
+    auto_reverse?: boolean;
 };
 
 /**
@@ -6091,6 +6246,14 @@ export type PeriodCloseItemResponse = {
      * Entry Id
      */
     entry_id?: string | null;
+    /**
+     * Reversal Entry Id
+     */
+    reversal_entry_id?: string | null;
+    /**
+     * Reversal Status
+     */
+    reversal_status?: string | null;
 };
 
 /**
@@ -7185,6 +7348,10 @@ export type SearchHit = {
      * Source Type
      */
     source_type: string;
+    /**
+     * Parent Document Id
+     */
+    parent_document_id?: string | null;
     /**
      * Entity Ticker
      */
@@ -14731,6 +14898,85 @@ export type RemovePublishListMemberResponses = {
 };
 
 export type RemovePublishListMemberResponse = RemovePublishListMemberResponses[keyof RemovePublishListMemberResponses];
+
+export type GetAccountRollupsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Mapping Id
+         *
+         * Mapping structure ID (auto-discovers if omitted)
+         */
+        mapping_id?: string | null;
+        /**
+         * Start Date
+         *
+         * Start date (inclusive)
+         */
+        start_date?: string | null;
+        /**
+         * End Date
+         *
+         * End date (inclusive)
+         */
+        end_date?: string | null;
+    };
+    url: '/v1/ledger/{graph_id}/account-rollups';
+};
+
+export type GetAccountRollupsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetAccountRollupsError = GetAccountRollupsErrors[keyof GetAccountRollupsErrors];
+
+export type GetAccountRollupsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccountRollupsResponse;
+};
+
+export type GetAccountRollupsResponse = GetAccountRollupsResponses[keyof GetAccountRollupsResponses];
+
+export type GetClosingBookStructuresData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/closing-book/structures';
+};
+
+export type GetClosingBookStructuresErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetClosingBookStructuresError = GetClosingBookStructuresErrors[keyof GetClosingBookStructuresErrors];
+
+export type GetClosingBookStructuresResponses = {
+    /**
+     * Successful Response
+     */
+    200: ClosingBookStructuresResponse;
+};
+
+export type GetClosingBookStructuresResponse = GetClosingBookStructuresResponses[keyof GetClosingBookStructuresResponses];
 
 export type ListPortfoliosData = {
     body?: never;
