@@ -237,8 +237,164 @@ describe('QueryClient', () => {
     })
   })
 
+  describe('executeQuery - stream mode with NDJSON', () => {
+    it('should parse NDJSON streaming response', async () => {
+      const ndjsonBody = [
+        '{"columns":["name","age"],"rows":[["Alice",30],["Bob",25]]}',
+        '{"rows":[["Charlie",35]]}',
+        '',
+      ].join('\n')
+
+      // Create a ReadableStream from the NDJSON string
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(ndjsonBody))
+          controller.close()
+        },
+      })
+
+      const mockStreamResponse = {
+        data: undefined,
+        error: undefined,
+        response: {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/x-ndjson' }),
+          body: stream,
+          json: async () => ({}),
+        },
+      }
+
+      // Mock the SDK function via fetch
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/x-ndjson' }),
+        body: stream,
+        json: async () => mockStreamResponse,
+        text: async () => JSON.stringify(mockStreamResponse),
+      })
+
+      // We can't easily test the full stream mode through the SDK mock
+      // because the SDK parses the response. Test the NDJSON parser directly instead.
+      const parser = (queryClient as any).parseNDJSONResponse.bind(queryClient)
+
+      const ndjsonStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            new TextEncoder().encode(
+              '{"columns":["name"],"rows":[["Alice"],["Bob"]]}\n{"rows":[["Charlie"]]}\n'
+            )
+          )
+          controller.close()
+        },
+      })
+
+      const mockResp = {
+        body: ndjsonStream,
+        headers: new Headers({ 'content-type': 'application/x-ndjson' }),
+      }
+
+      const result = await parser(mockResp, 'graph_1')
+
+      expect(result.columns).toEqual(['name'])
+      expect(result.data).toEqual([['Alice'], ['Bob'], ['Charlie']])
+      expect(result.row_count).toBe(3)
+      expect(result.graph_id).toBe('graph_1')
+    })
+
+    it('should handle NDJSON with data key instead of rows', async () => {
+      const parser = (queryClient as any).parseNDJSONResponse.bind(queryClient)
+
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            new TextEncoder().encode(
+              '{"columns":["id"],"data":[{"id":1},{"id":2}],"execution_time_ms":50}\n'
+            )
+          )
+          controller.close()
+        },
+      })
+
+      const result = await parser({ body: stream }, 'graph_1')
+
+      expect(result.data).toEqual([{ id: 1 }, { id: 2 }])
+      expect(result.row_count).toBe(2)
+      expect(result.execution_time_ms).toBe(50)
+    })
+
+    it('should throw on NDJSON parse errors', async () => {
+      const parser = (queryClient as any).parseNDJSONResponse.bind(queryClient)
+
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('not valid json\n'))
+          controller.close()
+        },
+      })
+
+      await expect(parser({ body: stream }, 'graph_1')).rejects.toThrow('NDJSON parsing failed')
+    })
+
+    it('should throw when body is not readable', async () => {
+      const parser = (queryClient as any).parseNDJSONResponse.bind(queryClient)
+
+      await expect(parser({ body: null }, 'graph_1')).rejects.toThrow(
+        'Response body is not readable'
+      )
+    })
+
+    it('should track max execution_time_ms across chunks', async () => {
+      const parser = (queryClient as any).parseNDJSONResponse.bind(queryClient)
+
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            new TextEncoder().encode(
+              '{"columns":["x"],"rows":[[1]],"execution_time_ms":10}\n' +
+                '{"rows":[[2]],"execution_time_ms":50}\n' +
+                '{"rows":[[3]],"execution_time_ms":25}\n'
+            )
+          )
+          controller.close()
+        },
+      })
+
+      const result = await parser({ body: stream }, 'graph_1')
+
+      expect(result.execution_time_ms).toBe(50) // max across chunks
+      expect(result.row_count).toBe(3)
+    })
+  })
+
+  describe('streamQuery', () => {
+    it('should yield all data items when result is non-streaming', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          data: [{ id: 1 }, { id: 2 }, { id: 3 }],
+          columns: ['id'],
+          row_count: 3,
+          execution_time_ms: 10,
+        })
+      )
+
+      const items: any[] = []
+      for await (const item of queryClient.streamQuery('graph_1', 'MATCH (n) RETURN n')) {
+        items.push(item)
+      }
+
+      expect(items).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }])
+    })
+  })
+
   describe('close', () => {
     it('should close without error when no SSE client exists', () => {
+      expect(() => queryClient.close()).not.toThrow()
+    })
+
+    it('should be safe to call multiple times', () => {
+      queryClient.close()
       expect(() => queryClient.close()).not.toThrow()
     })
   })
@@ -258,6 +414,19 @@ describe('QueryClient', () => {
       expect(error.message).toBe('Query was queued')
       expect(error.name).toBe('QueuedQueryError')
       expect(error.queueInfo).toEqual(queueInfo)
+    })
+
+    it('should be instanceof Error', () => {
+      const error = new QueuedQueryError({
+        status: 'queued',
+        operation_id: 'op_1',
+        queue_position: 1,
+        estimated_wait_seconds: 5,
+        message: 'Queued',
+      })
+
+      expect(error).toBeInstanceOf(Error)
+      expect(error).toBeInstanceOf(QueuedQueryError)
     })
   })
 })
