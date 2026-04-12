@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddPublishListMembersData, AddPublishListMembersErrors, AddPublishListMembersResponses, AutoMapElementsData, AutoMapElementsErrors, AutoMapElementsResponses, AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateClosingEntryData, CreateClosingEntryErrors, CreateClosingEntryResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreateMappingAssociationData, CreateMappingAssociationErrors, CreateMappingAssociationResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreatePortfolioData, CreatePortfolioErrors, CreatePortfolioResponses, CreatePositionData, CreatePositionErrors, CreatePositionResponses, CreatePublishListData, CreatePublishListErrors, CreatePublishListResponses, CreateReportData, CreateReportErrors, CreateReportResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateScheduleData, CreateScheduleErrors, CreateScheduleResponses, CreateSecurityData, CreateSecurityErrors, CreateSecurityResponses, CreateStructureData, CreateStructureErrors, CreateStructureResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateTaxonomyData, CreateTaxonomyErrors, CreateTaxonomyResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, CreateViewData, CreateViewErrors, CreateViewResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteMappingAssociationData, DeleteMappingAssociationErrors, DeleteMappingAssociationResponses, DeletePortfolioData, DeletePortfolioErrors, DeletePortfolioResponses, DeletePositionData, DeletePositionErrors, DeletePositionResponses, DeletePublishListData, DeletePublishListErrors, DeletePublishListResponses, DeleteReportData, DeleteReportErrors, DeleteReportResponses, DeleteSecurityData, DeleteSecurityErrors, DeleteSecurityResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAccountRollupsData, GetAccountRollupsErrors, GetAccountRollupsResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetClosingBookStructuresData, GetClosingBookStructuresErrors, GetClosingBookStructuresResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetLedgerAccountTreeData, GetLedgerAccountTreeErrors, GetLedgerAccountTreeResponses, GetLedgerEntityData, GetLedgerEntityErrors, GetLedgerEntityResponses, GetLedgerSummaryData, GetLedgerSummaryErrors, GetLedgerSummaryResponses, GetLedgerTransactionData, GetLedgerTransactionErrors, GetLedgerTransactionResponses, GetLedgerTrialBalanceData, GetLedgerTrialBalanceErrors, GetLedgerTrialBalanceResponses, GetMappedTrialBalanceData, GetMappedTrialBalanceErrors, GetMappedTrialBalanceResponses, GetMappingCoverageData, GetMappingCoverageErrors, GetMappingCoverageResponses, GetMappingDetailData, GetMappingDetailErrors, GetMappingDetailResponses, GetMaterializationStatusData, GetMaterializationStatusErrors, GetMaterializationStatusResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetPeriodCloseStatusData, GetPeriodCloseStatusErrors, GetPeriodCloseStatusResponses, GetPortfolioData, GetPortfolioErrors, GetPortfolioResponses, GetPositionData, GetPositionErrors, GetPositionResponses, GetPublishListData, GetPublishListErrors, GetPublishListResponses, GetReportData, GetReportErrors, GetReportingTaxonomyData, GetReportingTaxonomyErrors, GetReportingTaxonomyResponses, GetReportResponses, GetScheduleFactsData, GetScheduleFactsErrors, GetScheduleFactsResponses, GetSecurityData, GetSecurityErrors, GetSecurityResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetStatementData, GetStatementErrors, GetStatementResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListElementsData, ListElementsErrors, ListElementsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListHoldingsData, ListHoldingsErrors, ListHoldingsResponses, ListLedgerAccountsData, ListLedgerAccountsErrors, ListLedgerAccountsResponses, ListLedgerEntitiesData, ListLedgerEntitiesErrors, ListLedgerEntitiesResponses, ListLedgerTransactionsData, ListLedgerTransactionsErrors, ListLedgerTransactionsResponses, ListMappingsData, ListMappingsErrors, ListMappingsResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListPortfoliosData, ListPortfoliosErrors, ListPortfoliosResponses, ListPositionsData, ListPositionsErrors, ListPositionsResponses, ListPublishListsData, ListPublishListsErrors, ListPublishListsResponses, ListReportsData, ListReportsErrors, ListReportsResponses, ListSchedulesData, ListSchedulesErrors, ListSchedulesResponses, ListSecuritiesData, ListSecuritiesErrors, ListSecuritiesResponses, ListStructuresData, ListStructuresErrors, ListStructuresResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListTaxonomiesData, ListTaxonomiesErrors, ListTaxonomiesResponses, ListUnmappedElementsData, ListUnmappedElementsErrors, ListUnmappedElementsResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, MaterializeGraphData, MaterializeGraphErrors, MaterializeGraphResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegenerateReportData, RegenerateReportErrors, RegenerateReportResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, RemovePublishListMemberData, RemovePublishListMemberErrors, RemovePublishListMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, ShareReportData, ShareReportErrors, ShareReportResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateLedgerEntityData, UpdateLedgerEntityErrors, UpdateLedgerEntityResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdatePortfolioData, UpdatePortfolioErrors, UpdatePortfolioResponses, UpdatePositionData, UpdatePositionErrors, UpdatePositionResponses, UpdatePublishListData, UpdatePublishListErrors, UpdatePublishListResponses, UpdateSecurityData, UpdateSecurityErrors, UpdateSecurityResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
+import type { AddPublishListMembersData, AddPublishListMembersErrors, AddPublishListMembersResponses, AutoMapElementsData, AutoMapElementsErrors, AutoMapElementsResponses, AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CloseFiscalPeriodData, CloseFiscalPeriodErrors, CloseFiscalPeriodResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateClosingEntryData, CreateClosingEntryErrors, CreateClosingEntryResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreateManualClosingEntryData, CreateManualClosingEntryErrors, CreateManualClosingEntryResponses, CreateMappingAssociationData, CreateMappingAssociationErrors, CreateMappingAssociationResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreatePortfolioData, CreatePortfolioErrors, CreatePortfolioResponses, CreatePositionData, CreatePositionErrors, CreatePositionResponses, CreatePublishListData, CreatePublishListErrors, CreatePublishListResponses, CreateReportData, CreateReportErrors, CreateReportResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateScheduleData, CreateScheduleErrors, CreateScheduleResponses, CreateSecurityData, CreateSecurityErrors, CreateSecurityResponses, CreateStructureData, CreateStructureErrors, CreateStructureResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateTaxonomyData, CreateTaxonomyErrors, CreateTaxonomyResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, CreateViewData, CreateViewErrors, CreateViewResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteMappingAssociationData, DeleteMappingAssociationErrors, DeleteMappingAssociationResponses, DeletePortfolioData, DeletePortfolioErrors, DeletePortfolioResponses, DeletePositionData, DeletePositionErrors, DeletePositionResponses, DeletePublishListData, DeletePublishListErrors, DeletePublishListResponses, DeleteReportData, DeleteReportErrors, DeleteReportResponses, DeleteSecurityData, DeleteSecurityErrors, DeleteSecurityResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAccountRollupsData, GetAccountRollupsErrors, GetAccountRollupsResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetClosingBookStructuresData, GetClosingBookStructuresErrors, GetClosingBookStructuresResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetFiscalCalendarData, GetFiscalCalendarErrors, GetFiscalCalendarResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetLedgerAccountTreeData, GetLedgerAccountTreeErrors, GetLedgerAccountTreeResponses, GetLedgerEntityData, GetLedgerEntityErrors, GetLedgerEntityResponses, GetLedgerSummaryData, GetLedgerSummaryErrors, GetLedgerSummaryResponses, GetLedgerTransactionData, GetLedgerTransactionErrors, GetLedgerTransactionResponses, GetLedgerTrialBalanceData, GetLedgerTrialBalanceErrors, GetLedgerTrialBalanceResponses, GetMappedTrialBalanceData, GetMappedTrialBalanceErrors, GetMappedTrialBalanceResponses, GetMappingCoverageData, GetMappingCoverageErrors, GetMappingCoverageResponses, GetMappingDetailData, GetMappingDetailErrors, GetMappingDetailResponses, GetMaterializationStatusData, GetMaterializationStatusErrors, GetMaterializationStatusResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetPeriodCloseStatusData, GetPeriodCloseStatusErrors, GetPeriodCloseStatusResponses, GetPortfolioData, GetPortfolioErrors, GetPortfolioResponses, GetPositionData, GetPositionErrors, GetPositionResponses, GetPublishListData, GetPublishListErrors, GetPublishListResponses, GetReportData, GetReportErrors, GetReportingTaxonomyData, GetReportingTaxonomyErrors, GetReportingTaxonomyResponses, GetReportResponses, GetScheduleFactsData, GetScheduleFactsErrors, GetScheduleFactsResponses, GetSecurityData, GetSecurityErrors, GetSecurityResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetStatementData, GetStatementErrors, GetStatementResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, InitializeLedgerData, InitializeLedgerErrors, InitializeLedgerResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListElementsData, ListElementsErrors, ListElementsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListHoldingsData, ListHoldingsErrors, ListHoldingsResponses, ListLedgerAccountsData, ListLedgerAccountsErrors, ListLedgerAccountsResponses, ListLedgerEntitiesData, ListLedgerEntitiesErrors, ListLedgerEntitiesResponses, ListLedgerTransactionsData, ListLedgerTransactionsErrors, ListLedgerTransactionsResponses, ListMappingsData, ListMappingsErrors, ListMappingsResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListPeriodDraftsData, ListPeriodDraftsErrors, ListPeriodDraftsResponses, ListPortfoliosData, ListPortfoliosErrors, ListPortfoliosResponses, ListPositionsData, ListPositionsErrors, ListPositionsResponses, ListPublishListsData, ListPublishListsErrors, ListPublishListsResponses, ListReportsData, ListReportsErrors, ListReportsResponses, ListSchedulesData, ListSchedulesErrors, ListSchedulesResponses, ListSecuritiesData, ListSecuritiesErrors, ListSecuritiesResponses, ListStructuresData, ListStructuresErrors, ListStructuresResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListTaxonomiesData, ListTaxonomiesErrors, ListTaxonomiesResponses, ListUnmappedElementsData, ListUnmappedElementsErrors, ListUnmappedElementsResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, MaterializeGraphData, MaterializeGraphErrors, MaterializeGraphResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegenerateReportData, RegenerateReportErrors, RegenerateReportResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, RemovePublishListMemberData, RemovePublishListMemberErrors, RemovePublishListMemberResponses, ReopenFiscalPeriodData, ReopenFiscalPeriodErrors, ReopenFiscalPeriodResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SetCloseTargetData, SetCloseTargetErrors, SetCloseTargetResponses, ShareReportData, ShareReportErrors, ShareReportResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, TruncateScheduleData, TruncateScheduleErrors, TruncateScheduleResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateLedgerEntityData, UpdateLedgerEntityErrors, UpdateLedgerEntityResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdatePortfolioData, UpdatePortfolioErrors, UpdatePortfolioResponses, UpdatePositionData, UpdatePositionErrors, UpdatePositionResponses, UpdatePublishListData, UpdatePublishListErrors, UpdatePublishListResponses, UpdateSecurityData, UpdateSecurityErrors, UpdateSecurityResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -3306,6 +3306,58 @@ export const createClosingEntry = <ThrowOnError extends boolean = false>(options
 });
 
 /**
+ * Truncate Schedule (End Early)
+ *
+ * End a schedule early.
+ *
+ * Used for events that cut a schedule's lifespan short — an asset is sold,
+ * a prepaid is cancelled, a contract is terminated. Deletes all facts with
+ * `period_start > new_end_date` and any stale draft entries that were
+ * produced from them.
+ *
+ * Posted entries are preserved — if any period after `new_end_date` has a
+ * posted closing entry, the truncate fails with 422 and the caller must
+ * reopen that period first.
+ *
+ * The truncation is logged to the schedule's metadata for audit.
+ */
+export const truncateSchedule = <ThrowOnError extends boolean = false>(options: Options<TruncateScheduleData, ThrowOnError>) => (options.client ?? client).patch<TruncateScheduleResponses, TruncateScheduleErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/truncate',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Manual Closing Entry
+ *
+ * Create a manual (non-schedule) draft closing entry.
+ *
+ * Used for one-off adjustments that aren't derived from a schedule: asset
+ * disposals, impairments, reclassifications, correcting entries.
+ *
+ * The entry is drafted like any schedule-derived entry and flows through
+ * the same review and close pipeline — `list-period-drafts` shows it,
+ * `close-period` commits it along with the rest.
+ *
+ * Line items can be any count (not just 2 like schedule entries). Total
+ * debits must equal total credits. `provenance` is set to 'manual_entry'
+ * and `source_structure_id` is null.
+ */
+export const createManualClosingEntry = <ThrowOnError extends boolean = false>(options: Options<CreateManualClosingEntryData, ThrowOnError>) => (options.client ?? client).post<CreateManualClosingEntryResponses, CreateManualClosingEntryErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/manual-closing-entry',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * List Publish Lists
  */
 export const listPublishLists = <ThrowOnError extends boolean = false>(options: Options<ListPublishListsData, ThrowOnError>) => (options.client ?? client).get<ListPublishListsResponses, ListPublishListsErrors, ThrowOnError>({
@@ -3406,6 +3458,129 @@ export const getAccountRollups = <ThrowOnError extends boolean = false>(options:
 export const getClosingBookStructures = <ThrowOnError extends boolean = false>(options: Options<GetClosingBookStructuresData, ThrowOnError>) => (options.client ?? client).get<GetClosingBookStructuresResponses, GetClosingBookStructuresErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/ledger/{graph_id}/closing-book/structures',
+    ...options
+});
+
+/**
+ * Initialize Ledger
+ *
+ * One-time ledger initialization.
+ *
+ * Creates the fiscal calendar, seeds `FiscalPeriod` rows for the data window,
+ * and sets `closed_through` / `close_target`. Fails if the calendar already
+ * exists — use the reopen flow to undo prior closes instead of re-initializing.
+ *
+ * `auto_seed_schedules=true` is accepted but is a no-op in v1; schedule
+ * creation is deferred to the SchedulerAgent (Phase 5).
+ */
+export const initializeLedger = <ThrowOnError extends boolean = false>(options: Options<InitializeLedgerData, ThrowOnError>) => (options.client ?? client).post<InitializeLedgerResponses, InitializeLedgerErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/initialize',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Fiscal Calendar
+ *
+ * Return the current fiscal calendar state — pointers, gap, closeable status.
+ */
+export const getFiscalCalendar = <ThrowOnError extends boolean = false>(options: Options<GetFiscalCalendarData, ThrowOnError>) => (options.client ?? client).get<GetFiscalCalendarResponses, GetFiscalCalendarErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/fiscal-calendar',
+    ...options
+});
+
+/**
+ * Set Close Target
+ *
+ * Set the close target for a graph.
+ *
+ * Validates that the target is a real YYYY-MM period, is not in the future,
+ * and is not before the current `closed_through`. Emits a `target_changed`
+ * audit event. Returns the updated calendar state.
+ */
+export const setCloseTarget = <ThrowOnError extends boolean = false>(options: Options<SetCloseTargetData, ThrowOnError>) => (options.client ?? client).post<SetCloseTargetResponses, SetCloseTargetErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/fiscal-calendar/close-target',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Close Fiscal Period
+ *
+ * Close a fiscal period — the final commit action.
+ *
+ * In a single transaction:
+ * 1. Validates closeable gates
+ * 2. Transitions all draft entries in the period to 'posted'
+ * 3. Verifies BS equation balances
+ * 4. Transitions the FiscalPeriod to 'closed'
+ * 5. Advances closed_through; auto-advances close_target if reached
+ *
+ * This is synchronous in v1. With QB writeback (future) it will become async.
+ */
+export const closeFiscalPeriod = <ThrowOnError extends boolean = false>(options: Options<CloseFiscalPeriodData, ThrowOnError>) => (options.client ?? client).post<CloseFiscalPeriodResponses, CloseFiscalPeriodErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/periods/{period}/close',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Reopen Fiscal Period
+ *
+ * Reopen a closed fiscal period.
+ *
+ * Transitions the period status from 'closed' to 'closing' (drafts may still
+ * exist for this period after reopening). If the reopened period is the
+ * current `closed_through`, decrements the pointer. Requires a non-empty
+ * `reason` for the audit log. Does NOT modify `close_target` — that's a
+ * separate user decision.
+ *
+ * Posted entries in the reopened period stay posted. The user can then post
+ * additional adjustments, review, and close the period again.
+ */
+export const reopenFiscalPeriod = <ThrowOnError extends boolean = false>(options: Options<ReopenFiscalPeriodData, ThrowOnError>) => (options.client ?? client).post<ReopenFiscalPeriodResponses, ReopenFiscalPeriodErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/periods/{period}/reopen',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Draft Entries For Review
+ *
+ * List all draft entries in a fiscal period for review before close.
+ *
+ * Returns every draft entry whose `posting_date` falls within the period,
+ * fully expanded with line items, element names/codes, source schedule
+ * structure name, and per-entry balance check.
+ *
+ * Use this to review exactly what `close-period` will commit. Typical flow:
+ *
+ * 1. Draft entries via `create-closing-entry` (one per schedule)
+ * 2. Call this endpoint to review the full set
+ * 3. Call `POST /periods/{period}/close` to atomically post + close
+ *
+ * This is a pure read — no side effects. It can be called repeatedly.
+ */
+export const listPeriodDrafts = <ThrowOnError extends boolean = false>(options: Options<ListPeriodDraftsData, ThrowOnError>) => (options.client ?? client).get<ListPeriodDraftsResponses, ListPeriodDraftsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/ledger/{graph_id}/periods/{period}/drafts',
     ...options
 });
 

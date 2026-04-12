@@ -976,9 +976,10 @@ describe('LedgerClient', () => {
   })
 
   describe('createClosingEntry', () => {
-    it('should create and return closing entry', async () => {
+    it('should return a created outcome with entry details', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
+          outcome: 'created',
           entry_id: 'entry_1',
           status: 'draft',
           posting_date: '2025-03-31',
@@ -986,6 +987,7 @@ describe('LedgerClient', () => {
           debit_element_id: 'debit_elem',
           credit_element_id: 'credit_elem',
           amount: 15000,
+          reason: null,
         })
       )
 
@@ -999,6 +1001,7 @@ describe('LedgerClient', () => {
       )
 
       expect(result).toEqual({
+        outcome: 'created',
         entryId: 'entry_1',
         status: 'draft',
         postingDate: '2025-03-31',
@@ -1006,19 +1009,22 @@ describe('LedgerClient', () => {
         debitElementId: 'debit_elem',
         creditElementId: 'credit_elem',
         amount: 15000,
+        reason: null,
       })
     })
 
-    it('should work without memo', async () => {
+    it('should surface a skipped outcome with null entry fields', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
-          entry_id: 'entry_2',
-          status: 'draft',
-          posting_date: '2025-03-31',
-          memo: '',
-          debit_element_id: 'd',
-          credit_element_id: 'c',
-          amount: 1000,
+          outcome: 'skipped',
+          entry_id: null,
+          status: null,
+          posting_date: null,
+          memo: null,
+          debit_element_id: null,
+          credit_element_id: null,
+          amount: null,
+          reason: 'No in-scope fact for this period.',
         })
       )
 
@@ -1030,8 +1036,10 @@ describe('LedgerClient', () => {
         '2025-03-31'
       )
 
-      expect(result.entryId).toBe('entry_2')
-      expect(result.amount).toBe(1000)
+      expect(result.outcome).toBe('skipped')
+      expect(result.entryId).toBeNull()
+      expect(result.amount).toBeNull()
+      expect(result.reason).toBe('No in-scope fact for this period.')
     })
 
     it('should throw on error', async () => {
@@ -1114,6 +1122,432 @@ describe('LedgerClient', () => {
       await expect(client.getAccountRollups('graph_1')).rejects.toThrow(
         'Get account rollups failed'
       )
+    })
+  })
+
+  // ── Fiscal Calendar ───────────────────────────────────────────────────
+
+  const mockFiscalCalendar = {
+    graph_id: 'graph_1',
+    fiscal_year_start_month: 1,
+    closed_through: '2026-02',
+    close_target: '2026-03',
+    gap_periods: 1,
+    catch_up_sequence: ['2026-03'],
+    closeable_now: true,
+    blockers: [],
+    last_close_at: '2026-03-01T00:00:00Z',
+    initialized_at: '2025-01-01T00:00:00Z',
+    last_sync_at: '2026-03-15T00:00:00Z',
+    periods: [
+      {
+        name: '2026-03',
+        start_date: '2026-03-01',
+        end_date: '2026-03-31',
+        status: 'open',
+        closed_at: null,
+      },
+    ],
+  }
+
+  describe('initializeLedger', () => {
+    it('should initialize and return calendar state', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          fiscal_calendar: mockFiscalCalendar,
+          periods_created: 24,
+          warnings: [],
+        })
+      )
+
+      const result = await client.initializeLedger('graph_1', {
+        closedThrough: '2026-02',
+        fiscalYearStartMonth: 1,
+      })
+
+      expect(result.periodsCreated).toBe(24)
+      expect(result.warnings).toEqual([])
+      expect(result.fiscalCalendar.graphId).toBe('graph_1')
+      expect(result.fiscalCalendar.closedThrough).toBe('2026-02')
+      expect(result.fiscalCalendar.closeTarget).toBe('2026-03')
+      expect(result.fiscalCalendar.catchUpSequence).toEqual(['2026-03'])
+      expect(result.fiscalCalendar.closeableNow).toBe(true)
+      expect(result.fiscalCalendar.periods).toHaveLength(1)
+    })
+
+    it('should propagate warnings for unimplemented features', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          fiscal_calendar: mockFiscalCalendar,
+          periods_created: 0,
+          warnings: ['auto_seed_schedules is not yet implemented.'],
+        })
+      )
+
+      const result = await client.initializeLedger('graph_1', {
+        autoSeedSchedules: true,
+      })
+
+      expect(result.warnings).toHaveLength(1)
+      expect(result.warnings[0]).toContain('auto_seed_schedules')
+    })
+
+    it('should throw on 409 already-initialized', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ detail: 'already initialized' }, { ok: false, status: 409 })
+      )
+
+      await expect(client.initializeLedger('graph_1')).rejects.toThrow('Initialize ledger failed')
+    })
+  })
+
+  describe('getFiscalCalendar', () => {
+    it('should return current calendar state', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockFiscalCalendar))
+
+      const result = await client.getFiscalCalendar('graph_1')
+
+      expect(result.graphId).toBe('graph_1')
+      expect(result.closedThrough).toBe('2026-02')
+      expect(result.gapPeriods).toBe(1)
+      expect(result.blockers).toEqual([])
+    })
+
+    it('should throw on 404 calendar missing', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ detail: 'Not initialized' }, { ok: false, status: 404 })
+      )
+
+      await expect(client.getFiscalCalendar('graph_1')).rejects.toThrow(
+        'Get fiscal calendar failed'
+      )
+    })
+  })
+
+  describe('setCloseTarget', () => {
+    it('should set target and return updated calendar', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          ...mockFiscalCalendar,
+          close_target: '2026-06',
+        })
+      )
+
+      const result = await client.setCloseTarget('graph_1', '2026-06', 'catch up Q2')
+
+      expect(result.closeTarget).toBe('2026-06')
+    })
+
+    it('should throw on 422 invalid target', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { detail: 'target cannot be before closed_through' },
+          { ok: false, status: 422 }
+        )
+      )
+
+      await expect(client.setCloseTarget('graph_1', '2025-01')).rejects.toThrow(
+        'Set close target failed'
+      )
+    })
+  })
+
+  describe('closePeriod', () => {
+    it('should close the period and return transition results', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          fiscal_calendar: {
+            ...mockFiscalCalendar,
+            closed_through: '2026-03',
+            close_target: '2026-04',
+          },
+          period: '2026-03',
+          entries_posted: 3,
+          target_auto_advanced: true,
+        })
+      )
+
+      const result = await client.closePeriod('graph_1', '2026-03')
+
+      expect(result.period).toBe('2026-03')
+      expect(result.entriesPosted).toBe(3)
+      expect(result.targetAutoAdvanced).toBe(true)
+      expect(result.fiscalCalendar.closedThrough).toBe('2026-03')
+      expect(result.fiscalCalendar.closeTarget).toBe('2026-04')
+    })
+
+    it('should propagate allow_stale_sync flag', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          fiscal_calendar: mockFiscalCalendar,
+          period: '2026-03',
+          entries_posted: 0,
+          target_auto_advanced: false,
+        })
+      )
+
+      await client.closePeriod('graph_1', '2026-03', { allowStaleSync: true })
+
+      // hey-api's client-fetch passes a Request object to fetch. Read the
+      // body back off it to verify the flag was serialized.
+      const request = mockFetch.mock.calls[0][0] as Request
+      const body = await request.text()
+      expect(body).toContain('"allow_stale_sync":true')
+    })
+
+    it('should throw on blocked close with structured detail', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          {
+            detail: {
+              message: 'Cannot close period',
+              blockers: ['sync_stale'],
+            },
+          },
+          { ok: false, status: 422 }
+        )
+      )
+
+      await expect(client.closePeriod('graph_1', '2026-03')).rejects.toThrow('Close period failed')
+    })
+  })
+
+  describe('reopenPeriod', () => {
+    it('should reopen the period and return updated calendar', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          ...mockFiscalCalendar,
+          closed_through: '2026-01',
+        })
+      )
+
+      const result = await client.reopenPeriod('graph_1', '2026-02', 'missed expense')
+
+      expect(result.closedThrough).toBe('2026-01')
+    })
+
+    it('should require reason propagation', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse(mockFiscalCalendar))
+
+      await client.reopenPeriod('graph_1', '2026-02', 'audit correction', 'see ticket #123')
+
+      const request = mockFetch.mock.calls[0][0] as Request
+      const body = await request.text()
+      expect(body).toContain('"reason":"audit correction"')
+      expect(body).toContain('"note":"see ticket #123"')
+    })
+
+    it('should throw on 422 when period not closed', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ detail: 'not closed' }, { ok: false, status: 422 })
+      )
+
+      await expect(client.reopenPeriod('graph_1', '2026-02', 'reason')).rejects.toThrow(
+        'Reopen period failed'
+      )
+    })
+  })
+
+  describe('listPeriodDrafts', () => {
+    it('should return grouped draft entries with line items', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          period: '2026-03',
+          period_start: '2026-03-01',
+          period_end: '2026-03-31',
+          draft_count: 1,
+          total_debit: 15000,
+          total_credit: 15000,
+          all_balanced: true,
+          drafts: [
+            {
+              entry_id: 'entry_1',
+              posting_date: '2026-03-31',
+              type: 'closing',
+              memo: 'Monthly depreciation',
+              provenance: 'schedule_derived',
+              source_structure_id: 'str_sched',
+              source_structure_name: 'Computer Depreciation',
+              line_items: [
+                {
+                  line_item_id: 'li_1',
+                  element_id: 'el_dep_exp',
+                  element_code: '6100',
+                  element_name: 'Depreciation Expense',
+                  debit_amount: 15000,
+                  credit_amount: 0,
+                  description: null,
+                },
+                {
+                  line_item_id: 'li_2',
+                  element_id: 'el_accum_dep',
+                  element_code: '1510',
+                  element_name: 'Accumulated Depreciation',
+                  debit_amount: 0,
+                  credit_amount: 15000,
+                  description: null,
+                },
+              ],
+              total_debit: 15000,
+              total_credit: 15000,
+              balanced: true,
+            },
+          ],
+        })
+      )
+
+      const result = await client.listPeriodDrafts('graph_1', '2026-03')
+
+      expect(result.period).toBe('2026-03')
+      expect(result.draftCount).toBe(1)
+      expect(result.allBalanced).toBe(true)
+      expect(result.drafts[0].entryId).toBe('entry_1')
+      expect(result.drafts[0].sourceStructureName).toBe('Computer Depreciation')
+      expect(result.drafts[0].lineItems).toHaveLength(2)
+      expect(result.drafts[0].lineItems[0].elementCode).toBe('6100')
+      expect(result.drafts[0].lineItems[0].debitAmount).toBe(15000)
+      expect(result.drafts[0].balanced).toBe(true)
+    })
+
+    it('should surface unbalanced drafts', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          period: '2026-03',
+          period_start: '2026-03-01',
+          period_end: '2026-03-31',
+          draft_count: 1,
+          total_debit: 10000,
+          total_credit: 9000,
+          all_balanced: false,
+          drafts: [
+            {
+              entry_id: 'entry_bad',
+              posting_date: '2026-03-31',
+              type: 'closing',
+              memo: null,
+              provenance: null,
+              source_structure_id: null,
+              source_structure_name: null,
+              line_items: [
+                {
+                  line_item_id: 'li_1',
+                  element_id: 'el_1',
+                  element_code: null,
+                  element_name: 'A',
+                  debit_amount: 10000,
+                  credit_amount: 0,
+                  description: null,
+                },
+                {
+                  line_item_id: 'li_2',
+                  element_id: 'el_2',
+                  element_code: null,
+                  element_name: 'B',
+                  debit_amount: 0,
+                  credit_amount: 9000,
+                  description: null,
+                },
+              ],
+              total_debit: 10000,
+              total_credit: 9000,
+              balanced: false,
+            },
+          ],
+        })
+      )
+
+      const result = await client.listPeriodDrafts('graph_1', '2026-03')
+
+      expect(result.allBalanced).toBe(false)
+      expect(result.drafts[0].balanced).toBe(false)
+    })
+  })
+
+  // ── Schedule mutations (truncate + manual entry) ────────────────────
+
+  describe('truncateSchedule', () => {
+    it('should truncate and return counts', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          structure_id: 'sched_1',
+          new_end_date: '2026-06-30',
+          facts_deleted: 18,
+          reason: 'Asset sold 2026-06-15',
+        })
+      )
+
+      const result = await client.truncateSchedule('graph_1', 'sched_1', {
+        newEndDate: '2026-06-30',
+        reason: 'Asset sold 2026-06-15',
+      })
+
+      expect(result.structureId).toBe('sched_1')
+      expect(result.newEndDate).toBe('2026-06-30')
+      expect(result.factsDeleted).toBe(18)
+      expect(result.reason).toBe('Asset sold 2026-06-15')
+    })
+
+    it('should throw on 422 mid-month date', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse(
+          { detail: 'new_end_date must be a month-end' },
+          { ok: false, status: 422 }
+        )
+      )
+
+      await expect(
+        client.truncateSchedule('graph_1', 'sched_1', {
+          newEndDate: '2026-06-15',
+          reason: 'test',
+        })
+      ).rejects.toThrow('Truncate schedule failed')
+    })
+  })
+
+  describe('createManualClosingEntry', () => {
+    it('should create entry with arbitrary balanced line items', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          outcome: 'created',
+          entry_id: 'entry_manual',
+          status: 'draft',
+          posting_date: '2026-03-15',
+          memo: 'Sale of computer to Vendor X',
+          debit_element_id: null,
+          credit_element_id: null,
+          amount: 500000,
+          reason: null,
+        })
+      )
+
+      const result = await client.createManualClosingEntry('graph_1', {
+        postingDate: '2026-03-15',
+        memo: 'Sale of computer to Vendor X',
+        entryType: 'closing',
+        lineItems: [
+          { elementId: 'el_cash', debitAmount: 500000 },
+          { elementId: 'el_asset', creditAmount: 300000 },
+          { elementId: 'el_gain', creditAmount: 200000 },
+        ],
+      })
+
+      expect(result.outcome).toBe('created')
+      expect(result.entryId).toBe('entry_manual')
+      expect(result.memo).toBe('Sale of computer to Vendor X')
+    })
+
+    it('should throw on 422 unbalanced line items', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({ detail: 'line items must balance' }, { ok: false, status: 422 })
+      )
+
+      await expect(
+        client.createManualClosingEntry('graph_1', {
+          postingDate: '2026-03-15',
+          memo: 'Unbalanced',
+          lineItems: [{ elementId: 'el_a', debitAmount: 1000 }],
+        })
+      ).rejects.toThrow('Create manual closing entry failed')
     })
   })
 

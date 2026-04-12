@@ -1313,6 +1313,49 @@ export type CheckoutStatusResponse = {
 };
 
 /**
+ * ClosePeriodRequest
+ */
+export type ClosePeriodRequest = {
+    /**
+     * Note
+     *
+     * Free-form note attached to the close event
+     */
+    note?: string | null;
+    /**
+     * Allow Stale Sync
+     *
+     * Override the sync-currency gate. Only use when you have manually verified that the source data for the period is complete.
+     */
+    allow_stale_sync?: boolean;
+};
+
+/**
+ * ClosePeriodResponse
+ *
+ * Response from a single-period close operation.
+ */
+export type ClosePeriodResponse = {
+    fiscal_calendar: FiscalCalendarResponse;
+    /**
+     * Period
+     */
+    period: string;
+    /**
+     * Entries Posted
+     *
+     * Number of draft entries transitioned to posted
+     */
+    entries_posted?: number;
+    /**
+     * Target Auto Advanced
+     *
+     * Whether close_target was auto-advanced because it was reached
+     */
+    target_auto_advanced?: boolean;
+};
+
+/**
  * ClosingBookCategory
  */
 export type ClosingBookCategory = {
@@ -1375,33 +1418,51 @@ export type ClosingBookStructuresResponse = {
  */
 export type ClosingEntryResponse = {
     /**
-     * Entry Id
+     * Outcome
+     *
+     * What the idempotent call did: 'created' (new draft), 'unchanged' (existing draft still matches), 'regenerated' (stale draft replaced with fresh one), 'removed' (stale draft deleted; schedule no longer covers this period), 'skipped' (nothing to do — no draft and no in-scope fact).
      */
-    entry_id: string;
+    outcome: string;
+    /**
+     * Entry Id
+     *
+     * The draft entry ID. None for 'removed' and 'skipped' outcomes.
+     */
+    entry_id?: string | null;
     /**
      * Status
+     *
+     * Entry status (always 'draft' when present).
      */
-    status: string;
+    status?: string | null;
     /**
      * Posting Date
      */
-    posting_date: string;
+    posting_date?: string | null;
     /**
      * Memo
      */
-    memo: string;
+    memo?: string | null;
     /**
      * Debit Element Id
      */
-    debit_element_id: string;
+    debit_element_id?: string | null;
     /**
      * Credit Element Id
      */
-    credit_element_id: string;
+    credit_element_id?: string | null;
     /**
      * Amount
+     *
+     * Entry amount in dollars. None for 'removed' and 'skipped'.
      */
-    amount: number;
+    amount?: number | null;
+    /**
+     * Reason
+     *
+     * Explanation for 'removed' and 'skipped' outcomes.
+     */
+    reason?: string | null;
     reversal?: ClosingEntryResponse | null;
 };
 
@@ -1834,6 +1895,36 @@ export type CreateGraphRequest = {
 };
 
 /**
+ * CreateManualClosingEntryRequest
+ */
+export type CreateManualClosingEntryRequest = {
+    /**
+     * Posting Date
+     *
+     * Posting date for the entry
+     */
+    posting_date: string;
+    /**
+     * Memo
+     *
+     * Memo describing the business event (e.g., 'Sale of computer to Vendor X on 3/15')
+     */
+    memo: string;
+    /**
+     * Line Items
+     *
+     * Line items; must balance (total DR = total CR)
+     */
+    line_items: Array<ManualLineItemRequest>;
+    /**
+     * Entry Type
+     *
+     * Entry type: 'closing' (default), 'adjusting', 'standard', 'reversing'
+     */
+    entry_type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
+};
+
+/**
  * CreatePortfolioRequest
  */
 export type CreatePortfolioRequest = {
@@ -2037,6 +2128,12 @@ export type CreateScheduleRequest = {
     monthly_amount: number;
     entry_template: EntryTemplateRequest;
     schedule_metadata?: ScheduleMetadataRequest | null;
+    /**
+     * Closed Through
+     *
+     * If provided, facts with period_end ≤ this date are flagged as 'historical' (already reflected in opening balances, ignored by the close workflow). Used during initial ledger setup to create schedules whose early facts have already been captured elsewhere.
+     */
+    closed_through?: string | null;
 };
 
 /**
@@ -3122,6 +3219,112 @@ export type DownloadQuota = {
 };
 
 /**
+ * DraftEntryResponse
+ *
+ * A single draft entry with full line item detail for review.
+ */
+export type DraftEntryResponse = {
+    /**
+     * Entry Id
+     */
+    entry_id: string;
+    /**
+     * Posting Date
+     */
+    posting_date: string;
+    /**
+     * Type
+     *
+     * Entry type (e.g., 'closing', 'adjusting')
+     */
+    type: string;
+    /**
+     * Memo
+     */
+    memo?: string | null;
+    /**
+     * Provenance
+     *
+     * Where the entry came from: 'ai_generated', 'manual_entry', etc.
+     */
+    provenance?: string | null;
+    /**
+     * Source Structure Id
+     *
+     * Schedule structure that generated this entry (if any)
+     */
+    source_structure_id?: string | null;
+    /**
+     * Source Structure Name
+     *
+     * Human-readable name of the source schedule
+     */
+    source_structure_name?: string | null;
+    /**
+     * Line Items
+     */
+    line_items: Array<DraftLineItem>;
+    /**
+     * Total Debit
+     *
+     * Sum of debit amounts in cents
+     */
+    total_debit: number;
+    /**
+     * Total Credit
+     *
+     * Sum of credit amounts in cents
+     */
+    total_credit: number;
+    /**
+     * Balanced
+     *
+     * True if total_debit == total_credit
+     */
+    balanced: boolean;
+};
+
+/**
+ * DraftLineItem
+ *
+ * A single line item within a draft entry.
+ */
+export type DraftLineItem = {
+    /**
+     * Line Item Id
+     */
+    line_item_id: string;
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Element Code
+     */
+    element_code?: string | null;
+    /**
+     * Element Name
+     */
+    element_name: string;
+    /**
+     * Debit Amount
+     *
+     * Debit amount in cents
+     */
+    debit_amount: number;
+    /**
+     * Credit Amount
+     *
+     * Credit amount in cents
+     */
+    credit_amount: number;
+    /**
+     * Description
+     */
+    description?: string | null;
+};
+
+/**
  * ElementListResponse
  */
 export type ElementListResponse = {
@@ -3319,7 +3522,7 @@ export type EntryTemplateRequest = {
      *
      * Entry type for generated entries
      */
-    entry_type?: string;
+    entry_type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
     /**
      * Memo Template
      *
@@ -3569,6 +3772,108 @@ export type FileUploadResponse = {
      * S3 object key
      */
     s3_key: string;
+};
+
+/**
+ * FiscalCalendarResponse
+ *
+ * Current fiscal calendar state for a graph.
+ */
+export type FiscalCalendarResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Fiscal Year Start Month
+     */
+    fiscal_year_start_month: number;
+    /**
+     * Closed Through
+     *
+     * Latest closed period (YYYY-MM), or null if nothing closed
+     */
+    closed_through?: string | null;
+    /**
+     * Close Target
+     *
+     * Target period the user wants closed through (YYYY-MM)
+     */
+    close_target?: string | null;
+    /**
+     * Gap Periods
+     *
+     * Number of periods between closed_through and close_target (inclusive of close_target). 0 means caught up.
+     */
+    gap_periods?: number;
+    /**
+     * Catch Up Sequence
+     *
+     * Ordered list of periods that a close run would process
+     */
+    catch_up_sequence?: Array<string>;
+    /**
+     * Closeable Now
+     *
+     * Whether the next period in the catch-up sequence passes all closeable gates
+     */
+    closeable_now?: boolean;
+    /**
+     * Blockers
+     *
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed'
+     */
+    blockers?: Array<string>;
+    /**
+     * Last Close At
+     */
+    last_close_at?: string | null;
+    /**
+     * Initialized At
+     */
+    initialized_at?: string | null;
+    /**
+     * Last Sync At
+     *
+     * Most recent QB sync timestamp (if connected)
+     */
+    last_sync_at?: string | null;
+    /**
+     * Periods
+     *
+     * Fiscal period rows for this graph
+     */
+    periods?: Array<FiscalPeriodSummary>;
+};
+
+/**
+ * FiscalPeriodSummary
+ */
+export type FiscalPeriodSummary = {
+    /**
+     * Name
+     *
+     * Period name (YYYY-MM)
+     */
+    name: string;
+    /**
+     * Start Date
+     */
+    start_date: string;
+    /**
+     * End Date
+     */
+    end_date: string;
+    /**
+     * Status
+     *
+     * 'open' | 'closing' | 'closed'
+     */
+    status: string;
+    /**
+     * Closed At
+     */
+    closed_at?: string | null;
 };
 
 /**
@@ -4554,6 +4859,12 @@ export type InitialEntityData = {
      */
     uri: string;
     /**
+     * Ticker
+     *
+     * Entity symbol/ticker (e.g., 'HARB', 'NVDA'). Auto-generated from name if not provided.
+     */
+    ticker?: string | null;
+    /**
      * Cik
      *
      * CIK number for SEC filings
@@ -4595,6 +4906,61 @@ export type InitialEntityData = {
      * Employer Identification Number
      */
     ein?: string | null;
+};
+
+/**
+ * InitializeLedgerRequest
+ */
+export type InitializeLedgerRequest = {
+    /**
+     * Closed Through
+     *
+     * YYYY-MM period. Periods ≤ this date are treated as historical (already closed before the user joined). Set to null for a fresh business with no prior close state.
+     */
+    closed_through?: string | null;
+    /**
+     * Fiscal Year Start Month
+     *
+     * Fiscal year start month (1-12). Defaults to calendar year.
+     */
+    fiscal_year_start_month?: number;
+    /**
+     * Auto Seed Schedules
+     *
+     * If true, run the SchedulerAgent to create schedules from historical BS activity. NOT YET IMPLEMENTED — returns a warning in v1.
+     */
+    auto_seed_schedules?: boolean;
+    /**
+     * Earliest Data Period
+     *
+     * YYYY-MM period representing the earliest month that has transaction data. Used to create FiscalPeriod rows. Defaults to 24 months before the current month.
+     */
+    earliest_data_period?: string | null;
+    /**
+     * Note
+     *
+     * Free-form note attached to the audit event
+     */
+    note?: string | null;
+};
+
+/**
+ * InitializeLedgerResponse
+ */
+export type InitializeLedgerResponse = {
+    fiscal_calendar: FiscalCalendarResponse;
+    /**
+     * Periods Created
+     *
+     * Number of FiscalPeriod rows created by initialization
+     */
+    periods_created?: number;
+    /**
+     * Warnings
+     *
+     * Non-fatal warnings (e.g., auto_seed_schedules not implemented)
+     */
+    warnings?: Array<string>;
 };
 
 /**
@@ -5348,6 +5714,34 @@ export type McpToolsResponse = {
     tools: Array<{
         [key: string]: unknown;
     }>;
+};
+
+/**
+ * ManualLineItemRequest
+ */
+export type ManualLineItemRequest = {
+    /**
+     * Element Id
+     *
+     * Element ID (chart of accounts)
+     */
+    element_id: string;
+    /**
+     * Debit Amount
+     *
+     * Debit in cents
+     */
+    debit_amount?: number;
+    /**
+     * Credit Amount
+     *
+     * Credit in cents
+     */
+    credit_amount?: number;
+    /**
+     * Description
+     */
+    description?: string | null;
 };
 
 /**
@@ -6287,6 +6681,54 @@ export type PeriodCloseStatusResponse = {
 };
 
 /**
+ * PeriodDraftsResponse
+ *
+ * All draft entries for a fiscal period, ready for review before close.
+ */
+export type PeriodDraftsResponse = {
+    /**
+     * Period
+     *
+     * YYYY-MM period name
+     */
+    period: string;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Draft Count
+     */
+    draft_count: number;
+    /**
+     * Total Debit
+     *
+     * Sum across all drafts, in cents
+     */
+    total_debit: number;
+    /**
+     * Total Credit
+     *
+     * Sum across all drafts, in cents
+     */
+    total_credit: number;
+    /**
+     * All Balanced
+     *
+     * True if every draft entry has debit == credit
+     */
+    all_balanced: boolean;
+    /**
+     * Drafts
+     */
+    drafts: Array<DraftEntryResponse>;
+};
+
+/**
  * PeriodSpec
  *
  * A reporting period column.
@@ -6713,6 +7155,24 @@ export type RegisterRequest = {
      * CAPTCHA verification token (required in production)
      */
     captcha_token?: string | null;
+};
+
+/**
+ * ReopenPeriodRequest
+ */
+export type ReopenPeriodRequest = {
+    /**
+     * Reason
+     *
+     * Required reason for the reopen (captured in audit log)
+     */
+    reason: string;
+    /**
+     * Note
+     *
+     * Additional free-form note
+     */
+    note?: string | null;
 };
 
 /**
@@ -7688,6 +8148,24 @@ export type ServiceOfferingsResponse = {
 };
 
 /**
+ * SetCloseTargetRequest
+ */
+export type SetCloseTargetRequest = {
+    /**
+     * Period
+     *
+     * Target period in YYYY-MM format
+     */
+    period: string;
+    /**
+     * Note
+     *
+     * Free-form note attached to the audit event
+     */
+    note?: string | null;
+};
+
+/**
  * ShareReportRequest
  */
 export type ShareReportRequest = {
@@ -8489,6 +8967,46 @@ export type TrialBalanceRow = {
      * Net Balance
      */
     net_balance: number;
+};
+
+/**
+ * TruncateScheduleRequest
+ */
+export type TruncateScheduleRequest = {
+    /**
+     * New End Date
+     *
+     * New last-covered date for the schedule. Facts with period_start > this date are deleted (along with any stale draft entries they produced). Historical facts (already posted) are preserved.
+     */
+    new_end_date: string;
+    /**
+     * Reason
+     *
+     * Required reason for the truncation (captured in audit log).
+     */
+    reason: string;
+};
+
+/**
+ * TruncateScheduleResponse
+ */
+export type TruncateScheduleResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * New End Date
+     */
+    new_end_date: string;
+    /**
+     * Facts Deleted
+     */
+    facts_deleted: number;
+    /**
+     * Reason
+     */
+    reason: string;
 };
 
 /**
@@ -14654,6 +15172,72 @@ export type CreateClosingEntryResponses = {
 
 export type CreateClosingEntryResponse = CreateClosingEntryResponses[keyof CreateClosingEntryResponses];
 
+export type TruncateScheduleData = {
+    body: TruncateScheduleRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Structure Id
+         *
+         * Schedule structure ID
+         */
+        structure_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/truncate';
+};
+
+export type TruncateScheduleErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type TruncateScheduleError = TruncateScheduleErrors[keyof TruncateScheduleErrors];
+
+export type TruncateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: TruncateScheduleResponse;
+};
+
+export type TruncateScheduleResponse2 = TruncateScheduleResponses[keyof TruncateScheduleResponses];
+
+export type CreateManualClosingEntryData = {
+    body: CreateManualClosingEntryRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/manual-closing-entry';
+};
+
+export type CreateManualClosingEntryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateManualClosingEntryError = CreateManualClosingEntryErrors[keyof CreateManualClosingEntryErrors];
+
+export type CreateManualClosingEntryResponses = {
+    /**
+     * Successful Response
+     */
+    201: ClosingEntryResponse;
+};
+
+export type CreateManualClosingEntryResponse = CreateManualClosingEntryResponses[keyof CreateManualClosingEntryResponses];
+
 export type ListPublishListsData = {
     body?: never;
     path: {
@@ -14977,6 +15561,204 @@ export type GetClosingBookStructuresResponses = {
 };
 
 export type GetClosingBookStructuresResponse = GetClosingBookStructuresResponses[keyof GetClosingBookStructuresResponses];
+
+export type InitializeLedgerData = {
+    body: InitializeLedgerRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/initialize';
+};
+
+export type InitializeLedgerErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type InitializeLedgerError = InitializeLedgerErrors[keyof InitializeLedgerErrors];
+
+export type InitializeLedgerResponses = {
+    /**
+     * Successful Response
+     */
+    201: InitializeLedgerResponse;
+};
+
+export type InitializeLedgerResponse2 = InitializeLedgerResponses[keyof InitializeLedgerResponses];
+
+export type GetFiscalCalendarData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/fiscal-calendar';
+};
+
+export type GetFiscalCalendarErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetFiscalCalendarError = GetFiscalCalendarErrors[keyof GetFiscalCalendarErrors];
+
+export type GetFiscalCalendarResponses = {
+    /**
+     * Successful Response
+     */
+    200: FiscalCalendarResponse;
+};
+
+export type GetFiscalCalendarResponse = GetFiscalCalendarResponses[keyof GetFiscalCalendarResponses];
+
+export type SetCloseTargetData = {
+    body: SetCloseTargetRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/fiscal-calendar/close-target';
+};
+
+export type SetCloseTargetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SetCloseTargetError = SetCloseTargetErrors[keyof SetCloseTargetErrors];
+
+export type SetCloseTargetResponses = {
+    /**
+     * Successful Response
+     */
+    200: FiscalCalendarResponse;
+};
+
+export type SetCloseTargetResponse = SetCloseTargetResponses[keyof SetCloseTargetResponses];
+
+export type CloseFiscalPeriodData = {
+    body?: ClosePeriodRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Period
+         *
+         * Target period in YYYY-MM format
+         */
+        period: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/periods/{period}/close';
+};
+
+export type CloseFiscalPeriodErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CloseFiscalPeriodError = CloseFiscalPeriodErrors[keyof CloseFiscalPeriodErrors];
+
+export type CloseFiscalPeriodResponses = {
+    /**
+     * Successful Response
+     */
+    200: ClosePeriodResponse;
+};
+
+export type CloseFiscalPeriodResponse = CloseFiscalPeriodResponses[keyof CloseFiscalPeriodResponses];
+
+export type ReopenFiscalPeriodData = {
+    body: ReopenPeriodRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Period
+         *
+         * Period to reopen (YYYY-MM)
+         */
+        period: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/periods/{period}/reopen';
+};
+
+export type ReopenFiscalPeriodErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReopenFiscalPeriodError = ReopenFiscalPeriodErrors[keyof ReopenFiscalPeriodErrors];
+
+export type ReopenFiscalPeriodResponses = {
+    /**
+     * Successful Response
+     */
+    200: FiscalCalendarResponse;
+};
+
+export type ReopenFiscalPeriodResponse = ReopenFiscalPeriodResponses[keyof ReopenFiscalPeriodResponses];
+
+export type ListPeriodDraftsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Period
+         *
+         * Period in YYYY-MM format
+         */
+        period: string;
+    };
+    query?: never;
+    url: '/v1/ledger/{graph_id}/periods/{period}/drafts';
+};
+
+export type ListPeriodDraftsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListPeriodDraftsError = ListPeriodDraftsErrors[keyof ListPeriodDraftsErrors];
+
+export type ListPeriodDraftsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PeriodDraftsResponse;
+};
+
+export type ListPeriodDraftsResponse = ListPeriodDraftsResponses[keyof ListPeriodDraftsResponses];
 
 export type ListPortfoliosData = {
     body?: never;
