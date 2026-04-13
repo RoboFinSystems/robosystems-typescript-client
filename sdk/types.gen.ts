@@ -2191,7 +2191,7 @@ export type CreateStructureRequest = {
     /**
      * Structure Type
      */
-    structure_type: 'chart_of_accounts' | 'income_statement' | 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'custom';
+    structure_type: 'chart_of_accounts' | 'income_statement' | 'balance_sheet' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'custom';
     /**
      * Taxonomy Id
      */
@@ -14886,7 +14886,7 @@ export type GetStatementData = {
         /**
          * Structure Type
          *
-         * Structure type: income_statement, balance_sheet, cash_flow_statement
+         * Structure type: income_statement, balance_sheet, equity_statement
          */
         structure_type: string;
     };
