@@ -1192,6 +1192,34 @@ describe('LedgerClient', () => {
       expect(result.warnings[0]).toContain('auto_seed_schedules')
     })
 
+    it('should map camelCase options to snake_case body fields', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          fiscal_calendar: mockFiscalCalendar,
+          periods_created: 12,
+          warnings: [],
+        })
+      )
+
+      await client.initializeLedger('graph_1', {
+        closedThrough: '2026-02',
+        fiscalYearStartMonth: 7,
+        earliestDataPeriod: '2024-01',
+        autoSeedSchedules: true,
+        note: 'kickoff',
+      })
+
+      const request = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await request.text())
+      expect(body).toEqual({
+        closed_through: '2026-02',
+        fiscal_year_start_month: 7,
+        earliest_data_period: '2024-01',
+        auto_seed_schedules: true,
+        note: 'kickoff',
+      })
+    })
+
     it('should throw on 409 already-initialized', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({ detail: 'already initialized' }, { ok: false, status: 409 })
@@ -1534,6 +1562,61 @@ describe('LedgerClient', () => {
       expect(result.outcome).toBe('created')
       expect(result.entryId).toBe('entry_manual')
       expect(result.memo).toBe('Sale of computer to Vendor X')
+    })
+
+    it('should serialize line items to snake_case and default missing amounts to 0', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          outcome: 'created',
+          entry_id: 'entry_manual',
+          status: 'draft',
+          posting_date: '2026-03-15',
+          memo: 'Sale',
+          debit_element_id: null,
+          credit_element_id: null,
+          amount: 500000,
+          reason: null,
+        })
+      )
+
+      await client.createManualClosingEntry('graph_1', {
+        postingDate: '2026-03-15',
+        memo: 'Sale',
+        entryType: 'closing',
+        lineItems: [
+          { elementId: 'el_cash', debitAmount: 500000, description: 'cash in' },
+          { elementId: 'el_asset', creditAmount: 300000 },
+          { elementId: 'el_gain', creditAmount: 200000 },
+        ],
+      })
+
+      const request = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await request.text())
+      expect(body).toEqual({
+        posting_date: '2026-03-15',
+        memo: 'Sale',
+        entry_type: 'closing',
+        line_items: [
+          {
+            element_id: 'el_cash',
+            debit_amount: 500000,
+            credit_amount: 0,
+            description: 'cash in',
+          },
+          {
+            element_id: 'el_asset',
+            debit_amount: 0,
+            credit_amount: 300000,
+            description: null,
+          },
+          {
+            element_id: 'el_gain',
+            debit_amount: 0,
+            credit_amount: 200000,
+            description: null,
+          },
+        ],
+      })
     })
 
     it('should throw on 422 unbalanced line items', async () => {
