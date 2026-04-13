@@ -10,13 +10,16 @@
 
 import {
   autoMapElements,
+  closeFiscalPeriod,
   createClosingEntry,
+  createManualClosingEntry,
   createMappingAssociation,
   createSchedule,
   createStructure,
   deleteMappingAssociation,
   getAccountRollups,
   getClosingBookStructures,
+  getFiscalCalendar,
   getLedgerAccountTree,
   getLedgerEntity,
   getLedgerSummary,
@@ -28,21 +31,32 @@ import {
   getPeriodCloseStatus,
   getReportingTaxonomy,
   getScheduleFacts,
+  initializeLedger,
   listElements,
   listLedgerAccounts,
   listLedgerTransactions,
   listMappings,
+  listPeriodDrafts,
   listSchedules,
   listStructures,
+  reopenFiscalPeriod,
+  setCloseTarget,
+  truncateSchedule,
 } from '../sdk/sdk.gen'
 import type {
   AccountListResponse,
   AccountRollupsResponse,
   AccountTreeResponse,
+  ClosePeriodRequest,
+  ClosePeriodResponse,
   ClosingBookStructuresResponse,
   ClosingEntryResponse,
   CreateClosingEntryRequest,
+  CreateManualClosingEntryRequest,
   CreateScheduleRequest,
+  FiscalCalendarResponse,
+  InitializeLedgerRequest,
+  InitializeLedgerResponse,
   LedgerSummaryResponse,
   LedgerTransactionDetailResponse,
   LedgerTransactionListResponse,
@@ -50,12 +64,17 @@ import type {
   MappingDetailResponse,
   PeriodCloseItemResponse,
   PeriodCloseStatusResponse,
+  PeriodDraftsResponse,
+  ReopenPeriodRequest,
   ScheduleCreatedResponse,
   ScheduleFactResponse,
   ScheduleFactsResponse,
   ScheduleListResponse,
   ScheduleSummaryResponse,
+  SetCloseTargetRequest,
   TrialBalanceResponse,
+  TruncateScheduleRequest,
+  TruncateScheduleResponse,
 } from '../sdk/types.gen'
 
 // ── Friendly types ──────────────────────────────────────────────────────
@@ -137,14 +156,145 @@ export interface PeriodCloseStatus {
   totalPosted: number
 }
 
+/**
+ * Outcome of an idempotent `createClosingEntry` call.
+ *
+ * - `created`     — no prior draft, new draft created
+ * - `unchanged`   — prior draft matches current schedule fact, no-op
+ * - `regenerated` — prior draft was stale, replaced with a fresh one
+ * - `removed`     — prior draft existed but schedule no longer covers this period
+ * - `skipped`     — no prior draft and no in-scope fact; nothing to do
+ */
+export type ClosingEntryOutcome = 'created' | 'unchanged' | 'regenerated' | 'removed' | 'skipped'
+
+/**
+ * Result of an idempotent closing-entry call. `entry_id`, `amount`, and
+ * related fields are null for `removed` and `skipped` outcomes.
+ */
 export interface ClosingEntry {
-  entryId: string
+  outcome: ClosingEntryOutcome
+  entryId: string | null
+  status: string | null
+  postingDate: string | null
+  memo: string | null
+  debitElementId: string | null
+  creditElementId: string | null
+  amount: number | null
+  reason: string | null
+}
+
+export type LedgerEntryType = 'standard' | 'adjusting' | 'closing' | 'reversing'
+
+// ── Fiscal calendar types ──────────────────────────────────────────────
+
+export interface FiscalPeriodSummary {
+  name: string
+  startDate: string
+  endDate: string
   status: string
+  closedAt: string | null
+}
+
+export interface FiscalCalendarState {
+  graphId: string
+  fiscalYearStartMonth: number
+  closedThrough: string | null
+  closeTarget: string | null
+  gapPeriods: number
+  catchUpSequence: string[]
+  closeableNow: boolean
+  blockers: string[]
+  lastCloseAt: string | null
+  initializedAt: string | null
+  lastSyncAt: string | null
+  periods: FiscalPeriodSummary[]
+}
+
+export interface InitializeLedgerOptions {
+  closedThrough?: string | null
+  fiscalYearStartMonth?: number
+  earliestDataPeriod?: string | null
+  autoSeedSchedules?: boolean
+  note?: string | null
+}
+
+export interface InitializeLedgerResult {
+  fiscalCalendar: FiscalCalendarState
+  periodsCreated: number
+  warnings: string[]
+}
+
+export interface ClosePeriodOptions {
+  note?: string | null
+  allowStaleSync?: boolean
+}
+
+export interface ClosePeriodResult {
+  period: string
+  entriesPosted: number
+  targetAutoAdvanced: boolean
+  fiscalCalendar: FiscalCalendarState
+}
+
+export interface DraftLineItemView {
+  lineItemId: string
+  elementId: string
+  elementCode: string | null
+  elementName: string
+  debitAmount: number
+  creditAmount: number
+  description: string | null
+}
+
+export interface DraftEntryView {
+  entryId: string
+  postingDate: string
+  type: string
+  memo: string | null
+  provenance: string | null
+  sourceStructureId: string | null
+  sourceStructureName: string | null
+  lineItems: DraftLineItemView[]
+  totalDebit: number
+  totalCredit: number
+  balanced: boolean
+}
+
+export interface PeriodDraftsView {
+  period: string
+  periodStart: string
+  periodEnd: string
+  draftCount: number
+  totalDebit: number
+  totalCredit: number
+  allBalanced: boolean
+  drafts: DraftEntryView[]
+}
+
+export interface ManualClosingLineItem {
+  elementId: string
+  debitAmount?: number
+  creditAmount?: number
+  description?: string | null
+}
+
+export interface CreateManualClosingEntryOptions {
   postingDate: string
   memo: string
-  debitElementId: string
-  creditElementId: string
-  amount: number
+  lineItems: ManualClosingLineItem[]
+  entryType?: LedgerEntryType
+}
+
+export interface TruncateScheduleOptions {
+  newEndDate: string
+  reason: string
+}
+
+export interface TruncateScheduleResult {
+  structureId: string
+  newEndDate: string
+  factsDeleted: number
+  reason: string
 }
 
 export interface CreateScheduleOptions {
@@ -156,7 +306,7 @@ export interface CreateScheduleOptions {
   entryTemplate: {
     debitElementId: string
     creditElementId: string
-    entryType?: string
+    entryType?: LedgerEntryType
     memoTemplate?: string
   }
   taxonomyId?: string
@@ -717,7 +867,14 @@ export class LedgerClient {
   }
 
   /**
-   * Create a draft closing entry from a schedule's facts for a period.
+   * Idempotently create (or refresh) a draft closing entry from a schedule's
+   * facts for a period. The `outcome` field describes what actually happened:
+   *
+   * - `created`     — new draft
+   * - `unchanged`   — existing draft still matches the schedule; no-op
+   * - `regenerated` — existing draft was stale; replaced
+   * - `removed`     — schedule no longer covers this period; stale draft deleted
+   * - `skipped`     — no existing draft and no in-scope fact; nothing to do
    */
   async createClosingEntry(
     graphId: string,
@@ -744,15 +901,7 @@ export class LedgerClient {
     }
 
     const data = response.data as ClosingEntryResponse
-    return {
-      entryId: data.entry_id,
-      status: data.status,
-      postingDate: data.posting_date,
-      memo: data.memo,
-      debitElementId: data.debit_element_id,
-      creditElementId: data.credit_element_id,
-      amount: data.amount,
-    }
+    return toClosingEntry(data)
   }
 
   // ── Closing Book ─────────────────────────────────────────────────────
@@ -796,5 +945,305 @@ export class LedgerClient {
     }
 
     return response.data as AccountRollupsResponse
+  }
+
+  // ── Fiscal Calendar ─────────────────────────────────────────────────
+
+  /**
+   * Initialize the fiscal calendar for a graph. Creates FiscalPeriod rows
+   * for the data window, sets `closed_through` / `close_target`, and emits
+   * an `initialized` audit event. Fails with 409 if already initialized.
+   */
+  async initializeLedger(
+    graphId: string,
+    options?: InitializeLedgerOptions
+  ): Promise<InitializeLedgerResult> {
+    const body: InitializeLedgerRequest = {
+      closed_through: options?.closedThrough ?? null,
+      fiscal_year_start_month: options?.fiscalYearStartMonth,
+      earliest_data_period: options?.earliestDataPeriod ?? null,
+      auto_seed_schedules: options?.autoSeedSchedules,
+      note: options?.note ?? null,
+    }
+
+    const response = await initializeLedger({
+      path: { graph_id: graphId },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Initialize ledger failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as InitializeLedgerResponse
+    return {
+      fiscalCalendar: toFiscalCalendarState(data.fiscal_calendar),
+      periodsCreated: data.periods_created ?? 0,
+      warnings: data.warnings ?? [],
+    }
+  }
+
+  /**
+   * Get the current fiscal calendar state — pointers, gap, closeable status.
+   */
+  async getFiscalCalendar(graphId: string): Promise<FiscalCalendarState> {
+    const response = await getFiscalCalendar({
+      path: { graph_id: graphId },
+    })
+
+    if (response.error) {
+      throw new Error(`Get fiscal calendar failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return toFiscalCalendarState(response.data as FiscalCalendarResponse)
+  }
+
+  /**
+   * Set the close target for a graph. Validates that the target is not in
+   * the future and not before `closed_through`.
+   */
+  async setCloseTarget(
+    graphId: string,
+    period: string,
+    note?: string | null
+  ): Promise<FiscalCalendarState> {
+    const body: SetCloseTargetRequest = {
+      period,
+      note: note ?? null,
+    }
+
+    const response = await setCloseTarget({
+      path: { graph_id: graphId },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Set close target failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return toFiscalCalendarState(response.data as FiscalCalendarResponse)
+  }
+
+  /**
+   * Close a fiscal period — the final commit action.
+   *
+   * Validates closeable gates, transitions all draft entries in the period
+   * to `posted`, marks the FiscalPeriod closed, and advances `closed_through`
+   * (auto-advancing `close_target` when reached).
+   */
+  async closePeriod(
+    graphId: string,
+    period: string,
+    options?: ClosePeriodOptions
+  ): Promise<ClosePeriodResult> {
+    const body: ClosePeriodRequest = {
+      note: options?.note ?? null,
+      allow_stale_sync: options?.allowStaleSync,
+    }
+
+    const response = await closeFiscalPeriod({
+      path: { graph_id: graphId, period },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Close period failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as ClosePeriodResponse
+    return {
+      period: data.period,
+      entriesPosted: data.entries_posted ?? 0,
+      targetAutoAdvanced: data.target_auto_advanced ?? false,
+      fiscalCalendar: toFiscalCalendarState(data.fiscal_calendar),
+    }
+  }
+
+  /**
+   * Reopen a closed fiscal period. Requires a non-empty `reason` for the
+   * audit log. Posted entries stay posted; the period transitions to
+   * `closing` so the user can post adjustments and re-close.
+   */
+  async reopenPeriod(
+    graphId: string,
+    period: string,
+    reason: string,
+    note?: string | null
+  ): Promise<FiscalCalendarState> {
+    const body: ReopenPeriodRequest = {
+      reason,
+      note: note ?? null,
+    }
+
+    const response = await reopenFiscalPeriod({
+      path: { graph_id: graphId, period },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Reopen period failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return toFiscalCalendarState(response.data as FiscalCalendarResponse)
+  }
+
+  /**
+   * List all draft entries in a fiscal period for review before close.
+   * Fully expanded with line items, element metadata, and per-entry balance.
+   *
+   * Pure read — call repeatedly without side effects.
+   */
+  async listPeriodDrafts(graphId: string, period: string): Promise<PeriodDraftsView> {
+    const response = await listPeriodDrafts({
+      path: { graph_id: graphId, period },
+    })
+
+    if (response.error) {
+      throw new Error(`List period drafts failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as PeriodDraftsResponse
+    return {
+      period: data.period,
+      periodStart: data.period_start,
+      periodEnd: data.period_end,
+      draftCount: data.draft_count,
+      totalDebit: data.total_debit,
+      totalCredit: data.total_credit,
+      allBalanced: data.all_balanced,
+      drafts: (data.drafts ?? []).map((d) => ({
+        entryId: d.entry_id,
+        postingDate: d.posting_date,
+        type: d.type,
+        memo: d.memo ?? null,
+        provenance: d.provenance ?? null,
+        sourceStructureId: d.source_structure_id ?? null,
+        sourceStructureName: d.source_structure_name ?? null,
+        lineItems: d.line_items.map((li) => ({
+          lineItemId: li.line_item_id,
+          elementId: li.element_id,
+          elementCode: li.element_code ?? null,
+          elementName: li.element_name,
+          debitAmount: li.debit_amount,
+          creditAmount: li.credit_amount,
+          description: li.description ?? null,
+        })),
+        totalDebit: d.total_debit,
+        totalCredit: d.total_credit,
+        balanced: d.balanced,
+      })),
+    }
+  }
+
+  // ── Schedule mutations ──────────────────────────────────────────────
+
+  /**
+   * Truncate a schedule — end it early by deleting facts with
+   * `period_start > new_end_date`, along with any stale draft entries they
+   * produced. Historical posted facts are preserved.
+   *
+   * `new_end_date` must be a month-end date (service enforces this).
+   */
+  async truncateSchedule(
+    graphId: string,
+    structureId: string,
+    options: TruncateScheduleOptions
+  ): Promise<TruncateScheduleResult> {
+    const body: TruncateScheduleRequest = {
+      new_end_date: options.newEndDate,
+      reason: options.reason,
+    }
+
+    const response = await truncateSchedule({
+      path: { graph_id: graphId, structure_id: structureId },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Truncate schedule failed: ${JSON.stringify(response.error)}`)
+    }
+
+    const data = response.data as TruncateScheduleResponse
+    return {
+      structureId: data.structure_id,
+      newEndDate: data.new_end_date,
+      factsDeleted: data.facts_deleted,
+      reason: data.reason,
+    }
+  }
+
+  /**
+   * Create a manual draft closing entry with arbitrary balanced line items.
+   * Not tied to a schedule — used for disposals, adjustments, and other
+   * one-off closing events.
+   *
+   * Line items must sum to balanced debits/credits. Rejects entries
+   * targeting an already-closed period.
+   */
+  async createManualClosingEntry(
+    graphId: string,
+    options: CreateManualClosingEntryOptions
+  ): Promise<ClosingEntry> {
+    const body: CreateManualClosingEntryRequest = {
+      posting_date: options.postingDate,
+      memo: options.memo,
+      entry_type: options.entryType,
+      line_items: options.lineItems.map((li) => ({
+        element_id: li.elementId,
+        debit_amount: li.debitAmount ?? 0,
+        credit_amount: li.creditAmount ?? 0,
+        description: li.description ?? null,
+      })),
+    }
+
+    const response = await createManualClosingEntry({
+      path: { graph_id: graphId },
+      body,
+    })
+
+    if (response.error) {
+      throw new Error(`Create manual closing entry failed: ${JSON.stringify(response.error)}`)
+    }
+
+    return toClosingEntry(response.data as ClosingEntryResponse)
+  }
+}
+
+// ── Internal helpers ──────────────────────────────────────────────────
+
+function toClosingEntry(data: ClosingEntryResponse): ClosingEntry {
+  return {
+    outcome: data.outcome as ClosingEntryOutcome,
+    entryId: data.entry_id ?? null,
+    status: data.status ?? null,
+    postingDate: data.posting_date ?? null,
+    memo: data.memo ?? null,
+    debitElementId: data.debit_element_id ?? null,
+    creditElementId: data.credit_element_id ?? null,
+    amount: data.amount ?? null,
+    reason: data.reason ?? null,
+  }
+}
+
+function toFiscalCalendarState(data: FiscalCalendarResponse): FiscalCalendarState {
+  return {
+    graphId: data.graph_id,
+    fiscalYearStartMonth: data.fiscal_year_start_month,
+    closedThrough: data.closed_through ?? null,
+    closeTarget: data.close_target ?? null,
+    gapPeriods: data.gap_periods ?? 0,
+    catchUpSequence: data.catch_up_sequence ?? [],
+    closeableNow: data.closeable_now ?? false,
+    blockers: data.blockers ?? [],
+    lastCloseAt: data.last_close_at ?? null,
+    initializedAt: data.initialized_at ?? null,
+    lastSyncAt: data.last_sync_at ?? null,
+    periods: (data.periods ?? []).map((p) => ({
+      name: p.name,
+      startDate: p.start_date,
+      endDate: p.end_date,
+      status: p.status,
+      closedAt: p.closed_at ?? null,
+    })),
   }
 }
