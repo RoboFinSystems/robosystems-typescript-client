@@ -91,13 +91,26 @@ export interface CreateReportOptions {
 }
 
 /**
- * Async dispatch acknowledgement. Pending reports stream progress via
- * `/v1/operations/{operationId}/stream`; completed ones can be fetched
- * with `get(graphId, reportId)` once the envelope reports success.
+ * Envelope around a report operation. `status === "completed"` means the
+ * backend produced the report synchronously — `result` contains the
+ * freshly-created report shape (same fields as `ReportListItem`), so
+ * consumers can read `result?.id` immediately. For pending/failed
+ * dispatches, `result` is null and consumers should subscribe to
+ * `/v1/operations/{operationId}/stream` for progress.
+ *
+ * The loose `{ id; name; ... }` shape here intentionally mirrors the
+ * GraphQL `report` field without pulling in every nullable child relation
+ * — `create_report` and `regenerate_report` return a freshly-generated
+ * row, not a fully-resolved GraphQL projection.
  */
 export interface ReportOperationAck {
   operationId: string
   status: OperationEnvelope['status']
+  /**
+   * Synchronous command result. Populated for `status === "completed"`
+   * dispatches where the backend produced the report inline.
+   */
+  result: Record<string, unknown> | null
 }
 
 // ── Client ──────────────────────────────────────────────────────────────
@@ -141,7 +154,11 @@ export class ReportClient {
       'Create report',
       opCreateReport({ path: { graph_id: graphId }, body })
     )
-    return { operationId: envelope.operationId, status: envelope.status }
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
   }
 
   /** List all reports for a graph (includes received shared reports). */
@@ -207,7 +224,11 @@ export class ReportClient {
         } as Parameters<typeof opRegenerateReport>[0]['body'],
       })
     )
-    return { operationId: envelope.operationId, status: envelope.status }
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
   }
 
   /** Delete a report and its generated facts. */
@@ -240,7 +261,11 @@ export class ReportClient {
         } as Parameters<typeof opShareReport>[0]['body'],
       })
     )
-    return { operationId: envelope.operationId, status: envelope.status }
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
   }
 
   /** Check if a report was received via sharing (vs locally created). */

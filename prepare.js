@@ -91,35 +91,62 @@ if (!fs.existsSync(extensionsDestDir)) {
 // Copy extensions files
 if (fs.existsSync(extensionsSourceDir)) {
   // The TypeScript compiler will have already built these files
-  // Just copy the compiled .js and .d.ts files
-  const sdkExtensionsBuilt = fs.readdirSync(extensionsSourceDir)
-
-  sdkExtensionsBuilt.forEach((file) => {
-    const sourcePath = path.join(extensionsSourceDir, file)
-    const destPath = path.join(extensionsDestDir, file)
-
-    if (file.endsWith('.js') || file.endsWith('.d.ts')) {
-      // Copy compiled JavaScript and declaration files
-      let content = fs.readFileSync(sourcePath, 'utf8')
-
-      // Fix imports for published package structure (../sdk/ -> ../)
-      content = content
-        .replace(/require\("\.\.\/sdk\//g, 'require("../')
-        .replace(/from ['"]\.\.\/sdk\//g, "from '../")
-
-      fs.writeFileSync(destPath, content)
-      console.log(`  ✓ Copied and fixed ${file}`)
-    } else if (file.endsWith('.ts') && !file.endsWith('.d.ts')) {
-      // Copy TypeScript source files for reference
-      let content = fs.readFileSync(sourcePath, 'utf8')
-
-      // Adjust imports for published package structure
-      content = content.replace(/from ['"]\.\.\/sdk\//g, "from '../")
-
-      fs.writeFileSync(destPath, content)
-      console.log(`  ✓ Copied ${file}`)
+  // Just copy the compiled .js and .d.ts files, and recurse into
+  // subdirectories (e.g. sdk-extensions/graphql/ + generated/).
+  //
+  // Import rewriting: the source tree has `sdk-extensions/` and `sdk/`
+  // as siblings, so imports use `../sdk/...`. In the published layout
+  // `extensions/` and the generated SDK files live at the package root,
+  // so imports become `../...`. We match `../sdk/` and `../../sdk/`
+  // (the latter when copying a file from a nested subdirectory).
+  const walk = (srcDir, destDir, depth) => {
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true })
     }
-  })
+    const entries = fs.readdirSync(srcDir, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const sourcePath = path.join(srcDir, entry.name)
+      const destPath = path.join(destDir, entry.name)
+
+      if (entry.isDirectory()) {
+        walk(sourcePath, destPath, depth + 1)
+        continue
+      }
+
+      // Skip test files — never ship them
+      if (entry.name.endsWith('.test.ts') || entry.name.endsWith('.test.js')) {
+        continue
+      }
+
+      if (
+        entry.name.endsWith('.js') ||
+        entry.name.endsWith('.d.ts') ||
+        (entry.name.endsWith('.ts') && !entry.name.endsWith('.d.ts'))
+      ) {
+        let content = fs.readFileSync(sourcePath, 'utf8')
+
+        // Every extra directory level adds one more `..` segment to the
+        // SDK-relative import path.
+        const upOne = '../'.repeat(depth)
+        const upToSdk = '../'.repeat(depth) + 'sdk/'
+        content = content
+          .replace(
+            new RegExp(`require\\((['"])${upToSdk.replace(/\//g, '\\/')}`, 'g'),
+            (_m, q) => `require(${q}${upOne}`
+          )
+          .replace(
+            new RegExp(`from (['"])${upToSdk.replace(/\//g, '\\/')}`, 'g'),
+            (_m, q) => `from ${q}${upOne}`
+          )
+
+        fs.writeFileSync(destPath, content)
+        console.log(`  ✓ ${path.relative(extensionsSourceDir, sourcePath)}`)
+      }
+    }
+  }
+
+  walk(extensionsSourceDir, extensionsDestDir, 1)
   console.log('  ✓ SDK extensions copied')
 } else {
   console.log('  ⚠️  SDK extensions not found')
