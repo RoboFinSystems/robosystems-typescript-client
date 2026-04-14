@@ -83,10 +83,14 @@ console.log('🚀 Copying SDK extensions...')
 const extensionsSourceDir = path.join(__dirname, 'sdk-extensions')
 const extensionsDestDir = path.join(currentDir, 'extensions')
 
-// Create extensions directory
-if (!fs.existsSync(extensionsDestDir)) {
-  fs.mkdirSync(extensionsDestDir, { recursive: true })
+// Wipe the mirror before rebuilding so stale files from old sources
+// (renamed clients, removed subdirectories) never linger in a publish.
+// Without this, `extensions/` accumulates cruft over time — every
+// file ever mirrored stays until someone deletes it by hand.
+if (fs.existsSync(extensionsDestDir)) {
+  fs.rmSync(extensionsDestDir, { recursive: true, force: true })
 }
+fs.mkdirSync(extensionsDestDir, { recursive: true })
 
 // Copy extensions files
 if (fs.existsSync(extensionsSourceDir)) {

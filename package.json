@@ -56,7 +56,6 @@
     "core/**/*",
     "extensions/**/*",
     "sdk/**/*",
-    "sdk-extensions/**/*",
     "README.md",
     "LICENSE"
   ],
