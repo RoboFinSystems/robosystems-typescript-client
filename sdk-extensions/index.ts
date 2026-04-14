@@ -4,7 +4,7 @@
  */
 
 import { client } from '../sdk/client.gen'
-import { extractTokenFromSDKClient } from './config'
+import { extractTokenFromSDKClient, getSDKExtensionsConfig } from './config'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { AgentClient } from './AgentClient'
@@ -16,7 +16,18 @@ import { ReportClient } from './ReportClient'
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
   credentials?: 'include' | 'same-origin' | 'omit'
-  token?: string // JWT token for authentication
+  /**
+   * Static credential captured at construction time. Fine for
+   * long-lived API keys; use `tokenProvider` instead when the JWT
+   * can rotate (browser login flows).
+   */
+  token?: string
+  /**
+   * Dynamic credential callback invoked on every GraphQL request.
+   * When set, JWT refreshes are picked up automatically — no need
+   * to rebuild or clear cached clients after a refresh.
+   */
+  tokenProvider?: import('./graphql/client').TokenProvider
   headers?: Record<string, string>
   maxRetries?: number
   retryDelay?: number
@@ -27,6 +38,7 @@ interface ResolvedConfig {
   baseUrl: string
   credentials: 'include' | 'same-origin' | 'omit'
   token?: string
+  tokenProvider?: import('./graphql/client').TokenProvider
   headers?: Record<string, string>
   maxRetries: number
   retryDelay: number
@@ -48,10 +60,16 @@ export class RoboSystemsExtensions {
     // Extract JWT token using centralized logic
     const token = config.token || extractTokenFromSDKClient()
 
+    // `tokenProvider` falls back to the global SDK extensions config so
+    // apps can wire refresh once via `setSDKExtensionsConfig({ tokenProvider })`
+    // and have the lazy default singleton pick it up automatically.
+    const tokenProvider = config.tokenProvider || getSDKExtensionsConfig().tokenProvider
+
     this.config = {
       baseUrl: config.baseUrl || sdkConfig.baseUrl || 'http://localhost:8000',
       credentials: config.credentials || 'include',
       token,
+      tokenProvider,
       headers: config.headers,
       maxRetries: config.maxRetries || 5,
       retryDelay: config.retryDelay || 1000,
@@ -79,10 +97,16 @@ export class RoboSystemsExtensions {
       retryDelay: this.config.retryDelay,
     })
 
+    // LedgerClient / InvestorClient / ReportClient all use GraphQL
+    // internally, so they get the tokenProvider — REST-only clients
+    // (QueryClient / AgentClient / OperationClient / SSEClient) do
+    // not, because their refresh story lives in the main SDK client
+    // wrapper, not here.
     this.ledger = new LedgerClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
     })
 
@@ -90,6 +114,7 @@ export class RoboSystemsExtensions {
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
     })
 
@@ -97,6 +122,7 @@ export class RoboSystemsExtensions {
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
     })
   }

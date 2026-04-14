@@ -9,7 +9,20 @@ export interface SDKExtensionsConfig {
   baseUrl?: string
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: Record<string, string>
-  token?: string // JWT token for authentication
+  /**
+   * Static credential captured at singleton construction. Fine for
+   * long-lived API keys — use `tokenProvider` instead when the
+   * JWT can rotate mid-session (browser login flows).
+   */
+  token?: string
+  /**
+   * Dynamic credential callback, invoked on every GraphQL request.
+   * When set, JWT refresh flows through automatically: the lazy
+   * `extensions` singleton picks it up at construction, and each
+   * request consults the callback for the current token instead of
+   * reusing a stale captured value.
+   */
+  tokenProvider?: import('./graphql/client').TokenProvider
   timeout?: number
   maxRetries?: number
   retryDelay?: number

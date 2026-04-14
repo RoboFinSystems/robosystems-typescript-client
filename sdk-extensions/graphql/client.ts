@@ -23,11 +23,59 @@
 
 import { GraphQLClient } from 'graphql-request'
 
+/**
+ * Callback that returns the current auth credential on demand.
+ *
+ * Use this instead of the static `token` field when the credential
+ * can rotate during the lifetime of the client — the primary case
+ * is short-lived JWTs that auto-refresh from browser token storage.
+ * The provider is invoked on **every** GraphQL request, so the
+ * returned value should be cheap to obtain (a localStorage read or
+ * an in-memory lookup, not a network call if avoidable).
+ *
+ * May return `null`/`undefined` to indicate "no credential available
+ * right now" — the request will be sent unauthenticated in that
+ * case, which lets the caller distinguish auth-expired errors from
+ * never-authed errors at the transport layer.
+ */
+export type TokenProvider = () => string | null | undefined | Promise<string | null | undefined>
+
 export interface GraphQLClientConfig {
   baseUrl: string
+  /**
+   * Static credential captured at construction time. Use this when
+   * the token won't rotate (e.g. CLI/server flows using a long-lived
+   * API key). For JWT flows prefer `tokenProvider` so refreshes are
+   * picked up without rebuilding the client.
+   */
   token?: string
+  /**
+   * Dynamic credential callback, read on every request. Wins over
+   * `token` when both are set. See `TokenProvider` for semantics.
+   */
+  tokenProvider?: TokenProvider
   headers?: Record<string, string>
   credentials?: 'include' | 'same-origin' | 'omit'
+}
+
+/**
+ * Apply a credential to an in-progress request's headers, choosing
+ * the right header based on token shape:
+ *
+ *   - `rfs…` prefix → `X-API-Key` (long-lived API key, validated
+ *     against the database's api_keys table).
+ *   - anything else → `Authorization: Bearer …` (short-lived JWT,
+ *     validated by JWT middleware).
+ *
+ * The two credential types are NOT interchangeable at the backend —
+ * sending a JWT as `X-API-Key` or an API key as Bearer both 401.
+ */
+function applyAuthHeader(headers: Headers, token: string): void {
+  if (token.startsWith('rfs')) {
+    headers.set('X-API-Key', token)
+  } else {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
 }
 
 /**
@@ -40,17 +88,58 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
     throw new Error('createGraphQLClient requires a non-empty graphId')
   }
   const url = `${config.baseUrl.replace(/\/$/, '')}/extensions/${graphId}/graphql`
-  const headers: Record<string, string> = {
+  const staticHeaders: Record<string, string> = {
     ...(config.headers ?? {}),
   }
-  if (config.token) {
-    // The backend accepts both Authorization: Bearer and X-API-Key. Match
-    // the existing facade convention of sending the token as X-API-Key,
-    // which is what the local dev workflow uses.
-    headers['X-API-Key'] = config.token
+
+  // Dynamic-token path: defer credential injection to a per-request
+  // middleware so JWT refreshes are picked up without rebuilding or
+  // clearing the client. This is the recommended path for browser
+  // flows where the token in localStorage rotates every ~30 minutes.
+  if (config.tokenProvider) {
+    const providerFn = config.tokenProvider
+    return new GraphQLClient(url, {
+      headers: staticHeaders,
+      credentials: config.credentials,
+      requestMiddleware: async (request) => {
+        let token: string | null | undefined
+        try {
+          token = await providerFn()
+        } catch {
+          // A provider failure shouldn't crash the request — fall
+          // through unauthenticated so the backend returns a clean
+          // 401, which is easier to diagnose than a thrown middleware.
+          token = undefined
+        }
+        if (!token) {
+          return request
+        }
+        // `request.headers` is a HeadersInit (Headers | string[][] |
+        // Record<string, string>), so normalize via Headers before
+        // mutating. Spreading it directly loses keys when it's a
+        // Headers instance.
+        const merged = new Headers(request.headers as HeadersInit | undefined)
+        applyAuthHeader(merged, token)
+        return { ...request, headers: merged }
+      },
+    })
   }
+
+  // Static-token path: pick the right header at construction time.
+  // Suitable for long-lived API keys that never rotate.
+  if (config.token) {
+    const headers = new Headers(staticHeaders)
+    applyAuthHeader(headers, config.token)
+    return new GraphQLClient(url, {
+      headers,
+      credentials: config.credentials,
+    })
+  }
+
+  // No credentials at all — used by unauthenticated introspection
+  // queries against public dev endpoints.
   return new GraphQLClient(url, {
-    headers,
+    headers: staticHeaders,
     credentials: config.credentials,
   })
 }

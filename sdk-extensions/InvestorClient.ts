@@ -80,7 +80,13 @@ interface InvestorClientConfig {
   baseUrl: string
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: Record<string, string>
+  /** Static credential — use `tokenProvider` instead if the JWT rotates. */
   token?: string
+  /**
+   * Dynamic credential callback. When set, invoked on every GraphQL
+   * request so refreshes flow through automatically.
+   */
+  tokenProvider?: import('./graphql/client').TokenProvider
 }
 
 export class InvestorClient {

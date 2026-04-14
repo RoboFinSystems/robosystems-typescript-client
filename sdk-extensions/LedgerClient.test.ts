@@ -64,7 +64,10 @@ describe('LedgerClient', () => {
   beforeEach(() => {
     client = new LedgerClient({
       baseUrl: 'http://localhost:8000',
-      token: 'test-token',
+      // `rfs…` prefix exercises the X-API-Key header path (long-lived
+      // API key). Tests that need to cover the JWT → Authorization
+      // Bearer branch build their own client inline.
+      token: 'rfs_test_api_key',
     })
     mockFetch = vi.fn()
     global.fetch = mockFetch as unknown as typeof fetch
@@ -112,12 +115,108 @@ describe('LedgerClient', () => {
       expect(String(calledUrl)).toBe('http://localhost:8000/extensions/graph_42/graphql')
     })
 
-    it('sends the API key as X-API-Key', async () => {
+    it('sends an `rfs…` API key in the X-API-Key header', async () => {
       mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
       await client.getEntity('graph_1')
       const init = mockFetch.mock.calls[0][1] as RequestInit
       const headers = new Headers(init.headers)
-      expect(headers.get('X-API-Key')).toBe('test-token')
+      expect(headers.get('X-API-Key')).toBe('rfs_test_api_key')
+      // Authorization should NOT also be set — the two formats are
+      // distinct credentials at the backend, not interchangeable.
+      expect(headers.get('Authorization')).toBeNull()
+    })
+
+    it('sends a JWT (non-rfs token) as Authorization: Bearer', async () => {
+      // `eyJ…` is the canonical JWT prefix (base64url of `{"`). The
+      // header-picker doesn't actually parse the token — anything
+      // that isn't an `rfs…` API key is treated as a bearer credential.
+      const jwtClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.sig',
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await jwtClient.getEntity('graph_1')
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init.headers)
+      expect(headers.get('Authorization')).toBe(
+        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.sig'
+      )
+      expect(headers.get('X-API-Key')).toBeNull()
+    })
+
+    it('consults tokenProvider on every request so JWT refreshes are picked up', async () => {
+      // This is the refresh-safe code path: instead of capturing a
+      // static token at client construction, we supply a callback
+      // that reads the latest credential on demand. When the JWT
+      // rotates between requests, the new token flows through
+      // without any client rebuild or cache-clear dance.
+      const tokens = ['eyJoldtoken.payload.sig', 'eyJnewtoken.payload.sig']
+      let callCount = 0
+      const refreshingClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        tokenProvider: () => tokens[callCount++] ?? tokens[tokens.length - 1],
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+
+      await refreshingClient.getEntity('graph_1')
+      await refreshingClient.getEntity('graph_1')
+
+      const firstHeaders = new Headers((mockFetch.mock.calls[0][1] as RequestInit).headers)
+      const secondHeaders = new Headers((mockFetch.mock.calls[1][1] as RequestInit).headers)
+      expect(firstHeaders.get('Authorization')).toBe('Bearer eyJoldtoken.payload.sig')
+      expect(secondHeaders.get('Authorization')).toBe('Bearer eyJnewtoken.payload.sig')
+      expect(callCount).toBe(2)
+    })
+
+    it('tokenProvider can return an rfs API key and still lands in X-API-Key', async () => {
+      // The provider path handles both credential formats with the
+      // same discriminator as the static-token path.
+      const keyClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        tokenProvider: () => 'rfs_from_provider',
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await keyClient.getEntity('graph_1')
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init.headers)
+      expect(headers.get('X-API-Key')).toBe('rfs_from_provider')
+      expect(headers.get('Authorization')).toBeNull()
+    })
+
+    it('tokenProvider returning null sends an unauthenticated request', async () => {
+      // A null return means "no credential available right now". We
+      // let the request go through so the backend returns a clean
+      // 401 rather than throwing at the middleware layer — that's
+      // easier to diagnose and lets the UI show a proper auth prompt.
+      const anonClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        tokenProvider: () => null,
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await anonClient.getEntity('graph_1')
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init.headers)
+      expect(headers.get('X-API-Key')).toBeNull()
+      expect(headers.get('Authorization')).toBeNull()
+    })
+
+    it('tokenProvider that throws falls through unauthenticated', async () => {
+      // Same rationale as the null-return case — a throwing provider
+      // would otherwise crash the request before it even leaves the
+      // client, which is worse than a 401.
+      const brokenClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        tokenProvider: () => {
+          throw new Error('storage unavailable')
+        },
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await expect(brokenClient.getEntity('graph_1')).resolves.toBeNull()
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init.headers)
+      expect(headers.get('Authorization')).toBeNull()
+      expect(headers.get('X-API-Key')).toBeNull()
     })
   })
 
