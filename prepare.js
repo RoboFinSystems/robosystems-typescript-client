@@ -156,11 +156,16 @@ if (fs.existsSync(extensionsSourceDir)) {
   console.log('  ⚠️  SDK extensions not found')
 }
 
-// Format the generated files
+// Format the generated files.
+//
+// The extensions glob uses `**` so nested files — e.g. everything under
+// `extensions/graphql/` (client, generated types, queries/**) — get
+// reformatted alongside the top-level clients. A flat `extensions/*.ts`
+// would silently skip the entire GraphQL tree.
 console.log('💅 Formatting generated files...')
 try {
   execSync(
-    'npx prettier --write index.ts index.js index.d.ts extensions/*.ts extensions/*.js extensions/*.d.ts',
+    'npx prettier --write index.ts index.js index.d.ts "extensions/**/*.ts" "extensions/**/*.js" "extensions/**/*.d.ts"',
     {
       cwd: currentDir,
       stdio: 'inherit',
@@ -173,5 +178,5 @@ try {
 
 console.log('✅ SDK prepared for publishing!')
 console.log('\nTo publish:')
-console.log('  1. cd sdk-publish')
+console.log('  1. npm version <patch|minor|major>')
 console.log('  2. npm publish')

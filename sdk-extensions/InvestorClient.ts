@@ -128,7 +128,7 @@ export class InvestorClient {
       'Create portfolio',
       opCreatePortfolio({ path: { graph_id: graphId }, body })
     )
-    return envelope.result as unknown as InvestorPortfolio
+    return rawToInvestorPortfolio(envelope.result as unknown as RawPortfolioResponse)
   }
 
   /** Update a portfolio's metadata. Only provided fields are applied. */
@@ -147,7 +147,7 @@ export class InvestorClient {
         } as UpdatePortfolioOperation,
       })
     )
-    return envelope.result as unknown as InvestorPortfolio
+    return rawToInvestorPortfolio(envelope.result as unknown as RawPortfolioResponse)
   }
 
   /**
@@ -213,7 +213,7 @@ export class InvestorClient {
       'Create security',
       opCreateSecurity({ path: { graph_id: graphId }, body })
     )
-    return envelope.result as unknown as InvestorSecurity
+    return rawToInvestorSecurity(envelope.result as unknown as RawSecurityResponse)
   }
 
   /** Update a security's metadata. Only provided fields are applied. */
@@ -232,7 +232,7 @@ export class InvestorClient {
         } as UpdateSecurityOperation,
       })
     )
-    return envelope.result as unknown as InvestorSecurity
+    return rawToInvestorSecurity(envelope.result as unknown as RawSecurityResponse)
   }
 
   /** Soft-delete a security (sets is_active=false). */
@@ -292,7 +292,7 @@ export class InvestorClient {
       'Create position',
       opCreatePosition({ path: { graph_id: graphId }, body })
     )
-    return envelope.result as unknown as InvestorPosition
+    return rawToInvestorPosition(envelope.result as unknown as RawPositionResponse)
   }
 
   /** Update a position. Only provided fields are applied. */
@@ -311,7 +311,7 @@ export class InvestorClient {
         } as UpdatePositionOperation,
       })
     )
-    return envelope.result as unknown as InvestorPosition
+    return rawToInvestorPosition(envelope.result as unknown as RawPositionResponse)
   }
 
   /** Delete (dispose) a position. */
@@ -378,5 +378,124 @@ export class InvestorClient {
       throw new Error(`${label} failed: empty response`)
     }
     return response.data
+  }
+}
+
+// ── Module-private conversion helpers ─────────────────────────────────
+//
+// The RoboInvestor write operations (create/update portfolio, security,
+// position) return Pydantic-serialized envelopes where `result` is in
+// snake_case. The GraphQL-derived `InvestorPortfolio` / `InvestorSecurity`
+// / `InvestorPosition` types are in camelCase (matching the read path).
+//
+// These helpers are the single place where we bridge the two naming
+// conventions on the write path, mirroring the `rawFiscalCalendarToCamel`
+// / `rawToClosingEntry` pattern in `LedgerClient`. Keeping the unsafe
+// `as unknown as` cast localized to these helpers means a backend schema
+// drift surfaces here rather than silently at every call site.
+
+interface RawPortfolioResponse {
+  id: string
+  name: string
+  description: string | null
+  strategy: string | null
+  inception_date: string | null
+  base_currency: string
+  created_at: string
+  updated_at: string
+}
+
+interface RawSecurityResponse {
+  id: string
+  entity_id: string | null
+  entity_name: string | null
+  source_graph_id: string | null
+  name: string
+  security_type: string
+  security_subtype: string | null
+  terms: unknown
+  is_active: boolean
+  authorized_shares: number | null
+  outstanding_shares: number | null
+  created_at: string
+  updated_at: string
+}
+
+interface RawPositionResponse {
+  id: string
+  portfolio_id: string
+  security_id: string
+  security_name: string | null
+  entity_name: string | null
+  quantity: number
+  quantity_type: string
+  cost_basis: number
+  cost_basis_dollars: number
+  currency: string
+  current_value: number | null
+  current_value_dollars: number | null
+  valuation_date: string | null
+  valuation_source: string | null
+  acquisition_date: string | null
+  disposition_date: string | null
+  status: string
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+function rawToInvestorPortfolio(raw: RawPortfolioResponse): InvestorPortfolio {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description,
+    strategy: raw.strategy,
+    inceptionDate: raw.inception_date,
+    baseCurrency: raw.base_currency,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  }
+}
+
+function rawToInvestorSecurity(raw: RawSecurityResponse): InvestorSecurity {
+  return {
+    id: raw.id,
+    entityId: raw.entity_id,
+    entityName: raw.entity_name,
+    sourceGraphId: raw.source_graph_id,
+    name: raw.name,
+    securityType: raw.security_type,
+    securitySubtype: raw.security_subtype,
+    terms: raw.terms,
+    isActive: raw.is_active,
+    authorizedShares: raw.authorized_shares,
+    outstandingShares: raw.outstanding_shares,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  }
+}
+
+function rawToInvestorPosition(raw: RawPositionResponse): InvestorPosition {
+  return {
+    id: raw.id,
+    portfolioId: raw.portfolio_id,
+    securityId: raw.security_id,
+    securityName: raw.security_name,
+    entityName: raw.entity_name,
+    quantity: raw.quantity,
+    quantityType: raw.quantity_type,
+    costBasis: raw.cost_basis,
+    costBasisDollars: raw.cost_basis_dollars,
+    currency: raw.currency,
+    currentValue: raw.current_value,
+    currentValueDollars: raw.current_value_dollars,
+    valuationDate: raw.valuation_date,
+    valuationSource: raw.valuation_source,
+    acquisitionDate: raw.acquisition_date,
+    dispositionDate: raw.disposition_date,
+    status: raw.status,
+    notes: raw.notes,
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
   }
 }

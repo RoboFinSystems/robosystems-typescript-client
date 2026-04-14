@@ -87,22 +87,25 @@ describe('InvestorClient', () => {
   })
 
   describe('createPortfolio', () => {
-    it('unwraps the envelope to a portfolio', async () => {
+    it('converts the snake_case envelope result into a camelCase portfolio', async () => {
       mockFetch.mockResolvedValueOnce(
         envelopeResponse('create-portfolio', {
           id: 'port_new',
           name: 'New Fund',
           description: null,
           strategy: null,
-          inceptionDate: null,
-          baseCurrency: 'USD',
-          createdAt: '2026-04-14T00:00:00Z',
-          updatedAt: '2026-04-14T00:00:00Z',
+          inception_date: '2026-01-01',
+          base_currency: 'USD',
+          created_at: '2026-04-14T00:00:00Z',
+          updated_at: '2026-04-14T00:00:00Z',
         })
       )
       const portfolio = await client.createPortfolio('graph_1', { name: 'New Fund' })
       expect(portfolio.id).toBe('port_new')
       expect(portfolio.name).toBe('New Fund')
+      expect(portfolio.inceptionDate).toBe('2026-01-01')
+      expect(portfolio.baseCurrency).toBe('USD')
+      expect(portfolio.createdAt).toBe('2026-04-14T00:00:00Z')
     })
 
     it('POSTs to the roboinvestor operations URL', async () => {
@@ -112,10 +115,10 @@ describe('InvestorClient', () => {
           name: 'New Fund',
           description: null,
           strategy: null,
-          inceptionDate: null,
-          baseCurrency: 'USD',
-          createdAt: '2026-04-14T00:00:00Z',
-          updatedAt: '2026-04-14T00:00:00Z',
+          inception_date: null,
+          base_currency: 'USD',
+          created_at: '2026-04-14T00:00:00Z',
+          updated_at: '2026-04-14T00:00:00Z',
         })
       )
       await client.createPortfolio('graph_42', { name: 'New Fund' })
@@ -128,21 +131,23 @@ describe('InvestorClient', () => {
   })
 
   describe('updatePortfolio', () => {
-    it('merges the portfolioId into the body', async () => {
+    it('merges the portfolioId into the body and converts the result', async () => {
       mockFetch.mockResolvedValueOnce(
         envelopeResponse('update-portfolio', {
           id: 'port_1',
           name: 'Renamed',
           description: null,
           strategy: null,
-          inceptionDate: null,
-          baseCurrency: 'USD',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2026-04-14T00:00:00Z',
+          inception_date: null,
+          base_currency: 'USD',
+          created_at: '2024-01-01T00:00:00Z',
+          updated_at: '2026-04-14T00:00:00Z',
         })
       )
       const result = await client.updatePortfolio('graph_1', 'port_1', { name: 'Renamed' })
       expect(result.name).toBe('Renamed')
+      expect(result.baseCurrency).toBe('USD')
+      expect(result.updatedAt).toBe('2026-04-14T00:00:00Z')
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
       expect(body.portfolio_id).toBe('port_1')
@@ -179,22 +184,22 @@ describe('InvestorClient', () => {
   })
 
   describe('createSecurity', () => {
-    it('unwraps the envelope to a security', async () => {
+    it('converts the snake_case envelope result into a camelCase security', async () => {
       mockFetch.mockResolvedValueOnce(
         envelopeResponse('create-security', {
           id: 'sec_new',
-          entityId: 'ent_1',
-          entityName: 'ACME',
-          sourceGraphId: null,
+          entity_id: 'ent_1',
+          entity_name: 'ACME',
+          source_graph_id: null,
           name: 'Series A Preferred',
-          securityType: 'equity',
-          securitySubtype: 'preferred',
+          security_type: 'equity',
+          security_subtype: 'preferred',
           terms: {},
-          isActive: true,
-          authorizedShares: 1000000,
-          outstandingShares: 500000,
-          createdAt: '2026-04-14T00:00:00Z',
-          updatedAt: '2026-04-14T00:00:00Z',
+          is_active: true,
+          authorized_shares: 1000000,
+          outstanding_shares: 500000,
+          created_at: '2026-04-14T00:00:00Z',
+          updated_at: '2026-04-14T00:00:00Z',
         })
       )
       const security = await client.createSecurity('graph_1', {
@@ -203,6 +208,13 @@ describe('InvestorClient', () => {
         entity_id: 'ent_1',
       })
       expect(security.id).toBe('sec_new')
+      expect(security.entityId).toBe('ent_1')
+      expect(security.entityName).toBe('ACME')
+      expect(security.securityType).toBe('equity')
+      expect(security.securitySubtype).toBe('preferred')
+      expect(security.isActive).toBe(true)
+      expect(security.authorizedShares).toBe(1000000)
+      expect(security.outstandingShares).toBe(500000)
     })
   })
 
@@ -247,29 +259,29 @@ describe('InvestorClient', () => {
   })
 
   describe('createPosition', () => {
-    it('unwraps the envelope to a position', async () => {
+    it('converts the snake_case envelope result into a camelCase position', async () => {
       mockFetch.mockResolvedValueOnce(
         envelopeResponse('create-position', {
           id: 'pos_new',
-          portfolioId: 'port_1',
-          securityId: 'sec_1',
-          securityName: 'Series A Preferred',
-          entityName: 'ACME',
+          portfolio_id: 'port_1',
+          security_id: 'sec_1',
+          security_name: 'Series A Preferred',
+          entity_name: 'ACME',
           quantity: 100,
-          quantityType: 'shares',
-          costBasis: 100000,
-          costBasisDollars: 1000,
+          quantity_type: 'shares',
+          cost_basis: 100000,
+          cost_basis_dollars: 1000,
           currency: 'USD',
-          currentValue: null,
-          currentValueDollars: null,
-          valuationDate: null,
-          valuationSource: null,
-          acquisitionDate: '2026-01-01',
-          dispositionDate: null,
+          current_value: null,
+          current_value_dollars: null,
+          valuation_date: null,
+          valuation_source: null,
+          acquisition_date: '2026-01-01',
+          disposition_date: null,
           status: 'active',
           notes: null,
-          createdAt: '2026-04-14T00:00:00Z',
-          updatedAt: '2026-04-14T00:00:00Z',
+          created_at: '2026-04-14T00:00:00Z',
+          updated_at: '2026-04-14T00:00:00Z',
         })
       )
       const position = await client.createPosition('graph_1', {
@@ -278,6 +290,16 @@ describe('InvestorClient', () => {
         quantity: 100,
       })
       expect(position.id).toBe('pos_new')
+      expect(position.portfolioId).toBe('port_1')
+      expect(position.securityId).toBe('sec_1')
+      expect(position.securityName).toBe('Series A Preferred')
+      expect(position.entityName).toBe('ACME')
+      expect(position.quantityType).toBe('shares')
+      expect(position.costBasis).toBe(100000)
+      expect(position.costBasisDollars).toBe(1000)
+      expect(position.acquisitionDate).toBe('2026-01-01')
+      expect(position.currentValue).toBeNull()
+      expect(position.status).toBe('active')
     })
   })
 
