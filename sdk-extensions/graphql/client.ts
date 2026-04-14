@@ -105,10 +105,19 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
         let token: string | null | undefined
         try {
           token = await providerFn()
-        } catch {
+        } catch (err) {
           // A provider failure shouldn't crash the request — fall
           // through unauthenticated so the backend returns a clean
           // 401, which is easier to diagnose than a thrown middleware.
+          // We still log a breadcrumb so the failure is visible in
+          // devtools/log aggregators instead of silently disappearing;
+          // silently swallowing provider bugs in production is worse
+          // than the noise.
+          // eslint-disable-next-line no-console
+          console.warn(
+            '[RoboSystems SDK] tokenProvider threw — sending unauthenticated request:',
+            err
+          )
           token = undefined
         }
         if (!token) {
@@ -164,7 +173,16 @@ export class GraphQLClientCache {
     return client
   }
 
-  /** Drop all cached clients. Useful after a token rotation. */
+  /**
+   * Drop all cached clients. Only needed when swapping **static**
+   * credentials — e.g. replacing the `token` field on a long-lived
+   * facade between tenants, or resetting a CLI session. When the
+   * cache was built from a `tokenProvider`, rotation is handled
+   * per-request inside `requestMiddleware` and `clear()` is a no-op
+   * for auth purposes (the cached `GraphQLClient` instances keep
+   * using the same provider reference and will pick up the next
+   * token automatically).
+   */
   clear(): void {
     this.clients.clear()
   }

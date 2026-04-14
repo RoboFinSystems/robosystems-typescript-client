@@ -5,6 +5,8 @@
  * Provides centralized configuration for CORS, credentials, and other settings
  */
 
+import type { TokenProvider } from './graphql/client'
+
 export interface SDKExtensionsConfig {
   baseUrl?: string
   credentials?: 'include' | 'same-origin' | 'omit'
@@ -13,6 +15,11 @@ export interface SDKExtensionsConfig {
    * Static credential captured at singleton construction. Fine for
    * long-lived API keys — use `tokenProvider` instead when the
    * JWT can rotate mid-session (browser login flows).
+   *
+   * When both `token` and `tokenProvider` are set, `tokenProvider`
+   * wins — the static value is effectively ignored. Pass
+   * `tokenProvider: undefined` to explicitly switch back to the
+   * static-token path.
    */
   token?: string
   /**
@@ -22,7 +29,7 @@ export interface SDKExtensionsConfig {
    * request consults the callback for the current token instead of
    * reusing a stale captured value.
    */
-  tokenProvider?: import('./graphql/client').TokenProvider
+  tokenProvider?: TokenProvider
   timeout?: number
   maxRetries?: number
   retryDelay?: number

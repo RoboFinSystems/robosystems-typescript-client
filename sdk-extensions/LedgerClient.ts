@@ -58,6 +58,7 @@ import type {
   UpdateEntityRequest,
 } from '../sdk/types.gen'
 import { GraphQLClientCache } from './graphql/client'
+import type { TokenProvider } from './graphql/client'
 import {
   GetLedgerAccountRollupsDocument,
   GetLedgerAccountTreeDocument,
@@ -353,7 +354,7 @@ interface LedgerClientConfig {
    * Dynamic credential callback. When set, invoked on every GraphQL
    * request so refreshes flow through automatically.
    */
-  tokenProvider?: import('./graphql/client').TokenProvider
+  tokenProvider?: TokenProvider
 }
 
 export class LedgerClient {

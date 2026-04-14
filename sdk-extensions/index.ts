@@ -5,6 +5,7 @@
 
 import { client } from '../sdk/client.gen'
 import { extractTokenFromSDKClient, getSDKExtensionsConfig } from './config'
+import type { TokenProvider } from './graphql/client'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { AgentClient } from './AgentClient'
@@ -12,6 +13,12 @@ import { SSEClient } from './SSEClient'
 import { InvestorClient } from './InvestorClient'
 import { LedgerClient } from './LedgerClient'
 import { ReportClient } from './ReportClient'
+
+// Re-export the `TokenProvider` type so consumers who want to type
+// their own callback (`const provider: TokenProvider = () => …`) can
+// pull it from the package root instead of reaching into the
+// internal `./graphql/client` module path.
+export type { TokenProvider } from './graphql/client'
 
 export interface RoboSystemsExtensionConfig {
   baseUrl?: string
@@ -27,7 +34,7 @@ export interface RoboSystemsExtensionConfig {
    * When set, JWT refreshes are picked up automatically — no need
    * to rebuild or clear cached clients after a refresh.
    */
-  tokenProvider?: import('./graphql/client').TokenProvider
+  tokenProvider?: TokenProvider
   headers?: Record<string, string>
   maxRetries?: number
   retryDelay?: number
@@ -38,7 +45,7 @@ interface ResolvedConfig {
   baseUrl: string
   credentials: 'include' | 'same-origin' | 'omit'
   token?: string
-  tokenProvider?: import('./graphql/client').TokenProvider
+  tokenProvider?: TokenProvider
   headers?: Record<string, string>
   maxRetries: number
   retryDelay: number

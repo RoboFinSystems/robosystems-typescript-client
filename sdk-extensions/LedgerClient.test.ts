@@ -218,6 +218,57 @@ describe('LedgerClient', () => {
       expect(headers.get('Authorization')).toBeNull()
       expect(headers.get('X-API-Key')).toBeNull()
     })
+
+    it('awaits an async tokenProvider before injecting the header', async () => {
+      // The `TokenProvider` type explicitly permits a Promise-returning
+      // callback — this is the production shape for browser flows
+      // where `getValidToken()` hits a refresh endpoint before
+      // returning. The middleware `await`s the provider, so sync and
+      // async callbacks behave identically at the call site; this
+      // test guards against a refactor that accidentally drops the
+      // `await` and ships a `[object Promise]` as the bearer value.
+      const asyncClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        tokenProvider: async () => {
+          // Simulate a microtask boundary — a real refresh would
+          // `await fetch(...)` here.
+          await Promise.resolve()
+          return 'eyJasync.payload.sig'
+        },
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await asyncClient.getEntity('graph_1')
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init.headers)
+      expect(headers.get('Authorization')).toBe('Bearer eyJasync.payload.sig')
+      expect(headers.get('X-API-Key')).toBeNull()
+    })
+
+    it('tokenProvider wins when both token and tokenProvider are set', async () => {
+      // The factory's contract is documented as "tokenProvider wins
+      // over token when both are set" — in the implementation this
+      // is the early-return on `config.tokenProvider` in
+      // `createGraphQLClient`. A regression here (e.g. reordering
+      // the branches, dropping the early return) would silently
+      // prefer a stale static token over the refresh-aware path,
+      // which is exactly the bug the provider was built to prevent.
+      // Belt-and-suspenders: assert the precedence explicitly.
+      const bothClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        token: 'rfs_static_key_should_be_ignored',
+        tokenProvider: () => 'eyJfromProvider.payload.sig',
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await bothClient.getEntity('graph_1')
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const headers = new Headers(init.headers)
+      expect(headers.get('Authorization')).toBe(
+        'Bearer eyJfromProvider.payload.sig'
+      )
+      // The static `rfs_static_key_should_be_ignored` must NOT leak
+      // through as an X-API-Key header.
+      expect(headers.get('X-API-Key')).toBeNull()
+    })
   })
 
   describe('listEntities', () => {
