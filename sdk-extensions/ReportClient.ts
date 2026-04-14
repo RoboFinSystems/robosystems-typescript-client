@@ -3,135 +3,74 @@
 /**
  * Report Client for RoboSystems API
  *
- * High-level client for report lifecycle: create, list, view statements,
- * regenerate, share, and delete. Reports consume ledger data (mappings,
- * trial balance) as inputs — use LedgerClient for those concerns.
+ * High-level facade for the report + publish-list surface:
+ * create/list/view/regenerate/share/delete reports, render financial
+ * statements, and manage publish lists (distribution lists for shared
+ * reports). Reports consume ledger data (mappings, trial balance) as
+ * inputs — use `LedgerClient` for those concerns.
+ *
+ * **Transport split:**
+ * - **Reads** (listReports, getReport, getStatement, listPublishLists,
+ *   getPublishList) go through GraphQL at
+ *   `/extensions/{graph_id}/graphql`.
+ * - **Writes** (createReport, regenerateReport, deleteReport, shareReport,
+ *   and the publish-list CRUD) go through named operations at
+ *   `/extensions/roboledger/{graph_id}/operations/{operation_name}`.
+ *
+ * Every write returns an `OperationEnvelope`; this facade unwraps
+ * `envelope.result` for sync commands, or returns `{ operationId, status }`
+ * for async dispatches (createReport, regenerateReport, shareReport).
  */
 
+import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
+import { ClientError } from 'graphql-request'
 import {
-  addPublishListMembers,
-  createPublishList,
-  createReport,
-  deletePublishList,
-  deleteReport,
-  getPublishList,
-  getReport,
-  getStatement,
-  listPublishLists,
-  listReports,
-  regenerateReport,
-  removePublishListMember,
-  shareReport,
-  updatePublishList,
+  opAddPublishListMembers,
+  opCreatePublishList,
+  opCreateReport,
+  opDeletePublishList,
+  opDeleteReport,
+  opRegenerateReport,
+  opRemovePublishListMember,
+  opShareReport,
+  opUpdatePublishList,
 } from '../sdk/sdk.gen'
 import type {
+  AddPublishListMembersOperation,
+  CreatePublishListRequest,
   CreateReportRequest,
-  FactRowResponse,
-  PublishListDetailResponse,
-  PublishListListResponse,
-  PublishListMemberResponse,
-  PublishListResponse,
-  RegenerateReportRequest,
-  ReportListResponse,
-  ReportResponse,
-  ShareReportResponse,
-  StatementResponse,
-  StructureSummary,
-  ValidationCheckResponse,
+  OperationEnvelope,
+  UpdatePublishListOperation,
 } from '../sdk/types.gen'
+import { GraphQLClientCache } from './graphql/client'
+import {
+  GetLedgerPublishListDocument,
+  GetLedgerReportDocument,
+  GetLedgerStatementDocument,
+  ListLedgerPublishListsDocument,
+  ListLedgerReportsDocument,
+  type GetLedgerPublishListQuery,
+  type GetLedgerReportQuery,
+  type GetLedgerStatementQuery,
+  type ListLedgerPublishListsQuery,
+  type ListLedgerReportsQuery,
+} from './graphql/generated/graphql'
 
-// ── Friendly types ──────────────────────────────────────────────────────
+// ── Types derived from GraphQL codegen ──────────────────────────────────
 
-export interface Report {
-  id: string
-  name: string
-  taxonomyId: string
-  generationStatus: string
-  periodType: string
-  periodStart: string | null
-  periodEnd: string | null
-  comparative: boolean
-  mappingId: string | null
-  aiGenerated: boolean
-  createdAt: string
-  lastGenerated: string | null
-  structures: Structure[]
-  /** Entity name (source company for shared reports, own entity for native) */
-  entityName: string | null
-  /** Non-null when this report was shared from another graph */
-  sourceGraphId: string | null
-  sourceReportId: string | null
-  sharedAt: string | null
-}
+export type Report = NonNullable<GetLedgerReportQuery['report']>
+export type ReportListItem = NonNullable<ListLedgerReportsQuery['reports']>['reports'][number]
+export type StatementData = NonNullable<GetLedgerStatementQuery['statement']>
+export type StatementPeriod = StatementData['periods'][number]
+export type StatementRow = StatementData['rows'][number]
 
-// Structure type re-exported from LedgerClient
-import type { Structure } from './LedgerClient'
-export type { Structure } from './LedgerClient'
+export type PublishList = NonNullable<
+  ListLedgerPublishListsQuery['publishLists']
+>['publishLists'][number]
+export type PublishListDetail = NonNullable<GetLedgerPublishListQuery['publishList']>
+export type PublishListMember = PublishListDetail['members'][number]
 
-export interface StatementPeriod {
-  start: string
-  end: string
-  label: string
-}
-
-export interface StatementRow {
-  elementId: string
-  elementQname: string
-  elementName: string
-  classification: string
-  values: (number | null)[]
-  isSubtotal: boolean
-  depth: number
-}
-
-export interface StatementData {
-  reportId: string
-  structureId: string
-  structureName: string
-  structureType: string
-  periods: StatementPeriod[]
-  rows: StatementRow[]
-  validation: {
-    passed: boolean
-    checks: string[]
-    failures: string[]
-    warnings: string[]
-  } | null
-  unmappedCount: number
-}
-
-export interface ShareResult {
-  reportId: string
-  results: Array<{
-    targetGraphId: string
-    status: 'shared' | 'error'
-    error: string | null
-    factCount: number
-  }>
-}
-
-export interface PublishList {
-  id: string
-  name: string
-  description: string | null
-  memberCount: number
-  createdBy: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface PublishListDetail extends PublishList {
-  members: PublishListMember[]
-}
-
-export interface PublishListMember {
-  id: string
-  targetGraphId: string
-  targetGraphName: string | null
-  targetOrgName: string | null
-  addedBy: string
-  addedAt: string
-}
+// ── Caller-facing option interfaces ─────────────────────────────────────
 
 export interface PeriodSpecInput {
   start: string
@@ -151,29 +90,41 @@ export interface CreateReportOptions {
   periods?: PeriodSpecInput[]
 }
 
+/**
+ * Async dispatch acknowledgement. Pending reports stream progress via
+ * `/v1/operations/{operationId}/stream`; completed ones can be fetched
+ * with `get(graphId, reportId)` once the envelope reports success.
+ */
+export interface ReportOperationAck {
+  operationId: string
+  status: OperationEnvelope['status']
+}
+
 // ── Client ──────────────────────────────────────────────────────────────
 
+interface ReportClientConfig {
+  baseUrl: string
+  credentials?: 'include' | 'same-origin' | 'omit'
+  headers?: Record<string, string>
+  token?: string
+}
+
 export class ReportClient {
-  private config: {
-    baseUrl: string
-    credentials?: 'include' | 'same-origin' | 'omit'
-    headers?: Record<string, string>
-    token?: string
+  private config: ReportClientConfig
+  private gql: GraphQLClientCache
+
+  constructor(config: ReportClientConfig) {
+    this.config = config
+    this.gql = new GraphQLClientCache(config)
   }
 
-  constructor(config: {
-    baseUrl: string
-    credentials?: 'include' | 'same-origin' | 'omit'
-    headers?: Record<string, string>
-    token?: string
-  }) {
-    this.config = config
-  }
+  // ── Reports ─────────────────────────────────────────────────────────
 
   /**
-   * Create a report — generates facts for all structures in the taxonomy.
+   * Kick off report creation (async). Use the returned `operationId` to
+   * subscribe to progress via SSE, then call `get()` once finished.
    */
-  async create(graphId: string, options: CreateReportOptions): Promise<Report> {
+  async create(graphId: string, options: CreateReportOptions): Promise<ReportOperationAck> {
     const body: CreateReportRequest = {
       name: options.name,
       mapping_id: options.mappingId,
@@ -183,52 +134,37 @@ export class ReportClient {
       period_type: options.periodType ?? 'quarterly',
       comparative: options.comparative ?? true,
     }
-
     if (options.periods && options.periods.length > 0) {
       body.periods = options.periods
     }
-
-    const response = await createReport({
-      path: { graph_id: graphId },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Create report failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return this._toReport(response.data as ReportResponse)
+    const envelope = await this.callOperation(
+      'Create report',
+      opCreateReport({ path: { graph_id: graphId }, body })
+    )
+    return { operationId: envelope.operationId, status: envelope.status }
   }
 
-  /**
-   * List all reports for a graph (includes received shared reports).
-   */
-  async list(graphId: string): Promise<Report[]> {
-    const response = await listReports({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`List reports failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as ReportListResponse
-    return (data.reports ?? []).map((r) => this._toReport(r))
+  /** List all reports for a graph (includes received shared reports). */
+  async list(graphId: string): Promise<ReportListItem[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerReportsDocument,
+      undefined,
+      'List reports',
+      (data) => data.reports
+    )
+    return list?.reports ?? []
   }
 
-  /**
-   * Get a report with its available structures.
-   */
-  async get(graphId: string, reportId: string): Promise<Report> {
-    const response = await getReport({
-      path: { graph_id: graphId, report_id: reportId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get report failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return this._toReport(response.data as ReportResponse)
+  /** Get a single report with its period list + available structures. */
+  async get(graphId: string, reportId: string): Promise<Report | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerReportDocument,
+      { reportId },
+      'Get report',
+      (data) => data.report
+    )
   }
 
   /**
@@ -240,104 +176,71 @@ export class ReportClient {
     graphId: string,
     reportId: string,
     structureType: string
-  ): Promise<StatementData> {
-    const response = await getStatement({
-      path: { graph_id: graphId, report_id: reportId, structure_type: structureType },
-    })
-
-    if (response.error) {
-      throw new Error(`Get statement failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as StatementResponse
-    return {
-      reportId: data.report_id,
-      structureId: data.structure_id,
-      structureName: data.structure_name,
-      structureType: data.structure_type,
-      periods: (data.periods ?? []).map((p) => ({
-        start: p.start,
-        end: p.end,
-        label: p.label,
-      })),
-      rows: (data.rows ?? []).map((r: FactRowResponse) => ({
-        elementId: r.element_id,
-        elementQname: r.element_qname,
-        elementName: r.element_name,
-        classification: r.classification,
-        values: r.values ?? [],
-        isSubtotal: r.is_subtotal ?? false,
-        depth: r.depth ?? 0,
-      })),
-      validation: data.validation
-        ? {
-            passed: (data.validation as ValidationCheckResponse).passed,
-            checks: (data.validation as ValidationCheckResponse).checks,
-            failures: (data.validation as ValidationCheckResponse).failures,
-            warnings: (data.validation as ValidationCheckResponse).warnings,
-          }
-        : null,
-      unmappedCount: data.unmapped_count ?? 0,
-    }
+  ): Promise<StatementData | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerStatementDocument,
+      { reportId, structureType },
+      'Get statement',
+      (data) => data.statement
+    )
   }
 
   /**
-   * Regenerate a report with new period dates.
+   * Regenerate an existing report (async). Returns an operation id;
+   * subscribe via SSE for progress.
    */
   async regenerate(
     graphId: string,
     reportId: string,
-    periodStart: string,
-    periodEnd: string
-  ): Promise<Report> {
-    const response = await regenerateReport({
-      path: { graph_id: graphId, report_id: reportId },
-      body: { period_start: periodStart, period_end: periodEnd } as RegenerateReportRequest,
-    })
-
-    if (response.error) {
-      throw new Error(`Regenerate report failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return this._toReport(response.data as ReportResponse)
+    periodStart?: string,
+    periodEnd?: string
+  ): Promise<ReportOperationAck> {
+    const envelope = await this.callOperation(
+      'Regenerate report',
+      opRegenerateReport({
+        path: { graph_id: graphId },
+        body: {
+          report_id: reportId,
+          period_start: periodStart,
+          period_end: periodEnd,
+        } as Parameters<typeof opRegenerateReport>[0]['body'],
+      })
+    )
+    return { operationId: envelope.operationId, status: envelope.status }
   }
 
-  /**
-   * Delete a report and its generated facts.
-   */
+  /** Delete a report and its generated facts. */
   async delete(graphId: string, reportId: string): Promise<void> {
-    const response = await deleteReport({
-      path: { graph_id: graphId, report_id: reportId },
-    })
-
-    if (response.error) {
-      throw new Error(`Delete report failed: ${JSON.stringify(response.error)}`)
-    }
+    await this.callOperation(
+      'Delete report',
+      opDeleteReport({
+        path: { graph_id: graphId },
+        body: { report_id: reportId },
+      })
+    )
   }
 
   /**
-   * Share a published report to all members of a publish list (snapshot copy).
+   * Share a published report to every member of a publish list (async).
+   * Each target graph receives a snapshot copy of the report's facts.
    */
-  async share(graphId: string, reportId: string, publishListId: string): Promise<ShareResult> {
-    const response = await shareReport({
-      path: { graph_id: graphId, report_id: reportId },
-      body: { publish_list_id: publishListId },
-    })
-
-    if (response.error) {
-      throw new Error(`Share report failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as ShareReportResponse
-    return {
-      reportId: data.report_id,
-      results: (data.results ?? []).map((r) => ({
-        targetGraphId: r.target_graph_id,
-        status: r.status as 'shared' | 'error',
-        error: r.error ?? null,
-        factCount: r.fact_count ?? 0,
-      })),
-    }
+  async share(
+    graphId: string,
+    reportId: string,
+    publishListId: string
+  ): Promise<ReportOperationAck> {
+    const envelope = await this.callOperation(
+      'Share report',
+      opShareReport({
+        path: { graph_id: graphId },
+        body: {
+          report_id: reportId,
+          publish_list_id: publishListId,
+        } as Parameters<typeof opShareReport>[0]['body'],
+      })
+    )
+    return { operationId: envelope.operationId, status: envelope.status }
   }
 
   /** Check if a report was received via sharing (vs locally created). */
@@ -347,140 +250,152 @@ export class ReportClient {
 
   // ── Publish Lists ────────────────────────────────────────────────────
 
-  async listPublishLists(graphId: string): Promise<PublishList[]> {
-    const response = await listPublishLists({
-      path: { graph_id: graphId },
-    })
-    if (response.error) {
-      throw new Error(`List publish lists failed: ${JSON.stringify(response.error)}`)
-    }
-    const data = response.data as PublishListListResponse
-    return (data.publish_lists ?? []).map((pl) => this._toPublishList(pl))
+  /** List publish lists with pagination. */
+  async listPublishLists(
+    graphId: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<PublishList[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerPublishListsDocument,
+      {
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List publish lists',
+      (data) => data.publishLists
+    )
+    return list?.publishLists ?? []
   }
 
+  /** Create a new publish list. */
   async createPublishList(
     graphId: string,
     name: string,
     description?: string
-  ): Promise<PublishList> {
-    const response = await createPublishList({
-      path: { graph_id: graphId },
-      body: { name, description: description ?? null },
-    })
-    if (response.error) {
-      throw new Error(`Create publish list failed: ${JSON.stringify(response.error)}`)
+  ): Promise<Record<string, unknown>> {
+    const body: CreatePublishListRequest = {
+      name,
+      description: description ?? null,
     }
-    return this._toPublishList(response.data as PublishListResponse)
+    const envelope = await this.callOperation(
+      'Create publish list',
+      opCreatePublishList({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
-  async getPublishList(graphId: string, listId: string): Promise<PublishListDetail> {
-    const response = await getPublishList({
-      path: { graph_id: graphId, list_id: listId },
-    })
-    if (response.error) {
-      throw new Error(`Get publish list failed: ${JSON.stringify(response.error)}`)
-    }
-    const data = response.data as PublishListDetailResponse
-    return {
-      ...this._toPublishList(data),
-      members: (data.members ?? []).map((m) => this._toMember(m)),
-    }
+  /** Get a single publish list with its full member list. */
+  async getPublishList(graphId: string, listId: string): Promise<PublishListDetail | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerPublishListDocument,
+      { listId },
+      'Get publish list',
+      (data) => data.publishList
+    )
   }
 
+  /** Update a publish list's name or description. */
   async updatePublishList(
     graphId: string,
     listId: string,
-    updates: { name?: string; description?: string }
-  ): Promise<PublishList> {
-    const response = await updatePublishList({
-      path: { graph_id: graphId, list_id: listId },
-      body: updates,
-    })
-    if (response.error) {
-      throw new Error(`Update publish list failed: ${JSON.stringify(response.error)}`)
-    }
-    return this._toPublishList(response.data as PublishListResponse)
+    updates: { name?: string; description?: string | null }
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update publish list',
+      opUpdatePublishList({
+        path: { graph_id: graphId },
+        body: {
+          list_id: listId,
+          name: updates.name,
+          description: updates.description ?? null,
+        } as UpdatePublishListOperation,
+      })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
+  /** Delete a publish list. */
   async deletePublishList(graphId: string, listId: string): Promise<void> {
-    const response = await deletePublishList({
-      path: { graph_id: graphId, list_id: listId },
-    })
-    if (response.error) {
-      throw new Error(`Delete publish list failed: ${JSON.stringify(response.error)}`)
-    }
+    await this.callOperation(
+      'Delete publish list',
+      opDeletePublishList({
+        path: { graph_id: graphId },
+        body: { list_id: listId },
+      })
+    )
   }
 
+  /** Add target graphs as members of a publish list. */
   async addMembers(
     graphId: string,
     listId: string,
     targetGraphIds: string[]
-  ): Promise<PublishListMember[]> {
-    const response = await addPublishListMembers({
-      path: { graph_id: graphId, list_id: listId },
-      body: { target_graph_ids: targetGraphIds },
-    })
-    if (response.error) {
-      throw new Error(`Add members failed: ${JSON.stringify(response.error)}`)
-    }
-    return ((response.data as PublishListMemberResponse[]) ?? []).map((m) => this._toMember(m))
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Add publish list members',
+      opAddPublishListMembers({
+        path: { graph_id: graphId },
+        body: {
+          list_id: listId,
+          target_graph_ids: targetGraphIds,
+        } as AddPublishListMembersOperation,
+      })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
-  async removeMember(graphId: string, listId: string, memberId: string): Promise<void> {
-    const response = await removePublishListMember({
-      path: { graph_id: graphId, list_id: listId, member_id: memberId },
-    })
-    if (response.error) {
-      throw new Error(`Remove member failed: ${JSON.stringify(response.error)}`)
+  /** Remove a single member from a publish list. */
+  async removeMember(
+    graphId: string,
+    listId: string,
+    memberId: string
+  ): Promise<{ deleted: boolean }> {
+    const envelope = await this.callOperation(
+      'Remove publish list member',
+      opRemovePublishListMember({
+        path: { graph_id: graphId },
+        body: { list_id: listId, member_id: memberId },
+      })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+  }
+
+  // ── Internal helpers ────────────────────────────────────────────────
+
+  private async gqlQuery<TData, TVars extends object, TResult>(
+    graphId: string,
+    document: TypedDocumentNode<TData, TVars>,
+    variables: TVars | undefined,
+    label: string,
+    pick: (data: TData) => TResult
+  ): Promise<TResult> {
+    try {
+      const client = this.gql.get(graphId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw = client.request as (doc: unknown, vars?: unknown) => Promise<any>
+      const data = (await raw.call(client, document, variables)) as TData
+      return pick(data)
+    } catch (err) {
+      if (err instanceof ClientError) {
+        throw new Error(`${label} failed: ${JSON.stringify(err.response.errors ?? err.message)}`)
+      }
+      throw err
     }
   }
 
-  private _toPublishList(pl: PublishListResponse): PublishList {
-    return {
-      id: pl.id,
-      name: pl.name,
-      description: pl.description ?? null,
-      memberCount: pl.member_count ?? 0,
-      createdBy: pl.created_by,
-      createdAt: pl.created_at,
-      updatedAt: pl.updated_at,
+  private async callOperation(
+    label: string,
+    call: Promise<{ data?: OperationEnvelope; error?: unknown }>
+  ): Promise<OperationEnvelope> {
+    const response = await call
+    if (response.error !== undefined) {
+      throw new Error(`${label} failed: ${JSON.stringify(response.error)}`)
     }
-  }
-
-  private _toMember(m: PublishListMemberResponse): PublishListMember {
-    return {
-      id: m.id,
-      targetGraphId: m.target_graph_id,
-      targetGraphName: m.target_graph_name ?? null,
-      targetOrgName: m.target_org_name ?? null,
-      addedBy: m.added_by,
-      addedAt: m.added_at,
+    if (response.data === undefined) {
+      throw new Error(`${label} failed: empty response`)
     }
-  }
-
-  private _toReport(r: ReportResponse): Report {
-    return {
-      id: r.id,
-      name: r.name,
-      taxonomyId: r.taxonomy_id,
-      generationStatus: r.generation_status,
-      periodType: r.period_type,
-      periodStart: r.period_start ?? null,
-      periodEnd: r.period_end ?? null,
-      comparative: r.comparative,
-      mappingId: r.mapping_id ?? null,
-      aiGenerated: r.ai_generated ?? false,
-      createdAt: r.created_at,
-      lastGenerated: r.last_generated ?? null,
-      structures: (r.structures ?? []).map((s: StructureSummary) => ({
-        id: s.id,
-        name: s.name,
-        structureType: s.structure_type,
-      })),
-      entityName: r.entity_name ?? null,
-      sourceGraphId: r.source_graph_id ?? null,
-      sourceReportId: r.source_report_id ?? null,
-      sharedAt: r.shared_at ?? null,
-    }
+    return response.data
   }
 }

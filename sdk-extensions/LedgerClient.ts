@@ -3,174 +3,259 @@
 /**
  * Ledger Client for RoboSystems API
  *
- * High-level client for all ledger concerns: chart of accounts, transactions,
- * trial balance, taxonomy, mappings, and AI auto-mapping. This is the
- * operational backbone — reports consume these as inputs.
+ * High-level facade for everything the RoboLedger domain exposes:
+ * entity, chart of accounts, transactions, taxonomy + mappings, fiscal
+ * calendar, schedules, reports, and publish lists.
+ *
+ * **Transport split:**
+ * - **Reads** go through GraphQL at `/extensions/{graph_id}/graphql`
+ *   (via `graphql-request`, with typed documents produced by GraphQL
+ *   Code Generator). The graph is in the URL, not in the query.
+ * - **Writes** go through named command operations at
+ *   `/extensions/roboledger/{graph_id}/operations/{operation_name}`
+ *   (via the OpenAPI-generated `opXxx` functions in `../sdk/sdk.gen`).
+ *   Each command returns an `OperationEnvelope`; the facade unwraps
+ *   `envelope.result` and returns a friendly camelCase type.
+ *
+ * Consumers don't need to know which transport a method uses — the
+ * facade signature stays stable. The only trick is that write method
+ * results are cast from the envelope's untyped `result` field.
  */
 
+import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
+import { ClientError } from 'graphql-request'
 import {
-  autoMapElements,
-  closeFiscalPeriod,
-  createClosingEntry,
-  createManualClosingEntry,
-  createMappingAssociation,
-  createSchedule,
-  createStructure,
-  deleteMappingAssociation,
-  getAccountRollups,
-  getClosingBookStructures,
-  getFiscalCalendar,
-  getLedgerAccountTree,
-  getLedgerEntity,
-  getLedgerSummary,
-  getLedgerTransaction,
-  getLedgerTrialBalance,
-  getMappedTrialBalance,
-  getMappingCoverage,
-  getMappingDetail,
-  getPeriodCloseStatus,
-  getReportingTaxonomy,
-  getScheduleFacts,
-  initializeLedger,
-  listElements,
-  listLedgerAccounts,
-  listLedgerTransactions,
-  listMappings,
-  listPeriodDrafts,
-  listSchedules,
-  listStructures,
-  reopenFiscalPeriod,
-  setCloseTarget,
-  truncateSchedule,
+  opAutoMapElements,
+  opClosePeriod,
+  opCreateClosingEntry,
+  opCreateManualClosingEntry,
+  opCreateMappingAssociation,
+  opCreateSchedule,
+  opCreateStructure,
+  opCreateTaxonomy,
+  opDeleteMappingAssociation,
+  opInitializeLedger,
+  opReopenPeriod,
+  opSetCloseTarget,
+  opTruncateSchedule,
+  opUpdateEntity,
 } from '../sdk/sdk.gen'
 import type {
-  AccountListResponse,
-  AccountRollupsResponse,
-  AccountTreeResponse,
-  ClosePeriodRequest,
-  ClosePeriodResponse,
-  ClosingBookStructuresResponse,
-  ClosingEntryResponse,
-  CreateClosingEntryRequest,
+  AutoMapElementsOperation,
+  ClosePeriodOperation,
+  CreateClosingEntryOperation,
   CreateManualClosingEntryRequest,
+  CreateMappingAssociationOperation,
   CreateScheduleRequest,
-  FiscalCalendarResponse,
+  CreateStructureRequest,
+  CreateTaxonomyRequest,
+  DeleteMappingAssociationOperation,
   InitializeLedgerRequest,
-  InitializeLedgerResponse,
-  LedgerSummaryResponse,
-  LedgerTransactionDetailResponse,
-  LedgerTransactionListResponse,
-  MappingCoverageResponse,
-  MappingDetailResponse,
-  PeriodCloseItemResponse,
-  PeriodCloseStatusResponse,
-  PeriodDraftsResponse,
-  ReopenPeriodRequest,
-  ScheduleCreatedResponse,
-  ScheduleFactResponse,
-  ScheduleFactsResponse,
-  ScheduleListResponse,
-  ScheduleSummaryResponse,
-  SetCloseTargetRequest,
-  TrialBalanceResponse,
-  TruncateScheduleRequest,
-  TruncateScheduleResponse,
+  OperationEnvelope,
+  ReopenPeriodOperation,
+  SetCloseTargetOperation,
+  TruncateScheduleOperation,
+  UpdateEntityRequest,
 } from '../sdk/types.gen'
+import { GraphQLClientCache } from './graphql/client'
+import {
+  GetLedgerAccountRollupsDocument,
+  GetLedgerAccountTreeDocument,
+  GetLedgerClosingBookStructuresDocument,
+  GetLedgerEntityDocument,
+  GetLedgerFiscalCalendarDocument,
+  GetLedgerMappedTrialBalanceDocument,
+  GetLedgerMappingCoverageDocument,
+  GetLedgerMappingDocument,
+  GetLedgerPeriodCloseStatusDocument,
+  GetLedgerPeriodDraftsDocument,
+  GetLedgerReportingTaxonomyDocument,
+  GetLedgerScheduleFactsDocument,
+  GetLedgerSummaryDocument,
+  GetLedgerTransactionDocument,
+  GetLedgerTrialBalanceDocument,
+  ListLedgerAccountsDocument,
+  ListLedgerElementsDocument,
+  ListLedgerEntitiesDocument,
+  ListLedgerMappingsDocument,
+  ListLedgerSchedulesDocument,
+  ListLedgerStructuresDocument,
+  ListLedgerTaxonomiesDocument,
+  ListLedgerTransactionsDocument,
+  ListLedgerUnmappedElementsDocument,
+  type GetLedgerAccountRollupsQuery,
+  type GetLedgerAccountTreeQuery,
+  type GetLedgerClosingBookStructuresQuery,
+  type GetLedgerEntityQuery,
+  type GetLedgerFiscalCalendarQuery,
+  type GetLedgerMappedTrialBalanceQuery,
+  type GetLedgerMappingCoverageQuery,
+  type GetLedgerMappingQuery,
+  type GetLedgerPeriodCloseStatusQuery,
+  type GetLedgerPeriodDraftsQuery,
+  type GetLedgerReportingTaxonomyQuery,
+  type GetLedgerScheduleFactsQuery,
+  type GetLedgerSummaryQuery,
+  type GetLedgerTransactionQuery,
+  type GetLedgerTrialBalanceQuery,
+  type ListLedgerAccountsQuery,
+  type ListLedgerElementsQuery,
+  type ListLedgerEntitiesQuery,
+  type ListLedgerMappingsQuery,
+  type ListLedgerSchedulesQuery,
+  type ListLedgerStructuresQuery,
+  type ListLedgerTaxonomiesQuery,
+  type ListLedgerTransactionsQuery,
+  type ListLedgerUnmappedElementsQuery,
+} from './graphql/generated/graphql'
 
-// ── Friendly types ──────────────────────────────────────────────────────
+// ── Friendly types derived from GraphQL codegen ────────────────────────
+//
+// These are the single source of truth for read payload shapes. Write
+// methods also return these where the operation result is semantically
+// the same thing (e.g. close-period returns the updated fiscal calendar,
+// the same shape as the fiscalCalendar read).
 
-export interface LedgerEntity {
-  id: string
-  name: string
-  legalName: string | null
-  entityType: string | null
-  industry: string | null
+export type LedgerEntity = NonNullable<GetLedgerEntityQuery['entity']>
+export type LedgerEntitySummary = ListLedgerEntitiesQuery['entities'][number]
+
+export type LedgerSummary = NonNullable<GetLedgerSummaryQuery['summary']>
+
+export type LedgerAccountList = NonNullable<ListLedgerAccountsQuery['accounts']>
+export type LedgerAccount = LedgerAccountList['accounts'][number]
+export type LedgerAccountTree = NonNullable<GetLedgerAccountTreeQuery['accountTree']>
+export type LedgerAccountRollups = NonNullable<GetLedgerAccountRollupsQuery['accountRollups']>
+
+export type LedgerTrialBalance = NonNullable<GetLedgerTrialBalanceQuery['trialBalance']>
+export type LedgerMappedTrialBalance = NonNullable<
+  GetLedgerMappedTrialBalanceQuery['mappedTrialBalance']
+>
+
+export type LedgerTransactionList = NonNullable<ListLedgerTransactionsQuery['transactions']>
+export type LedgerTransactionListItem = LedgerTransactionList['transactions'][number]
+export type LedgerTransaction = NonNullable<GetLedgerTransactionQuery['transaction']>
+
+export type LedgerReportingTaxonomy = NonNullable<
+  GetLedgerReportingTaxonomyQuery['reportingTaxonomy']
+>
+export type LedgerTaxonomyList = NonNullable<ListLedgerTaxonomiesQuery['taxonomies']>
+export type LedgerTaxonomy = LedgerTaxonomyList['taxonomies'][number]
+
+export type LedgerElementList = NonNullable<ListLedgerElementsQuery['elements']>
+export type LedgerElement = LedgerElementList['elements'][number]
+export type LedgerUnmappedElement = ListLedgerUnmappedElementsQuery['unmappedElements'][number]
+
+export type LedgerStructureList = NonNullable<ListLedgerStructuresQuery['structures']>
+export type LedgerStructure = LedgerStructureList['structures'][number]
+
+export type LedgerMappingList = NonNullable<ListLedgerMappingsQuery['mappings']>
+export type LedgerMappingInfo = LedgerMappingList['structures'][number]
+export type LedgerMapping = NonNullable<GetLedgerMappingQuery['mapping']>
+export type LedgerMappingCoverage = NonNullable<GetLedgerMappingCoverageQuery['mappingCoverage']>
+
+export type LedgerScheduleList = NonNullable<ListLedgerSchedulesQuery['schedules']>
+export type LedgerSchedule = LedgerScheduleList['schedules'][number]
+export type LedgerScheduleFacts = NonNullable<GetLedgerScheduleFactsQuery['scheduleFacts']>
+export type LedgerScheduleFact = LedgerScheduleFacts['facts'][number]
+
+export type LedgerPeriodCloseStatus = NonNullable<
+  GetLedgerPeriodCloseStatusQuery['periodCloseStatus']
+>
+export type LedgerPeriodCloseItem = LedgerPeriodCloseStatus['schedules'][number]
+export type LedgerPeriodDrafts = NonNullable<GetLedgerPeriodDraftsQuery['periodDrafts']>
+export type LedgerDraftEntry = LedgerPeriodDrafts['drafts'][number]
+export type LedgerDraftLineItem = LedgerDraftEntry['lineItems'][number]
+
+export type LedgerClosingBookStructures = NonNullable<
+  GetLedgerClosingBookStructuresQuery['closingBookStructures']
+>
+
+export type LedgerFiscalCalendar = NonNullable<GetLedgerFiscalCalendarQuery['fiscalCalendar']>
+export type LedgerFiscalPeriod = LedgerFiscalCalendar['periods'][number]
+
+// ── Write result shapes (envelope.result payloads) ─────────────────────
+//
+// Backend Pydantic models serialize these write results in snake_case.
+// The facade converts to camelCase where the result is meaningful to
+// consumers; for simple ack/ack-with-id payloads we keep the raw shape.
+
+/** Snake-case shape returned in envelope.result for fiscal calendar writes. */
+interface RawFiscalCalendar {
+  graph_id: string
+  fiscal_year_start_month: number
+  closed_through: string | null
+  close_target: string | null
+  gap_periods: number
+  catch_up_sequence: string[]
+  closeable_now: boolean
+  blockers: string[]
+  last_close_at: string | null
+  initialized_at: string | null
+  last_sync_at: string | null
+  periods: Array<{
+    name: string
+    start_date: string
+    end_date: string
+    status: string
+    closed_at: string | null
+  }>
+}
+
+interface RawInitializeLedgerResult {
+  fiscal_calendar: RawFiscalCalendar
+  periods_created: number
+  warnings: string[]
+}
+
+interface RawClosePeriodResult {
+  period: string
+  entries_posted: number
+  target_auto_advanced: boolean
+  fiscal_calendar: RawFiscalCalendar
+}
+
+interface RawClosingEntryResult {
+  outcome: ClosingEntryOutcome
+  entry_id: string | null
   status: string | null
+  posting_date: string | null
+  memo: string | null
+  debit_element_id: string | null
+  credit_element_id: string | null
+  amount: number | null
+  reason: string | null
 }
 
-export interface MappingInfo {
-  id: string
+interface RawScheduleCreatedResult {
+  structure_id: string
   name: string
-  description: string | null
-  structureType: string
-  taxonomyId: string
-  isActive: boolean
+  taxonomy_id: string
+  total_periods: number
+  total_facts: number
 }
 
-export interface MappingCoverage {
-  totalCoaElements: number
-  mappedCount: number
-  unmappedCount: number
-  coveragePercent: number
-  highConfidence: number
-  mediumConfidence: number
-  lowConfidence: number
+interface RawTruncateScheduleResult {
+  structure_id: string
+  new_end_date: string
+  facts_deleted: number
+  reason: string
 }
 
-export interface Structure {
-  id: string
-  name: string
-  structureType: string
+export interface InitializeLedgerResult {
+  fiscalCalendar: LedgerFiscalCalendar
+  periodsCreated: number
+  warnings: string[]
 }
 
-export interface Schedule {
-  structureId: string
-  name: string
-  taxonomyName: string
-  entryTemplate: Record<string, unknown> | null
-  scheduleMetadata: Record<string, unknown> | null
-  totalPeriods: number
-  periodsWithEntries: number
+export interface ClosePeriodResult {
+  period: string
+  entriesPosted: number
+  targetAutoAdvanced: boolean
+  fiscalCalendar: LedgerFiscalCalendar
 }
 
-export interface ScheduleCreated {
-  structureId: string
-  name: string
-  taxonomyId: string
-  totalPeriods: number
-  totalFacts: number
-}
-
-export interface ScheduleFact {
-  elementId: string
-  elementName: string
-  value: number
-  periodStart: string
-  periodEnd: string
-}
-
-export interface PeriodCloseItem {
-  structureId: string
-  structureName: string
-  amount: number
-  status: string
-  entryId: string | null
-}
-
-export interface PeriodCloseStatus {
-  fiscalPeriodStart: string
-  fiscalPeriodEnd: string
-  periodStatus: string
-  schedules: PeriodCloseItem[]
-  totalDraft: number
-  totalPosted: number
-}
-
-/**
- * Outcome of an idempotent `createClosingEntry` call.
- *
- * - `created`     — no prior draft, new draft created
- * - `unchanged`   — prior draft matches current schedule fact, no-op
- * - `regenerated` — prior draft was stale, replaced with a fresh one
- * - `removed`     — prior draft existed but schedule no longer covers this period
- * - `skipped`     — no prior draft and no in-scope fact; nothing to do
- */
 export type ClosingEntryOutcome = 'created' | 'unchanged' | 'regenerated' | 'removed' | 'skipped'
 
-/**
- * Result of an idempotent closing-entry call. `entry_id`, `amount`, and
- * related fields are null for `removed` and `skipped` outcomes.
- */
 export interface ClosingEntry {
   outcome: ClosingEntryOutcome
   entryId: string | null
@@ -183,32 +268,24 @@ export interface ClosingEntry {
   reason: string | null
 }
 
+export interface ScheduleCreated {
+  structureId: string
+  name: string
+  taxonomyId: string
+  totalPeriods: number
+  totalFacts: number
+}
+
+export interface TruncateScheduleResult {
+  structureId: string
+  newEndDate: string
+  factsDeleted: number
+  reason: string
+}
+
 export type LedgerEntryType = 'standard' | 'adjusting' | 'closing' | 'reversing'
 
-// ── Fiscal calendar types ──────────────────────────────────────────────
-
-export interface FiscalPeriodSummary {
-  name: string
-  startDate: string
-  endDate: string
-  status: string
-  closedAt: string | null
-}
-
-export interface FiscalCalendarState {
-  graphId: string
-  fiscalYearStartMonth: number
-  closedThrough: string | null
-  closeTarget: string | null
-  gapPeriods: number
-  catchUpSequence: string[]
-  closeableNow: boolean
-  blockers: string[]
-  lastCloseAt: string | null
-  initializedAt: string | null
-  lastSyncAt: string | null
-  periods: FiscalPeriodSummary[]
-}
+// ── Caller-facing option interfaces ────────────────────────────────────
 
 export interface InitializeLedgerOptions {
   closedThrough?: string | null
@@ -218,57 +295,9 @@ export interface InitializeLedgerOptions {
   note?: string | null
 }
 
-export interface InitializeLedgerResult {
-  fiscalCalendar: FiscalCalendarState
-  periodsCreated: number
-  warnings: string[]
-}
-
 export interface ClosePeriodOptions {
   note?: string | null
   allowStaleSync?: boolean
-}
-
-export interface ClosePeriodResult {
-  period: string
-  entriesPosted: number
-  targetAutoAdvanced: boolean
-  fiscalCalendar: FiscalCalendarState
-}
-
-export interface DraftLineItemView {
-  lineItemId: string
-  elementId: string
-  elementCode: string | null
-  elementName: string
-  debitAmount: number
-  creditAmount: number
-  description: string | null
-}
-
-export interface DraftEntryView {
-  entryId: string
-  postingDate: string
-  type: string
-  memo: string | null
-  provenance: string | null
-  sourceStructureId: string | null
-  sourceStructureName: string | null
-  lineItems: DraftLineItemView[]
-  totalDebit: number
-  totalCredit: number
-  balanced: boolean
-}
-
-export interface PeriodDraftsView {
-  period: string
-  periodStart: string
-  periodEnd: string
-  draftCount: number
-  totalDebit: number
-  totalCredit: number
-  allBalanced: boolean
-  drafts: DraftEntryView[]
 }
 
 export interface ManualClosingLineItem {
@@ -287,13 +316,6 @@ export interface CreateManualClosingEntryOptions {
 
 export interface TruncateScheduleOptions {
   newEndDate: string
-  reason: string
-}
-
-export interface TruncateScheduleResult {
-  structureId: string
-  newEndDate: string
-  factsDeleted: number
   reason: string
 }
 
@@ -321,230 +343,259 @@ export interface CreateScheduleOptions {
 
 // ── Client ──────────────────────────────────────────────────────────────
 
-export class LedgerClient {
-  private config: {
-    baseUrl: string
-    credentials?: 'include' | 'same-origin' | 'omit'
-    headers?: Record<string, string>
-    token?: string
-  }
+interface LedgerClientConfig {
+  baseUrl: string
+  credentials?: 'include' | 'same-origin' | 'omit'
+  headers?: Record<string, string>
+  token?: string
+}
 
-  constructor(config: {
-    baseUrl: string
-    credentials?: 'include' | 'same-origin' | 'omit'
-    headers?: Record<string, string>
-    token?: string
-  }) {
+export class LedgerClient {
+  private config: LedgerClientConfig
+
+  /**
+   * Per-graph GraphQL client cache. The first call for a given graph
+   * creates a `GraphQLClient` bound to `/extensions/{graph_id}/graphql`;
+   * subsequent calls reuse it.
+   */
+  private gql: GraphQLClientCache
+
+  constructor(config: LedgerClientConfig) {
     this.config = config
+    this.gql = new GraphQLClientCache(config)
   }
 
   // ── Entity ──────────────────────────────────────────────────────────
 
   /**
    * Get the entity (company/organization) for this graph.
+   * Returns null when the ledger has no entity yet.
    */
   async getEntity(graphId: string): Promise<LedgerEntity | null> {
-    const response = await getLedgerEntity({
-      path: { graph_id: graphId },
-    })
-
-    if (response.response.status === 404) return null
-    if (response.error) {
-      throw new Error(`Get entity failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as Record<string, unknown>
-    return {
-      id: data.id as string,
-      name: data.name as string,
-      legalName: (data.legal_name as string) ?? null,
-      entityType: (data.entity_type as string) ?? null,
-      industry: (data.industry as string) ?? null,
-      status: (data.status as string) ?? null,
-    }
+    return this.gqlQuery(
+      graphId,
+      GetLedgerEntityDocument,
+      undefined,
+      'Get entity',
+      (data) => data.entity
+    )
   }
 
-  // ── Accounts (Chart of Accounts) ───────────────────────────────────
-
-  /**
-   * List accounts (flat).
-   */
-  async listAccounts(graphId: string): Promise<AccountListResponse> {
-    const response = await listLedgerAccounts({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`List accounts failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as AccountListResponse
-  }
-
-  /**
-   * Get the account tree (hierarchical).
-   */
-  async getAccountTree(graphId: string): Promise<AccountTreeResponse> {
-    const response = await getLedgerAccountTree({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get account tree failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as AccountTreeResponse
-  }
-
-  // ── Transactions ────────────────────────────────────────────────────
-
-  /**
-   * List transactions with optional date filters.
-   */
-  async listTransactions(
+  /** List all entities for this graph, optionally filtered by source system. */
+  async listEntities(
     graphId: string,
-    options?: { startDate?: string; endDate?: string; limit?: number; offset?: number }
-  ): Promise<LedgerTransactionListResponse> {
-    const response = await listLedgerTransactions({
-      path: { graph_id: graphId },
-      query: {
-        start_date: options?.startDate,
-        end_date: options?.endDate,
-        limit: options?.limit,
-        offset: options?.offset,
-      },
-    })
-
-    if (response.error) {
-      throw new Error(`List transactions failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as LedgerTransactionListResponse
+    options?: { source?: string }
+  ): Promise<LedgerEntitySummary[]> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerEntitiesDocument,
+      { source: options?.source ?? null },
+      'List entities',
+      (data) => data.entities
+    )
   }
 
   /**
-   * Get transaction detail with entries and line items.
+   * Update the entity for this graph. Only non-null fields are applied.
+   * Returns the updated entity.
    */
-  async getTransaction(
-    graphId: string,
-    transactionId: string
-  ): Promise<LedgerTransactionDetailResponse> {
-    const response = await getLedgerTransaction({
-      path: { graph_id: graphId, transaction_id: transactionId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get transaction failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as LedgerTransactionDetailResponse
-  }
-
-  // ── Trial Balance ──────────────────────────────────────────────────
-
-  /**
-   * Get trial balance (CoA-level debits/credits).
-   */
-  async getTrialBalance(
-    graphId: string,
-    options?: { startDate?: string; endDate?: string }
-  ): Promise<TrialBalanceResponse> {
-    const response = await getLedgerTrialBalance({
-      path: { graph_id: graphId },
-      query: {
-        start_date: options?.startDate,
-        end_date: options?.endDate,
-      },
-    })
-
-    if (response.error) {
-      throw new Error(`Get trial balance failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as TrialBalanceResponse
-  }
-
-  /**
-   * Get mapped trial balance (CoA rolled up to GAAP concepts).
-   */
-  async getMappedTrialBalance(
-    graphId: string,
-    options?: { mappingId?: string; startDate?: string; endDate?: string }
-  ): Promise<unknown> {
-    const response = await getMappedTrialBalance({
-      path: { graph_id: graphId },
-      query: {
-        mapping_id: options?.mappingId,
-        start_date: options?.startDate,
-        end_date: options?.endDate,
-      },
-    })
-
-    if (response.error) {
-      throw new Error(`Get mapped trial balance failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data
+  async updateEntity(graphId: string, updates: UpdateEntityRequest): Promise<LedgerEntity> {
+    const envelope = await this.callOperation(
+      'Update entity',
+      opUpdateEntity({
+        path: { graph_id: graphId },
+        body: updates,
+      })
+    )
+    return envelope.result as unknown as LedgerEntity
   }
 
   // ── Summary ────────────────────────────────────────────────────────
 
-  /**
-   * Get ledger summary (account count, transaction count, date range).
-   */
-  async getSummary(graphId: string): Promise<LedgerSummaryResponse> {
-    const response = await getLedgerSummary({
-      path: { graph_id: graphId },
-    })
+  /** Ledger rollup counts + QB sync metadata. */
+  async getSummary(graphId: string): Promise<LedgerSummary | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerSummaryDocument,
+      undefined,
+      'Get summary',
+      (data) => data.summary
+    )
+  }
 
-    if (response.error) {
-      throw new Error(`Get summary failed: ${JSON.stringify(response.error)}`)
+  // ── Accounts (Chart of Accounts) ───────────────────────────────────
+
+  /** List CoA accounts with optional filters and pagination. */
+  async listAccounts(
+    graphId: string,
+    options?: {
+      classification?: string
+      isActive?: boolean
+      limit?: number
+      offset?: number
     }
+  ): Promise<LedgerAccountList | null> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerAccountsDocument,
+      {
+        classification: options?.classification ?? null,
+        isActive: options?.isActive ?? null,
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List accounts',
+      (data) => data.accounts
+    )
+  }
 
-    return response.data as LedgerSummaryResponse
+  /** Hierarchical Chart of Accounts (up to 4 levels deep). */
+  async getAccountTree(graphId: string): Promise<LedgerAccountTree | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerAccountTreeDocument,
+      undefined,
+      'Get account tree',
+      (data) => data.accountTree
+    )
+  }
+
+  /** Accounts rolled up to reporting concepts via a mapping structure. */
+  async getAccountRollups(
+    graphId: string,
+    options?: { mappingId?: string; startDate?: string; endDate?: string }
+  ): Promise<LedgerAccountRollups | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerAccountRollupsDocument,
+      {
+        mappingId: options?.mappingId ?? null,
+        startDate: options?.startDate ?? null,
+        endDate: options?.endDate ?? null,
+      },
+      'Get account rollups',
+      (data) => data.accountRollups
+    )
+  }
+
+  // ── Transactions ────────────────────────────────────────────────────
+
+  /** List transactions with optional type + date filters and pagination. */
+  async listTransactions(
+    graphId: string,
+    options?: {
+      type?: string
+      startDate?: string
+      endDate?: string
+      limit?: number
+      offset?: number
+    }
+  ): Promise<LedgerTransactionList | null> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerTransactionsDocument,
+      {
+        type: options?.type ?? null,
+        startDate: options?.startDate ?? null,
+        endDate: options?.endDate ?? null,
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List transactions',
+      (data) => data.transactions
+    )
+  }
+
+  /** Get transaction detail with entries + line items. */
+  async getTransaction(graphId: string, transactionId: string): Promise<LedgerTransaction | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerTransactionDocument,
+      { transactionId },
+      'Get transaction',
+      (data) => data.transaction
+    )
+  }
+
+  // ── Trial Balance ──────────────────────────────────────────────────
+
+  /** Trial balance by raw CoA account. */
+  async getTrialBalance(
+    graphId: string,
+    options?: { startDate?: string; endDate?: string }
+  ): Promise<LedgerTrialBalance | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerTrialBalanceDocument,
+      {
+        startDate: options?.startDate ?? null,
+        endDate: options?.endDate ?? null,
+      },
+      'Get trial balance',
+      (data) => data.trialBalance
+    )
+  }
+
+  /** Trial balance rolled up to GAAP reporting concepts via a mapping. */
+  async getMappedTrialBalance(
+    graphId: string,
+    mappingId: string,
+    options?: { startDate?: string; endDate?: string }
+  ): Promise<LedgerMappedTrialBalance | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerMappedTrialBalanceDocument,
+      {
+        mappingId,
+        startDate: options?.startDate ?? null,
+        endDate: options?.endDate ?? null,
+      },
+      'Get mapped trial balance',
+      (data) => data.mappedTrialBalance
+    )
   }
 
   // ── Taxonomy ────────────────────────────────────────────────────────
 
-  /**
-   * Get the reporting taxonomy (US GAAP seed).
-   */
-  async getReportingTaxonomy(graphId: string): Promise<unknown> {
-    const response = await getReportingTaxonomy({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get reporting taxonomy failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data
+  /** Get the locked US GAAP reporting taxonomy for this graph. */
+  async getReportingTaxonomy(graphId: string): Promise<LedgerReportingTaxonomy | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerReportingTaxonomyDocument,
+      undefined,
+      'Get reporting taxonomy',
+      (data) => data.reportingTaxonomy
+    )
   }
 
-  /**
-   * List reporting structures (IS, BS, CF) for a taxonomy.
-   */
-  async listStructures(graphId: string, taxonomyId?: string): Promise<Structure[]> {
-    const response = await listStructures({
-      path: { graph_id: graphId },
-      query: taxonomyId ? { taxonomy_id: taxonomyId } : undefined,
-    })
-
-    if (response.error) {
-      throw new Error(`List structures failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as { structures?: Array<Record<string, unknown>> }
-    return (data.structures ?? []).map((s) => ({
-      id: s.id as string,
-      name: s.name as string,
-      structureType: s.structure_type as string,
-    }))
+  /** List active taxonomies with optional type filter. */
+  async listTaxonomies(
+    graphId: string,
+    options?: { taxonomyType?: string }
+  ): Promise<LedgerTaxonomy[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerTaxonomiesDocument,
+      { taxonomyType: options?.taxonomyType ?? null },
+      'List taxonomies',
+      (data) => data.taxonomies
+    )
+    return list?.taxonomies ?? []
   }
 
-  /**
-   * List elements (CoA accounts, GAAP concepts, etc.).
-   */
+  /** Create a new taxonomy (used for CoA + mapping taxonomies). */
+  async createTaxonomy(
+    graphId: string,
+    body: CreateTaxonomyRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Create taxonomy',
+      opCreateTaxonomy({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** List elements (CoA accounts, GAAP concepts, etc.) with filters. */
   async listElements(
     graphId: string,
     options?: {
@@ -555,184 +606,183 @@ export class LedgerClient {
       limit?: number
       offset?: number
     }
-  ): Promise<unknown> {
-    const response = await listElements({
-      path: { graph_id: graphId },
-      query: {
-        taxonomy_id: options?.taxonomyId,
-        source: options?.source,
-        classification: options?.classification,
-        is_abstract: options?.isAbstract,
-        limit: options?.limit,
-        offset: options?.offset,
+  ): Promise<LedgerElementList | null> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerElementsDocument,
+      {
+        taxonomyId: options?.taxonomyId ?? null,
+        source: options?.source ?? null,
+        classification: options?.classification ?? null,
+        isAbstract: options?.isAbstract ?? null,
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
       },
-    })
+      'List elements',
+      (data) => data.elements
+    )
+  }
 
-    if (response.error) {
-      throw new Error(`List elements failed: ${JSON.stringify(response.error)}`)
-    }
+  /** CoA elements not yet mapped to a reporting concept. */
+  async listUnmappedElements(
+    graphId: string,
+    options?: { mappingId?: string }
+  ): Promise<LedgerUnmappedElement[]> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerUnmappedElementsDocument,
+      { mappingId: options?.mappingId ?? null },
+      'List unmapped elements',
+      (data) => data.unmappedElements
+    )
+  }
 
-    return response.data
+  // ── Structures ──────────────────────────────────────────────────────
+
+  /** List reporting structures (IS, BS, CF, schedules) with optional filters. */
+  async listStructures(
+    graphId: string,
+    options?: { taxonomyId?: string; structureType?: string }
+  ): Promise<LedgerStructure[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerStructuresDocument,
+      {
+        taxonomyId: options?.taxonomyId ?? null,
+        structureType: options?.structureType ?? null,
+      },
+      'List structures',
+      (data) => data.structures
+    )
+    return list?.structures ?? []
+  }
+
+  /**
+   * Create a new structure. Most common use is a CoA→reporting mapping
+   * structure; also used for custom statement + schedule structures.
+   */
+  async createStructure(graphId: string, body: CreateStructureRequest): Promise<LedgerMappingInfo> {
+    const envelope = await this.callOperation(
+      'Create structure',
+      opCreateStructure({ path: { graph_id: graphId }, body })
+    )
+    return envelope.result as unknown as LedgerMappingInfo
   }
 
   // ── Mappings ────────────────────────────────────────────────────────
 
-  /**
-   * Create a new CoA→GAAP mapping structure.
-   * Returns the created mapping info.
-   */
-  async createMappingStructure(
+  /** List active CoA→reporting mapping structures. */
+  async listMappings(graphId: string): Promise<LedgerMappingInfo[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerMappingsDocument,
+      undefined,
+      'List mappings',
+      (data) => data.mappings
+    )
+    return list?.structures ?? []
+  }
+
+  /** Get a mapping structure with all its associations. */
+  async getMapping(graphId: string, mappingId: string): Promise<LedgerMapping | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerMappingDocument,
+      { mappingId },
+      'Get mapping',
+      (data) => data.mapping
+    )
+  }
+
+  /** Mapping coverage stats — how many CoA elements are mapped. */
+  async getMappingCoverage(
     graphId: string,
-    options?: { name?: string; description?: string; taxonomyId?: string }
-  ): Promise<MappingInfo> {
-    const response = await createStructure({
-      path: { graph_id: graphId },
-      body: {
-        name: options?.name ?? 'CoA to Reporting',
-        description: options?.description ?? 'Map Chart of Accounts to US GAAP reporting concepts',
-        structure_type: 'coa_mapping',
-        taxonomy_id: options?.taxonomyId ?? 'tax_usgaap_reporting',
-      },
-    })
-
-    if (response.error) {
-      throw new Error(`Create mapping structure failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as Record<string, unknown>
-    return {
-      id: data.id as string,
-      name: data.name as string,
-      description: (data.description as string) ?? null,
-      structureType: data.structure_type as string,
-      taxonomyId: data.taxonomy_id as string,
-      isActive: (data.is_active as boolean) ?? true,
-    }
+    mappingId: string
+  ): Promise<LedgerMappingCoverage | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerMappingCoverageDocument,
+      { mappingId },
+      'Get mapping coverage',
+      (data) => data.mappingCoverage
+    )
   }
 
-  /**
-   * List available CoA→GAAP mapping structures.
-   */
-  async listMappings(graphId: string): Promise<MappingInfo[]> {
-    const response = await listMappings({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`List mappings failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as { structures?: Array<Record<string, unknown>> }
-    return (data.structures ?? []).map((s) => ({
-      id: s.id as string,
-      name: s.name as string,
-      description: (s.description as string) ?? null,
-      structureType: s.structure_type as string,
-      taxonomyId: s.taxonomy_id as string,
-      isActive: (s.is_active as boolean) ?? true,
-    }))
-  }
-
-  /**
-   * Get mapping detail — all associations with element names.
-   */
-  async getMappingDetail(graphId: string, mappingId: string): Promise<MappingDetailResponse> {
-    const response = await getMappingDetail({
-      path: { graph_id: graphId, mapping_id: mappingId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get mapping detail failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as MappingDetailResponse
-  }
-
-  /**
-   * Get mapping coverage — how many CoA elements are mapped.
-   */
-  async getMappingCoverage(graphId: string, mappingId: string): Promise<MappingCoverage> {
-    const response = await getMappingCoverage({
-      path: { graph_id: graphId, mapping_id: mappingId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get mapping coverage failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as MappingCoverageResponse
-    return {
-      totalCoaElements: data.total_coa_elements ?? 0,
-      mappedCount: data.mapped_count ?? 0,
-      unmappedCount: data.unmapped_count ?? 0,
-      coveragePercent: data.coverage_percent ?? 0,
-      highConfidence: data.high_confidence ?? 0,
-      mediumConfidence: data.medium_confidence ?? 0,
-      lowConfidence: data.low_confidence ?? 0,
-    }
-  }
-
-  /**
-   * Create a manual mapping association (CoA element → GAAP element).
-   */
-  async createMapping(
+  /** Create a manual mapping association between two elements. */
+  async createMappingAssociation(
     graphId: string,
-    mappingId: string,
-    fromElementId: string,
-    toElementId: string,
-    confidence?: number
-  ): Promise<void> {
-    const response = await createMappingAssociation({
-      path: { graph_id: graphId, mapping_id: mappingId },
-      body: {
-        from_element_id: fromElementId,
-        to_element_id: toElementId,
-        confidence: confidence ?? 1.0,
-      },
-    })
+    body: CreateMappingAssociationOperation
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Create mapping association',
+      opCreateMappingAssociation({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
 
-    if (response.error) {
-      throw new Error(`Create mapping failed: ${JSON.stringify(response.error)}`)
-    }
+  /** Delete a mapping association. */
+  async deleteMappingAssociation(
+    graphId: string,
+    body: DeleteMappingAssociationOperation
+  ): Promise<{ deleted: boolean }> {
+    const envelope = await this.callOperation(
+      'Delete mapping association',
+      opDeleteMappingAssociation({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
   /**
-   * Delete a mapping association.
+   * Trigger the AI MappingAgent. Returns the operation id — async; the
+   * agent runs in the background. Consumers can subscribe to progress
+   * via `/v1/operations/{operationId}/stream`.
    */
-  async deleteMapping(graphId: string, mappingId: string, associationId: string): Promise<void> {
-    const response = await deleteMappingAssociation({
-      path: { graph_id: graphId, mapping_id: mappingId, association_id: associationId },
-    })
-
-    if (response.error) {
-      throw new Error(`Delete mapping failed: ${JSON.stringify(response.error)}`)
-    }
-  }
-
-  /**
-   * Trigger AI auto-mapping (MappingAgent).
-   * Returns immediately — the agent runs in the background.
-   */
-  async autoMap(graphId: string, mappingId: string): Promise<{ operationId?: string }> {
-    const response = await autoMapElements({
-      path: { graph_id: graphId, mapping_id: mappingId },
-    })
-
-    if (response.error) {
-      throw new Error(`Auto-map failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as Record<string, unknown> | undefined
-    return {
-      operationId: data?.operation_id as string | undefined,
-    }
+  async autoMapElements(
+    graphId: string,
+    body: AutoMapElementsOperation
+  ): Promise<{ operationId: string; status: OperationEnvelope['status'] }> {
+    const envelope = await this.callOperation(
+      'Auto-map elements',
+      opAutoMapElements({ path: { graph_id: graphId }, body })
+    )
+    return { operationId: envelope.operationId, status: envelope.status }
   }
 
   // ── Schedules ──────────────────────────────────────────────────────
 
-  /**
-   * Create a schedule with pre-generated monthly facts.
-   */
+  /** List all schedule structures with metadata. */
+  async listSchedules(graphId: string): Promise<LedgerSchedule[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerSchedulesDocument,
+      undefined,
+      'List schedules',
+      (data) => data.schedules
+    )
+    return list?.schedules ?? []
+  }
+
+  /** Schedule facts optionally filtered by period window. */
+  async getScheduleFacts(
+    graphId: string,
+    structureId: string,
+    options?: { periodStart?: string; periodEnd?: string }
+  ): Promise<LedgerScheduleFact[]> {
+    const facts = await this.gqlQuery(
+      graphId,
+      GetLedgerScheduleFactsDocument,
+      {
+        structureId,
+        periodStart: options?.periodStart ?? null,
+        periodEnd: options?.periodEnd ?? null,
+      },
+      'Get schedule facts',
+      (data) => data.scheduleFacts
+    )
+    return facts?.facts ?? []
+  }
+
+  /** Create a new schedule with pre-generated monthly facts. */
   async createSchedule(graphId: string, options: CreateScheduleOptions): Promise<ScheduleCreated> {
     const body: CreateScheduleRequest = {
       name: options.name,
@@ -757,124 +807,75 @@ export class LedgerClient {
           }
         : undefined,
     }
-
-    const response = await createSchedule({
-      path: { graph_id: graphId },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Create schedule failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as ScheduleCreatedResponse
+    const envelope = await this.callOperation(
+      'Create schedule',
+      opCreateSchedule({ path: { graph_id: graphId }, body })
+    )
+    const raw = envelope.result as unknown as RawScheduleCreatedResult
     return {
-      structureId: data.structure_id,
-      name: data.name,
-      taxonomyId: data.taxonomy_id,
-      totalPeriods: data.total_periods,
-      totalFacts: data.total_facts,
+      structureId: raw.structure_id,
+      name: raw.name,
+      taxonomyId: raw.taxonomy_id,
+      totalPeriods: raw.total_periods,
+      totalFacts: raw.total_facts,
     }
   }
 
-  /**
-   * List all schedules for a graph.
-   */
-  async listSchedules(graphId: string): Promise<Schedule[]> {
-    const response = await listSchedules({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`List schedules failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as ScheduleListResponse
-    return (data.schedules ?? []).map((s: ScheduleSummaryResponse) => ({
-      structureId: s.structure_id,
-      name: s.name,
-      taxonomyName: s.taxonomy_name,
-      entryTemplate: s.entry_template ?? null,
-      scheduleMetadata: s.schedule_metadata ?? null,
-      totalPeriods: s.total_periods,
-      periodsWithEntries: s.periods_with_entries,
-    }))
-  }
-
-  /**
-   * Get facts for a schedule, optionally filtered by period.
-   */
-  async getScheduleFacts(
+  /** Truncate a schedule — end it early at `newEndDate`. */
+  async truncateSchedule(
     graphId: string,
     structureId: string,
-    periodStart?: string,
-    periodEnd?: string
-  ): Promise<ScheduleFact[]> {
-    const response = await getScheduleFacts({
-      path: { graph_id: graphId, structure_id: structureId },
-      query: {
-        period_start: periodStart ?? null,
-        period_end: periodEnd ?? null,
-      },
-    })
-
-    if (response.error) {
-      throw new Error(`Get schedule facts failed: ${JSON.stringify(response.error)}`)
+    options: TruncateScheduleOptions
+  ): Promise<TruncateScheduleResult> {
+    const body: TruncateScheduleOperation = {
+      structure_id: structureId,
+      new_end_date: options.newEndDate,
+      reason: options.reason,
     }
-
-    const data = response.data as ScheduleFactsResponse
-    return (data.facts ?? []).map((f: ScheduleFactResponse) => ({
-      elementId: f.element_id,
-      elementName: f.element_name,
-      value: f.value,
-      periodStart: f.period_start,
-      periodEnd: f.period_end,
-    }))
+    const envelope = await this.callOperation(
+      'Truncate schedule',
+      opTruncateSchedule({ path: { graph_id: graphId }, body })
+    )
+    const raw = envelope.result as unknown as RawTruncateScheduleResult
+    return {
+      structureId: raw.structure_id,
+      newEndDate: raw.new_end_date,
+      factsDeleted: raw.facts_deleted,
+      reason: raw.reason,
+    }
   }
 
-  /**
-   * Get close status for all schedules in a fiscal period.
-   */
+  // ── Period close ────────────────────────────────────────────────────
+
+  /** Close status for all schedules in a fiscal period. */
   async getPeriodCloseStatus(
     graphId: string,
     periodStart: string,
     periodEnd: string
-  ): Promise<PeriodCloseStatus> {
-    const response = await getPeriodCloseStatus({
-      path: { graph_id: graphId },
-      query: { period_start: periodStart, period_end: periodEnd },
-    })
+  ): Promise<LedgerPeriodCloseStatus | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerPeriodCloseStatusDocument,
+      { periodStart, periodEnd },
+      'Get period close status',
+      (data) => data.periodCloseStatus
+    )
+  }
 
-    if (response.error) {
-      throw new Error(`Get period close status failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as PeriodCloseStatusResponse
-    return {
-      fiscalPeriodStart: data.fiscal_period_start,
-      fiscalPeriodEnd: data.fiscal_period_end,
-      periodStatus: data.period_status,
-      schedules: (data.schedules ?? []).map((s: PeriodCloseItemResponse) => ({
-        structureId: s.structure_id,
-        structureName: s.structure_name,
-        amount: s.amount,
-        status: s.status,
-        entryId: s.entry_id ?? null,
-      })),
-      totalDraft: data.total_draft,
-      totalPosted: data.total_posted,
-    }
+  /** All draft entries in a period, fully expanded for review pre-close. */
+  async listPeriodDrafts(graphId: string, period: string): Promise<LedgerPeriodDrafts | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerPeriodDraftsDocument,
+      { period },
+      'List period drafts',
+      (data) => data.periodDrafts
+    )
   }
 
   /**
-   * Idempotently create (or refresh) a draft closing entry from a schedule's
-   * facts for a period. The `outcome` field describes what actually happened:
-   *
-   * - `created`     — new draft
-   * - `unchanged`   — existing draft still matches the schedule; no-op
-   * - `regenerated` — existing draft was stale; replaced
-   * - `removed`     — schedule no longer covers this period; stale draft deleted
-   * - `skipped`     — no existing draft and no in-scope fact; nothing to do
+   * Idempotently create (or refresh) a draft closing entry from a
+   * schedule for a period. See `ClosingEntryOutcome` for semantics.
    */
   async createClosingEntry(
     graphId: string,
@@ -884,301 +885,23 @@ export class LedgerClient {
     periodEnd: string,
     memo?: string
   ): Promise<ClosingEntry> {
-    const body: CreateClosingEntryRequest = {
+    const body: CreateClosingEntryOperation = {
+      structure_id: structureId,
       posting_date: postingDate,
       period_start: periodStart,
       period_end: periodEnd,
       memo: memo ?? undefined,
     }
-
-    const response = await createClosingEntry({
-      path: { graph_id: graphId, structure_id: structureId },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Create closing entry failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as ClosingEntryResponse
-    return toClosingEntry(data)
-  }
-
-  // ── Closing Book ─────────────────────────────────────────────────────
-
-  /**
-   * Get all closing book structure categories for the sidebar.
-   * Returns statements, account rollups, schedules, trial balance,
-   * and period close grouped into categories.
-   */
-  async getClosingBookStructures(graphId: string): Promise<ClosingBookStructuresResponse> {
-    const response = await getClosingBookStructures({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get closing book structures failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as ClosingBookStructuresResponse
+    const envelope = await this.callOperation(
+      'Create closing entry',
+      opCreateClosingEntry({ path: { graph_id: graphId }, body })
+    )
+    return rawToClosingEntry(envelope.result as unknown as RawClosingEntryResult)
   }
 
   /**
-   * Get account rollups — CoA accounts grouped by reporting element with balances.
-   * Shows how company-specific accounts roll up to standardized reporting lines.
-   */
-  async getAccountRollups(
-    graphId: string,
-    options?: { mappingId?: string; startDate?: string; endDate?: string }
-  ): Promise<AccountRollupsResponse> {
-    const response = await getAccountRollups({
-      path: { graph_id: graphId },
-      query: {
-        mapping_id: options?.mappingId,
-        start_date: options?.startDate,
-        end_date: options?.endDate,
-      },
-    })
-
-    if (response.error) {
-      throw new Error(`Get account rollups failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return response.data as AccountRollupsResponse
-  }
-
-  // ── Fiscal Calendar ─────────────────────────────────────────────────
-
-  /**
-   * Initialize the fiscal calendar for a graph. Creates FiscalPeriod rows
-   * for the data window, sets `closed_through` / `close_target`, and emits
-   * an `initialized` audit event. Fails with 409 if already initialized.
-   */
-  async initializeLedger(
-    graphId: string,
-    options?: InitializeLedgerOptions
-  ): Promise<InitializeLedgerResult> {
-    const body: InitializeLedgerRequest = {
-      closed_through: options?.closedThrough ?? null,
-      fiscal_year_start_month: options?.fiscalYearStartMonth,
-      earliest_data_period: options?.earliestDataPeriod ?? null,
-      auto_seed_schedules: options?.autoSeedSchedules,
-      note: options?.note ?? null,
-    }
-
-    const response = await initializeLedger({
-      path: { graph_id: graphId },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Initialize ledger failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as InitializeLedgerResponse
-    return {
-      fiscalCalendar: toFiscalCalendarState(data.fiscal_calendar),
-      periodsCreated: data.periods_created ?? 0,
-      warnings: data.warnings ?? [],
-    }
-  }
-
-  /**
-   * Get the current fiscal calendar state — pointers, gap, closeable status.
-   */
-  async getFiscalCalendar(graphId: string): Promise<FiscalCalendarState> {
-    const response = await getFiscalCalendar({
-      path: { graph_id: graphId },
-    })
-
-    if (response.error) {
-      throw new Error(`Get fiscal calendar failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return toFiscalCalendarState(response.data as FiscalCalendarResponse)
-  }
-
-  /**
-   * Set the close target for a graph. Validates that the target is not in
-   * the future and not before `closed_through`.
-   */
-  async setCloseTarget(
-    graphId: string,
-    period: string,
-    note?: string | null
-  ): Promise<FiscalCalendarState> {
-    const body: SetCloseTargetRequest = {
-      period,
-      note: note ?? null,
-    }
-
-    const response = await setCloseTarget({
-      path: { graph_id: graphId },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Set close target failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return toFiscalCalendarState(response.data as FiscalCalendarResponse)
-  }
-
-  /**
-   * Close a fiscal period — the final commit action.
-   *
-   * Validates closeable gates, transitions all draft entries in the period
-   * to `posted`, marks the FiscalPeriod closed, and advances `closed_through`
-   * (auto-advancing `close_target` when reached).
-   */
-  async closePeriod(
-    graphId: string,
-    period: string,
-    options?: ClosePeriodOptions
-  ): Promise<ClosePeriodResult> {
-    const body: ClosePeriodRequest = {
-      note: options?.note ?? null,
-      allow_stale_sync: options?.allowStaleSync,
-    }
-
-    const response = await closeFiscalPeriod({
-      path: { graph_id: graphId, period },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Close period failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as ClosePeriodResponse
-    return {
-      period: data.period,
-      entriesPosted: data.entries_posted ?? 0,
-      targetAutoAdvanced: data.target_auto_advanced ?? false,
-      fiscalCalendar: toFiscalCalendarState(data.fiscal_calendar),
-    }
-  }
-
-  /**
-   * Reopen a closed fiscal period. Requires a non-empty `reason` for the
-   * audit log. Posted entries stay posted; the period transitions to
-   * `closing` so the user can post adjustments and re-close.
-   */
-  async reopenPeriod(
-    graphId: string,
-    period: string,
-    reason: string,
-    note?: string | null
-  ): Promise<FiscalCalendarState> {
-    const body: ReopenPeriodRequest = {
-      reason,
-      note: note ?? null,
-    }
-
-    const response = await reopenFiscalPeriod({
-      path: { graph_id: graphId, period },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Reopen period failed: ${JSON.stringify(response.error)}`)
-    }
-
-    return toFiscalCalendarState(response.data as FiscalCalendarResponse)
-  }
-
-  /**
-   * List all draft entries in a fiscal period for review before close.
-   * Fully expanded with line items, element metadata, and per-entry balance.
-   *
-   * Pure read — call repeatedly without side effects.
-   */
-  async listPeriodDrafts(graphId: string, period: string): Promise<PeriodDraftsView> {
-    const response = await listPeriodDrafts({
-      path: { graph_id: graphId, period },
-    })
-
-    if (response.error) {
-      throw new Error(`List period drafts failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as PeriodDraftsResponse
-    return {
-      period: data.period,
-      periodStart: data.period_start,
-      periodEnd: data.period_end,
-      draftCount: data.draft_count,
-      totalDebit: data.total_debit,
-      totalCredit: data.total_credit,
-      allBalanced: data.all_balanced,
-      drafts: (data.drafts ?? []).map((d) => ({
-        entryId: d.entry_id,
-        postingDate: d.posting_date,
-        type: d.type,
-        memo: d.memo ?? null,
-        provenance: d.provenance ?? null,
-        sourceStructureId: d.source_structure_id ?? null,
-        sourceStructureName: d.source_structure_name ?? null,
-        lineItems: d.line_items.map((li) => ({
-          lineItemId: li.line_item_id,
-          elementId: li.element_id,
-          elementCode: li.element_code ?? null,
-          elementName: li.element_name,
-          debitAmount: li.debit_amount,
-          creditAmount: li.credit_amount,
-          description: li.description ?? null,
-        })),
-        totalDebit: d.total_debit,
-        totalCredit: d.total_credit,
-        balanced: d.balanced,
-      })),
-    }
-  }
-
-  // ── Schedule mutations ──────────────────────────────────────────────
-
-  /**
-   * Truncate a schedule — end it early by deleting facts with
-   * `period_start > new_end_date`, along with any stale draft entries they
-   * produced. Historical posted facts are preserved.
-   *
-   * `new_end_date` must be a month-end date (service enforces this).
-   */
-  async truncateSchedule(
-    graphId: string,
-    structureId: string,
-    options: TruncateScheduleOptions
-  ): Promise<TruncateScheduleResult> {
-    const body: TruncateScheduleRequest = {
-      new_end_date: options.newEndDate,
-      reason: options.reason,
-    }
-
-    const response = await truncateSchedule({
-      path: { graph_id: graphId, structure_id: structureId },
-      body,
-    })
-
-    if (response.error) {
-      throw new Error(`Truncate schedule failed: ${JSON.stringify(response.error)}`)
-    }
-
-    const data = response.data as TruncateScheduleResponse
-    return {
-      structureId: data.structure_id,
-      newEndDate: data.new_end_date,
-      factsDeleted: data.facts_deleted,
-      reason: data.reason,
-    }
-  }
-
-  /**
-   * Create a manual draft closing entry with arbitrary balanced line items.
-   * Not tied to a schedule — used for disposals, adjustments, and other
-   * one-off closing events.
-   *
-   * Line items must sum to balanced debits/credits. Rejects entries
-   * targeting an already-closed period.
+   * Create a manual balanced closing entry (not tied to a schedule).
+   * Used for disposals, adjustments, and one-off closing events.
    */
   async createManualClosingEntry(
     graphId: string,
@@ -1195,25 +918,176 @@ export class LedgerClient {
         description: li.description ?? null,
       })),
     }
+    const envelope = await this.callOperation(
+      'Create manual closing entry',
+      opCreateManualClosingEntry({ path: { graph_id: graphId }, body })
+    )
+    return rawToClosingEntry(envelope.result as unknown as RawClosingEntryResult)
+  }
 
-    const response = await createManualClosingEntry({
-      path: { graph_id: graphId },
-      body,
-    })
+  // ── Closing book ───────────────────────────────────────────────────
 
-    if (response.error) {
-      throw new Error(`Create manual closing entry failed: ${JSON.stringify(response.error)}`)
+  /** Grouped closing book structures for the close-screen sidebar. */
+  async getClosingBookStructures(graphId: string): Promise<LedgerClosingBookStructures | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerClosingBookStructuresDocument,
+      undefined,
+      'Get closing book structures',
+      (data) => data.closingBookStructures
+    )
+  }
+
+  // ── Fiscal Calendar ────────────────────────────────────────────────
+
+  /** Current fiscal calendar state — pointers, gap, closeable status. */
+  async getFiscalCalendar(graphId: string): Promise<LedgerFiscalCalendar | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerFiscalCalendarDocument,
+      undefined,
+      'Get fiscal calendar',
+      (data) => data.fiscalCalendar
+    )
+  }
+
+  /** One-time ledger initialization — seed fiscal calendar + periods. */
+  async initializeLedger(
+    graphId: string,
+    options?: InitializeLedgerOptions
+  ): Promise<InitializeLedgerResult> {
+    const body: InitializeLedgerRequest = {
+      closed_through: options?.closedThrough ?? null,
+      fiscal_year_start_month: options?.fiscalYearStartMonth,
+      earliest_data_period: options?.earliestDataPeriod ?? null,
+      auto_seed_schedules: options?.autoSeedSchedules,
+      note: options?.note ?? null,
     }
+    const envelope = await this.callOperation(
+      'Initialize ledger',
+      opInitializeLedger({ path: { graph_id: graphId }, body })
+    )
+    const raw = envelope.result as unknown as RawInitializeLedgerResult
+    return {
+      fiscalCalendar: rawFiscalCalendarToCamel(raw.fiscal_calendar),
+      periodsCreated: raw.periods_created ?? 0,
+      warnings: raw.warnings ?? [],
+    }
+  }
 
-    return toClosingEntry(response.data as ClosingEntryResponse)
+  /** Set the user-controlled close target (YYYY-MM). */
+  async setCloseTarget(
+    graphId: string,
+    period: string,
+    note?: string | null
+  ): Promise<LedgerFiscalCalendar> {
+    const body: SetCloseTargetOperation = { period, note: note ?? null }
+    const envelope = await this.callOperation(
+      'Set close target',
+      opSetCloseTarget({ path: { graph_id: graphId }, body })
+    )
+    return rawFiscalCalendarToCamel(envelope.result as unknown as RawFiscalCalendar)
+  }
+
+  /** Close a fiscal period — the final commit action. */
+  async closePeriod(
+    graphId: string,
+    period: string,
+    options?: ClosePeriodOptions
+  ): Promise<ClosePeriodResult> {
+    const body: ClosePeriodOperation = {
+      period,
+      note: options?.note ?? null,
+      allow_stale_sync: options?.allowStaleSync,
+    }
+    const envelope = await this.callOperation(
+      'Close period',
+      opClosePeriod({ path: { graph_id: graphId }, body })
+    )
+    const raw = envelope.result as unknown as RawClosePeriodResult
+    return {
+      period: raw.period,
+      entriesPosted: raw.entries_posted ?? 0,
+      targetAutoAdvanced: raw.target_auto_advanced ?? false,
+      fiscalCalendar: rawFiscalCalendarToCamel(raw.fiscal_calendar),
+    }
+  }
+
+  /** Reopen a closed fiscal period. Requires a reason for the audit log. */
+  async reopenPeriod(
+    graphId: string,
+    period: string,
+    reason: string,
+    note?: string | null
+  ): Promise<LedgerFiscalCalendar> {
+    const body: ReopenPeriodOperation = {
+      period,
+      reason,
+      note: note ?? null,
+    }
+    const envelope = await this.callOperation(
+      'Reopen period',
+      opReopenPeriod({ path: { graph_id: graphId }, body })
+    )
+    return rawFiscalCalendarToCamel(envelope.result as unknown as RawFiscalCalendar)
+  }
+
+  // Reports, statements, and publish lists live on `ReportClient`.
+
+  // ── Internal helpers ────────────────────────────────────────────────
+
+  /**
+   * Run a typed GraphQL query against the per-graph endpoint and
+   * translate ClientError into a readable facade error.
+   */
+  private async gqlQuery<TData, TVars extends object, TResult>(
+    graphId: string,
+    document: TypedDocumentNode<TData, TVars>,
+    variables: TVars | undefined,
+    label: string,
+    pick: (data: TData) => TResult
+  ): Promise<TResult> {
+    try {
+      const client = this.gql.get(graphId)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const raw = client.request as (doc: unknown, vars?: unknown) => Promise<any>
+      // graphql-request's overloads don't cleanly resolve for generic
+      // helpers wrapping codegen's `Exact<>` var types, so we bypass
+      // the typed overload with a narrow cast of `request` itself.
+      const data = (await raw.call(client, document, variables)) as TData
+      return pick(data)
+    } catch (err) {
+      if (err instanceof ClientError) {
+        throw new Error(`${label} failed: ${JSON.stringify(err.response.errors ?? err.message)}`)
+      }
+      throw err
+    }
+  }
+
+  /**
+   * Await an SDK-generated `opXxx(...)` call, throw a readable error on
+   * non-2xx, and return the `OperationEnvelope` on success.
+   */
+  private async callOperation(
+    label: string,
+    call: Promise<{ data?: OperationEnvelope; error?: unknown }>
+  ): Promise<OperationEnvelope> {
+    const response = await call
+    if (response.error !== undefined) {
+      throw new Error(`${label} failed: ${JSON.stringify(response.error)}`)
+    }
+    if (response.data === undefined) {
+      throw new Error(`${label} failed: empty response`)
+    }
+    return response.data
   }
 }
 
-// ── Internal helpers ──────────────────────────────────────────────────
+// ── Module-private conversion helpers ─────────────────────────────────
 
-function toClosingEntry(data: ClosingEntryResponse): ClosingEntry {
+function rawToClosingEntry(data: RawClosingEntryResult): ClosingEntry {
   return {
-    outcome: data.outcome as ClosingEntryOutcome,
+    outcome: data.outcome,
     entryId: data.entry_id ?? null,
     status: data.status ?? null,
     postingDate: data.posting_date ?? null,
@@ -1225,20 +1099,20 @@ function toClosingEntry(data: ClosingEntryResponse): ClosingEntry {
   }
 }
 
-function toFiscalCalendarState(data: FiscalCalendarResponse): FiscalCalendarState {
+function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar {
   return {
-    graphId: data.graph_id,
-    fiscalYearStartMonth: data.fiscal_year_start_month,
-    closedThrough: data.closed_through ?? null,
-    closeTarget: data.close_target ?? null,
-    gapPeriods: data.gap_periods ?? 0,
-    catchUpSequence: data.catch_up_sequence ?? [],
-    closeableNow: data.closeable_now ?? false,
-    blockers: data.blockers ?? [],
-    lastCloseAt: data.last_close_at ?? null,
-    initializedAt: data.initialized_at ?? null,
-    lastSyncAt: data.last_sync_at ?? null,
-    periods: (data.periods ?? []).map((p) => ({
+    graphId: raw.graph_id,
+    fiscalYearStartMonth: raw.fiscal_year_start_month,
+    closedThrough: raw.closed_through ?? null,
+    closeTarget: raw.close_target ?? null,
+    gapPeriods: raw.gap_periods ?? 0,
+    catchUpSequence: raw.catch_up_sequence ?? [],
+    closeableNow: raw.closeable_now ?? false,
+    blockers: raw.blockers ?? [],
+    lastCloseAt: raw.last_close_at ?? null,
+    initializedAt: raw.initialized_at ?? null,
+    lastSyncAt: raw.last_sync_at ?? null,
+    periods: (raw.periods ?? []).map((p) => ({
       name: p.name,
       startDate: p.start_date,
       endDate: p.end_date,

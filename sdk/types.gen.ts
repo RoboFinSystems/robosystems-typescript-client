@@ -101,238 +101,19 @@ export type AccountInfo = {
 };
 
 /**
- * AccountListResponse
+ * AddPublishListMembersOperation
  */
-export type AccountListResponse = {
-    /**
-     * Accounts
-     */
-    accounts: Array<AccountResponse>;
-    pagination: PaginationInfo;
-};
-
-/**
- * AccountResponse
- */
-export type AccountResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Code
-     */
-    code?: string | null;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Classification
-     */
-    classification: string;
-    /**
-     * Sub Classification
-     */
-    sub_classification?: string | null;
-    /**
-     * Balance Type
-     */
-    balance_type: string;
-    /**
-     * Parent Id
-     */
-    parent_id?: string | null;
-    /**
-     * Depth
-     */
-    depth: number;
-    /**
-     * Currency
-     */
-    currency: string;
-    /**
-     * Is Active
-     */
-    is_active: boolean;
-    /**
-     * Is Placeholder
-     */
-    is_placeholder: boolean;
-    /**
-     * Account Type
-     */
-    account_type?: string | null;
-    /**
-     * External Id
-     */
-    external_id?: string | null;
-    /**
-     * External Source
-     */
-    external_source?: string | null;
-};
-
-/**
- * AccountRollupGroup
- */
-export type AccountRollupGroup = {
-    /**
-     * Reporting Element Id
-     */
-    reporting_element_id: string;
-    /**
-     * Reporting Name
-     */
-    reporting_name: string;
-    /**
-     * Reporting Qname
-     */
-    reporting_qname: string;
-    /**
-     * Classification
-     */
-    classification: string;
-    /**
-     * Balance Type
-     */
-    balance_type: string;
-    /**
-     * Total
-     */
-    total: number;
-    /**
-     * Accounts
-     */
-    accounts: Array<AccountRollupRow>;
-};
-
-/**
- * AccountRollupRow
- */
-export type AccountRollupRow = {
-    /**
-     * Element Id
-     */
-    element_id: string;
-    /**
-     * Account Name
-     */
-    account_name: string;
-    /**
-     * Account Code
-     */
-    account_code?: string | null;
-    /**
-     * Total Debits
-     */
-    total_debits: number;
-    /**
-     * Total Credits
-     */
-    total_credits: number;
-    /**
-     * Net Balance
-     */
-    net_balance: number;
-};
-
-/**
- * AccountRollupsResponse
- */
-export type AccountRollupsResponse = {
-    /**
-     * Mapping Id
-     */
-    mapping_id: string;
-    /**
-     * Mapping Name
-     */
-    mapping_name: string;
-    /**
-     * Groups
-     */
-    groups: Array<AccountRollupGroup>;
-    /**
-     * Total Mapped
-     */
-    total_mapped: number;
-    /**
-     * Total Unmapped
-     */
-    total_unmapped: number;
-};
-
-/**
- * AccountTreeNode
- */
-export type AccountTreeNode = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Code
-     */
-    code?: string | null;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Classification
-     */
-    classification: string;
-    /**
-     * Account Type
-     */
-    account_type?: string | null;
-    /**
-     * Balance Type
-     */
-    balance_type: string;
-    /**
-     * Depth
-     */
-    depth: number;
-    /**
-     * Is Active
-     */
-    is_active: boolean;
-    /**
-     * Children
-     */
-    children?: Array<AccountTreeNode>;
-};
-
-/**
- * AccountTreeResponse
- */
-export type AccountTreeResponse = {
-    /**
-     * Roots
-     */
-    roots: Array<AccountTreeNode>;
-    /**
-     * Total Accounts
-     */
-    total_accounts: number;
-};
-
-/**
- * AddMembersRequest
- */
-export type AddMembersRequest = {
+export type AddPublishListMembersOperation = {
     /**
      * Target Graph Ids
      *
      * Graph IDs to add to this list
      */
     target_graph_ids: Array<string>;
+    /**
+     * List Id
+     */
+    list_id: string;
 };
 
 /**
@@ -667,68 +448,6 @@ export type AgentResponse = {
 };
 
 /**
- * AssociationResponse
- */
-export type AssociationResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * From Element Id
-     */
-    from_element_id: string;
-    /**
-     * From Element Name
-     */
-    from_element_name?: string | null;
-    /**
-     * From Element Qname
-     */
-    from_element_qname?: string | null;
-    /**
-     * To Element Id
-     */
-    to_element_id: string;
-    /**
-     * To Element Name
-     */
-    to_element_name?: string | null;
-    /**
-     * To Element Qname
-     */
-    to_element_qname?: string | null;
-    /**
-     * Association Type
-     */
-    association_type: string;
-    /**
-     * Order Value
-     */
-    order_value?: number | null;
-    /**
-     * Weight
-     */
-    weight?: number | null;
-    /**
-     * Confidence
-     */
-    confidence?: number | null;
-    /**
-     * Suggested By
-     */
-    suggested_by?: string | null;
-    /**
-     * Approved By
-     */
-    approved_by?: string | null;
-};
-
-/**
  * AuthResponse
  *
  * Authentication response model.
@@ -774,6 +493,18 @@ export type AuthResponse = {
      * Recommended refresh threshold in seconds before expiry
      */
     refresh_threshold?: number | null;
+};
+
+/**
+ * AutoMapElementsOperation
+ *
+ * Request body for the auto-map-elements async operation.
+ */
+export type AutoMapElementsOperation = {
+    /**
+     * Mapping Id
+     */
+    mapping_id: string;
 };
 
 /**
@@ -1313,9 +1044,9 @@ export type CheckoutStatusResponse = {
 };
 
 /**
- * ClosePeriodRequest
+ * ClosePeriodOperation
  */
-export type ClosePeriodRequest = {
+export type ClosePeriodOperation = {
     /**
      * Note
      *
@@ -1328,142 +1059,10 @@ export type ClosePeriodRequest = {
      * Override the sync-currency gate. Only use when you have manually verified that the source data for the period is complete.
      */
     allow_stale_sync?: boolean;
-};
-
-/**
- * ClosePeriodResponse
- *
- * Response from a single-period close operation.
- */
-export type ClosePeriodResponse = {
-    fiscal_calendar: FiscalCalendarResponse;
     /**
      * Period
      */
     period: string;
-    /**
-     * Entries Posted
-     *
-     * Number of draft entries transitioned to posted
-     */
-    entries_posted?: number;
-    /**
-     * Target Auto Advanced
-     *
-     * Whether close_target was auto-advanced because it was reached
-     */
-    target_auto_advanced?: boolean;
-};
-
-/**
- * ClosingBookCategory
- */
-export type ClosingBookCategory = {
-    /**
-     * Label
-     */
-    label: string;
-    /**
-     * Items
-     */
-    items: Array<ClosingBookItem>;
-};
-
-/**
- * ClosingBookItem
- */
-export type ClosingBookItem = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Item Type
-     */
-    item_type: string;
-    /**
-     * Structure Type
-     */
-    structure_type?: string | null;
-    /**
-     * Report Id
-     */
-    report_id?: string | null;
-    /**
-     * Status
-     */
-    status?: string | null;
-};
-
-/**
- * ClosingBookStructuresResponse
- */
-export type ClosingBookStructuresResponse = {
-    /**
-     * Categories
-     */
-    categories: Array<ClosingBookCategory>;
-    /**
-     * Has Data
-     */
-    has_data: boolean;
-};
-
-/**
- * ClosingEntryResponse
- */
-export type ClosingEntryResponse = {
-    /**
-     * Outcome
-     *
-     * What the idempotent call did: 'created' (new draft), 'unchanged' (existing draft still matches), 'regenerated' (stale draft replaced with fresh one), 'removed' (stale draft deleted; schedule no longer covers this period), 'skipped' (nothing to do — no draft and no in-scope fact).
-     */
-    outcome: string;
-    /**
-     * Entry Id
-     *
-     * The draft entry ID. None for 'removed' and 'skipped' outcomes.
-     */
-    entry_id?: string | null;
-    /**
-     * Status
-     *
-     * Entry status (always 'draft' when present).
-     */
-    status?: string | null;
-    /**
-     * Posting Date
-     */
-    posting_date?: string | null;
-    /**
-     * Memo
-     */
-    memo?: string | null;
-    /**
-     * Debit Element Id
-     */
-    debit_element_id?: string | null;
-    /**
-     * Credit Element Id
-     */
-    credit_element_id?: string | null;
-    /**
-     * Amount
-     *
-     * Entry amount in dollars. None for 'removed' and 'skipped'.
-     */
-    amount?: number | null;
-    /**
-     * Reason
-     *
-     * Explanation for 'removed' and 'skipped' outcomes.
-     */
-    reason?: string | null;
-    reversal?: ClosingEntryResponse | null;
 };
 
 /**
@@ -1739,40 +1338,6 @@ export type CreateApiKeyResponse = {
 };
 
 /**
- * CreateAssociationRequest
- */
-export type CreateAssociationRequest = {
-    /**
-     * From Element Id
-     */
-    from_element_id: string;
-    /**
-     * To Element Id
-     */
-    to_element_id: string;
-    /**
-     * Association Type
-     */
-    association_type?: 'presentation' | 'calculation' | 'mapping';
-    /**
-     * Order Value
-     */
-    order_value?: number | null;
-    /**
-     * Weight
-     */
-    weight?: number | null;
-    /**
-     * Confidence
-     */
-    confidence?: number | null;
-    /**
-     * Suggested By
-     */
-    suggested_by?: string | null;
-};
-
-/**
  * CreateCheckoutRequest
  *
  * Request to create a checkout session for payment collection.
@@ -1801,9 +1366,9 @@ export type CreateCheckoutRequest = {
 };
 
 /**
- * CreateClosingEntryRequest
+ * CreateClosingEntryOperation
  */
-export type CreateClosingEntryRequest = {
+export type CreateClosingEntryOperation = {
     /**
      * Posting Date
      *
@@ -1828,6 +1393,10 @@ export type CreateClosingEntryRequest = {
      * Override memo
      */
     memo?: string | null;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
 };
 
 /**
@@ -1922,6 +1491,44 @@ export type CreateManualClosingEntryRequest = {
      * Entry type: 'closing' (default), 'adjusting', 'standard', 'reversing'
      */
     entry_type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
+};
+
+/**
+ * CreateMappingAssociationOperation
+ */
+export type CreateMappingAssociationOperation = {
+    /**
+     * From Element Id
+     */
+    from_element_id: string;
+    /**
+     * To Element Id
+     */
+    to_element_id: string;
+    /**
+     * Association Type
+     */
+    association_type?: 'presentation' | 'calculation' | 'mapping';
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Weight
+     */
+    weight?: number | null;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+    /**
+     * Suggested By
+     */
+    suggested_by?: string | null;
+    /**
+     * Mapping Id
+     */
+    mapping_id: string;
 };
 
 /**
@@ -2789,6 +2396,70 @@ export type DeleteFileResponse = {
 };
 
 /**
+ * DeleteMappingAssociationOperation
+ */
+export type DeleteMappingAssociationOperation = {
+    /**
+     * Mapping Id
+     */
+    mapping_id: string;
+    /**
+     * Association Id
+     */
+    association_id: string;
+};
+
+/**
+ * DeletePortfolioOperation
+ */
+export type DeletePortfolioOperation = {
+    /**
+     * Portfolio Id
+     */
+    portfolio_id: string;
+};
+
+/**
+ * DeletePositionOperation
+ */
+export type DeletePositionOperation = {
+    /**
+     * Position Id
+     */
+    position_id: string;
+};
+
+/**
+ * DeletePublishListOperation
+ */
+export type DeletePublishListOperation = {
+    /**
+     * List Id
+     */
+    list_id: string;
+};
+
+/**
+ * DeleteReportOperation
+ */
+export type DeleteReportOperation = {
+    /**
+     * Report Id
+     */
+    report_id: string;
+};
+
+/**
+ * DeleteSecurityOperation
+ */
+export type DeleteSecurityOperation = {
+    /**
+     * Security Id
+     */
+    security_id: string;
+};
+
+/**
  * DeleteSubgraphRequest
  *
  * Request model for deleting a subgraph.
@@ -3219,207 +2890,6 @@ export type DownloadQuota = {
 };
 
 /**
- * DraftEntryResponse
- *
- * A single draft entry with full line item detail for review.
- */
-export type DraftEntryResponse = {
-    /**
-     * Entry Id
-     */
-    entry_id: string;
-    /**
-     * Posting Date
-     */
-    posting_date: string;
-    /**
-     * Type
-     *
-     * Entry type (e.g., 'closing', 'adjusting')
-     */
-    type: string;
-    /**
-     * Memo
-     */
-    memo?: string | null;
-    /**
-     * Provenance
-     *
-     * Where the entry came from: 'ai_generated', 'manual_entry', etc.
-     */
-    provenance?: string | null;
-    /**
-     * Source Structure Id
-     *
-     * Schedule structure that generated this entry (if any)
-     */
-    source_structure_id?: string | null;
-    /**
-     * Source Structure Name
-     *
-     * Human-readable name of the source schedule
-     */
-    source_structure_name?: string | null;
-    /**
-     * Line Items
-     */
-    line_items: Array<DraftLineItem>;
-    /**
-     * Total Debit
-     *
-     * Sum of debit amounts in cents
-     */
-    total_debit: number;
-    /**
-     * Total Credit
-     *
-     * Sum of credit amounts in cents
-     */
-    total_credit: number;
-    /**
-     * Balanced
-     *
-     * True if total_debit == total_credit
-     */
-    balanced: boolean;
-};
-
-/**
- * DraftLineItem
- *
- * A single line item within a draft entry.
- */
-export type DraftLineItem = {
-    /**
-     * Line Item Id
-     */
-    line_item_id: string;
-    /**
-     * Element Id
-     */
-    element_id: string;
-    /**
-     * Element Code
-     */
-    element_code?: string | null;
-    /**
-     * Element Name
-     */
-    element_name: string;
-    /**
-     * Debit Amount
-     *
-     * Debit amount in cents
-     */
-    debit_amount: number;
-    /**
-     * Credit Amount
-     *
-     * Credit amount in cents
-     */
-    credit_amount: number;
-    /**
-     * Description
-     */
-    description?: string | null;
-};
-
-/**
- * ElementListResponse
- */
-export type ElementListResponse = {
-    /**
-     * Elements
-     */
-    elements: Array<ElementResponse>;
-    pagination: PaginationInfo;
-};
-
-/**
- * ElementResponse
- *
- * Element with taxonomy context — extends AccountResponse.
- */
-export type ElementResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Code
-     */
-    code?: string | null;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Qname
-     */
-    qname?: string | null;
-    /**
-     * Namespace
-     */
-    namespace?: string | null;
-    /**
-     * Classification
-     */
-    classification: string;
-    /**
-     * Sub Classification
-     */
-    sub_classification?: string | null;
-    /**
-     * Balance Type
-     */
-    balance_type: string;
-    /**
-     * Period Type
-     */
-    period_type: string;
-    /**
-     * Is Abstract
-     */
-    is_abstract: boolean;
-    /**
-     * Element Type
-     */
-    element_type: string;
-    /**
-     * Source
-     */
-    source: string;
-    /**
-     * Taxonomy Id
-     */
-    taxonomy_id?: string | null;
-    /**
-     * Parent Id
-     */
-    parent_id?: string | null;
-    /**
-     * Depth
-     */
-    depth: number;
-    /**
-     * Is Active
-     */
-    is_active: boolean;
-    /**
-     * External Id
-     */
-    external_id?: string | null;
-    /**
-     * External Source
-     */
-    external_source?: string | null;
-};
-
-/**
  * EmailVerificationRequest
  *
  * Email verification request model.
@@ -3570,40 +3040,6 @@ export type ErrorResponse = {
      * Timestamp when the error occurred
      */
     timestamp?: string | null;
-};
-
-/**
- * FactRowResponse
- */
-export type FactRowResponse = {
-    /**
-     * Element Id
-     */
-    element_id: string;
-    /**
-     * Element Qname
-     */
-    element_qname: string;
-    /**
-     * Element Name
-     */
-    element_name: string;
-    /**
-     * Classification
-     */
-    classification: string;
-    /**
-     * Values
-     */
-    values?: Array<number | null>;
-    /**
-     * Is Subtotal
-     */
-    is_subtotal?: boolean;
-    /**
-     * Depth
-     */
-    depth?: number;
 };
 
 /**
@@ -3772,108 +3208,6 @@ export type FileUploadResponse = {
      * S3 object key
      */
     s3_key: string;
-};
-
-/**
- * FiscalCalendarResponse
- *
- * Current fiscal calendar state for a graph.
- */
-export type FiscalCalendarResponse = {
-    /**
-     * Graph Id
-     */
-    graph_id: string;
-    /**
-     * Fiscal Year Start Month
-     */
-    fiscal_year_start_month: number;
-    /**
-     * Closed Through
-     *
-     * Latest closed period (YYYY-MM), or null if nothing closed
-     */
-    closed_through?: string | null;
-    /**
-     * Close Target
-     *
-     * Target period the user wants closed through (YYYY-MM)
-     */
-    close_target?: string | null;
-    /**
-     * Gap Periods
-     *
-     * Number of periods between closed_through and close_target (inclusive of close_target). 0 means caught up.
-     */
-    gap_periods?: number;
-    /**
-     * Catch Up Sequence
-     *
-     * Ordered list of periods that a close run would process
-     */
-    catch_up_sequence?: Array<string>;
-    /**
-     * Closeable Now
-     *
-     * Whether the next period in the catch-up sequence passes all closeable gates
-     */
-    closeable_now?: boolean;
-    /**
-     * Blockers
-     *
-     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed'
-     */
-    blockers?: Array<string>;
-    /**
-     * Last Close At
-     */
-    last_close_at?: string | null;
-    /**
-     * Initialized At
-     */
-    initialized_at?: string | null;
-    /**
-     * Last Sync At
-     *
-     * Most recent QB sync timestamp (if connected)
-     */
-    last_sync_at?: string | null;
-    /**
-     * Periods
-     *
-     * Fiscal period rows for this graph
-     */
-    periods?: Array<FiscalPeriodSummary>;
-};
-
-/**
- * FiscalPeriodSummary
- */
-export type FiscalPeriodSummary = {
-    /**
-     * Name
-     *
-     * Period name (YYYY-MM)
-     */
-    name: string;
-    /**
-     * Start Date
-     */
-    start_date: string;
-    /**
-     * End Date
-     */
-    end_date: string;
-    /**
-     * Status
-     *
-     * 'open' | 'closing' | 'closed'
-     */
-    status: string;
-    /**
-     * Closed At
-     */
-    closed_at?: string | null;
 };
 
 /**
@@ -4752,92 +4086,6 @@ export type HealthStatus = {
 };
 
 /**
- * HoldingResponse
- */
-export type HoldingResponse = {
-    /**
-     * Entity Id
-     */
-    entity_id: string;
-    /**
-     * Entity Name
-     */
-    entity_name: string;
-    /**
-     * Source Graph Id
-     */
-    source_graph_id?: string | null;
-    /**
-     * Securities
-     */
-    securities: Array<HoldingSecuritySummary>;
-    /**
-     * Total Cost Basis Dollars
-     */
-    total_cost_basis_dollars: number;
-    /**
-     * Total Current Value Dollars
-     */
-    total_current_value_dollars?: number | null;
-    /**
-     * Position Count
-     */
-    position_count: number;
-};
-
-/**
- * HoldingSecuritySummary
- */
-export type HoldingSecuritySummary = {
-    /**
-     * Security Id
-     */
-    security_id: string;
-    /**
-     * Security Name
-     */
-    security_name: string;
-    /**
-     * Security Type
-     */
-    security_type: string;
-    /**
-     * Quantity
-     */
-    quantity: number;
-    /**
-     * Quantity Type
-     */
-    quantity_type: string;
-    /**
-     * Cost Basis Dollars
-     */
-    cost_basis_dollars: number;
-    /**
-     * Current Value Dollars
-     */
-    current_value_dollars?: number | null;
-};
-
-/**
- * HoldingsListResponse
- */
-export type HoldingsListResponse = {
-    /**
-     * Holdings
-     */
-    holdings: Array<HoldingResponse>;
-    /**
-     * Total Entities
-     */
-    total_entities: number;
-    /**
-     * Total Positions
-     */
-    total_positions: number;
-};
-
-/**
  * InitialEntityData
  *
  * Initial entity data for entity-focused graph creation.
@@ -4942,25 +4190,6 @@ export type InitializeLedgerRequest = {
      * Free-form note attached to the audit event
      */
     note?: string | null;
-};
-
-/**
- * InitializeLedgerResponse
- */
-export type InitializeLedgerResponse = {
-    fiscal_calendar: FiscalCalendarResponse;
-    /**
-     * Periods Created
-     *
-     * Number of FiscalPeriod rows created by initialization
-     */
-    periods_created?: number;
-    /**
-     * Warnings
-     *
-     * Non-fatal warnings (e.g., auto_seed_schedules not implemented)
-     */
-    warnings?: Array<string>;
 };
 
 /**
@@ -5174,399 +4403,6 @@ export type InvoicesResponse = {
 };
 
 /**
- * LedgerEntityResponse
- *
- * Entity details from the extensions OLTP database.
- */
-export type LedgerEntityResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Legal Name
-     */
-    legal_name?: string | null;
-    /**
-     * Uri
-     */
-    uri?: string | null;
-    /**
-     * Cik
-     */
-    cik?: string | null;
-    /**
-     * Ticker
-     */
-    ticker?: string | null;
-    /**
-     * Exchange
-     */
-    exchange?: string | null;
-    /**
-     * Sic
-     */
-    sic?: string | null;
-    /**
-     * Sic Description
-     */
-    sic_description?: string | null;
-    /**
-     * Category
-     */
-    category?: string | null;
-    /**
-     * State Of Incorporation
-     */
-    state_of_incorporation?: string | null;
-    /**
-     * Fiscal Year End
-     */
-    fiscal_year_end?: string | null;
-    /**
-     * Tax Id
-     */
-    tax_id?: string | null;
-    /**
-     * Lei
-     */
-    lei?: string | null;
-    /**
-     * Industry
-     */
-    industry?: string | null;
-    /**
-     * Entity Type
-     */
-    entity_type?: string | null;
-    /**
-     * Phone
-     */
-    phone?: string | null;
-    /**
-     * Website
-     */
-    website?: string | null;
-    /**
-     * Status
-     */
-    status?: string;
-    /**
-     * Is Parent
-     */
-    is_parent?: boolean;
-    /**
-     * Parent Entity Id
-     */
-    parent_entity_id?: string | null;
-    /**
-     * Source
-     */
-    source?: string;
-    /**
-     * Source Id
-     */
-    source_id?: string | null;
-    /**
-     * Source Graph Id
-     */
-    source_graph_id?: string | null;
-    /**
-     * Connection Id
-     */
-    connection_id?: string | null;
-    /**
-     * Address Line1
-     */
-    address_line1?: string | null;
-    /**
-     * Address City
-     */
-    address_city?: string | null;
-    /**
-     * Address State
-     */
-    address_state?: string | null;
-    /**
-     * Address Postal Code
-     */
-    address_postal_code?: string | null;
-    /**
-     * Address Country
-     */
-    address_country?: string | null;
-    /**
-     * Created At
-     */
-    created_at?: string | null;
-    /**
-     * Updated At
-     */
-    updated_at?: string | null;
-};
-
-/**
- * LedgerEntryResponse
- */
-export type LedgerEntryResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Number
-     */
-    number?: string | null;
-    /**
-     * Type
-     */
-    type: string;
-    /**
-     * Posting Date
-     */
-    posting_date: string;
-    /**
-     * Memo
-     */
-    memo?: string | null;
-    /**
-     * Status
-     */
-    status: string;
-    /**
-     * Posted At
-     */
-    posted_at?: string | null;
-    /**
-     * Line Items
-     */
-    line_items: Array<LedgerLineItemResponse>;
-};
-
-/**
- * LedgerLineItemResponse
- */
-export type LedgerLineItemResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Account Id
-     */
-    account_id: string;
-    /**
-     * Account Name
-     */
-    account_name?: string | null;
-    /**
-     * Account Code
-     */
-    account_code?: string | null;
-    /**
-     * Debit Amount
-     */
-    debit_amount: number;
-    /**
-     * Credit Amount
-     */
-    credit_amount: number;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Line Order
-     */
-    line_order: number;
-};
-
-/**
- * LedgerSummaryResponse
- */
-export type LedgerSummaryResponse = {
-    /**
-     * Graph Id
-     */
-    graph_id: string;
-    /**
-     * Account Count
-     */
-    account_count: number;
-    /**
-     * Transaction Count
-     */
-    transaction_count: number;
-    /**
-     * Entry Count
-     */
-    entry_count: number;
-    /**
-     * Line Item Count
-     */
-    line_item_count: number;
-    /**
-     * Earliest Transaction Date
-     */
-    earliest_transaction_date?: string | null;
-    /**
-     * Latest Transaction Date
-     */
-    latest_transaction_date?: string | null;
-    /**
-     * Connection Count
-     */
-    connection_count?: number;
-    /**
-     * Last Sync At
-     */
-    last_sync_at?: string | null;
-};
-
-/**
- * LedgerTransactionDetailResponse
- */
-export type LedgerTransactionDetailResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Number
-     */
-    number?: string | null;
-    /**
-     * Type
-     */
-    type: string;
-    /**
-     * Category
-     */
-    category?: string | null;
-    /**
-     * Amount
-     */
-    amount: number;
-    /**
-     * Currency
-     */
-    currency: string;
-    /**
-     * Date
-     */
-    date: string;
-    /**
-     * Due Date
-     */
-    due_date?: string | null;
-    /**
-     * Merchant Name
-     */
-    merchant_name?: string | null;
-    /**
-     * Reference Number
-     */
-    reference_number?: string | null;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Source
-     */
-    source: string;
-    /**
-     * Source Id
-     */
-    source_id?: string | null;
-    /**
-     * Status
-     */
-    status: string;
-    /**
-     * Posted At
-     */
-    posted_at?: string | null;
-    /**
-     * Entries
-     */
-    entries: Array<LedgerEntryResponse>;
-};
-
-/**
- * LedgerTransactionListResponse
- */
-export type LedgerTransactionListResponse = {
-    /**
-     * Transactions
-     */
-    transactions: Array<LedgerTransactionSummaryResponse>;
-    pagination: PaginationInfo;
-};
-
-/**
- * LedgerTransactionSummaryResponse
- */
-export type LedgerTransactionSummaryResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Number
-     */
-    number?: string | null;
-    /**
-     * Type
-     */
-    type: string;
-    /**
-     * Category
-     */
-    category?: string | null;
-    /**
-     * Amount
-     */
-    amount: number;
-    /**
-     * Currency
-     */
-    currency: string;
-    /**
-     * Date
-     */
-    date: string;
-    /**
-     * Due Date
-     */
-    due_date?: string | null;
-    /**
-     * Merchant Name
-     */
-    merchant_name?: string | null;
-    /**
-     * Reference Number
-     */
-    reference_number?: string | null;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Source
-     */
-    source: string;
-    /**
-     * Status
-     */
-    status: string;
-};
-
-/**
  * ListSubgraphsResponse
  *
  * Response model for listing subgraphs.
@@ -5742,78 +4578,6 @@ export type ManualLineItemRequest = {
      * Description
      */
     description?: string | null;
-};
-
-/**
- * MappingCoverageResponse
- *
- * Coverage stats for a mapping.
- */
-export type MappingCoverageResponse = {
-    /**
-     * Mapping Id
-     */
-    mapping_id: string;
-    /**
-     * Total Coa Elements
-     */
-    total_coa_elements: number;
-    /**
-     * Mapped Count
-     */
-    mapped_count: number;
-    /**
-     * Unmapped Count
-     */
-    unmapped_count: number;
-    /**
-     * Coverage Percent
-     */
-    coverage_percent: number;
-    /**
-     * High Confidence
-     */
-    high_confidence?: number;
-    /**
-     * Medium Confidence
-     */
-    medium_confidence?: number;
-    /**
-     * Low Confidence
-     */
-    low_confidence?: number;
-};
-
-/**
- * MappingDetailResponse
- *
- * A mapping structure with all its associations.
- */
-export type MappingDetailResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Structure Type
-     */
-    structure_type: string;
-    /**
-     * Taxonomy Id
-     */
-    taxonomy_id: string;
-    /**
-     * Associations
-     */
-    associations: Array<AssociationResponse>;
-    /**
-     * Total Associations
-     */
-    total_associations: number;
 };
 
 /**
@@ -6139,6 +4903,67 @@ export type OperationCosts = {
 };
 
 /**
+ * OperationEnvelope
+ *
+ * Uniform response shape for every extensions operation endpoint.
+ *
+ * Every dispatch through `/extensions/{domain}/{graph_id}/operations/{op}`
+ * returns an envelope carrying an `op_<ULID>` operation_id. That id is the
+ * bridge to the platform's monitoring surface: pass it to
+ * `GET /v1/operations/{operation_id}/stream` (see `routers/operations.py`)
+ * to subscribe to SSE progress events. Sync commands complete in the
+ * envelope itself; async commands (`status: "pending"`, HTTP 202) hand off
+ * to a background worker and stream their tail through the same SSE
+ * endpoint until completion. Failed dispatches still mint an `operation_id`
+ * so the audit log and any partial SSE events stay correlatable.
+ *
+ * Fields:
+ * - `operation`: kebab-case command name (e.g. `close-period`)
+ * - `operation_id`: `op_`-prefixed ULID; always present, usable for audit
+ * correlation and — for async commands — SSE subscription via
+ * `/v1/operations/{operation_id}/stream`
+ * - `status`: `"completed"` (sync, HTTP 200), `"pending"` (async, HTTP 202),
+ * or `"failed"` (error responses)
+ * - `result`: the domain-specific payload (the original Pydantic response)
+ * or `None` for async/failed cases
+ * - `at`: ISO-8601 UTC timestamp of when the envelope was minted
+ */
+export type OperationEnvelope = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Result
+     *
+     * Command-specific result payload
+     */
+    result?: {
+        [key: string]: unknown;
+    } | Array<unknown> | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+};
+
+/**
  * OrgDetailResponse
  *
  * Detailed organization response.
@@ -6411,38 +5236,6 @@ export type OrgUsageSummary = {
 };
 
 /**
- * PaginationInfo
- *
- * Pagination information for list responses.
- */
-export type PaginationInfo = {
-    /**
-     * Total
-     *
-     * Total number of items available
-     */
-    total: number;
-    /**
-     * Limit
-     *
-     * Maximum number of items returned in this response
-     */
-    limit: number;
-    /**
-     * Offset
-     *
-     * Number of items skipped
-     */
-    offset: number;
-    /**
-     * Has More
-     *
-     * Whether more items are available
-     */
-    has_more: boolean;
-};
-
-/**
  * PasswordCheckRequest
  *
  * Password strength check request model.
@@ -6617,118 +5410,6 @@ export type PerformanceInsights = {
 };
 
 /**
- * PeriodCloseItemResponse
- */
-export type PeriodCloseItemResponse = {
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * Structure Name
-     */
-    structure_name: string;
-    /**
-     * Amount
-     */
-    amount: number;
-    /**
-     * Status
-     */
-    status: string;
-    /**
-     * Entry Id
-     */
-    entry_id?: string | null;
-    /**
-     * Reversal Entry Id
-     */
-    reversal_entry_id?: string | null;
-    /**
-     * Reversal Status
-     */
-    reversal_status?: string | null;
-};
-
-/**
- * PeriodCloseStatusResponse
- */
-export type PeriodCloseStatusResponse = {
-    /**
-     * Fiscal Period Start
-     */
-    fiscal_period_start: string;
-    /**
-     * Fiscal Period End
-     */
-    fiscal_period_end: string;
-    /**
-     * Period Status
-     */
-    period_status: string;
-    /**
-     * Schedules
-     */
-    schedules: Array<PeriodCloseItemResponse>;
-    /**
-     * Total Draft
-     */
-    total_draft: number;
-    /**
-     * Total Posted
-     */
-    total_posted: number;
-};
-
-/**
- * PeriodDraftsResponse
- *
- * All draft entries for a fiscal period, ready for review before close.
- */
-export type PeriodDraftsResponse = {
-    /**
-     * Period
-     *
-     * YYYY-MM period name
-     */
-    period: string;
-    /**
-     * Period Start
-     */
-    period_start: string;
-    /**
-     * Period End
-     */
-    period_end: string;
-    /**
-     * Draft Count
-     */
-    draft_count: number;
-    /**
-     * Total Debit
-     *
-     * Sum across all drafts, in cents
-     */
-    total_debit: number;
-    /**
-     * Total Credit
-     *
-     * Sum across all drafts, in cents
-     */
-    total_credit: number;
-    /**
-     * All Balanced
-     *
-     * True if every draft entry has debit == credit
-     */
-    all_balanced: boolean;
-    /**
-     * Drafts
-     */
-    drafts: Array<DraftEntryResponse>;
-};
-
-/**
  * PeriodSpec
  *
  * A reporting period column.
@@ -6760,267 +5441,6 @@ export type PortalSessionResponse = {
      * Stripe Customer Portal URL where user can manage payment methods
      */
     portal_url: string;
-};
-
-/**
- * PortfolioListResponse
- */
-export type PortfolioListResponse = {
-    /**
-     * Portfolios
-     */
-    portfolios: Array<PortfolioResponse>;
-    pagination: PaginationInfo;
-};
-
-/**
- * PortfolioResponse
- */
-export type PortfolioResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Strategy
-     */
-    strategy?: string | null;
-    /**
-     * Inception Date
-     */
-    inception_date?: string | null;
-    /**
-     * Base Currency
-     */
-    base_currency: string;
-    /**
-     * Created At
-     */
-    created_at: string;
-    /**
-     * Updated At
-     */
-    updated_at: string;
-};
-
-/**
- * PositionListResponse
- */
-export type PositionListResponse = {
-    /**
-     * Positions
-     */
-    positions: Array<PositionResponse>;
-    pagination: PaginationInfo;
-};
-
-/**
- * PositionResponse
- */
-export type PositionResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Portfolio Id
-     */
-    portfolio_id: string;
-    /**
-     * Security Id
-     */
-    security_id: string;
-    /**
-     * Security Name
-     */
-    security_name?: string | null;
-    /**
-     * Entity Name
-     */
-    entity_name?: string | null;
-    /**
-     * Quantity
-     */
-    quantity: number;
-    /**
-     * Quantity Type
-     */
-    quantity_type: string;
-    /**
-     * Cost Basis
-     */
-    cost_basis: number;
-    /**
-     * Cost Basis Dollars
-     */
-    cost_basis_dollars: number;
-    /**
-     * Currency
-     */
-    currency: string;
-    /**
-     * Current Value
-     */
-    current_value?: number | null;
-    /**
-     * Current Value Dollars
-     */
-    current_value_dollars?: number | null;
-    /**
-     * Valuation Date
-     */
-    valuation_date?: string | null;
-    /**
-     * Valuation Source
-     */
-    valuation_source?: string | null;
-    /**
-     * Acquisition Date
-     */
-    acquisition_date?: string | null;
-    /**
-     * Disposition Date
-     */
-    disposition_date?: string | null;
-    /**
-     * Status
-     */
-    status: string;
-    /**
-     * Notes
-     */
-    notes?: string | null;
-    /**
-     * Created At
-     */
-    created_at: string;
-    /**
-     * Updated At
-     */
-    updated_at: string;
-};
-
-/**
- * PublishListDetailResponse
- *
- * Full detail including members.
- */
-export type PublishListDetailResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Member Count
-     */
-    member_count?: number;
-    /**
-     * Created By
-     */
-    created_by: string;
-    /**
-     * Created At
-     */
-    created_at: string;
-    /**
-     * Updated At
-     */
-    updated_at: string;
-    /**
-     * Members
-     */
-    members?: Array<PublishListMemberResponse>;
-};
-
-/**
- * PublishListListResponse
- */
-export type PublishListListResponse = {
-    /**
-     * Publish Lists
-     */
-    publish_lists: Array<PublishListResponse>;
-    pagination: PaginationInfo;
-};
-
-/**
- * PublishListMemberResponse
- */
-export type PublishListMemberResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Target Graph Id
-     */
-    target_graph_id: string;
-    /**
-     * Target Graph Name
-     */
-    target_graph_name?: string | null;
-    /**
-     * Target Org Name
-     */
-    target_org_name?: string | null;
-    /**
-     * Added By
-     */
-    added_by: string;
-    /**
-     * Added At
-     */
-    added_at: string;
-};
-
-/**
- * PublishListResponse
- */
-export type PublishListResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Member Count
-     */
-    member_count?: number;
-    /**
-     * Created By
-     */
-    created_by: string;
-    /**
-     * Created At
-     */
-    created_at: string;
-    /**
-     * Updated At
-     */
-    updated_at: string;
 };
 
 /**
@@ -7102,9 +5522,9 @@ export type RateLimits = {
 };
 
 /**
- * RegenerateReportRequest
+ * RegenerateReportOperation
  */
-export type RegenerateReportRequest = {
+export type RegenerateReportOperation = {
     /**
      * Period Start
      *
@@ -7123,6 +5543,10 @@ export type RegenerateReportRequest = {
      * New period columns. Overrides period_start/period_end.
      */
     periods?: Array<PeriodSpec> | null;
+    /**
+     * Report Id
+     */
+    report_id: string;
 };
 
 /**
@@ -7158,9 +5582,23 @@ export type RegisterRequest = {
 };
 
 /**
- * ReopenPeriodRequest
+ * RemovePublishListMemberOperation
  */
-export type ReopenPeriodRequest = {
+export type RemovePublishListMemberOperation = {
+    /**
+     * List Id
+     */
+    list_id: string;
+    /**
+     * Member Id
+     */
+    member_id: string;
+};
+
+/**
+ * ReopenPeriodOperation
+ */
+export type ReopenPeriodOperation = {
     /**
      * Reason
      *
@@ -7173,96 +5611,10 @@ export type ReopenPeriodRequest = {
      * Additional free-form note
      */
     note?: string | null;
-};
-
-/**
- * ReportListResponse
- */
-export type ReportListResponse = {
     /**
-     * Reports
+     * Period
      */
-    reports: Array<ReportResponse>;
-};
-
-/**
- * ReportResponse
- *
- * Report definition summary.
- */
-export type ReportResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Taxonomy Id
-     */
-    taxonomy_id: string;
-    /**
-     * Generation Status
-     */
-    generation_status: string;
-    /**
-     * Period Type
-     */
-    period_type: string;
-    /**
-     * Period Start
-     */
-    period_start?: string | null;
-    /**
-     * Period End
-     */
-    period_end?: string | null;
-    /**
-     * Comparative
-     */
-    comparative: boolean;
-    /**
-     * Periods
-     */
-    periods?: Array<PeriodSpec> | null;
-    /**
-     * Mapping Id
-     */
-    mapping_id?: string | null;
-    /**
-     * Ai Generated
-     */
-    ai_generated?: boolean;
-    /**
-     * Created At
-     */
-    created_at: string;
-    /**
-     * Last Generated
-     */
-    last_generated?: string | null;
-    /**
-     * Structures
-     */
-    structures?: Array<StructureSummary>;
-    /**
-     * Entity Name
-     */
-    entity_name?: string | null;
-    /**
-     * Source Graph Id
-     */
-    source_graph_id?: string | null;
-    /**
-     * Source Report Id
-     */
-    source_report_id?: string | null;
-    /**
-     * Shared At
-     */
-    shared_at?: string | null;
+    period: string;
 };
 
 /**
@@ -7498,82 +5850,6 @@ export type SsoTokenResponse = {
 };
 
 /**
- * ScheduleCreatedResponse
- */
-export type ScheduleCreatedResponse = {
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Taxonomy Id
-     */
-    taxonomy_id: string;
-    /**
-     * Total Periods
-     */
-    total_periods: number;
-    /**
-     * Total Facts
-     */
-    total_facts: number;
-};
-
-/**
- * ScheduleFactResponse
- */
-export type ScheduleFactResponse = {
-    /**
-     * Element Id
-     */
-    element_id: string;
-    /**
-     * Element Name
-     */
-    element_name: string;
-    /**
-     * Value
-     */
-    value: number;
-    /**
-     * Period Start
-     */
-    period_start: string;
-    /**
-     * Period End
-     */
-    period_end: string;
-};
-
-/**
- * ScheduleFactsResponse
- */
-export type ScheduleFactsResponse = {
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * Facts
-     */
-    facts: Array<ScheduleFactResponse>;
-};
-
-/**
- * ScheduleListResponse
- */
-export type ScheduleListResponse = {
-    /**
-     * Schedules
-     */
-    schedules: Array<ScheduleSummaryResponse>;
-};
-
-/**
  * ScheduleMetadataRequest
  */
 export type ScheduleMetadataRequest = {
@@ -7607,44 +5883,6 @@ export type ScheduleMetadataRequest = {
      * BS asset element for net book value
      */
     asset_element_id?: string | null;
-};
-
-/**
- * ScheduleSummaryResponse
- */
-export type ScheduleSummaryResponse = {
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Taxonomy Name
-     */
-    taxonomy_name: string;
-    /**
-     * Entry Template
-     */
-    entry_template?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Schedule Metadata
-     */
-    schedule_metadata?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Total Periods
-     */
-    total_periods: number;
-    /**
-     * Periods With Entries
-     */
-    periods_with_entries: number;
 };
 
 /**
@@ -7979,77 +6217,6 @@ export type SearchResponse = {
 };
 
 /**
- * SecurityListResponse
- */
-export type SecurityListResponse = {
-    /**
-     * Securities
-     */
-    securities: Array<SecurityResponse>;
-    pagination: PaginationInfo;
-};
-
-/**
- * SecurityResponse
- */
-export type SecurityResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Entity Id
-     */
-    entity_id?: string | null;
-    /**
-     * Entity Name
-     */
-    entity_name?: string | null;
-    /**
-     * Source Graph Id
-     */
-    source_graph_id?: string | null;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Security Type
-     */
-    security_type: string;
-    /**
-     * Security Subtype
-     */
-    security_subtype?: string | null;
-    /**
-     * Terms
-     */
-    terms: {
-        [key: string]: unknown;
-    };
-    /**
-     * Is Active
-     */
-    is_active: boolean;
-    /**
-     * Authorized Shares
-     */
-    authorized_shares?: number | null;
-    /**
-     * Outstanding Shares
-     */
-    outstanding_shares?: number | null;
-    /**
-     * Created At
-     */
-    created_at: string;
-    /**
-     * Updated At
-     */
-    updated_at: string;
-};
-
-/**
  * SelectionCriteria
  *
  * Criteria for agent selection.
@@ -8148,9 +6315,9 @@ export type ServiceOfferingsResponse = {
 };
 
 /**
- * SetCloseTargetRequest
+ * SetCloseTargetOperation
  */
-export type SetCloseTargetRequest = {
+export type SetCloseTargetOperation = {
     /**
      * Period
      *
@@ -8166,88 +6333,19 @@ export type SetCloseTargetRequest = {
 };
 
 /**
- * ShareReportRequest
+ * ShareReportOperation
  */
-export type ShareReportRequest = {
+export type ShareReportOperation = {
     /**
      * Publish List Id
      *
      * Publish list to share the report to
      */
     publish_list_id: string;
-};
-
-/**
- * ShareReportResponse
- */
-export type ShareReportResponse = {
     /**
      * Report Id
      */
     report_id: string;
-    /**
-     * Results
-     */
-    results: Array<ShareResultItem>;
-};
-
-/**
- * ShareResultItem
- */
-export type ShareResultItem = {
-    /**
-     * Target Graph Id
-     */
-    target_graph_id: string;
-    /**
-     * Status
-     */
-    status: string;
-    /**
-     * Error
-     */
-    error?: string | null;
-    /**
-     * Fact Count
-     */
-    fact_count?: number;
-};
-
-/**
- * StatementResponse
- *
- * Rendered financial statement — facts viewed through a structure.
- */
-export type StatementResponse = {
-    /**
-     * Report Id
-     */
-    report_id: string;
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * Structure Name
-     */
-    structure_name: string;
-    /**
-     * Structure Type
-     */
-    structure_type: string;
-    /**
-     * Periods
-     */
-    periods?: Array<PeriodSpec>;
-    /**
-     * Rows
-     */
-    rows?: Array<FactRowResponse>;
-    validation?: ValidationCheckResponse | null;
-    /**
-     * Unmapped Count
-     */
-    unmapped_count?: number;
 };
 
 /**
@@ -8318,66 +6416,6 @@ export type StorageSummary = {
      * Number of measurements taken
      */
     measurement_count: number;
-};
-
-/**
- * StructureListResponse
- */
-export type StructureListResponse = {
-    /**
-     * Structures
-     */
-    structures: Array<StructureResponse>;
-};
-
-/**
- * StructureResponse
- */
-export type StructureResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Structure Type
-     */
-    structure_type: string;
-    /**
-     * Taxonomy Id
-     */
-    taxonomy_id: string;
-    /**
-     * Is Active
-     */
-    is_active: boolean;
-};
-
-/**
- * StructureSummary
- *
- * A structure available within this report's taxonomy.
- */
-export type StructureSummary = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Structure Type
-     */
-    structure_type: string;
 };
 
 /**
@@ -8618,30 +6656,6 @@ export type SuccessResponse = {
 };
 
 /**
- * SuggestedTarget
- *
- * A suggested mapping target from the reporting taxonomy.
- */
-export type SuggestedTarget = {
-    /**
-     * Element Id
-     */
-    element_id: string;
-    /**
-     * Qname
-     */
-    qname: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Confidence
-     */
-    confidence?: number | null;
-};
-
-/**
  * SyncConnectionRequest
  *
  * Request to sync a connection.
@@ -8766,70 +6780,6 @@ export type TableQueryResponse = {
 };
 
 /**
- * TaxonomyListResponse
- */
-export type TaxonomyListResponse = {
-    /**
-     * Taxonomies
-     */
-    taxonomies: Array<TaxonomyResponse>;
-};
-
-/**
- * TaxonomyResponse
- */
-export type TaxonomyResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Taxonomy Type
-     */
-    taxonomy_type: string;
-    /**
-     * Version
-     */
-    version?: string | null;
-    /**
-     * Standard
-     */
-    standard?: string | null;
-    /**
-     * Namespace Uri
-     */
-    namespace_uri?: string | null;
-    /**
-     * Is Shared
-     */
-    is_shared: boolean;
-    /**
-     * Is Active
-     */
-    is_active: boolean;
-    /**
-     * Is Locked
-     */
-    is_locked: boolean;
-    /**
-     * Source Taxonomy Id
-     */
-    source_taxonomy_id?: string | null;
-    /**
-     * Target Taxonomy Id
-     */
-    target_taxonomy_id?: string | null;
-};
-
-/**
  * TierCapacity
  *
  * Capacity status for a single tier.
@@ -8914,65 +6864,9 @@ export type TransactionSummaryResponse = {
 };
 
 /**
- * TrialBalanceResponse
+ * TruncateScheduleOperation
  */
-export type TrialBalanceResponse = {
-    /**
-     * Rows
-     */
-    rows: Array<TrialBalanceRow>;
-    /**
-     * Total Debits
-     */
-    total_debits: number;
-    /**
-     * Total Credits
-     */
-    total_credits: number;
-};
-
-/**
- * TrialBalanceRow
- */
-export type TrialBalanceRow = {
-    /**
-     * Account Id
-     */
-    account_id: string;
-    /**
-     * Account Code
-     */
-    account_code: string;
-    /**
-     * Account Name
-     */
-    account_name: string;
-    /**
-     * Classification
-     */
-    classification: string;
-    /**
-     * Account Type
-     */
-    account_type?: string | null;
-    /**
-     * Total Debits
-     */
-    total_debits: number;
-    /**
-     * Total Credits
-     */
-    total_credits: number;
-    /**
-     * Net Balance
-     */
-    net_balance: number;
-};
-
-/**
- * TruncateScheduleRequest
- */
-export type TruncateScheduleRequest = {
+export type TruncateScheduleOperation = {
     /**
      * New End Date
      *
@@ -8985,64 +6879,10 @@ export type TruncateScheduleRequest = {
      * Required reason for the truncation (captured in audit log).
      */
     reason: string;
-};
-
-/**
- * TruncateScheduleResponse
- */
-export type TruncateScheduleResponse = {
     /**
      * Structure Id
      */
     structure_id: string;
-    /**
-     * New End Date
-     */
-    new_end_date: string;
-    /**
-     * Facts Deleted
-     */
-    facts_deleted: number;
-    /**
-     * Reason
-     */
-    reason: string;
-};
-
-/**
- * UnmappedElementResponse
- *
- * An element not yet mapped to the reporting taxonomy.
- */
-export type UnmappedElementResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Code
-     */
-    code?: string | null;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Classification
-     */
-    classification: string;
-    /**
-     * Balance Type
-     */
-    balance_type: string;
-    /**
-     * External Source
-     */
-    external_source?: string | null;
-    /**
-     * Suggested Targets
-     */
-    suggested_targets?: Array<SuggestedTarget>;
 };
 
 /**
@@ -9254,9 +7094,9 @@ export type UpdatePasswordRequest = {
 };
 
 /**
- * UpdatePortfolioRequest
+ * UpdatePortfolioOperation
  */
-export type UpdatePortfolioRequest = {
+export type UpdatePortfolioOperation = {
     /**
      * Name
      */
@@ -9277,12 +7117,16 @@ export type UpdatePortfolioRequest = {
      * Base Currency
      */
     base_currency?: string | null;
+    /**
+     * Portfolio Id
+     */
+    portfolio_id: string;
 };
 
 /**
- * UpdatePositionRequest
+ * UpdatePositionOperation
  */
-export type UpdatePositionRequest = {
+export type UpdatePositionOperation = {
     /**
      * Quantity
      */
@@ -9323,12 +7167,16 @@ export type UpdatePositionRequest = {
      * Notes
      */
     notes?: string | null;
+    /**
+     * Position Id
+     */
+    position_id: string;
 };
 
 /**
- * UpdatePublishListRequest
+ * UpdatePublishListOperation
  */
-export type UpdatePublishListRequest = {
+export type UpdatePublishListOperation = {
     /**
      * Name
      */
@@ -9337,12 +7185,16 @@ export type UpdatePublishListRequest = {
      * Description
      */
     description?: string | null;
+    /**
+     * List Id
+     */
+    list_id: string;
 };
 
 /**
- * UpdateSecurityRequest
+ * UpdateSecurityOperation
  */
-export type UpdateSecurityRequest = {
+export type UpdateSecurityOperation = {
     /**
      * Entity Id
      */
@@ -9381,6 +7233,10 @@ export type UpdateSecurityRequest = {
      * Outstanding Shares
      */
     outstanding_shares?: number | null;
+    /**
+     * Security Id
+     */
+    security_id: string;
 };
 
 /**
@@ -9473,28 +7329,6 @@ export type UserResponse = {
      * User's authentication accounts
      */
     accounts?: Array<AccountInfo>;
-};
-
-/**
- * ValidationCheckResponse
- */
-export type ValidationCheckResponse = {
-    /**
-     * Passed
-     */
-    passed: boolean;
-    /**
-     * Checks
-     */
-    checks: Array<string>;
-    /**
-     * Failures
-     */
-    failures: Array<string>;
-    /**
-     * Warnings
-     */
-    warnings: Array<string>;
 };
 
 /**
@@ -12582,34 +10416,6 @@ export type QueryTablesResponses = {
 
 export type QueryTablesResponse = QueryTablesResponses[keyof QueryTablesResponses];
 
-export type CreateViewData = {
-    body: CreateViewRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/views';
-};
-
-export type CreateViewErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateViewError = CreateViewErrors[keyof CreateViewErrors];
-
-export type CreateViewResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-};
-
 export type SearchDocumentsData = {
     body: SearchRequest;
     path: {
@@ -13875,7 +11681,7 @@ export type GetCheckoutStatusResponses = {
 
 export type GetCheckoutStatusResponse = GetCheckoutStatusResponses[keyof GetCheckoutStatusResponses];
 
-export type GetLedgerEntityData = {
+export type HandleHttpGetExtensionsGraphIdGraphqlGetData = {
     body?: never;
     path: {
         /**
@@ -13884,148 +11690,30 @@ export type GetLedgerEntityData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/entity';
+    url: '/extensions/{graph_id}/graphql';
 };
 
-export type GetLedgerEntityErrors = {
+export type HandleHttpGetExtensionsGraphIdGraphqlGetErrors = {
+    /**
+     * Not found if GraphiQL or query via GET are not enabled.
+     */
+    404: unknown;
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetLedgerEntityError = GetLedgerEntityErrors[keyof GetLedgerEntityErrors];
+export type HandleHttpGetExtensionsGraphIdGraphqlGetError = HandleHttpGetExtensionsGraphIdGraphqlGetErrors[keyof HandleHttpGetExtensionsGraphIdGraphqlGetErrors];
 
-export type GetLedgerEntityResponses = {
+export type HandleHttpGetExtensionsGraphIdGraphqlGetResponses = {
     /**
-     * Successful Response
+     * The GraphiQL integrated development environment.
      */
-    200: LedgerEntityResponse;
+    200: unknown;
 };
 
-export type GetLedgerEntityResponse = GetLedgerEntityResponses[keyof GetLedgerEntityResponses];
-
-export type UpdateLedgerEntityData = {
-    body: UpdateEntityRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/entity';
-};
-
-export type UpdateLedgerEntityErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UpdateLedgerEntityError = UpdateLedgerEntityErrors[keyof UpdateLedgerEntityErrors];
-
-export type UpdateLedgerEntityResponses = {
-    /**
-     * Successful Response
-     */
-    200: LedgerEntityResponse;
-};
-
-export type UpdateLedgerEntityResponse = UpdateLedgerEntityResponses[keyof UpdateLedgerEntityResponses];
-
-export type ListLedgerEntitiesData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Source
-         *
-         * Filter by source (e.g., 'linked')
-         */
-        source?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/entities';
-};
-
-export type ListLedgerEntitiesErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListLedgerEntitiesError = ListLedgerEntitiesErrors[keyof ListLedgerEntitiesErrors];
-
-export type ListLedgerEntitiesResponses = {
-    /**
-     * Response Listledgerentities
-     *
-     * Successful Response
-     */
-    200: Array<LedgerEntityResponse>;
-};
-
-export type ListLedgerEntitiesResponse = ListLedgerEntitiesResponses[keyof ListLedgerEntitiesResponses];
-
-export type ListLedgerAccountsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Classification
-         *
-         * Filter by classification
-         */
-        classification?: string | null;
-        /**
-         * Is Active
-         *
-         * Filter by active status
-         */
-        is_active?: boolean | null;
-        /**
-         * Limit
-         */
-        limit?: number;
-        /**
-         * Offset
-         */
-        offset?: number;
-    };
-    url: '/v1/ledger/{graph_id}/accounts';
-};
-
-export type ListLedgerAccountsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListLedgerAccountsError = ListLedgerAccountsErrors[keyof ListLedgerAccountsErrors];
-
-export type ListLedgerAccountsResponses = {
-    /**
-     * Successful Response
-     */
-    200: AccountListResponse;
-};
-
-export type ListLedgerAccountsResponse = ListLedgerAccountsResponses[keyof ListLedgerAccountsResponses];
-
-export type GetLedgerAccountTreeData = {
+export type HandleHttpPostExtensionsGraphIdGraphqlPostData = {
     body?: never;
     path: {
         /**
@@ -14034,682 +11722,33 @@ export type GetLedgerAccountTreeData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/accounts/tree';
+    url: '/extensions/{graph_id}/graphql';
 };
 
-export type GetLedgerAccountTreeErrors = {
+export type HandleHttpPostExtensionsGraphIdGraphqlPostErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetLedgerAccountTreeError = GetLedgerAccountTreeErrors[keyof GetLedgerAccountTreeErrors];
+export type HandleHttpPostExtensionsGraphIdGraphqlPostError = HandleHttpPostExtensionsGraphIdGraphqlPostErrors[keyof HandleHttpPostExtensionsGraphIdGraphqlPostErrors];
 
-export type GetLedgerAccountTreeResponses = {
-    /**
-     * Successful Response
-     */
-    200: AccountTreeResponse;
-};
-
-export type GetLedgerAccountTreeResponse = GetLedgerAccountTreeResponses[keyof GetLedgerAccountTreeResponses];
-
-export type ListTaxonomiesData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Taxonomy Type
-         *
-         * Filter by type
-         */
-        taxonomy_type?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/taxonomies';
-};
-
-export type ListTaxonomiesErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListTaxonomiesError = ListTaxonomiesErrors[keyof ListTaxonomiesErrors];
-
-export type ListTaxonomiesResponses = {
-    /**
-     * Successful Response
-     */
-    200: TaxonomyListResponse;
-};
-
-export type ListTaxonomiesResponse = ListTaxonomiesResponses[keyof ListTaxonomiesResponses];
-
-export type CreateTaxonomyData = {
-    body: CreateTaxonomyRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/taxonomies';
-};
-
-export type CreateTaxonomyErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateTaxonomyError = CreateTaxonomyErrors[keyof CreateTaxonomyErrors];
-
-export type CreateTaxonomyResponses = {
-    /**
-     * Successful Response
-     */
-    201: TaxonomyResponse;
-};
-
-export type CreateTaxonomyResponse = CreateTaxonomyResponses[keyof CreateTaxonomyResponses];
-
-export type GetReportingTaxonomyData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/taxonomies/reporting';
-};
-
-export type GetReportingTaxonomyErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetReportingTaxonomyError = GetReportingTaxonomyErrors[keyof GetReportingTaxonomyErrors];
-
-export type GetReportingTaxonomyResponses = {
-    /**
-     * Successful Response
-     */
-    200: TaxonomyResponse;
-};
-
-export type GetReportingTaxonomyResponse = GetReportingTaxonomyResponses[keyof GetReportingTaxonomyResponses];
-
-export type ListElementsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Taxonomy Id
-         *
-         * Filter by taxonomy
-         */
-        taxonomy_id?: string | null;
-        /**
-         * Source
-         *
-         * Filter by source
-         */
-        source?: string | null;
-        /**
-         * Classification
-         *
-         * Filter by classification
-         */
-        classification?: string | null;
-        /**
-         * Is Abstract
-         *
-         * Filter by abstract
-         */
-        is_abstract?: boolean | null;
-        /**
-         * Limit
-         */
-        limit?: number;
-        /**
-         * Offset
-         */
-        offset?: number;
-    };
-    url: '/v1/ledger/{graph_id}/elements';
-};
-
-export type ListElementsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListElementsError = ListElementsErrors[keyof ListElementsErrors];
-
-export type ListElementsResponses = {
-    /**
-     * Successful Response
-     */
-    200: ElementListResponse;
-};
-
-export type ListElementsResponse = ListElementsResponses[keyof ListElementsResponses];
-
-export type ListUnmappedElementsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Mapping Id
-         *
-         * Mapping structure to check against
-         */
-        mapping_id?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/elements/unmapped';
-};
-
-export type ListUnmappedElementsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListUnmappedElementsError = ListUnmappedElementsErrors[keyof ListUnmappedElementsErrors];
-
-export type ListUnmappedElementsResponses = {
-    /**
-     * Response Listunmappedelements
-     *
-     * Successful Response
-     */
-    200: Array<UnmappedElementResponse>;
-};
-
-export type ListUnmappedElementsResponse = ListUnmappedElementsResponses[keyof ListUnmappedElementsResponses];
-
-export type ListStructuresData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Taxonomy Id
-         *
-         * Filter by taxonomy
-         */
-        taxonomy_id?: string | null;
-        /**
-         * Structure Type
-         *
-         * Filter by type
-         */
-        structure_type?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/structures';
-};
-
-export type ListStructuresErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListStructuresError = ListStructuresErrors[keyof ListStructuresErrors];
-
-export type ListStructuresResponses = {
-    /**
-     * Successful Response
-     */
-    200: StructureListResponse;
-};
-
-export type ListStructuresResponse = ListStructuresResponses[keyof ListStructuresResponses];
-
-export type CreateStructureData = {
-    body: CreateStructureRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/structures';
-};
-
-export type CreateStructureErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateStructureError = CreateStructureErrors[keyof CreateStructureErrors];
-
-export type CreateStructureResponses = {
-    /**
-     * Successful Response
-     */
-    201: StructureResponse;
-};
-
-export type CreateStructureResponse = CreateStructureResponses[keyof CreateStructureResponses];
-
-export type ListMappingsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/mappings';
-};
-
-export type ListMappingsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListMappingsError = ListMappingsErrors[keyof ListMappingsErrors];
-
-export type ListMappingsResponses = {
-    /**
-     * Successful Response
-     */
-    200: StructureListResponse;
-};
-
-export type ListMappingsResponse = ListMappingsResponses[keyof ListMappingsResponses];
-
-export type GetMappingDetailData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Mapping Id
-         */
-        mapping_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}';
-};
-
-export type GetMappingDetailErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetMappingDetailError = GetMappingDetailErrors[keyof GetMappingDetailErrors];
-
-export type GetMappingDetailResponses = {
-    /**
-     * Successful Response
-     */
-    200: MappingDetailResponse;
-};
-
-export type GetMappingDetailResponse = GetMappingDetailResponses[keyof GetMappingDetailResponses];
-
-export type CreateMappingAssociationData = {
-    body: CreateAssociationRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Mapping Id
-         */
-        mapping_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/associations';
-};
-
-export type CreateMappingAssociationErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateMappingAssociationError = CreateMappingAssociationErrors[keyof CreateMappingAssociationErrors];
-
-export type CreateMappingAssociationResponses = {
-    /**
-     * Successful Response
-     */
-    201: AssociationResponse;
-};
-
-export type CreateMappingAssociationResponse = CreateMappingAssociationResponses[keyof CreateMappingAssociationResponses];
-
-export type DeleteMappingAssociationData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Mapping Id
-         */
-        mapping_id: string;
-        /**
-         * Association Id
-         */
-        association_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/associations/{association_id}';
-};
-
-export type DeleteMappingAssociationErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type DeleteMappingAssociationError = DeleteMappingAssociationErrors[keyof DeleteMappingAssociationErrors];
-
-export type DeleteMappingAssociationResponses = {
-    /**
-     * Successful Response
-     */
-    204: void;
-};
-
-export type DeleteMappingAssociationResponse = DeleteMappingAssociationResponses[keyof DeleteMappingAssociationResponses];
-
-export type GetMappingCoverageData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Mapping Id
-         */
-        mapping_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/coverage';
-};
-
-export type GetMappingCoverageErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetMappingCoverageError = GetMappingCoverageErrors[keyof GetMappingCoverageErrors];
-
-export type GetMappingCoverageResponses = {
-    /**
-     * Successful Response
-     */
-    200: MappingCoverageResponse;
-};
-
-export type GetMappingCoverageResponse = GetMappingCoverageResponses[keyof GetMappingCoverageResponses];
-
-export type GetMappedTrialBalanceData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query: {
-        /**
-         * Mapping Id
-         *
-         * Mapping structure ID
-         */
-        mapping_id: string;
-        /**
-         * Start Date
-         */
-        start_date?: string | null;
-        /**
-         * End Date
-         */
-        end_date?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/trial-balance/mapped';
-};
-
-export type GetMappedTrialBalanceErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetMappedTrialBalanceError = GetMappedTrialBalanceErrors[keyof GetMappedTrialBalanceErrors];
-
-export type GetMappedTrialBalanceResponses = {
+export type HandleHttpPostExtensionsGraphIdGraphqlPostResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type AutoMapElementsData = {
-    body?: never;
-    path: {
+export type OpUpdateEntityData = {
+    body: UpdateEntityRequest;
+    headers?: {
         /**
-         * Graph Id
+         * Idempotency-Key
          */
-        graph_id: string;
-        /**
-         * Mapping Id
-         *
-         * Mapping structure ID
-         */
-        mapping_id: string;
+        'Idempotency-Key'?: string | null;
     };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/auto-map';
-};
-
-export type AutoMapElementsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type AutoMapElementsError = AutoMapElementsErrors[keyof AutoMapElementsErrors];
-
-export type AutoMapElementsResponses = {
-    /**
-     * Successful Response
-     */
-    202: unknown;
-};
-
-export type ListLedgerTransactionsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Type
-         *
-         * Filter by transaction type
-         */
-        type?: string | null;
-        /**
-         * Start Date
-         *
-         * Start date (inclusive)
-         */
-        start_date?: string | null;
-        /**
-         * End Date
-         *
-         * End date (inclusive)
-         */
-        end_date?: string | null;
-        /**
-         * Limit
-         */
-        limit?: number;
-        /**
-         * Offset
-         */
-        offset?: number;
-    };
-    url: '/v1/ledger/{graph_id}/transactions';
-};
-
-export type ListLedgerTransactionsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListLedgerTransactionsError = ListLedgerTransactionsErrors[keyof ListLedgerTransactionsErrors];
-
-export type ListLedgerTransactionsResponses = {
-    /**
-     * Successful Response
-     */
-    200: LedgerTransactionListResponse;
-};
-
-export type ListLedgerTransactionsResponse = ListLedgerTransactionsResponses[keyof ListLedgerTransactionsResponses];
-
-export type GetLedgerTransactionData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Transaction Id
-         */
-        transaction_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/transactions/{transaction_id}';
-};
-
-export type GetLedgerTransactionErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetLedgerTransactionError = GetLedgerTransactionErrors[keyof GetLedgerTransactionErrors];
-
-export type GetLedgerTransactionResponses = {
-    /**
-     * Successful Response
-     */
-    200: LedgerTransactionDetailResponse;
-};
-
-export type GetLedgerTransactionResponse = GetLedgerTransactionResponses[keyof GetLedgerTransactionResponses];
-
-export type GetLedgerTrialBalanceData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Start Date
-         *
-         * Start date (inclusive)
-         */
-        start_date?: string | null;
-        /**
-         * End Date
-         *
-         * End date (inclusive)
-         */
-        end_date?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/trial-balance';
-};
-
-export type GetLedgerTrialBalanceErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetLedgerTrialBalanceError = GetLedgerTrialBalanceErrors[keyof GetLedgerTrialBalanceErrors];
-
-export type GetLedgerTrialBalanceResponses = {
-    /**
-     * Successful Response
-     */
-    200: TrialBalanceResponse;
-};
-
-export type GetLedgerTrialBalanceResponse = GetLedgerTrialBalanceResponses[keyof GetLedgerTrialBalanceResponses];
-
-export type GetLedgerSummaryData = {
-    body?: never;
     path: {
         /**
          * Graph Id
@@ -14717,853 +11756,35 @@ export type GetLedgerSummaryData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/summary';
+    url: '/extensions/roboledger/{graph_id}/operations/update-entity';
 };
 
-export type GetLedgerSummaryErrors = {
+export type OpUpdateEntityErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetLedgerSummaryError = GetLedgerSummaryErrors[keyof GetLedgerSummaryErrors];
+export type OpUpdateEntityError = OpUpdateEntityErrors[keyof OpUpdateEntityErrors];
 
-export type GetLedgerSummaryResponses = {
+export type OpUpdateEntityResponses = {
     /**
      * Successful Response
      */
-    200: LedgerSummaryResponse;
+    200: OperationEnvelope;
 };
 
-export type GetLedgerSummaryResponse = GetLedgerSummaryResponses[keyof GetLedgerSummaryResponses];
+export type OpUpdateEntityResponse = OpUpdateEntityResponses[keyof OpUpdateEntityResponses];
 
-export type ListReportsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/reports';
-};
-
-export type ListReportsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListReportsError = ListReportsErrors[keyof ListReportsErrors];
-
-export type ListReportsResponses = {
-    /**
-     * Successful Response
-     */
-    200: ReportListResponse;
-};
-
-export type ListReportsResponse = ListReportsResponses[keyof ListReportsResponses];
-
-export type CreateReportData = {
-    body: CreateReportRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/reports';
-};
-
-export type CreateReportErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateReportError = CreateReportErrors[keyof CreateReportErrors];
-
-export type CreateReportResponses = {
-    /**
-     * Successful Response
-     */
-    201: ReportResponse;
-};
-
-export type CreateReportResponse = CreateReportResponses[keyof CreateReportResponses];
-
-export type DeleteReportData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Report Id
-         *
-         * Report definition ID
-         */
-        report_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/reports/{report_id}';
-};
-
-export type DeleteReportErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type DeleteReportError = DeleteReportErrors[keyof DeleteReportErrors];
-
-export type DeleteReportResponses = {
-    /**
-     * Successful Response
-     */
-    204: void;
-};
-
-export type DeleteReportResponse = DeleteReportResponses[keyof DeleteReportResponses];
-
-export type GetReportData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Report Id
-         *
-         * Report definition ID
-         */
-        report_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/reports/{report_id}';
-};
-
-export type GetReportErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetReportError = GetReportErrors[keyof GetReportErrors];
-
-export type GetReportResponses = {
-    /**
-     * Successful Response
-     */
-    200: ReportResponse;
-};
-
-export type GetReportResponse = GetReportResponses[keyof GetReportResponses];
-
-export type GetStatementData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Report Id
-         *
-         * Report definition ID
-         */
-        report_id: string;
-        /**
-         * Structure Type
-         *
-         * Structure type: income_statement, balance_sheet, equity_statement
-         */
-        structure_type: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/reports/{report_id}/statements/{structure_type}';
-};
-
-export type GetStatementErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetStatementError = GetStatementErrors[keyof GetStatementErrors];
-
-export type GetStatementResponses = {
-    /**
-     * Successful Response
-     */
-    200: StatementResponse;
-};
-
-export type GetStatementResponse = GetStatementResponses[keyof GetStatementResponses];
-
-export type RegenerateReportData = {
-    body: RegenerateReportRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Report Id
-         *
-         * Report definition ID
-         */
-        report_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/reports/{report_id}/regenerate';
-};
-
-export type RegenerateReportErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type RegenerateReportError = RegenerateReportErrors[keyof RegenerateReportErrors];
-
-export type RegenerateReportResponses = {
-    /**
-     * Successful Response
-     */
-    200: ReportResponse;
-};
-
-export type RegenerateReportResponse = RegenerateReportResponses[keyof RegenerateReportResponses];
-
-export type ShareReportData = {
-    body: ShareReportRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Report Id
-         *
-         * Report definition ID
-         */
-        report_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/reports/{report_id}/share';
-};
-
-export type ShareReportErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ShareReportError = ShareReportErrors[keyof ShareReportErrors];
-
-export type ShareReportResponses = {
-    /**
-     * Successful Response
-     */
-    200: ShareReportResponse;
-};
-
-export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
-
-export type ListSchedulesData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/schedules';
-};
-
-export type ListSchedulesErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListSchedulesError = ListSchedulesErrors[keyof ListSchedulesErrors];
-
-export type ListSchedulesResponses = {
-    /**
-     * Successful Response
-     */
-    200: ScheduleListResponse;
-};
-
-export type ListSchedulesResponse = ListSchedulesResponses[keyof ListSchedulesResponses];
-
-export type CreateScheduleData = {
-    body: CreateScheduleRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/schedules';
-};
-
-export type CreateScheduleErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateScheduleError = CreateScheduleErrors[keyof CreateScheduleErrors];
-
-export type CreateScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    201: ScheduleCreatedResponse;
-};
-
-export type CreateScheduleResponse = CreateScheduleResponses[keyof CreateScheduleResponses];
-
-export type GetScheduleFactsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Structure Id
-         *
-         * Schedule structure ID
-         */
-        structure_id: string;
-    };
-    query?: {
-        /**
-         * Period Start
-         *
-         * Filter: period start
-         */
-        period_start?: string | null;
-        /**
-         * Period End
-         *
-         * Filter: period end
-         */
-        period_end?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/facts';
-};
-
-export type GetScheduleFactsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetScheduleFactsError = GetScheduleFactsErrors[keyof GetScheduleFactsErrors];
-
-export type GetScheduleFactsResponses = {
-    /**
-     * Successful Response
-     */
-    200: ScheduleFactsResponse;
-};
-
-export type GetScheduleFactsResponse = GetScheduleFactsResponses[keyof GetScheduleFactsResponses];
-
-export type GetPeriodCloseStatusData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query: {
-        /**
-         * Period Start
-         *
-         * Fiscal period start
-         */
-        period_start: string;
-        /**
-         * Period End
-         *
-         * Fiscal period end
-         */
-        period_end: string;
-    };
-    url: '/v1/ledger/{graph_id}/schedules/close-status';
-};
-
-export type GetPeriodCloseStatusErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetPeriodCloseStatusError = GetPeriodCloseStatusErrors[keyof GetPeriodCloseStatusErrors];
-
-export type GetPeriodCloseStatusResponses = {
-    /**
-     * Successful Response
-     */
-    200: PeriodCloseStatusResponse;
-};
-
-export type GetPeriodCloseStatusResponse = GetPeriodCloseStatusResponses[keyof GetPeriodCloseStatusResponses];
-
-export type CreateClosingEntryData = {
-    body: CreateClosingEntryRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Structure Id
-         *
-         * Schedule structure ID
-         */
-        structure_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/closing-entry';
-};
-
-export type CreateClosingEntryErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateClosingEntryError = CreateClosingEntryErrors[keyof CreateClosingEntryErrors];
-
-export type CreateClosingEntryResponses = {
-    /**
-     * Successful Response
-     */
-    201: ClosingEntryResponse;
-};
-
-export type CreateClosingEntryResponse = CreateClosingEntryResponses[keyof CreateClosingEntryResponses];
-
-export type TruncateScheduleData = {
-    body: TruncateScheduleRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Structure Id
-         *
-         * Schedule structure ID
-         */
-        structure_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/truncate';
-};
-
-export type TruncateScheduleErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type TruncateScheduleError = TruncateScheduleErrors[keyof TruncateScheduleErrors];
-
-export type TruncateScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: TruncateScheduleResponse;
-};
-
-export type TruncateScheduleResponse2 = TruncateScheduleResponses[keyof TruncateScheduleResponses];
-
-export type CreateManualClosingEntryData = {
-    body: CreateManualClosingEntryRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/manual-closing-entry';
-};
-
-export type CreateManualClosingEntryErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateManualClosingEntryError = CreateManualClosingEntryErrors[keyof CreateManualClosingEntryErrors];
-
-export type CreateManualClosingEntryResponses = {
-    /**
-     * Successful Response
-     */
-    201: ClosingEntryResponse;
-};
-
-export type CreateManualClosingEntryResponse = CreateManualClosingEntryResponses[keyof CreateManualClosingEntryResponses];
-
-export type ListPublishListsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Limit
-         */
-        limit?: number;
-        /**
-         * Offset
-         */
-        offset?: number;
-    };
-    url: '/v1/ledger/{graph_id}/publish-lists';
-};
-
-export type ListPublishListsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListPublishListsError = ListPublishListsErrors[keyof ListPublishListsErrors];
-
-export type ListPublishListsResponses = {
-    /**
-     * Successful Response
-     */
-    200: PublishListListResponse;
-};
-
-export type ListPublishListsResponse = ListPublishListsResponses[keyof ListPublishListsResponses];
-
-export type CreatePublishListData = {
-    body: CreatePublishListRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/publish-lists';
-};
-
-export type CreatePublishListErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreatePublishListError = CreatePublishListErrors[keyof CreatePublishListErrors];
-
-export type CreatePublishListResponses = {
-    /**
-     * Successful Response
-     */
-    201: PublishListResponse;
-};
-
-export type CreatePublishListResponse = CreatePublishListResponses[keyof CreatePublishListResponses];
-
-export type DeletePublishListData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * List Id
-         */
-        list_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}';
-};
-
-export type DeletePublishListErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type DeletePublishListError = DeletePublishListErrors[keyof DeletePublishListErrors];
-
-export type DeletePublishListResponses = {
-    /**
-     * Successful Response
-     */
-    204: void;
-};
-
-export type DeletePublishListResponse = DeletePublishListResponses[keyof DeletePublishListResponses];
-
-export type GetPublishListData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * List Id
-         */
-        list_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}';
-};
-
-export type GetPublishListErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetPublishListError = GetPublishListErrors[keyof GetPublishListErrors];
-
-export type GetPublishListResponses = {
-    /**
-     * Successful Response
-     */
-    200: PublishListDetailResponse;
-};
-
-export type GetPublishListResponse = GetPublishListResponses[keyof GetPublishListResponses];
-
-export type UpdatePublishListData = {
-    body: UpdatePublishListRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * List Id
-         */
-        list_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}';
-};
-
-export type UpdatePublishListErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UpdatePublishListError = UpdatePublishListErrors[keyof UpdatePublishListErrors];
-
-export type UpdatePublishListResponses = {
-    /**
-     * Successful Response
-     */
-    200: PublishListResponse;
-};
-
-export type UpdatePublishListResponse = UpdatePublishListResponses[keyof UpdatePublishListResponses];
-
-export type AddPublishListMembersData = {
-    body: AddMembersRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * List Id
-         */
-        list_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}/members';
-};
-
-export type AddPublishListMembersErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type AddPublishListMembersError = AddPublishListMembersErrors[keyof AddPublishListMembersErrors];
-
-export type AddPublishListMembersResponses = {
-    /**
-     * Response Addpublishlistmembers
-     *
-     * Successful Response
-     */
-    201: Array<PublishListMemberResponse>;
-};
-
-export type AddPublishListMembersResponse = AddPublishListMembersResponses[keyof AddPublishListMembersResponses];
-
-export type RemovePublishListMemberData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * List Id
-         */
-        list_id: string;
-        /**
-         * Member Id
-         */
-        member_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}/members/{member_id}';
-};
-
-export type RemovePublishListMemberErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type RemovePublishListMemberError = RemovePublishListMemberErrors[keyof RemovePublishListMemberErrors];
-
-export type RemovePublishListMemberResponses = {
-    /**
-     * Successful Response
-     */
-    204: void;
-};
-
-export type RemovePublishListMemberResponse = RemovePublishListMemberResponses[keyof RemovePublishListMemberResponses];
-
-export type GetAccountRollupsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Mapping Id
-         *
-         * Mapping structure ID (auto-discovers if omitted)
-         */
-        mapping_id?: string | null;
-        /**
-         * Start Date
-         *
-         * Start date (inclusive)
-         */
-        start_date?: string | null;
-        /**
-         * End Date
-         *
-         * End date (inclusive)
-         */
-        end_date?: string | null;
-    };
-    url: '/v1/ledger/{graph_id}/account-rollups';
-};
-
-export type GetAccountRollupsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetAccountRollupsError = GetAccountRollupsErrors[keyof GetAccountRollupsErrors];
-
-export type GetAccountRollupsResponses = {
-    /**
-     * Successful Response
-     */
-    200: AccountRollupsResponse;
-};
-
-export type GetAccountRollupsResponse = GetAccountRollupsResponses[keyof GetAccountRollupsResponses];
-
-export type GetClosingBookStructuresData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/ledger/{graph_id}/closing-book/structures';
-};
-
-export type GetClosingBookStructuresErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetClosingBookStructuresError = GetClosingBookStructuresErrors[keyof GetClosingBookStructuresErrors];
-
-export type GetClosingBookStructuresResponses = {
-    /**
-     * Successful Response
-     */
-    200: ClosingBookStructuresResponse;
-};
-
-export type GetClosingBookStructuresResponse = GetClosingBookStructuresResponses[keyof GetClosingBookStructuresResponses];
-
-export type InitializeLedgerData = {
+export type OpInitializeLedgerData = {
     body: InitializeLedgerRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -15571,29 +11792,35 @@ export type InitializeLedgerData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/initialize';
+    url: '/extensions/roboledger/{graph_id}/operations/initialize';
 };
 
-export type InitializeLedgerErrors = {
+export type OpInitializeLedgerErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type InitializeLedgerError = InitializeLedgerErrors[keyof InitializeLedgerErrors];
+export type OpInitializeLedgerError = OpInitializeLedgerErrors[keyof OpInitializeLedgerErrors];
 
-export type InitializeLedgerResponses = {
+export type OpInitializeLedgerResponses = {
     /**
      * Successful Response
      */
-    201: InitializeLedgerResponse;
+    200: OperationEnvelope;
 };
 
-export type InitializeLedgerResponse2 = InitializeLedgerResponses[keyof InitializeLedgerResponses];
+export type OpInitializeLedgerResponse = OpInitializeLedgerResponses[keyof OpInitializeLedgerResponses];
 
-export type GetFiscalCalendarData = {
-    body?: never;
+export type OpSetCloseTargetData = {
+    body: SetCloseTargetOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -15601,29 +11828,35 @@ export type GetFiscalCalendarData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/fiscal-calendar';
+    url: '/extensions/roboledger/{graph_id}/operations/set-close-target';
 };
 
-export type GetFiscalCalendarErrors = {
+export type OpSetCloseTargetErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetFiscalCalendarError = GetFiscalCalendarErrors[keyof GetFiscalCalendarErrors];
+export type OpSetCloseTargetError = OpSetCloseTargetErrors[keyof OpSetCloseTargetErrors];
 
-export type GetFiscalCalendarResponses = {
+export type OpSetCloseTargetResponses = {
     /**
      * Successful Response
      */
-    200: FiscalCalendarResponse;
+    200: OperationEnvelope;
 };
 
-export type GetFiscalCalendarResponse = GetFiscalCalendarResponses[keyof GetFiscalCalendarResponses];
+export type OpSetCloseTargetResponse = OpSetCloseTargetResponses[keyof OpSetCloseTargetResponses];
 
-export type SetCloseTargetData = {
-    body: SetCloseTargetRequest;
+export type OpClosePeriodData = {
+    body: ClosePeriodOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -15631,176 +11864,755 @@ export type SetCloseTargetData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/fiscal-calendar/close-target';
+    url: '/extensions/roboledger/{graph_id}/operations/close-period';
 };
 
-export type SetCloseTargetErrors = {
+export type OpClosePeriodErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type SetCloseTargetError = SetCloseTargetErrors[keyof SetCloseTargetErrors];
+export type OpClosePeriodError = OpClosePeriodErrors[keyof OpClosePeriodErrors];
 
-export type SetCloseTargetResponses = {
+export type OpClosePeriodResponses = {
     /**
      * Successful Response
      */
-    200: FiscalCalendarResponse;
+    200: OperationEnvelope;
 };
 
-export type SetCloseTargetResponse = SetCloseTargetResponses[keyof SetCloseTargetResponses];
+export type OpClosePeriodResponse = OpClosePeriodResponses[keyof OpClosePeriodResponses];
 
-export type CloseFiscalPeriodData = {
-    body?: ClosePeriodRequest;
+export type OpReopenPeriodData = {
+    body: ReopenPeriodOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Period
-         *
-         * Target period in YYYY-MM format
-         */
-        period: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/periods/{period}/close';
+    url: '/extensions/roboledger/{graph_id}/operations/reopen-period';
 };
 
-export type CloseFiscalPeriodErrors = {
+export type OpReopenPeriodErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CloseFiscalPeriodError = CloseFiscalPeriodErrors[keyof CloseFiscalPeriodErrors];
+export type OpReopenPeriodError = OpReopenPeriodErrors[keyof OpReopenPeriodErrors];
 
-export type CloseFiscalPeriodResponses = {
+export type OpReopenPeriodResponses = {
     /**
      * Successful Response
      */
-    200: ClosePeriodResponse;
+    200: OperationEnvelope;
 };
 
-export type CloseFiscalPeriodResponse = CloseFiscalPeriodResponses[keyof CloseFiscalPeriodResponses];
+export type OpReopenPeriodResponse = OpReopenPeriodResponses[keyof OpReopenPeriodResponses];
 
-export type ReopenFiscalPeriodData = {
-    body: ReopenPeriodRequest;
+export type OpCreateScheduleData = {
+    body: CreateScheduleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Period
-         *
-         * Period to reopen (YYYY-MM)
-         */
-        period: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/periods/{period}/reopen';
+    url: '/extensions/roboledger/{graph_id}/operations/create-schedule';
 };
 
-export type ReopenFiscalPeriodErrors = {
+export type OpCreateScheduleErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ReopenFiscalPeriodError = ReopenFiscalPeriodErrors[keyof ReopenFiscalPeriodErrors];
+export type OpCreateScheduleError = OpCreateScheduleErrors[keyof OpCreateScheduleErrors];
 
-export type ReopenFiscalPeriodResponses = {
+export type OpCreateScheduleResponses = {
     /**
      * Successful Response
      */
-    200: FiscalCalendarResponse;
+    200: OperationEnvelope;
 };
 
-export type ReopenFiscalPeriodResponse = ReopenFiscalPeriodResponses[keyof ReopenFiscalPeriodResponses];
+export type OpCreateScheduleResponse = OpCreateScheduleResponses[keyof OpCreateScheduleResponses];
 
-export type ListPeriodDraftsData = {
-    body?: never;
+export type OpTruncateScheduleData = {
+    body: TruncateScheduleOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Period
-         *
-         * Period in YYYY-MM format
-         */
-        period: string;
     };
     query?: never;
-    url: '/v1/ledger/{graph_id}/periods/{period}/drafts';
+    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule';
 };
 
-export type ListPeriodDraftsErrors = {
+export type OpTruncateScheduleErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ListPeriodDraftsError = ListPeriodDraftsErrors[keyof ListPeriodDraftsErrors];
+export type OpTruncateScheduleError = OpTruncateScheduleErrors[keyof OpTruncateScheduleErrors];
 
-export type ListPeriodDraftsResponses = {
+export type OpTruncateScheduleResponses = {
     /**
      * Successful Response
      */
-    200: PeriodDraftsResponse;
+    200: OperationEnvelope;
 };
 
-export type ListPeriodDraftsResponse = ListPeriodDraftsResponses[keyof ListPeriodDraftsResponses];
+export type OpTruncateScheduleResponse = OpTruncateScheduleResponses[keyof OpTruncateScheduleResponses];
 
-export type ListPortfoliosData = {
-    body?: never;
+export type OpCreateClosingEntryData = {
+    body: CreateClosingEntryOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Limit
-         */
-        limit?: number;
-        /**
-         * Offset
-         */
-        offset?: number;
-    };
-    url: '/v1/investor/{graph_id}/portfolios';
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-closing-entry';
 };
 
-export type ListPortfoliosErrors = {
+export type OpCreateClosingEntryErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ListPortfoliosError = ListPortfoliosErrors[keyof ListPortfoliosErrors];
+export type OpCreateClosingEntryError = OpCreateClosingEntryErrors[keyof OpCreateClosingEntryErrors];
 
-export type ListPortfoliosResponses = {
+export type OpCreateClosingEntryResponses = {
     /**
      * Successful Response
      */
-    200: PortfolioListResponse;
+    200: OperationEnvelope;
 };
 
-export type ListPortfoliosResponse = ListPortfoliosResponses[keyof ListPortfoliosResponses];
+export type OpCreateClosingEntryResponse = OpCreateClosingEntryResponses[keyof OpCreateClosingEntryResponses];
 
-export type CreatePortfolioData = {
+export type OpCreateManualClosingEntryData = {
+    body: CreateManualClosingEntryRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-manual-closing-entry';
+};
+
+export type OpCreateManualClosingEntryErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpCreateManualClosingEntryError = OpCreateManualClosingEntryErrors[keyof OpCreateManualClosingEntryErrors];
+
+export type OpCreateManualClosingEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateManualClosingEntryResponse = OpCreateManualClosingEntryResponses[keyof OpCreateManualClosingEntryResponses];
+
+export type OpCreateTaxonomyData = {
+    body: CreateTaxonomyRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-taxonomy';
+};
+
+export type OpCreateTaxonomyErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpCreateTaxonomyError = OpCreateTaxonomyErrors[keyof OpCreateTaxonomyErrors];
+
+export type OpCreateTaxonomyResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateTaxonomyResponse = OpCreateTaxonomyResponses[keyof OpCreateTaxonomyResponses];
+
+export type OpCreateStructureData = {
+    body: CreateStructureRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-structure';
+};
+
+export type OpCreateStructureErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpCreateStructureError = OpCreateStructureErrors[keyof OpCreateStructureErrors];
+
+export type OpCreateStructureResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateStructureResponse = OpCreateStructureResponses[keyof OpCreateStructureResponses];
+
+export type OpCreateMappingAssociationData = {
+    body: CreateMappingAssociationOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association';
+};
+
+export type OpCreateMappingAssociationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
+
+export type OpCreateMappingAssociationResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateMappingAssociationResponse = OpCreateMappingAssociationResponses[keyof OpCreateMappingAssociationResponses];
+
+export type OpDeleteMappingAssociationData = {
+    body: DeleteMappingAssociationOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/delete-mapping-association';
+};
+
+export type OpDeleteMappingAssociationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpDeleteMappingAssociationError = OpDeleteMappingAssociationErrors[keyof OpDeleteMappingAssociationErrors];
+
+export type OpDeleteMappingAssociationResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteMappingAssociationResponse = OpDeleteMappingAssociationResponses[keyof OpDeleteMappingAssociationResponses];
+
+export type OpAutoMapElementsData = {
+    body: AutoMapElementsOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/auto-map-elements';
+};
+
+export type OpAutoMapElementsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpAutoMapElementsError = OpAutoMapElementsErrors[keyof OpAutoMapElementsErrors];
+
+export type OpAutoMapElementsResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type OpAutoMapElementsResponse = OpAutoMapElementsResponses[keyof OpAutoMapElementsResponses];
+
+export type OpCreateReportData = {
+    body: CreateReportRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-report';
+};
+
+export type OpCreateReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpCreateReportError = OpCreateReportErrors[keyof OpCreateReportErrors];
+
+export type OpCreateReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateReportResponse = OpCreateReportResponses[keyof OpCreateReportResponses];
+
+export type OpRegenerateReportData = {
+    body: RegenerateReportOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/regenerate-report';
+};
+
+export type OpRegenerateReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpRegenerateReportError = OpRegenerateReportErrors[keyof OpRegenerateReportErrors];
+
+export type OpRegenerateReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpRegenerateReportResponse = OpRegenerateReportResponses[keyof OpRegenerateReportResponses];
+
+export type OpDeleteReportData = {
+    body: DeleteReportOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/delete-report';
+};
+
+export type OpDeleteReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpDeleteReportError = OpDeleteReportErrors[keyof OpDeleteReportErrors];
+
+export type OpDeleteReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteReportResponse = OpDeleteReportResponses[keyof OpDeleteReportResponses];
+
+export type OpShareReportData = {
+    body: ShareReportOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/share-report';
+};
+
+export type OpShareReportErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpShareReportError = OpShareReportErrors[keyof OpShareReportErrors];
+
+export type OpShareReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpShareReportResponse = OpShareReportResponses[keyof OpShareReportResponses];
+
+export type OpCreatePublishListData = {
+    body: CreatePublishListRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-publish-list';
+};
+
+export type OpCreatePublishListErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpCreatePublishListError = OpCreatePublishListErrors[keyof OpCreatePublishListErrors];
+
+export type OpCreatePublishListResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreatePublishListResponse = OpCreatePublishListResponses[keyof OpCreatePublishListResponses];
+
+export type OpUpdatePublishListData = {
+    body: UpdatePublishListOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/update-publish-list';
+};
+
+export type OpUpdatePublishListErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpUpdatePublishListError = OpUpdatePublishListErrors[keyof OpUpdatePublishListErrors];
+
+export type OpUpdatePublishListResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpUpdatePublishListResponse = OpUpdatePublishListResponses[keyof OpUpdatePublishListResponses];
+
+export type OpDeletePublishListData = {
+    body: DeletePublishListOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/delete-publish-list';
+};
+
+export type OpDeletePublishListErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpDeletePublishListError = OpDeletePublishListErrors[keyof OpDeletePublishListErrors];
+
+export type OpDeletePublishListResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeletePublishListResponse = OpDeletePublishListResponses[keyof OpDeletePublishListResponses];
+
+export type OpAddPublishListMembersData = {
+    body: AddPublishListMembersOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/add-publish-list-members';
+};
+
+export type OpAddPublishListMembersErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpAddPublishListMembersError = OpAddPublishListMembersErrors[keyof OpAddPublishListMembersErrors];
+
+export type OpAddPublishListMembersResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpAddPublishListMembersResponse = OpAddPublishListMembersResponses[keyof OpAddPublishListMembersResponses];
+
+export type OpRemovePublishListMemberData = {
+    body: RemovePublishListMemberOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/remove-publish-list-member';
+};
+
+export type OpRemovePublishListMemberErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpRemovePublishListMemberError = OpRemovePublishListMemberErrors[keyof OpRemovePublishListMemberErrors];
+
+export type OpRemovePublishListMemberResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpRemovePublishListMemberResponse = OpRemovePublishListMemberResponses[keyof OpRemovePublishListMemberResponses];
+
+export type OpBuildFactGridData = {
+    body: CreateViewRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/build-fact-grid';
+};
+
+export type OpBuildFactGridErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OpBuildFactGridError = OpBuildFactGridErrors[keyof OpBuildFactGridErrors];
+
+export type OpBuildFactGridResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpBuildFactGridResponse = OpBuildFactGridResponses[keyof OpBuildFactGridResponses];
+
+export type OpCreatePortfolioData = {
     body: CreatePortfolioRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -15808,188 +12620,107 @@ export type CreatePortfolioData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/portfolios';
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio';
 };
 
-export type CreatePortfolioErrors = {
+export type OpCreatePortfolioErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CreatePortfolioError = CreatePortfolioErrors[keyof CreatePortfolioErrors];
+export type OpCreatePortfolioError = OpCreatePortfolioErrors[keyof OpCreatePortfolioErrors];
 
-export type CreatePortfolioResponses = {
+export type OpCreatePortfolioResponses = {
     /**
      * Successful Response
      */
-    201: PortfolioResponse;
+    200: OperationEnvelope;
 };
 
-export type CreatePortfolioResponse = CreatePortfolioResponses[keyof CreatePortfolioResponses];
+export type OpCreatePortfolioResponse = OpCreatePortfolioResponses[keyof OpCreatePortfolioResponses];
 
-export type DeletePortfolioData = {
-    body?: never;
+export type OpUpdatePortfolioData = {
+    body: UpdatePortfolioOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Portfolio Id
-         */
-        portfolio_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}';
+    url: '/extensions/roboinvestor/{graph_id}/operations/update-portfolio';
 };
 
-export type DeletePortfolioErrors = {
+export type OpUpdatePortfolioErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type DeletePortfolioError = DeletePortfolioErrors[keyof DeletePortfolioErrors];
+export type OpUpdatePortfolioError = OpUpdatePortfolioErrors[keyof OpUpdatePortfolioErrors];
 
-export type DeletePortfolioResponses = {
+export type OpUpdatePortfolioResponses = {
     /**
      * Successful Response
      */
-    204: void;
+    200: OperationEnvelope;
 };
 
-export type DeletePortfolioResponse = DeletePortfolioResponses[keyof DeletePortfolioResponses];
+export type OpUpdatePortfolioResponse = OpUpdatePortfolioResponses[keyof OpUpdatePortfolioResponses];
 
-export type GetPortfolioData = {
-    body?: never;
+export type OpDeletePortfolioData = {
+    body: DeletePortfolioOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Portfolio Id
-         */
-        portfolio_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}';
+    url: '/extensions/roboinvestor/{graph_id}/operations/delete-portfolio';
 };
 
-export type GetPortfolioErrors = {
+export type OpDeletePortfolioErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetPortfolioError = GetPortfolioErrors[keyof GetPortfolioErrors];
+export type OpDeletePortfolioError = OpDeletePortfolioErrors[keyof OpDeletePortfolioErrors];
 
-export type GetPortfolioResponses = {
+export type OpDeletePortfolioResponses = {
     /**
      * Successful Response
      */
-    200: PortfolioResponse;
+    200: OperationEnvelope;
 };
 
-export type GetPortfolioResponse = GetPortfolioResponses[keyof GetPortfolioResponses];
+export type OpDeletePortfolioResponse = OpDeletePortfolioResponses[keyof OpDeletePortfolioResponses];
 
-export type UpdatePortfolioData = {
-    body: UpdatePortfolioRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Portfolio Id
-         */
-        portfolio_id: string;
-    };
-    query?: never;
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}';
-};
-
-export type UpdatePortfolioErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UpdatePortfolioError = UpdatePortfolioErrors[keyof UpdatePortfolioErrors];
-
-export type UpdatePortfolioResponses = {
-    /**
-     * Successful Response
-     */
-    200: PortfolioResponse;
-};
-
-export type UpdatePortfolioResponse = UpdatePortfolioResponses[keyof UpdatePortfolioResponses];
-
-export type ListSecuritiesData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Entity Id
-         *
-         * Filter by entity
-         */
-        entity_id?: string | null;
-        /**
-         * Security Type
-         *
-         * Filter by security type
-         */
-        security_type?: string | null;
-        /**
-         * Is Active
-         *
-         * Filter by active status
-         */
-        is_active?: boolean | null;
-        /**
-         * Limit
-         */
-        limit?: number;
-        /**
-         * Offset
-         */
-        offset?: number;
-    };
-    url: '/v1/investor/{graph_id}/securities';
-};
-
-export type ListSecuritiesErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListSecuritiesError = ListSecuritiesErrors[keyof ListSecuritiesErrors];
-
-export type ListSecuritiesResponses = {
-    /**
-     * Successful Response
-     */
-    200: SecurityListResponse;
-};
-
-export type ListSecuritiesResponse = ListSecuritiesResponses[keyof ListSecuritiesResponses];
-
-export type CreateSecurityData = {
+export type OpCreateSecurityData = {
     body: CreateSecurityRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -15997,188 +12728,107 @@ export type CreateSecurityData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/securities';
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-security';
 };
 
-export type CreateSecurityErrors = {
+export type OpCreateSecurityErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CreateSecurityError = CreateSecurityErrors[keyof CreateSecurityErrors];
+export type OpCreateSecurityError = OpCreateSecurityErrors[keyof OpCreateSecurityErrors];
 
-export type CreateSecurityResponses = {
+export type OpCreateSecurityResponses = {
     /**
      * Successful Response
      */
-    201: SecurityResponse;
+    200: OperationEnvelope;
 };
 
-export type CreateSecurityResponse = CreateSecurityResponses[keyof CreateSecurityResponses];
+export type OpCreateSecurityResponse = OpCreateSecurityResponses[keyof OpCreateSecurityResponses];
 
-export type DeleteSecurityData = {
-    body?: never;
+export type OpUpdateSecurityData = {
+    body: UpdateSecurityOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Security Id
-         */
-        security_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/securities/{security_id}';
+    url: '/extensions/roboinvestor/{graph_id}/operations/update-security';
 };
 
-export type DeleteSecurityErrors = {
+export type OpUpdateSecurityErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type DeleteSecurityError = DeleteSecurityErrors[keyof DeleteSecurityErrors];
+export type OpUpdateSecurityError = OpUpdateSecurityErrors[keyof OpUpdateSecurityErrors];
 
-export type DeleteSecurityResponses = {
+export type OpUpdateSecurityResponses = {
     /**
      * Successful Response
      */
-    204: void;
+    200: OperationEnvelope;
 };
 
-export type DeleteSecurityResponse = DeleteSecurityResponses[keyof DeleteSecurityResponses];
+export type OpUpdateSecurityResponse = OpUpdateSecurityResponses[keyof OpUpdateSecurityResponses];
 
-export type GetSecurityData = {
-    body?: never;
+export type OpDeleteSecurityData = {
+    body: DeleteSecurityOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Security Id
-         */
-        security_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/securities/{security_id}';
+    url: '/extensions/roboinvestor/{graph_id}/operations/delete-security';
 };
 
-export type GetSecurityErrors = {
+export type OpDeleteSecurityErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetSecurityError = GetSecurityErrors[keyof GetSecurityErrors];
+export type OpDeleteSecurityError = OpDeleteSecurityErrors[keyof OpDeleteSecurityErrors];
 
-export type GetSecurityResponses = {
+export type OpDeleteSecurityResponses = {
     /**
      * Successful Response
      */
-    200: SecurityResponse;
+    200: OperationEnvelope;
 };
 
-export type GetSecurityResponse = GetSecurityResponses[keyof GetSecurityResponses];
+export type OpDeleteSecurityResponse = OpDeleteSecurityResponses[keyof OpDeleteSecurityResponses];
 
-export type UpdateSecurityData = {
-    body: UpdateSecurityRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Security Id
-         */
-        security_id: string;
-    };
-    query?: never;
-    url: '/v1/investor/{graph_id}/securities/{security_id}';
-};
-
-export type UpdateSecurityErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UpdateSecurityError = UpdateSecurityErrors[keyof UpdateSecurityErrors];
-
-export type UpdateSecurityResponses = {
-    /**
-     * Successful Response
-     */
-    200: SecurityResponse;
-};
-
-export type UpdateSecurityResponse = UpdateSecurityResponses[keyof UpdateSecurityResponses];
-
-export type ListPositionsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Portfolio Id
-         *
-         * Filter by portfolio
-         */
-        portfolio_id?: string | null;
-        /**
-         * Security Id
-         *
-         * Filter by security
-         */
-        security_id?: string | null;
-        /**
-         * Status
-         *
-         * Filter by status
-         */
-        status?: string | null;
-        /**
-         * Limit
-         */
-        limit?: number;
-        /**
-         * Offset
-         */
-        offset?: number;
-    };
-    url: '/v1/investor/{graph_id}/positions';
-};
-
-export type ListPositionsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListPositionsError = ListPositionsErrors[keyof ListPositionsErrors];
-
-export type ListPositionsResponses = {
-    /**
-     * Successful Response
-     */
-    200: PositionListResponse;
-};
-
-export type ListPositionsResponse = ListPositionsResponses[keyof ListPositionsResponses];
-
-export type CreatePositionData = {
+export type OpCreatePositionData = {
     body: CreatePositionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -16186,159 +12836,95 @@ export type CreatePositionData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/positions';
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-position';
 };
 
-export type CreatePositionErrors = {
+export type OpCreatePositionErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CreatePositionError = CreatePositionErrors[keyof CreatePositionErrors];
+export type OpCreatePositionError = OpCreatePositionErrors[keyof OpCreatePositionErrors];
 
-export type CreatePositionResponses = {
+export type OpCreatePositionResponses = {
     /**
      * Successful Response
      */
-    201: PositionResponse;
+    200: OperationEnvelope;
 };
 
-export type CreatePositionResponse = CreatePositionResponses[keyof CreatePositionResponses];
+export type OpCreatePositionResponse = OpCreatePositionResponses[keyof OpCreatePositionResponses];
 
-export type DeletePositionData = {
-    body?: never;
+export type OpUpdatePositionData = {
+    body: UpdatePositionOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Position Id
-         */
-        position_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/positions/{position_id}';
+    url: '/extensions/roboinvestor/{graph_id}/operations/update-position';
 };
 
-export type DeletePositionErrors = {
+export type OpUpdatePositionErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type DeletePositionError = DeletePositionErrors[keyof DeletePositionErrors];
+export type OpUpdatePositionError = OpUpdatePositionErrors[keyof OpUpdatePositionErrors];
 
-export type DeletePositionResponses = {
+export type OpUpdatePositionResponses = {
     /**
      * Successful Response
      */
-    204: void;
+    200: OperationEnvelope;
 };
 
-export type DeletePositionResponse = DeletePositionResponses[keyof DeletePositionResponses];
+export type OpUpdatePositionResponse = OpUpdatePositionResponses[keyof OpUpdatePositionResponses];
 
-export type GetPositionData = {
-    body?: never;
+export type OpDeletePositionData = {
+    body: DeletePositionOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Position Id
-         */
-        position_id: string;
     };
     query?: never;
-    url: '/v1/investor/{graph_id}/positions/{position_id}';
+    url: '/extensions/roboinvestor/{graph_id}/operations/delete-position';
 };
 
-export type GetPositionErrors = {
+export type OpDeletePositionErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type GetPositionError = GetPositionErrors[keyof GetPositionErrors];
+export type OpDeletePositionError = OpDeletePositionErrors[keyof OpDeletePositionErrors];
 
-export type GetPositionResponses = {
+export type OpDeletePositionResponses = {
     /**
      * Successful Response
      */
-    200: PositionResponse;
+    200: OperationEnvelope;
 };
 
-export type GetPositionResponse = GetPositionResponses[keyof GetPositionResponses];
-
-export type UpdatePositionData = {
-    body: UpdatePositionRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Position Id
-         */
-        position_id: string;
-    };
-    query?: never;
-    url: '/v1/investor/{graph_id}/positions/{position_id}';
-};
-
-export type UpdatePositionErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type UpdatePositionError = UpdatePositionErrors[keyof UpdatePositionErrors];
-
-export type UpdatePositionResponses = {
-    /**
-     * Successful Response
-     */
-    200: PositionResponse;
-};
-
-export type UpdatePositionResponse = UpdatePositionResponses[keyof UpdatePositionResponses];
-
-export type ListHoldingsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Portfolio Id
-         */
-        portfolio_id: string;
-    };
-    query?: never;
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}/holdings';
-};
-
-export type ListHoldingsErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type ListHoldingsError = ListHoldingsErrors[keyof ListHoldingsErrors];
-
-export type ListHoldingsResponses = {
-    /**
-     * Successful Response
-     */
-    200: HoldingsListResponse;
-};
-
-export type ListHoldingsResponse = ListHoldingsResponses[keyof ListHoldingsResponses];
+export type OpDeletePositionResponse = OpDeletePositionResponses[keyof OpDeletePositionResponses];

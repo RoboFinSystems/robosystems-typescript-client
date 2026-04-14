@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddPublishListMembersData, AddPublishListMembersErrors, AddPublishListMembersResponses, AutoMapElementsData, AutoMapElementsErrors, AutoMapElementsResponses, AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CloseFiscalPeriodData, CloseFiscalPeriodErrors, CloseFiscalPeriodResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateClosingEntryData, CreateClosingEntryErrors, CreateClosingEntryResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreateManualClosingEntryData, CreateManualClosingEntryErrors, CreateManualClosingEntryResponses, CreateMappingAssociationData, CreateMappingAssociationErrors, CreateMappingAssociationResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreatePortfolioData, CreatePortfolioErrors, CreatePortfolioResponses, CreatePositionData, CreatePositionErrors, CreatePositionResponses, CreatePublishListData, CreatePublishListErrors, CreatePublishListResponses, CreateReportData, CreateReportErrors, CreateReportResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateScheduleData, CreateScheduleErrors, CreateScheduleResponses, CreateSecurityData, CreateSecurityErrors, CreateSecurityResponses, CreateStructureData, CreateStructureErrors, CreateStructureResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateTaxonomyData, CreateTaxonomyErrors, CreateTaxonomyResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, CreateViewData, CreateViewErrors, CreateViewResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteMappingAssociationData, DeleteMappingAssociationErrors, DeleteMappingAssociationResponses, DeletePortfolioData, DeletePortfolioErrors, DeletePortfolioResponses, DeletePositionData, DeletePositionErrors, DeletePositionResponses, DeletePublishListData, DeletePublishListErrors, DeletePublishListResponses, DeleteReportData, DeleteReportErrors, DeleteReportResponses, DeleteSecurityData, DeleteSecurityErrors, DeleteSecurityResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAccountRollupsData, GetAccountRollupsErrors, GetAccountRollupsResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetClosingBookStructuresData, GetClosingBookStructuresErrors, GetClosingBookStructuresResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetFiscalCalendarData, GetFiscalCalendarErrors, GetFiscalCalendarResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetLedgerAccountTreeData, GetLedgerAccountTreeErrors, GetLedgerAccountTreeResponses, GetLedgerEntityData, GetLedgerEntityErrors, GetLedgerEntityResponses, GetLedgerSummaryData, GetLedgerSummaryErrors, GetLedgerSummaryResponses, GetLedgerTransactionData, GetLedgerTransactionErrors, GetLedgerTransactionResponses, GetLedgerTrialBalanceData, GetLedgerTrialBalanceErrors, GetLedgerTrialBalanceResponses, GetMappedTrialBalanceData, GetMappedTrialBalanceErrors, GetMappedTrialBalanceResponses, GetMappingCoverageData, GetMappingCoverageErrors, GetMappingCoverageResponses, GetMappingDetailData, GetMappingDetailErrors, GetMappingDetailResponses, GetMaterializationStatusData, GetMaterializationStatusErrors, GetMaterializationStatusResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetPeriodCloseStatusData, GetPeriodCloseStatusErrors, GetPeriodCloseStatusResponses, GetPortfolioData, GetPortfolioErrors, GetPortfolioResponses, GetPositionData, GetPositionErrors, GetPositionResponses, GetPublishListData, GetPublishListErrors, GetPublishListResponses, GetReportData, GetReportErrors, GetReportingTaxonomyData, GetReportingTaxonomyErrors, GetReportingTaxonomyResponses, GetReportResponses, GetScheduleFactsData, GetScheduleFactsErrors, GetScheduleFactsResponses, GetSecurityData, GetSecurityErrors, GetSecurityResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetStatementData, GetStatementErrors, GetStatementResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, InitializeLedgerData, InitializeLedgerErrors, InitializeLedgerResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListElementsData, ListElementsErrors, ListElementsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListHoldingsData, ListHoldingsErrors, ListHoldingsResponses, ListLedgerAccountsData, ListLedgerAccountsErrors, ListLedgerAccountsResponses, ListLedgerEntitiesData, ListLedgerEntitiesErrors, ListLedgerEntitiesResponses, ListLedgerTransactionsData, ListLedgerTransactionsErrors, ListLedgerTransactionsResponses, ListMappingsData, ListMappingsErrors, ListMappingsResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListPeriodDraftsData, ListPeriodDraftsErrors, ListPeriodDraftsResponses, ListPortfoliosData, ListPortfoliosErrors, ListPortfoliosResponses, ListPositionsData, ListPositionsErrors, ListPositionsResponses, ListPublishListsData, ListPublishListsErrors, ListPublishListsResponses, ListReportsData, ListReportsErrors, ListReportsResponses, ListSchedulesData, ListSchedulesErrors, ListSchedulesResponses, ListSecuritiesData, ListSecuritiesErrors, ListSecuritiesResponses, ListStructuresData, ListStructuresErrors, ListStructuresResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListTaxonomiesData, ListTaxonomiesErrors, ListTaxonomiesResponses, ListUnmappedElementsData, ListUnmappedElementsErrors, ListUnmappedElementsResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, MaterializeGraphData, MaterializeGraphErrors, MaterializeGraphResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegenerateReportData, RegenerateReportErrors, RegenerateReportResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, RemovePublishListMemberData, RemovePublishListMemberErrors, RemovePublishListMemberResponses, ReopenFiscalPeriodData, ReopenFiscalPeriodErrors, ReopenFiscalPeriodResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SetCloseTargetData, SetCloseTargetErrors, SetCloseTargetResponses, ShareReportData, ShareReportErrors, ShareReportResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, TruncateScheduleData, TruncateScheduleErrors, TruncateScheduleResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateLedgerEntityData, UpdateLedgerEntityErrors, UpdateLedgerEntityResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdatePortfolioData, UpdatePortfolioErrors, UpdatePortfolioResponses, UpdatePositionData, UpdatePositionErrors, UpdatePositionResponses, UpdatePublishListData, UpdatePublishListErrors, UpdatePublishListResponses, UpdateSecurityData, UpdateSecurityErrors, UpdateSecurityResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
+import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetMaterializationStatusData, GetMaterializationStatusErrors, GetMaterializationStatusResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, MaterializeGraphData, MaterializeGraphErrors, MaterializeGraphResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateClosingEntryData, OpCreateClosingEntryErrors, OpCreateClosingEntryResponses, OpCreateManualClosingEntryData, OpCreateManualClosingEntryErrors, OpCreateManualClosingEntryResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioData, OpCreatePortfolioErrors, OpCreatePortfolioResponses, OpCreatePositionData, OpCreatePositionErrors, OpCreatePositionResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateScheduleData, OpCreateScheduleErrors, OpCreateScheduleResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateStructureData, OpCreateStructureErrors, OpCreateStructureResponses, OpCreateTaxonomyData, OpCreateTaxonomyErrors, OpCreateTaxonomyResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioData, OpDeletePortfolioErrors, OpDeletePortfolioResponses, OpDeletePositionData, OpDeletePositionErrors, OpDeletePositionResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpTruncateScheduleData, OpTruncateScheduleErrors, OpTruncateScheduleResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdatePortfolioData, OpUpdatePortfolioErrors, OpUpdatePortfolioResponses, OpUpdatePositionData, OpUpdatePositionErrors, OpUpdatePositionResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -1874,25 +1874,6 @@ export const queryTables = <ThrowOnError extends boolean = false>(options: Optio
 });
 
 /**
- * Create View
- *
- * Build a fact grid from existing facts in the graph.
- *
- * Queries Fact nodes by element qnames or canonical concepts, with optional
- * filters for periods, entities, filing form, fiscal context, and period type.
- * Returns deduplicated consolidated facts as a pivot table.
- */
-export const createView = <ThrowOnError extends boolean = false>(options: Options<CreateViewData, ThrowOnError>) => (options.client ?? client).post<CreateViewResponses, CreateViewErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/views',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Search Documents
  *
  * Search filing narratives and text content within a graph.
@@ -2888,13 +2869,20 @@ export const getCheckoutStatus = <ThrowOnError extends boolean = false>(options:
 });
 
 /**
- * Get Entity
- *
- * Get the entity for this ledger graph.
+ * Handle Http Get
  */
-export const getLedgerEntity = <ThrowOnError extends boolean = false>(options: Options<GetLedgerEntityData, ThrowOnError>) => (options.client ?? client).get<GetLedgerEntityResponses, GetLedgerEntityErrors, ThrowOnError>({
+export const handleHttpGetExtensionsGraphIdGraphqlGet = <ThrowOnError extends boolean = false>(options: Options<HandleHttpGetExtensionsGraphIdGraphqlGetData, ThrowOnError>) => (options.client ?? client).get<HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/entity',
+    url: '/extensions/{graph_id}/graphql',
+    ...options
+});
+
+/**
+ * Handle Http Post
+ */
+export const handleHttpPostExtensionsGraphIdGraphqlPost = <ThrowOnError extends boolean = false>(options: Options<HandleHttpPostExtensionsGraphIdGraphqlPostData, ThrowOnError>) => (options.client ?? client).post<HandleHttpPostExtensionsGraphIdGraphqlPostResponses, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/{graph_id}/graphql',
     ...options
 });
 
@@ -2903,9 +2891,9 @@ export const getLedgerEntity = <ThrowOnError extends boolean = false>(options: O
  *
  * Update entity details. Only provided (non-null) fields are updated.
  */
-export const updateLedgerEntity = <ThrowOnError extends boolean = false>(options: Options<UpdateLedgerEntityData, ThrowOnError>) => (options.client ?? client).put<UpdateLedgerEntityResponses, UpdateLedgerEntityErrors, ThrowOnError>({
+export const opUpdateEntity = <ThrowOnError extends boolean = false>(options: Options<OpUpdateEntityData, ThrowOnError>) => (options.client ?? client).post<OpUpdateEntityResponses, OpUpdateEntityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/entity',
+    url: '/extensions/roboledger/{graph_id}/operations/update-entity',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -2914,129 +2902,153 @@ export const updateLedgerEntity = <ThrowOnError extends boolean = false>(options
 });
 
 /**
- * List Entities
+ * Initialize Ledger
  *
- * List entities for this graph, optionally filtered by source.
+ * One-time ledger initialization — create fiscal calendar + seed periods.
  */
-export const listLedgerEntities = <ThrowOnError extends boolean = false>(options: Options<ListLedgerEntitiesData, ThrowOnError>) => (options.client ?? client).get<ListLedgerEntitiesResponses, ListLedgerEntitiesErrors, ThrowOnError>({
+export const opInitializeLedger = <ThrowOnError extends boolean = false>(options: Options<OpInitializeLedgerData, ThrowOnError>) => (options.client ?? client).post<OpInitializeLedgerResponses, OpInitializeLedgerErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/entities',
-    ...options
+    url: '/extensions/roboledger/{graph_id}/operations/initialize',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
- * List Accounts
+ * Set Close Target
+ *
+ * Set the user-controlled close target (YYYY-MM).
  */
-export const listLedgerAccounts = <ThrowOnError extends boolean = false>(options: Options<ListLedgerAccountsData, ThrowOnError>) => (options.client ?? client).get<ListLedgerAccountsResponses, ListLedgerAccountsErrors, ThrowOnError>({
+export const opSetCloseTarget = <ThrowOnError extends boolean = false>(options: Options<OpSetCloseTargetData, ThrowOnError>) => (options.client ?? client).post<OpSetCloseTargetResponses, OpSetCloseTargetErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/accounts',
-    ...options
+    url: '/extensions/roboledger/{graph_id}/operations/set-close-target',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
- * Account Tree
+ * Close Fiscal Period
+ *
+ * Close a fiscal period — the final commit action.
  */
-export const getLedgerAccountTree = <ThrowOnError extends boolean = false>(options: Options<GetLedgerAccountTreeData, ThrowOnError>) => (options.client ?? client).get<GetLedgerAccountTreeResponses, GetLedgerAccountTreeErrors, ThrowOnError>({
+export const opClosePeriod = <ThrowOnError extends boolean = false>(options: Options<OpClosePeriodData, ThrowOnError>) => (options.client ?? client).post<OpClosePeriodResponses, OpClosePeriodErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/accounts/tree',
-    ...options
+    url: '/extensions/roboledger/{graph_id}/operations/close-period',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
- * List Taxonomies
+ * Reopen Fiscal Period
+ *
+ * Reopen a closed fiscal period — decrements `closed_through`.
  */
-export const listTaxonomies = <ThrowOnError extends boolean = false>(options: Options<ListTaxonomiesData, ThrowOnError>) => (options.client ?? client).get<ListTaxonomiesResponses, ListTaxonomiesErrors, ThrowOnError>({
+export const opReopenPeriod = <ThrowOnError extends boolean = false>(options: Options<OpReopenPeriodData, ThrowOnError>) => (options.client ?? client).post<OpReopenPeriodResponses, OpReopenPeriodErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/taxonomies',
-    ...options
+    url: '/extensions/roboledger/{graph_id}/operations/reopen-period',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Schedule
+ *
+ * Create a schedule with pre-generated monthly facts.
+ */
+export const opCreateSchedule = <ThrowOnError extends boolean = false>(options: Options<OpCreateScheduleData, ThrowOnError>) => (options.client ?? client).post<OpCreateScheduleResponses, OpCreateScheduleErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/create-schedule',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Truncate Schedule (End Early)
+ *
+ * End a schedule early — delete forward facts + stale drafts.
+ */
+export const opTruncateSchedule = <ThrowOnError extends boolean = false>(options: Options<OpTruncateScheduleData, ThrowOnError>) => (options.client ?? client).post<OpTruncateScheduleResponses, OpTruncateScheduleErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Closing Entry
+ *
+ * Create a draft closing entry from a schedule's facts for a period.
+ */
+export const opCreateClosingEntry = <ThrowOnError extends boolean = false>(options: Options<OpCreateClosingEntryData, ThrowOnError>) => (options.client ?? client).post<OpCreateClosingEntryResponses, OpCreateClosingEntryErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/create-closing-entry',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Manual Closing Entry
+ *
+ * Create a manual (non-schedule) draft closing entry.
+ */
+export const opCreateManualClosingEntry = <ThrowOnError extends boolean = false>(options: Options<OpCreateManualClosingEntryData, ThrowOnError>) => (options.client ?? client).post<OpCreateManualClosingEntryResponses, OpCreateManualClosingEntryErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/create-manual-closing-entry',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
  * Create Taxonomy
+ *
+ * Create a new taxonomy definition.
  */
-export const createTaxonomy = <ThrowOnError extends boolean = false>(options: Options<CreateTaxonomyData, ThrowOnError>) => (options.client ?? client).post<CreateTaxonomyResponses, CreateTaxonomyErrors, ThrowOnError>({
+export const opCreateTaxonomy = <ThrowOnError extends boolean = false>(options: Options<OpCreateTaxonomyData, ThrowOnError>) => (options.client ?? client).post<OpCreateTaxonomyResponses, OpCreateTaxonomyErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/taxonomies',
+    url: '/extensions/roboledger/{graph_id}/operations/create-taxonomy',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
-});
-
-/**
- * Get Reporting Taxonomy
- *
- * Get the shared US GAAP reporting taxonomy (read-only).
- */
-export const getReportingTaxonomy = <ThrowOnError extends boolean = false>(options: Options<GetReportingTaxonomyData, ThrowOnError>) => (options.client ?? client).get<GetReportingTaxonomyResponses, GetReportingTaxonomyErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/taxonomies/reporting',
-    ...options
-});
-
-/**
- * List Elements
- */
-export const listElements = <ThrowOnError extends boolean = false>(options: Options<ListElementsData, ThrowOnError>) => (options.client ?? client).get<ListElementsResponses, ListElementsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/elements',
-    ...options
-});
-
-/**
- * List Unmapped Elements
- *
- * List CoA elements that are not yet mapped to the reporting taxonomy.
- */
-export const listUnmappedElements = <ThrowOnError extends boolean = false>(options: Options<ListUnmappedElementsData, ThrowOnError>) => (options.client ?? client).get<ListUnmappedElementsResponses, ListUnmappedElementsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/elements/unmapped',
-    ...options
-});
-
-/**
- * List Structures
- */
-export const listStructures = <ThrowOnError extends boolean = false>(options: Options<ListStructuresData, ThrowOnError>) => (options.client ?? client).get<ListStructuresResponses, ListStructuresErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/structures',
-    ...options
 });
 
 /**
  * Create Structure
+ *
+ * Create a new structure (statement, mapping, schedule, etc.).
  */
-export const createStructure = <ThrowOnError extends boolean = false>(options: Options<CreateStructureData, ThrowOnError>) => (options.client ?? client).post<CreateStructureResponses, CreateStructureErrors, ThrowOnError>({
+export const opCreateStructure = <ThrowOnError extends boolean = false>(options: Options<OpCreateStructureData, ThrowOnError>) => (options.client ?? client).post<OpCreateStructureResponses, OpCreateStructureErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/structures',
+    url: '/extensions/roboledger/{graph_id}/operations/create-structure',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
-});
-
-/**
- * List Mapping Structures
- *
- * List all mapping structures (structure_type = 'coa_mapping').
- */
-export const listMappings = <ThrowOnError extends boolean = false>(options: Options<ListMappingsData, ThrowOnError>) => (options.client ?? client).get<ListMappingsResponses, ListMappingsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/mappings',
-    ...options
-});
-
-/**
- * Get Mapping Detail
- *
- * Get a mapping structure with all its associations.
- */
-export const getMappingDetail = <ThrowOnError extends boolean = false>(options: Options<GetMappingDetailData, ThrowOnError>) => (options.client ?? client).get<GetMappingDetailResponses, GetMappingDetailErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}',
-    ...options
 });
 
 /**
@@ -3044,9 +3056,9 @@ export const getMappingDetail = <ThrowOnError extends boolean = false>(options: 
  *
  * Add a mapping association (CoA element → reporting concept).
  */
-export const createMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<CreateMappingAssociationData, ThrowOnError>) => (options.client ?? client).post<CreateMappingAssociationResponses, CreateMappingAssociationErrors, ThrowOnError>({
+export const opCreateMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<OpCreateMappingAssociationData, ThrowOnError>) => (options.client ?? client).post<OpCreateMappingAssociationResponses, OpCreateMappingAssociationErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/associations',
+    url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3059,109 +3071,65 @@ export const createMappingAssociation = <ThrowOnError extends boolean = false>(o
  *
  * Remove a mapping association.
  */
-export const deleteMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<DeleteMappingAssociationData, ThrowOnError>) => (options.client ?? client).delete<DeleteMappingAssociationResponses, DeleteMappingAssociationErrors, ThrowOnError>({
+export const opDeleteMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<OpDeleteMappingAssociationData, ThrowOnError>) => (options.client ?? client).post<OpDeleteMappingAssociationResponses, OpDeleteMappingAssociationErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/associations/{association_id}',
-    ...options
+    url: '/extensions/roboledger/{graph_id}/operations/delete-mapping-association',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
- * Mapping Coverage
+ * Auto-Map Elements via AI (async)
  *
- * Get mapping coverage stats.
- */
-export const getMappingCoverage = <ThrowOnError extends boolean = false>(options: Options<GetMappingCoverageData, ThrowOnError>) => (options.client ?? client).get<GetMappingCoverageResponses, GetMappingCoverageErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/coverage',
-    ...options
-});
-
-/**
- * Mapped Trial Balance
+ * Trigger autonomous CoA → US GAAP mapping via background worker.
  *
- * Trial balance rolled up to reporting concepts via mapping associations.
- */
-export const getMappedTrialBalance = <ThrowOnError extends boolean = false>(options: Options<GetMappedTrialBalanceData, ThrowOnError>) => (options.client ?? client).get<GetMappedTrialBalanceResponses, GetMappedTrialBalanceErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/trial-balance/mapped',
-    ...options
-});
-
-/**
- * Auto-Map Elements via AI
+ * This is the only async/Dagster-dispatched ledger operation. Instead
+ * of running synchronously, it enqueues a `MappingAgent` task and
+ * returns a `pending` envelope with the worker-issued operation_id —
+ * callers subscribe via `/v1/operations/{operation_id}/stream` for SSE
+ * progress events.
  *
- * Trigger autonomous CoA → GAAP mapping via background worker.
- *
- * Uses Bedrock AI to classify and map unmapped Chart of Accounts elements
- * to US GAAP reporting concepts. Returns a 202 with operation_id for
- * SSE progress tracking.
- *
- * Confidence thresholds:
+ * Confidence thresholds (in the agent):
  * - ≥0.90: auto-approved mapping
  * - 0.70-0.89: flagged for review
  * - <0.70: skipped (left unmapped)
  */
-export const autoMapElements = <ThrowOnError extends boolean = false>(options: Options<AutoMapElementsData, ThrowOnError>) => (options.client ?? client).post<AutoMapElementsResponses, AutoMapElementsErrors, ThrowOnError>({
+export const opAutoMapElements = <ThrowOnError extends boolean = false>(options: Options<OpAutoMapElementsData, ThrowOnError>) => (options.client ?? client).post<OpAutoMapElementsResponses, OpAutoMapElementsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/mappings/{mapping_id}/auto-map',
-    ...options
-});
-
-/**
- * List Transactions
- */
-export const listLedgerTransactions = <ThrowOnError extends boolean = false>(options: Options<ListLedgerTransactionsData, ThrowOnError>) => (options.client ?? client).get<ListLedgerTransactionsResponses, ListLedgerTransactionsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/transactions',
-    ...options
-});
-
-/**
- * Transaction Detail
- */
-export const getLedgerTransaction = <ThrowOnError extends boolean = false>(options: Options<GetLedgerTransactionData, ThrowOnError>) => (options.client ?? client).get<GetLedgerTransactionResponses, GetLedgerTransactionErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/transactions/{transaction_id}',
-    ...options
-});
-
-/**
- * Trial Balance
- */
-export const getLedgerTrialBalance = <ThrowOnError extends boolean = false>(options: Options<GetLedgerTrialBalanceData, ThrowOnError>) => (options.client ?? client).get<GetLedgerTrialBalanceResponses, GetLedgerTrialBalanceErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/trial-balance',
-    ...options
-});
-
-/**
- * Ledger Summary
- */
-export const getLedgerSummary = <ThrowOnError extends boolean = false>(options: Options<GetLedgerSummaryData, ThrowOnError>) => (options.client ?? client).get<GetLedgerSummaryResponses, GetLedgerSummaryErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/summary',
-    ...options
-});
-
-/**
- * List Reports
- *
- * List all report definitions for this graph.
- */
-export const listReports = <ThrowOnError extends boolean = false>(options: Options<ListReportsData, ThrowOnError>) => (options.client ?? client).get<ListReportsResponses, ListReportsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/reports',
-    ...options
+    url: '/extensions/roboledger/{graph_id}/operations/auto-map-elements',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
  * Create Report
  *
- * Create a report definition, generate facts for all mapped elements.
+ * Create a report definition, generate facts, and mark as published.
  */
-export const createReport = <ThrowOnError extends boolean = false>(options: Options<CreateReportData, ThrowOnError>) => (options.client ?? client).post<CreateReportResponses, CreateReportErrors, ThrowOnError>({
+export const opCreateReport = <ThrowOnError extends boolean = false>(options: Options<OpCreateReportData, ThrowOnError>) => (options.client ?? client).post<OpCreateReportResponses, OpCreateReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/reports',
+    url: '/extensions/roboledger/{graph_id}/operations/create-report',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Regenerate Report
+ *
+ * Regenerate a report with new period dates.
+ */
+export const opRegenerateReport = <ThrowOnError extends boolean = false>(options: Options<OpRegenerateReportData, ThrowOnError>) => (options.client ?? client).post<OpRegenerateReportResponses, OpRegenerateReportErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/regenerate-report',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3172,49 +3140,11 @@ export const createReport = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Delete Report
  *
- * Delete a report definition and its generated facts.
+ * Delete a report definition and its facts.
  */
-export const deleteReport = <ThrowOnError extends boolean = false>(options: Options<DeleteReportData, ThrowOnError>) => (options.client ?? client).delete<DeleteReportResponses, DeleteReportErrors, ThrowOnError>({
+export const opDeleteReport = <ThrowOnError extends boolean = false>(options: Options<OpDeleteReportData, ThrowOnError>) => (options.client ?? client).post<OpDeleteReportResponses, OpDeleteReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/reports/{report_id}',
-    ...options
-});
-
-/**
- * Get Report
- *
- * Get a report definition with its available structures.
- */
-export const getReport = <ThrowOnError extends boolean = false>(options: Options<GetReportData, ThrowOnError>) => (options.client ?? client).get<GetReportResponses, GetReportErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/reports/{report_id}',
-    ...options
-});
-
-/**
- * Get Statement
- *
- * Render a financial statement — facts viewed through a structure's hierarchy.
- *
- * Same report, different structure_type = different view (IS, BS, CF).
- */
-export const getStatement = <ThrowOnError extends boolean = false>(options: Options<GetStatementData, ThrowOnError>) => (options.client ?? client).get<GetStatementResponses, GetStatementErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/reports/{report_id}/statements/{structure_type}',
-    ...options
-});
-
-/**
- * Regenerate Report
- *
- * Regenerate a report with new period dates.
- *
- * Same report configuration (taxonomy, mapping, settings), new dates.
- * Re-generates facts for all elements.
- */
-export const regenerateReport = <ThrowOnError extends boolean = false>(options: Options<RegenerateReportData, ThrowOnError>) => (options.client ?? client).post<RegenerateReportResponses, RegenerateReportErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/reports/{report_id}/regenerate',
+    url: '/extensions/roboledger/{graph_id}/operations/delete-report',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3225,153 +3155,41 @@ export const regenerateReport = <ThrowOnError extends boolean = false>(options: 
 /**
  * Share Report
  *
- * Share a published report to other graphs.
- *
- * Copies the report definition and its generated facts to each target graph's
- * tenant schema. The target graph must have 'roboledger' in its schema_extensions.
- * This is a snapshot — the target gets an immutable copy of the facts at this
- * point in time.
+ * Share a published report to a publish list's members.
  */
-export const shareReport = <ThrowOnError extends boolean = false>(options: Options<ShareReportData, ThrowOnError>) => (options.client ?? client).post<ShareReportResponses, ShareReportErrors, ThrowOnError>({
+export const opShareReport = <ThrowOnError extends boolean = false>(options: Options<OpShareReportData, ThrowOnError>) => (options.client ?? client).post<OpShareReportResponses, OpShareReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/reports/{report_id}/share',
+    url: '/extensions/roboledger/{graph_id}/operations/share-report',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
-});
-
-/**
- * List Schedules
- *
- * List all active schedules for this graph.
- */
-export const listSchedules = <ThrowOnError extends boolean = false>(options: Options<ListSchedulesData, ThrowOnError>) => (options.client ?? client).get<ListSchedulesResponses, ListSchedulesErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/schedules',
-    ...options
-});
-
-/**
- * Create Schedule
- *
- * Create a schedule with pre-generated facts for each monthly period.
- */
-export const createSchedule = <ThrowOnError extends boolean = false>(options: Options<CreateScheduleData, ThrowOnError>) => (options.client ?? client).post<CreateScheduleResponses, CreateScheduleErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/schedules',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Get Schedule Facts
- *
- * Get facts for a schedule, optionally filtered by period.
- */
-export const getScheduleFacts = <ThrowOnError extends boolean = false>(options: Options<GetScheduleFactsData, ThrowOnError>) => (options.client ?? client).get<GetScheduleFactsResponses, GetScheduleFactsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/facts',
-    ...options
-});
-
-/**
- * Get Period Close Status
- *
- * Get close status for all schedules in a fiscal period.
- */
-export const getPeriodCloseStatus = <ThrowOnError extends boolean = false>(options: Options<GetPeriodCloseStatusData, ThrowOnError>) => (options.client ?? client).get<GetPeriodCloseStatusResponses, GetPeriodCloseStatusErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/schedules/close-status',
-    ...options
-});
-
-/**
- * Create Closing Entry
- *
- * Create a draft closing entry from a schedule's facts for a period.
- */
-export const createClosingEntry = <ThrowOnError extends boolean = false>(options: Options<CreateClosingEntryData, ThrowOnError>) => (options.client ?? client).post<CreateClosingEntryResponses, CreateClosingEntryErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/closing-entry',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Truncate Schedule (End Early)
- *
- * End a schedule early.
- *
- * Used for events that cut a schedule's lifespan short — an asset is sold,
- * a prepaid is cancelled, a contract is terminated. Deletes all facts with
- * `period_start > new_end_date` and any stale draft entries that were
- * produced from them.
- *
- * Posted entries are preserved — if any period after `new_end_date` has a
- * posted closing entry, the truncate fails with 422 and the caller must
- * reopen that period first.
- *
- * The truncation is logged to the schedule's metadata for audit.
- */
-export const truncateSchedule = <ThrowOnError extends boolean = false>(options: Options<TruncateScheduleData, ThrowOnError>) => (options.client ?? client).patch<TruncateScheduleResponses, TruncateScheduleErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/schedules/{structure_id}/truncate',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Create Manual Closing Entry
- *
- * Create a manual (non-schedule) draft closing entry.
- *
- * Used for one-off adjustments that aren't derived from a schedule: asset
- * disposals, impairments, reclassifications, correcting entries.
- *
- * The entry is drafted like any schedule-derived entry and flows through
- * the same review and close pipeline — `list-period-drafts` shows it,
- * `close-period` commits it along with the rest.
- *
- * Line items can be any count (not just 2 like schedule entries). Total
- * debits must equal total credits. `provenance` is set to 'manual_entry'
- * and `source_structure_id` is null.
- */
-export const createManualClosingEntry = <ThrowOnError extends boolean = false>(options: Options<CreateManualClosingEntryData, ThrowOnError>) => (options.client ?? client).post<CreateManualClosingEntryResponses, CreateManualClosingEntryErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/manual-closing-entry',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Publish Lists
- */
-export const listPublishLists = <ThrowOnError extends boolean = false>(options: Options<ListPublishListsData, ThrowOnError>) => (options.client ?? client).get<ListPublishListsResponses, ListPublishListsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/publish-lists',
-    ...options
 });
 
 /**
  * Create Publish List
+ *
+ * Create a new publish list.
  */
-export const createPublishList = <ThrowOnError extends boolean = false>(options: Options<CreatePublishListData, ThrowOnError>) => (options.client ?? client).post<CreatePublishListResponses, CreatePublishListErrors, ThrowOnError>({
+export const opCreatePublishList = <ThrowOnError extends boolean = false>(options: Options<OpCreatePublishListData, ThrowOnError>) => (options.client ?? client).post<OpCreatePublishListResponses, OpCreatePublishListErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/publish-lists',
+    url: '/extensions/roboledger/{graph_id}/operations/create-publish-list',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update Publish List
+ *
+ * Update a publish list's name / description.
+ */
+export const opUpdatePublishList = <ThrowOnError extends boolean = false>(options: Options<OpUpdatePublishListData, ThrowOnError>) => (options.client ?? client).post<OpUpdatePublishListResponses, OpUpdatePublishListErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/update-publish-list',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3381,28 +3199,12 @@ export const createPublishList = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Delete Publish List
+ *
+ * Delete a publish list.
  */
-export const deletePublishList = <ThrowOnError extends boolean = false>(options: Options<DeletePublishListData, ThrowOnError>) => (options.client ?? client).delete<DeletePublishListResponses, DeletePublishListErrors, ThrowOnError>({
+export const opDeletePublishList = <ThrowOnError extends boolean = false>(options: Options<OpDeletePublishListData, ThrowOnError>) => (options.client ?? client).post<OpDeletePublishListResponses, OpDeletePublishListErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}',
-    ...options
-});
-
-/**
- * Get Publish List
- */
-export const getPublishList = <ThrowOnError extends boolean = false>(options: Options<GetPublishListData, ThrowOnError>) => (options.client ?? client).get<GetPublishListResponses, GetPublishListErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}',
-    ...options
-});
-
-/**
- * Update Publish List
- */
-export const updatePublishList = <ThrowOnError extends boolean = false>(options: Options<UpdatePublishListData, ThrowOnError>) => (options.client ?? client).patch<UpdatePublishListResponses, UpdatePublishListErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}',
+    url: '/extensions/roboledger/{graph_id}/operations/delete-publish-list',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3412,10 +3214,12 @@ export const updatePublishList = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Add Members to Publish List
+ *
+ * Add target graphs as members of a publish list.
  */
-export const addPublishListMembers = <ThrowOnError extends boolean = false>(options: Options<AddPublishListMembersData, ThrowOnError>) => (options.client ?? client).post<AddPublishListMembersResponses, AddPublishListMembersErrors, ThrowOnError>({
+export const opAddPublishListMembers = <ThrowOnError extends boolean = false>(options: Options<OpAddPublishListMembersData, ThrowOnError>) => (options.client ?? client).post<OpAddPublishListMembersResponses, OpAddPublishListMembersErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}/members',
+    url: '/extensions/roboledger/{graph_id}/operations/add-publish-list-members',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3425,57 +3229,12 @@ export const addPublishListMembers = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Remove Member from Publish List
+ *
+ * Remove a target graph from a publish list.
  */
-export const removePublishListMember = <ThrowOnError extends boolean = false>(options: Options<RemovePublishListMemberData, ThrowOnError>) => (options.client ?? client).delete<RemovePublishListMemberResponses, RemovePublishListMemberErrors, ThrowOnError>({
+export const opRemovePublishListMember = <ThrowOnError extends boolean = false>(options: Options<OpRemovePublishListMemberData, ThrowOnError>) => (options.client ?? client).post<OpRemovePublishListMemberResponses, OpRemovePublishListMemberErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/publish-lists/{list_id}/members/{member_id}',
-    ...options
-});
-
-/**
- * Account Rollups
- *
- * Account rollups — CoA accounts grouped by reporting element with balances.
- *
- * Shows how company-specific accounts roll up to standardized reporting
- * line items. Auto-discovers the mapping structure if mapping_id is not provided.
- */
-export const getAccountRollups = <ThrowOnError extends boolean = false>(options: Options<GetAccountRollupsData, ThrowOnError>) => (options.client ?? client).get<GetAccountRollupsResponses, GetAccountRollupsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/account-rollups',
-    ...options
-});
-
-/**
- * Closing Book Structures
- *
- * Returns all structure categories for the closing book sidebar.
- *
- * Aggregates statements (from latest report), schedules, account rollups
- * (from mapping structures), and trial balance availability into a single
- * response for the viewer sidebar navigation.
- */
-export const getClosingBookStructures = <ThrowOnError extends boolean = false>(options: Options<GetClosingBookStructuresData, ThrowOnError>) => (options.client ?? client).get<GetClosingBookStructuresResponses, GetClosingBookStructuresErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/closing-book/structures',
-    ...options
-});
-
-/**
- * Initialize Ledger
- *
- * One-time ledger initialization.
- *
- * Creates the fiscal calendar, seeds `FiscalPeriod` rows for the data window,
- * and sets `closed_through` / `close_target`. Fails if the calendar already
- * exists — use the reopen flow to undo prior closes instead of re-initializing.
- *
- * `auto_seed_schedules=true` is accepted but is a no-op in v1; schedule
- * creation is deferred to the SchedulerAgent (Phase 5).
- */
-export const initializeLedger = <ThrowOnError extends boolean = false>(options: Options<InitializeLedgerData, ThrowOnError>) => (options.client ?? client).post<InitializeLedgerResponses, InitializeLedgerErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/initialize',
+    url: '/extensions/roboledger/{graph_id}/operations/remove-publish-list-member',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3484,116 +3243,49 @@ export const initializeLedger = <ThrowOnError extends boolean = false>(options: 
 });
 
 /**
- * Get Fiscal Calendar
+ * Build Fact Grid
  *
- * Return the current fiscal calendar state — pointers, gap, closeable status.
+ * Build a multi-dimensional fact grid against the graph schema.
+ *
+ * Queries `Fact` nodes by element qnames or canonical concepts with
+ * optional filters for periods, entities, filing form, fiscal context,
+ * and period type. Returns a deduplicated pivot table plus optional
+ * summary statistics.
+ *
+ * This is a graph-database read — the query runs against LadybugDB,
+ * not the extensions OLTP database. The same operation works for
+ * roboledger tenant graphs (post-materialization) and the SEC shared
+ * repository (which uses the same XBRL hypercube schema).
  */
-export const getFiscalCalendar = <ThrowOnError extends boolean = false>(options: Options<GetFiscalCalendarData, ThrowOnError>) => (options.client ?? client).get<GetFiscalCalendarResponses, GetFiscalCalendarErrors, ThrowOnError>({
+export const opBuildFactGrid = <ThrowOnError extends boolean = false>(options: Options<OpBuildFactGridData, ThrowOnError>) => (options.client ?? client).post<OpBuildFactGridResponses, OpBuildFactGridErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/fiscal-calendar',
-    ...options
-});
-
-/**
- * Set Close Target
- *
- * Set the close target for a graph.
- *
- * Validates that the target is a real YYYY-MM period, is not in the future,
- * and is not before the current `closed_through`. Emits a `target_changed`
- * audit event. Returns the updated calendar state.
- */
-export const setCloseTarget = <ThrowOnError extends boolean = false>(options: Options<SetCloseTargetData, ThrowOnError>) => (options.client ?? client).post<SetCloseTargetResponses, SetCloseTargetErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/fiscal-calendar/close-target',
+    url: '/extensions/roboledger/{graph_id}/operations/build-fact-grid',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
-});
-
-/**
- * Close Fiscal Period
- *
- * Close a fiscal period — the final commit action.
- *
- * All mechanics live in `PeriodCloseService.close()`. This endpoint just
- * resolves auth + QB sync state, invokes the service, and translates
- * domain exceptions into HTTP responses.
- */
-export const closeFiscalPeriod = <ThrowOnError extends boolean = false>(options: Options<CloseFiscalPeriodData, ThrowOnError>) => (options.client ?? client).post<CloseFiscalPeriodResponses, CloseFiscalPeriodErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/periods/{period}/close',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Reopen Fiscal Period
- *
- * Reopen a closed fiscal period.
- *
- * Transitions the period status from 'closed' to 'closing' (drafts may still
- * exist for this period after reopening). If the reopened period is the
- * current `closed_through`, decrements the pointer. Requires a non-empty
- * `reason` for the audit log. Does NOT modify `close_target` — that's a
- * separate user decision.
- *
- * Posted entries in the reopened period stay posted. The user can then post
- * additional adjustments, review, and close the period again.
- */
-export const reopenFiscalPeriod = <ThrowOnError extends boolean = false>(options: Options<ReopenFiscalPeriodData, ThrowOnError>) => (options.client ?? client).post<ReopenFiscalPeriodResponses, ReopenFiscalPeriodErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/periods/{period}/reopen',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Draft Entries For Review
- *
- * List all draft entries in a fiscal period for review before close.
- *
- * Returns every draft entry whose `posting_date` falls within the period,
- * fully expanded with line items, element names/codes, source schedule
- * structure name, and per-entry balance check.
- *
- * Use this to review exactly what `close-period` will commit. Typical flow:
- *
- * 1. Draft entries via `create-closing-entry` (one per schedule)
- * 2. Call this endpoint to review the full set
- * 3. Call `POST /periods/{period}/close` to atomically post + close
- *
- * This is a pure read — no side effects. It can be called repeatedly.
- */
-export const listPeriodDrafts = <ThrowOnError extends boolean = false>(options: Options<ListPeriodDraftsData, ThrowOnError>) => (options.client ?? client).get<ListPeriodDraftsResponses, ListPeriodDraftsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/ledger/{graph_id}/periods/{period}/drafts',
-    ...options
-});
-
-/**
- * List Portfolios
- */
-export const listPortfolios = <ThrowOnError extends boolean = false>(options: Options<ListPortfoliosData, ThrowOnError>) => (options.client ?? client).get<ListPortfoliosResponses, ListPortfoliosErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/portfolios',
-    ...options
 });
 
 /**
  * Create Portfolio
  */
-export const createPortfolio = <ThrowOnError extends boolean = false>(options: Options<CreatePortfolioData, ThrowOnError>) => (options.client ?? client).post<CreatePortfolioResponses, CreatePortfolioErrors, ThrowOnError>({
+export const opCreatePortfolio = <ThrowOnError extends boolean = false>(options: Options<OpCreatePortfolioData, ThrowOnError>) => (options.client ?? client).post<OpCreatePortfolioResponses, OpCreatePortfolioErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/portfolios',
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update Portfolio
+ */
+export const opUpdatePortfolio = <ThrowOnError extends boolean = false>(options: Options<OpUpdatePortfolioData, ThrowOnError>) => (options.client ?? client).post<OpUpdatePortfolioResponses, OpUpdatePortfolioErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboinvestor/{graph_id}/operations/update-portfolio',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3604,27 +3296,9 @@ export const createPortfolio = <ThrowOnError extends boolean = false>(options: O
 /**
  * Delete Portfolio
  */
-export const deletePortfolio = <ThrowOnError extends boolean = false>(options: Options<DeletePortfolioData, ThrowOnError>) => (options.client ?? client).delete<DeletePortfolioResponses, DeletePortfolioErrors, ThrowOnError>({
+export const opDeletePortfolio = <ThrowOnError extends boolean = false>(options: Options<OpDeletePortfolioData, ThrowOnError>) => (options.client ?? client).post<OpDeletePortfolioResponses, OpDeletePortfolioErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}',
-    ...options
-});
-
-/**
- * Get Portfolio
- */
-export const getPortfolio = <ThrowOnError extends boolean = false>(options: Options<GetPortfolioData, ThrowOnError>) => (options.client ?? client).get<GetPortfolioResponses, GetPortfolioErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}',
-    ...options
-});
-
-/**
- * Update Portfolio
- */
-export const updatePortfolio = <ThrowOnError extends boolean = false>(options: Options<UpdatePortfolioData, ThrowOnError>) => (options.client ?? client).patch<UpdatePortfolioResponses, UpdatePortfolioErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}',
+    url: '/extensions/roboinvestor/{graph_id}/operations/delete-portfolio',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3633,20 +3307,24 @@ export const updatePortfolio = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * List Securities
+ * Create Security
  */
-export const listSecurities = <ThrowOnError extends boolean = false>(options: Options<ListSecuritiesData, ThrowOnError>) => (options.client ?? client).get<ListSecuritiesResponses, ListSecuritiesErrors, ThrowOnError>({
+export const opCreateSecurity = <ThrowOnError extends boolean = false>(options: Options<OpCreateSecurityData, ThrowOnError>) => (options.client ?? client).post<OpCreateSecurityResponses, OpCreateSecurityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/securities',
-    ...options
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-security',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
- * Create Security
+ * Update Security
  */
-export const createSecurity = <ThrowOnError extends boolean = false>(options: Options<CreateSecurityData, ThrowOnError>) => (options.client ?? client).post<CreateSecurityResponses, CreateSecurityErrors, ThrowOnError>({
+export const opUpdateSecurity = <ThrowOnError extends boolean = false>(options: Options<OpUpdateSecurityData, ThrowOnError>) => (options.client ?? client).post<OpUpdateSecurityResponses, OpUpdateSecurityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/securities',
+    url: '/extensions/roboinvestor/{graph_id}/operations/update-security',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3657,27 +3335,9 @@ export const createSecurity = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Delete Security
  */
-export const deleteSecurity = <ThrowOnError extends boolean = false>(options: Options<DeleteSecurityData, ThrowOnError>) => (options.client ?? client).delete<DeleteSecurityResponses, DeleteSecurityErrors, ThrowOnError>({
+export const opDeleteSecurity = <ThrowOnError extends boolean = false>(options: Options<OpDeleteSecurityData, ThrowOnError>) => (options.client ?? client).post<OpDeleteSecurityResponses, OpDeleteSecurityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/securities/{security_id}',
-    ...options
-});
-
-/**
- * Get Security
- */
-export const getSecurity = <ThrowOnError extends boolean = false>(options: Options<GetSecurityData, ThrowOnError>) => (options.client ?? client).get<GetSecurityResponses, GetSecurityErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/securities/{security_id}',
-    ...options
-});
-
-/**
- * Update Security
- */
-export const updateSecurity = <ThrowOnError extends boolean = false>(options: Options<UpdateSecurityData, ThrowOnError>) => (options.client ?? client).patch<UpdateSecurityResponses, UpdateSecurityErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/securities/{security_id}',
+    url: '/extensions/roboinvestor/{graph_id}/operations/delete-security',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3686,20 +3346,24 @@ export const updateSecurity = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * List Positions
+ * Create Position
  */
-export const listPositions = <ThrowOnError extends boolean = false>(options: Options<ListPositionsData, ThrowOnError>) => (options.client ?? client).get<ListPositionsResponses, ListPositionsErrors, ThrowOnError>({
+export const opCreatePosition = <ThrowOnError extends boolean = false>(options: Options<OpCreatePositionData, ThrowOnError>) => (options.client ?? client).post<OpCreatePositionResponses, OpCreatePositionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/positions',
-    ...options
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-position',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
- * Create Position
+ * Update Position
  */
-export const createPosition = <ThrowOnError extends boolean = false>(options: Options<CreatePositionData, ThrowOnError>) => (options.client ?? client).post<CreatePositionResponses, CreatePositionErrors, ThrowOnError>({
+export const opUpdatePosition = <ThrowOnError extends boolean = false>(options: Options<OpUpdatePositionData, ThrowOnError>) => (options.client ?? client).post<OpUpdatePositionResponses, OpUpdatePositionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/positions',
+    url: '/extensions/roboinvestor/{graph_id}/operations/update-position',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -3710,39 +3374,12 @@ export const createPosition = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Delete Position
  */
-export const deletePosition = <ThrowOnError extends boolean = false>(options: Options<DeletePositionData, ThrowOnError>) => (options.client ?? client).delete<DeletePositionResponses, DeletePositionErrors, ThrowOnError>({
+export const opDeletePosition = <ThrowOnError extends boolean = false>(options: Options<OpDeletePositionData, ThrowOnError>) => (options.client ?? client).post<OpDeletePositionResponses, OpDeletePositionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/positions/{position_id}',
-    ...options
-});
-
-/**
- * Get Position
- */
-export const getPosition = <ThrowOnError extends boolean = false>(options: Options<GetPositionData, ThrowOnError>) => (options.client ?? client).get<GetPositionResponses, GetPositionErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/positions/{position_id}',
-    ...options
-});
-
-/**
- * Update Position
- */
-export const updatePosition = <ThrowOnError extends boolean = false>(options: Options<UpdatePositionData, ThrowOnError>) => (options.client ?? client).patch<UpdatePositionResponses, UpdatePositionErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/positions/{position_id}',
+    url: '/extensions/roboinvestor/{graph_id}/operations/delete-position',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
-});
-
-/**
- * List Holdings (grouped by entity)
- */
-export const listHoldings = <ThrowOnError extends boolean = false>(options: Options<ListHoldingsData, ThrowOnError>) => (options.client ?? client).get<ListHoldingsResponses, ListHoldingsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/investor/{graph_id}/portfolios/{portfolio_id}/holdings',
-    ...options
 });
