@@ -42,8 +42,8 @@ import type {
   OperationEnvelope,
   UpdatePublishListOperation,
 } from '../sdk/types.gen'
-import { GraphQLClientCache } from './graphql/client'
 import type { TokenProvider } from './graphql/client'
+import { GraphQLClientCache } from './graphql/client'
 import {
   GetLedgerPublishListDocument,
   GetLedgerReportDocument,

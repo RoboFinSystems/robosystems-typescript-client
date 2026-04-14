@@ -38,8 +38,8 @@ import type {
   UpdatePositionOperation,
   UpdateSecurityOperation,
 } from '../sdk/types.gen'
-import { GraphQLClientCache } from './graphql/client'
 import type { TokenProvider } from './graphql/client'
+import { GraphQLClientCache } from './graphql/client'
 import {
   GetInvestorHoldingsDocument,
   GetInvestorPortfolioDocument,

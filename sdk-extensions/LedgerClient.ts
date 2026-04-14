@@ -57,8 +57,8 @@ import type {
   TruncateScheduleOperation,
   UpdateEntityRequest,
 } from '../sdk/types.gen'
-import { GraphQLClientCache } from './graphql/client'
 import type { TokenProvider } from './graphql/client'
+import { GraphQLClientCache } from './graphql/client'
 import {
   GetLedgerAccountRollupsDocument,
   GetLedgerAccountTreeDocument,

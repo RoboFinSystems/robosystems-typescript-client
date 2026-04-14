@@ -262,9 +262,7 @@ describe('LedgerClient', () => {
       await bothClient.getEntity('graph_1')
       const init = mockFetch.mock.calls[0][1] as RequestInit
       const headers = new Headers(init.headers)
-      expect(headers.get('Authorization')).toBe(
-        'Bearer eyJfromProvider.payload.sig'
-      )
+      expect(headers.get('Authorization')).toBe('Bearer eyJfromProvider.payload.sig')
       // The static `rfs_static_key_should_be_ignored` must NOT leak
       // through as an X-API-Key header.
       expect(headers.get('X-API-Key')).toBeNull()
