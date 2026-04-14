@@ -1,0 +1,39 @@
+# Defense in depth — `package.json` `files` already whitelists only the
+# artifacts we ship, but we also want to make absolutely sure a stray
+# test or build file never lands in a published tarball. This file is
+# an allow-by-default override: npm applies it *after* `files`.
+
+# Test files (vitest + legacy)
+**/*.test.ts
+**/*.test.js
+**/*.spec.ts
+**/*.spec.js
+vitest.config.ts
+vitest.setup.ts
+
+# Build + lint + generator config
+tsconfig.json
+codegen.ts
+eslint.config.mjs
+openapi-ts.config.js
+prepare.js
+prettier*
+.prettier*
+.eslintrc*
+
+# Tooling / repo hygiene
+.github/
+.husky/
+.vscode/
+bin/
+scripts/
+*.log
+*.lock
+node_modules/
+coverage/
+
+# Keep the `sdk-extensions/` source tree out of the tarball — consumers
+# import from `./extensions/*` (see package.json `exports`), and
+# `prepare.js` already mirrors the source `.ts` files into `extensions/`
+# for IDE navigation. Shipping both is just bloat.
+sdk-extensions/

@@ -9,6 +9,7 @@ import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { AgentClient } from './AgentClient'
 import { SSEClient } from './SSEClient'
+import { InvestorClient } from './InvestorClient'
 import { LedgerClient } from './LedgerClient'
 import { ReportClient } from './ReportClient'
 
@@ -36,6 +37,7 @@ export class RoboSystemsExtensions {
   public readonly agent: AgentClient
   public readonly operations: OperationClient
   public readonly ledger: LedgerClient
+  public readonly investor: InvestorClient
   public readonly reports: ReportClient
   private config: ResolvedConfig
 
@@ -78,6 +80,13 @@ export class RoboSystemsExtensions {
     })
 
     this.ledger = new LedgerClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      headers: this.config.headers,
+    })
+
+    this.investor = new InvestorClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
@@ -129,6 +138,7 @@ export * from './QueryClient'
 export * from './AgentClient'
 export * from './SSEClient'
 export * from './LedgerClient'
+export * from './InvestorClient'
 export * from './ReportClient'
 export * from './config'
 
@@ -138,6 +148,7 @@ export {
   AgentClient,
   SSEClient,
   LedgerClient,
+  InvestorClient,
   ReportClient,
 }
 
@@ -172,6 +183,9 @@ export const extensions = {
   },
   get ledger() {
     return getExtensions().ledger
+  },
+  get investor() {
+    return getExtensions().investor
   },
   get reports() {
     return getExtensions().reports

@@ -31,9 +31,29 @@ vi.mock('./config', () => ({
   extractTokenFromSDKClient: vi.fn(() => 'test-token'),
 }))
 
-// Mock the SDK gen functions to prevent real HTTP calls
+// Mock the SDK gen functions to prevent real HTTP calls.
+//
+// `executeCypherQuery` is implemented as a thin wrapper that delegates to
+// `global.fetch`, so the existing `mockFetch.mockResolvedValue(...)` /
+// `mockFetch.mockRejectedValue(...)` setup in each test continues to work.
+//
+// Why this isn't just `vi.fn()`: a bare mock returns `undefined`, and
+// `QueryClient.executeQuery` then runs `'error' in response` against it,
+// which throws `TypeError: Cannot use 'in' operator to search for 'error'
+// in undefined`. That error gets swallowed by the hook's catch block, so
+// every success-path test ends up with `data === null` and fails. Routing
+// through fetch keeps a single source of truth (mockFetch) and mirrors the
+// openapi-ts generated envelope shape `{ data, error, response }`.
 vi.mock('../sdk/sdk.gen', () => ({
-  executeCypherQuery: vi.fn(),
+  executeCypherQuery: vi.fn(async () => {
+    try {
+      const response = await (global.fetch as any)('http://mock-api/')
+      const data = await response.json()
+      return { data, error: undefined, response }
+    } catch (err) {
+      return { data: undefined, error: err as Error, response: undefined }
+    }
+  }),
   getOperationStatus: vi.fn(),
   cancelOperation: vi.fn(),
 }))
