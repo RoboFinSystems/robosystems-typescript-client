@@ -42,6 +42,7 @@ import type {
   OperationEnvelope,
   UpdatePublishListOperation,
 } from '../sdk/types.gen'
+import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
 import {
   GetLedgerPublishListDocument,
@@ -119,7 +120,13 @@ interface ReportClientConfig {
   baseUrl: string
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: Record<string, string>
+  /** Static credential — use `tokenProvider` instead if the JWT rotates. */
   token?: string
+  /**
+   * Dynamic credential callback. When set, invoked on every GraphQL
+   * request so refreshes flow through automatically.
+   */
+  tokenProvider?: TokenProvider
 }
 
 export class ReportClient {
