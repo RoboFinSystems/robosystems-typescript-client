@@ -2048,6 +2048,66 @@ export type CreateTaxonomyRequest = {
 };
 
 /**
+ * CreateTransactionRequest
+ *
+ * Create a standalone business-event Transaction.
+ *
+ * Use this when you want to record a real-world event (invoice, payment,
+ * deposit, expense) first and then attach one or more journal entries to
+ * it via `create-journal-entry` with the returned `transaction_id`.
+ *
+ * `amount` is in minor currency units (cents). `type` is free-form but
+ * common values are: invoice, payment, bill, expense, deposit, transfer,
+ * journal_entry.
+ */
+export type CreateTransactionRequest = {
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Currency
+     */
+    currency?: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Merchant Name
+     */
+    merchant_name?: string | null;
+    /**
+     * Reference Number
+     */
+    reference_number?: string | null;
+    /**
+     * Number
+     */
+    number?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Due Date
+     */
+    due_date?: string | null;
+    /**
+     * Status
+     */
+    status?: 'pending' | 'posted';
+};
+
+/**
  * CreateViewRequest
  */
 export type CreateViewRequest = {
@@ -13910,6 +13970,70 @@ export type OpDeleteAssociationResponses = {
 };
 
 export type OpDeleteAssociationResponse = OpDeleteAssociationResponses[keyof OpDeleteAssociationResponses];
+
+export type OpCreateTransactionData = {
+    body: CreateTransactionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-transaction';
+};
+
+export type OpCreateTransactionErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateTransactionError = OpCreateTransactionErrors[keyof OpCreateTransactionErrors];
+
+export type OpCreateTransactionResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateTransactionResponse = OpCreateTransactionResponses[keyof OpCreateTransactionResponses];
 
 export type OpCreateJournalEntryData = {
     body: CreateJournalEntryRequest;
