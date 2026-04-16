@@ -26,36 +26,74 @@ import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
 import { ClientError } from 'graphql-request'
 import {
   opAutoMapElements,
+  opBuildFactGrid,
   opClosePeriod,
+  opCreateAssociations,
   opCreateClosingEntry,
+  opCreateElement,
+  opCreateJournalEntry,
   opCreateManualClosingEntry,
   opCreateMappingAssociation,
   opCreateSchedule,
   opCreateStructure,
   opCreateTaxonomy,
+  opDeleteAssociation,
+  opDeleteElement,
+  opDeleteJournalEntry,
   opDeleteMappingAssociation,
+  opDeleteSchedule,
+  opDeleteStructure,
+  opDeleteTaxonomy,
   opInitializeLedger,
+  opLinkEntityTaxonomy,
   opReopenPeriod,
+  opReverseJournalEntry,
   opSetCloseTarget,
   opTruncateSchedule,
+  opUpdateAssociation,
+  opUpdateElement,
   opUpdateEntity,
+  opUpdateJournalEntry,
+  opUpdateSchedule,
+  opUpdateStructure,
+  opUpdateTaxonomy,
 } from '../sdk/sdk.gen'
 import type {
   AutoMapElementsOperation,
+  BulkAssociationItem,
+  BulkCreateAssociationsRequest,
   ClosePeriodOperation,
   CreateClosingEntryOperation,
+  CreateElementRequest,
+  CreateJournalEntryRequest,
   CreateManualClosingEntryRequest,
   CreateMappingAssociationOperation,
   CreateScheduleRequest,
   CreateStructureRequest,
   CreateTaxonomyRequest,
+  CreateViewRequest,
+  DeleteAssociationRequest,
+  DeleteElementRequest,
+  DeleteJournalEntryRequest,
   DeleteMappingAssociationOperation,
+  DeleteScheduleRequest,
+  DeleteStructureRequest,
+  DeleteTaxonomyRequest,
   InitializeLedgerRequest,
+  JournalEntryLineItemInput,
+  LinkEntityTaxonomyRequest,
   OperationEnvelope,
   ReopenPeriodOperation,
+  ReverseJournalEntryRequest,
   SetCloseTargetOperation,
   TruncateScheduleOperation,
+  UpdateAssociationRequest,
+  UpdateElementRequest,
   UpdateEntityRequest,
+  UpdateJournalEntryRequest,
+  UpdateScheduleRequest,
+  UpdateStructureRequest,
+  UpdateTaxonomyRequest,
 } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
@@ -342,6 +380,23 @@ export interface CreateScheduleOptions {
   }
 }
 
+export interface JournalEntryLineItem {
+  elementId: string
+  debitAmount?: number
+  creditAmount?: number
+  description?: string | null
+}
+
+export interface CreateJournalEntryOptions {
+  postingDate: string
+  memo: string
+  lineItems: JournalEntryLineItem[]
+  type?: LedgerEntryType
+  status?: 'draft' | 'posted'
+  transactionId?: string | null
+  idempotencyKey?: string | null
+}
+
 // ── Client ──────────────────────────────────────────────────────────────
 
 interface LedgerClientConfig {
@@ -602,6 +657,43 @@ export class LedgerClient {
     return (envelope.result ?? {}) as Record<string, unknown>
   }
 
+  /** Update mutable fields on a taxonomy. `taxonomy_type` is immutable. */
+  async updateTaxonomy(
+    graphId: string,
+    body: UpdateTaxonomyRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update taxonomy',
+      opUpdateTaxonomy({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Soft-delete a taxonomy (`is_active=false`). */
+  async deleteTaxonomy(graphId: string, taxonomyId: string): Promise<Record<string, unknown>> {
+    const body: DeleteTaxonomyRequest = { taxonomy_id: taxonomyId }
+    const envelope = await this.callOperation(
+      'Delete taxonomy',
+      opDeleteTaxonomy({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /**
+   * Link the graph's entity to a taxonomy (ENTITY_HAS_TAXONOMY edge).
+   * Idempotent — returns existing linkage if already present.
+   */
+  async linkEntityTaxonomy(
+    graphId: string,
+    body: LinkEntityTaxonomyRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Link entity taxonomy',
+      opLinkEntityTaxonomy({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
   /** List elements (CoA accounts, GAAP concepts, etc.) with filters. */
   async listElements(
     graphId: string,
@@ -644,6 +736,40 @@ export class LedgerClient {
     )
   }
 
+  /** Create a new element within a taxonomy (native CoA account, etc.). */
+  async createElement(
+    graphId: string,
+    body: CreateElementRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Create element',
+      opCreateElement({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Update mutable fields on an element. `taxonomy_id` and `source` are immutable. */
+  async updateElement(
+    graphId: string,
+    body: UpdateElementRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update element',
+      opUpdateElement({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Soft-delete an element (`is_active=false`). */
+  async deleteElement(graphId: string, elementId: string): Promise<Record<string, unknown>> {
+    const body: DeleteElementRequest = { element_id: elementId }
+    const envelope = await this.callOperation(
+      'Delete element',
+      opDeleteElement({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
   // ── Structures ──────────────────────────────────────────────────────
 
   /** List reporting structures (IS, BS, CF, schedules) with optional filters. */
@@ -674,6 +800,50 @@ export class LedgerClient {
       opCreateStructure({ path: { graph_id: graphId }, body })
     )
     return envelope.result as unknown as LedgerMappingInfo
+  }
+
+  /** Convenience wrapper — create a CoA→GAAP mapping structure. */
+  async createMappingStructure(
+    graphId: string,
+    options?: {
+      name?: string
+      description?: string | null
+      taxonomyId?: string
+    }
+  ): Promise<LedgerMappingInfo> {
+    const body: CreateStructureRequest = {
+      name: options?.name ?? 'CoA to Reporting',
+      structure_type: 'coa_mapping',
+      taxonomy_id: options?.taxonomyId ?? 'tax_usgaap_reporting',
+      description: options?.description ?? 'Map Chart of Accounts to US GAAP reporting concepts',
+    }
+    const envelope = await this.callOperation(
+      'Create mapping structure',
+      opCreateStructure({ path: { graph_id: graphId }, body })
+    )
+    return envelope.result as unknown as LedgerMappingInfo
+  }
+
+  /** Update mutable fields on a structure. `structure_type` is immutable. */
+  async updateStructure(
+    graphId: string,
+    body: UpdateStructureRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update structure',
+      opUpdateStructure({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Soft-delete a structure (`is_active=false`). */
+  async deleteStructure(graphId: string, structureId: string): Promise<Record<string, unknown>> {
+    const body: DeleteStructureRequest = { structure_id: structureId }
+    const envelope = await this.callOperation(
+      'Delete structure',
+      opDeleteStructure({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // ── Mappings ────────────────────────────────────────────────────────
@@ -755,6 +925,42 @@ export class LedgerClient {
     return { operationId: envelope.operationId, status: envelope.status }
   }
 
+  /** Bulk create associations within a single structure, atomically. */
+  async createAssociations(
+    graphId: string,
+    structureId: string,
+    associations: BulkAssociationItem[]
+  ): Promise<Record<string, unknown>> {
+    const body: BulkCreateAssociationsRequest = { structure_id: structureId, associations }
+    const envelope = await this.callOperation(
+      'Create associations',
+      opCreateAssociations({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Update mutable fields on an association (order, weight, confidence). */
+  async updateAssociation(
+    graphId: string,
+    body: UpdateAssociationRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update association',
+      opUpdateAssociation({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Hard-delete an association (any type: presentation, calculation, mapping). */
+  async deleteAssociation(graphId: string, associationId: string): Promise<{ deleted: boolean }> {
+    const body: DeleteAssociationRequest = { association_id: associationId }
+    const envelope = await this.callOperation(
+      'Delete association',
+      opDeleteAssociation({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+  }
+
   // ── Schedules ──────────────────────────────────────────────────────
 
   /** List all schedule structures with metadata. */
@@ -826,6 +1032,28 @@ export class LedgerClient {
       totalPeriods: raw.total_periods,
       totalFacts: raw.total_facts,
     }
+  }
+
+  /** Update mutable fields on a schedule (name, entry_template, metadata). */
+  async updateSchedule(
+    graphId: string,
+    body: UpdateScheduleRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update schedule',
+      opUpdateSchedule({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Permanently delete a schedule (cascades through facts + associations). */
+  async deleteSchedule(graphId: string, structureId: string): Promise<{ deleted: boolean }> {
+    const body: DeleteScheduleRequest = { structure_id: structureId }
+    const envelope = await this.callOperation(
+      'Delete schedule',
+      opDeleteSchedule({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
   /** Truncate a schedule — end it early at `newEndDate`. */
@@ -1037,6 +1265,104 @@ export class LedgerClient {
       opReopenPeriod({ path: { graph_id: graphId }, body })
     )
     return rawFiscalCalendarToCamel(envelope.result as unknown as RawFiscalCalendar)
+  }
+
+  // ── Journal entries (native accounting writes) ──────────────────────
+
+  /**
+   * Create a journal entry with balanced line items (DR=CR enforced).
+   *
+   * Defaults to `status='draft'`. Pass `status='posted'` for historical
+   * data import where entries represent already-happened business events.
+   *
+   * Supply `idempotencyKey` to make the call safe to retry — replays
+   * within 24 hours return the same envelope. Reusing the key with a
+   * different body returns HTTP 409.
+   */
+  async createJournalEntry(
+    graphId: string,
+    options: CreateJournalEntryOptions
+  ): Promise<Record<string, unknown>> {
+    const body: CreateJournalEntryRequest = {
+      posting_date: options.postingDate,
+      memo: options.memo,
+      line_items: options.lineItems.map(
+        (li): JournalEntryLineItemInput => ({
+          element_id: li.elementId,
+          debit_amount: li.debitAmount,
+          credit_amount: li.creditAmount,
+          description: li.description ?? null,
+        })
+      ),
+      type: options.type,
+      status: options.status,
+      transaction_id: options.transactionId ?? null,
+    }
+    const envelope = await this.callOperation(
+      'Create journal entry',
+      opCreateJournalEntry({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Update a draft journal entry. Posted entries are immutable. */
+  async updateJournalEntry(
+    graphId: string,
+    body: UpdateJournalEntryRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update journal entry',
+      opUpdateJournalEntry({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Hard-delete a draft journal entry. Posted entries must be reversed. */
+  async deleteJournalEntry(graphId: string, entryId: string): Promise<{ deleted: boolean }> {
+    const body: DeleteJournalEntryRequest = { entry_id: entryId }
+    const envelope = await this.callOperation(
+      'Delete journal entry',
+      opDeleteJournalEntry({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+  }
+
+  /**
+   * Reverse a posted journal entry — creates an offsetting entry and marks
+   * the original as reversed.
+   */
+  async reverseJournalEntry(
+    graphId: string,
+    entryId: string,
+    options?: { postingDate?: string | null; memo?: string | null }
+  ): Promise<Record<string, unknown>> {
+    const body: ReverseJournalEntryRequest = {
+      entry_id: entryId,
+      posting_date: options?.postingDate ?? null,
+      memo: options?.memo ?? null,
+    }
+    const envelope = await this.callOperation(
+      'Reverse journal entry',
+      opReverseJournalEntry({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  // ── Fact grid (graph-backed analytical query) ─────────────────────
+
+  /**
+   * Build a multi-dimensional fact grid against the graph schema.
+   *
+   * Runs against LadybugDB (not the extensions OLTP database) and returns
+   * a deduplicated pivot table of XBRL facts. Works for both roboledger
+   * tenant graphs (after materialization) and the SEC shared repository.
+   */
+  async buildFactGrid(graphId: string, body: CreateViewRequest): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Build fact grid',
+      opBuildFactGrid({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // Reports, statements, and publish lists live on `ReportClient`.
