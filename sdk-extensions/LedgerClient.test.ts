@@ -720,7 +720,10 @@ describe('LedgerClient', () => {
       mockFetch.mockResolvedValueOnce(
         envelopeResponse('update-taxonomy', { taxonomy_id: 'tax_1', name: 'Updated' })
       )
-      const result = await client.updateTaxonomy('graph_1', { taxonomy_id: 'tax_1', name: 'Updated' })
+      const result = await client.updateTaxonomy('graph_1', {
+        taxonomy_id: 'tax_1',
+        name: 'Updated',
+      })
       expect(result).toMatchObject({ taxonomy_id: 'tax_1', name: 'Updated' })
     })
 
@@ -743,9 +746,7 @@ describe('LedgerClient', () => {
 
   describe('deleteTaxonomy', () => {
     it('returns the deletion result', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('delete-taxonomy', { deleted: true })
-      )
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-taxonomy', { deleted: true }))
       const result = await client.deleteTaxonomy('graph_1', 'tax_1')
       expect(result).toMatchObject({ deleted: true })
     })
@@ -875,9 +876,7 @@ describe('LedgerClient', () => {
     })
 
     it('accepts custom name and taxonomyId', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-structure', { id: 'str_2' })
-      )
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-structure', { id: 'str_2' }))
       await client.createMappingStructure('graph_1', {
         name: 'My Mapping',
         taxonomyId: 'tax_custom',
@@ -931,9 +930,7 @@ describe('LedgerClient', () => {
 
   describe('createAssociations', () => {
     it('sends structure_id and associations in the body', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-associations', { created: 2 })
-      )
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-associations', { created: 2 }))
       await client.createAssociations('graph_1', 'str_1', [
         { from_element_id: 'elem_a', to_element_id: 'elem_b' },
         { from_element_id: 'elem_c', to_element_id: 'elem_d' },

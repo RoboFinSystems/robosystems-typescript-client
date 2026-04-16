@@ -952,10 +952,7 @@ export class LedgerClient {
   }
 
   /** Hard-delete an association (any type: presentation, calculation, mapping). */
-  async deleteAssociation(
-    graphId: string,
-    associationId: string
-  ): Promise<{ deleted: boolean }> {
+  async deleteAssociation(graphId: string, associationId: string): Promise<{ deleted: boolean }> {
     const body: DeleteAssociationRequest = { association_id: associationId }
     const envelope = await this.callOperation(
       'Delete association',
