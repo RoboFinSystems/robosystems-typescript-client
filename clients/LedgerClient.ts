@@ -1424,7 +1424,7 @@ export class LedgerClient {
     return (envelope.result ?? {}) as Record<string, unknown>
   }
 
-  // Reports, statements, and publish lists live on `ReportClient`.
+  // ── Reports, statements, and publish lists ──────────────────────────────
 
   // ── Internal helpers ────────────────────────────────────────────────
 
