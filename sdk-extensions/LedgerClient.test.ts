@@ -713,6 +713,517 @@ describe('LedgerClient', () => {
     })
   })
 
+  // ── Taxonomy writes ─────────────────────────────────────────────────
+
+  describe('updateTaxonomy', () => {
+    it('returns the updated taxonomy result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-taxonomy', { taxonomy_id: 'tax_1', name: 'Updated' })
+      )
+      const result = await client.updateTaxonomy('graph_1', { taxonomy_id: 'tax_1', name: 'Updated' })
+      expect(result).toMatchObject({ taxonomy_id: 'tax_1', name: 'Updated' })
+    })
+
+    it('POSTs to the update-taxonomy operation URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-taxonomy', {}))
+      await client.updateTaxonomy('graph_42', { taxonomy_id: 'tax_1', name: 'X' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-taxonomy'
+      )
+    })
+
+    it('throws on 4xx', async () => {
+      mockFetch.mockResolvedValueOnce(restErrorResponse('Taxonomy not found', 404))
+      await expect(client.updateTaxonomy('graph_1', { taxonomy_id: 'tax_1' })).rejects.toThrow(
+        /Update taxonomy failed/
+      )
+    })
+  })
+
+  describe('deleteTaxonomy', () => {
+    it('returns the deletion result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('delete-taxonomy', { deleted: true })
+      )
+      const result = await client.deleteTaxonomy('graph_1', 'tax_1')
+      expect(result).toMatchObject({ deleted: true })
+    })
+
+    it('sends taxonomy_id in the request body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-taxonomy', {}))
+      await client.deleteTaxonomy('graph_1', 'tax_abc')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.taxonomy_id).toBe('tax_abc')
+    })
+  })
+
+  describe('linkEntityTaxonomy', () => {
+    it('returns the link result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('link-entity-taxonomy', { taxonomy_id: 'tax_1', is_primary: true })
+      )
+      const result = await client.linkEntityTaxonomy('graph_1', {
+        taxonomy_id: 'tax_1',
+        basis: 'chart_of_accounts',
+        is_primary: true,
+      })
+      expect(result).toMatchObject({ is_primary: true })
+    })
+
+    it('POSTs to the link-entity-taxonomy operation URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('link-entity-taxonomy', {}))
+      await client.linkEntityTaxonomy('graph_42', { taxonomy_id: 'tax_1' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/link-entity-taxonomy'
+      )
+    })
+  })
+
+  // ── Element writes ──────────────────────────────────────────────────
+
+  describe('createElement', () => {
+    it('returns the created element result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-element', { element_id: 'elem_1', name: 'Cash' })
+      )
+      const result = await client.createElement('graph_1', {
+        taxonomy_id: 'tax_1',
+        name: 'Cash',
+        classification: 'asset',
+      })
+      expect(result).toMatchObject({ element_id: 'elem_1', name: 'Cash' })
+    })
+
+    it('POSTs to the create-element operation URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-element', {}))
+      await client.createElement('graph_42', {
+        taxonomy_id: 'tax_1',
+        name: 'Cash',
+        classification: 'asset',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-element'
+      )
+    })
+
+    it('throws on 4xx', async () => {
+      mockFetch.mockResolvedValueOnce(restErrorResponse('Taxonomy not found', 404))
+      await expect(
+        client.createElement('graph_1', {
+          taxonomy_id: 'tax_1',
+          name: 'X',
+          classification: 'asset',
+        })
+      ).rejects.toThrow(/Create element failed/)
+    })
+  })
+
+  describe('updateElement', () => {
+    it('returns the updated element result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-element', { element_id: 'elem_1', name: 'Updated Cash' })
+      )
+      const result = await client.updateElement('graph_1', {
+        element_id: 'elem_1',
+        name: 'Updated Cash',
+      })
+      expect(result).toMatchObject({ name: 'Updated Cash' })
+    })
+
+    it('sends the body to update-element', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-element', {}))
+      await client.updateElement('graph_1', { element_id: 'elem_1', name: 'X' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.element_id).toBe('elem_1')
+    })
+  })
+
+  describe('deleteElement', () => {
+    it('returns the deletion result', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-element', { deleted: true }))
+      const result = await client.deleteElement('graph_1', 'elem_1')
+      expect(result).toMatchObject({ deleted: true })
+    })
+
+    it('sends element_id in the request body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-element', {}))
+      await client.deleteElement('graph_1', 'elem_abc')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.element_id).toBe('elem_abc')
+    })
+  })
+
+  // ── Structure writes ────────────────────────────────────────────────
+
+  describe('createMappingStructure', () => {
+    it('sends structure_type coa_mapping and default name', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-structure', { id: 'str_1', structureType: 'coa_mapping' })
+      )
+      await client.createMappingStructure('graph_1')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.structure_type).toBe('coa_mapping')
+      expect(body.name).toBe('CoA to Reporting')
+      expect(body.taxonomy_id).toBe('tax_usgaap_reporting')
+    })
+
+    it('accepts custom name and taxonomyId', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-structure', { id: 'str_2' })
+      )
+      await client.createMappingStructure('graph_1', {
+        name: 'My Mapping',
+        taxonomyId: 'tax_custom',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.name).toBe('My Mapping')
+      expect(body.taxonomy_id).toBe('tax_custom')
+    })
+  })
+
+  describe('updateStructure', () => {
+    it('returns the updated structure result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-structure', { structure_id: 'str_1', name: 'Updated' })
+      )
+      const result = await client.updateStructure('graph_1', {
+        structure_id: 'str_1',
+        name: 'Updated',
+      })
+      expect(result).toMatchObject({ name: 'Updated' })
+    })
+
+    it('POSTs to the update-structure URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-structure', {}))
+      await client.updateStructure('graph_42', { structure_id: 'str_1' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-structure'
+      )
+    })
+  })
+
+  describe('deleteStructure', () => {
+    it('returns the deletion result', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-structure', { deleted: true }))
+      const result = await client.deleteStructure('graph_1', 'str_1')
+      expect(result).toMatchObject({ deleted: true })
+    })
+
+    it('sends structure_id in the request body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-structure', {}))
+      await client.deleteStructure('graph_1', 'str_abc')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.structure_id).toBe('str_abc')
+    })
+  })
+
+  // ── Association writes ──────────────────────────────────────────────
+
+  describe('createAssociations', () => {
+    it('sends structure_id and associations in the body', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-associations', { created: 2 })
+      )
+      await client.createAssociations('graph_1', 'str_1', [
+        { from_element_id: 'elem_a', to_element_id: 'elem_b' },
+        { from_element_id: 'elem_c', to_element_id: 'elem_d' },
+      ])
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.structure_id).toBe('str_1')
+      expect(body.associations).toHaveLength(2)
+      expect(body.associations[0].from_element_id).toBe('elem_a')
+    })
+
+    it('returns the result from the envelope', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-associations', { created: 3 }))
+      const result = await client.createAssociations('graph_1', 'str_1', [
+        { from_element_id: 'a', to_element_id: 'b' },
+      ])
+      expect(result).toMatchObject({ created: 3 })
+    })
+  })
+
+  describe('updateAssociation', () => {
+    it('returns the updated association result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-association', { association_id: 'assoc_1', weight: 0.5 })
+      )
+      const result = await client.updateAssociation('graph_1', {
+        association_id: 'assoc_1',
+        weight: 0.5,
+      })
+      expect(result).toMatchObject({ weight: 0.5 })
+    })
+  })
+
+  describe('deleteAssociation', () => {
+    it('returns deleted: true from the envelope', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-association', { deleted: true }))
+      const result = await client.deleteAssociation('graph_1', 'assoc_1')
+      expect(result.deleted).toBe(true)
+    })
+
+    it('falls back to deleted: true when result is null', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-association', null))
+      const result = await client.deleteAssociation('graph_1', 'assoc_1')
+      expect(result.deleted).toBe(true)
+    })
+
+    it('sends association_id in the request body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-association', null))
+      await client.deleteAssociation('graph_1', 'assoc_xyz')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.association_id).toBe('assoc_xyz')
+    })
+  })
+
+  // ── Schedule writes ─────────────────────────────────────────────────
+
+  describe('updateSchedule', () => {
+    it('returns the updated schedule result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-schedule', { structure_id: 'str_1', name: 'Updated' })
+      )
+      const result = await client.updateSchedule('graph_1', {
+        structure_id: 'str_1',
+        name: 'Updated',
+      })
+      expect(result).toMatchObject({ name: 'Updated' })
+    })
+
+    it('POSTs to the update-schedule URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-schedule', {}))
+      await client.updateSchedule('graph_42', { structure_id: 'str_1' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-schedule'
+      )
+    })
+  })
+
+  describe('deleteSchedule', () => {
+    it('returns deleted: true from the envelope', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-schedule', { deleted: true }))
+      const result = await client.deleteSchedule('graph_1', 'str_1')
+      expect(result.deleted).toBe(true)
+    })
+
+    it('falls back to deleted: true when result is null', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-schedule', null))
+      const result = await client.deleteSchedule('graph_1', 'str_1')
+      expect(result.deleted).toBe(true)
+    })
+
+    it('sends structure_id in the request body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-schedule', null))
+      await client.deleteSchedule('graph_1', 'str_abc')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.structure_id).toBe('str_abc')
+    })
+  })
+
+  // ── Journal entry writes ────────────────────────────────────────────
+
+  describe('createJournalEntry', () => {
+    const lineItems = [
+      { elementId: 'elem_cash', debitAmount: 1000, creditAmount: 0 },
+      { elementId: 'elem_revenue', debitAmount: 0, creditAmount: 1000 },
+    ]
+
+    it('returns the created entry result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-journal-entry', { entry_id: 'je_1', status: 'draft' })
+      )
+      const result = await client.createJournalEntry('graph_1', {
+        postingDate: '2026-03-31',
+        memo: 'Revenue recognition',
+        lineItems,
+      })
+      expect(result).toMatchObject({ entry_id: 'je_1', status: 'draft' })
+    })
+
+    it('serializes options into snake_case body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-journal-entry', {}))
+      await client.createJournalEntry('graph_1', {
+        postingDate: '2026-03-31',
+        memo: 'Test',
+        lineItems,
+        type: 'standard',
+        status: 'posted',
+        transactionId: 'txn_1',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.posting_date).toBe('2026-03-31')
+      expect(body.memo).toBe('Test')
+      expect(body.type).toBe('standard')
+      expect(body.status).toBe('posted')
+      expect(body.transaction_id).toBe('txn_1')
+      expect(body.line_items).toHaveLength(2)
+      expect(body.line_items[0].element_id).toBe('elem_cash')
+      expect(body.line_items[0].debit_amount).toBe(1000)
+    })
+
+    it('POSTs to the create-journal-entry URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-journal-entry', {}))
+      await client.createJournalEntry('graph_42', {
+        postingDate: '2026-03-31',
+        memo: 'Test',
+        lineItems,
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-journal-entry'
+      )
+    })
+
+    it('throws on 4xx', async () => {
+      mockFetch.mockResolvedValueOnce(restErrorResponse('Line items do not balance', 422))
+      await expect(
+        client.createJournalEntry('graph_1', { postingDate: '2026-03-31', memo: 'X', lineItems })
+      ).rejects.toThrow(/Create journal entry failed/)
+    })
+  })
+
+  describe('updateJournalEntry', () => {
+    it('returns the updated entry result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-journal-entry', { entry_id: 'je_1', memo: 'Updated' })
+      )
+      const result = await client.updateJournalEntry('graph_1', {
+        entry_id: 'je_1',
+        memo: 'Updated',
+      })
+      expect(result).toMatchObject({ memo: 'Updated' })
+    })
+
+    it('POSTs to the update-journal-entry URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-journal-entry', {}))
+      await client.updateJournalEntry('graph_42', { entry_id: 'je_1' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-journal-entry'
+      )
+    })
+  })
+
+  describe('deleteJournalEntry', () => {
+    it('returns deleted: true from the envelope', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-journal-entry', { deleted: true }))
+      const result = await client.deleteJournalEntry('graph_1', 'je_1')
+      expect(result.deleted).toBe(true)
+    })
+
+    it('falls back to deleted: true when result is null', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-journal-entry', null))
+      const result = await client.deleteJournalEntry('graph_1', 'je_1')
+      expect(result.deleted).toBe(true)
+    })
+
+    it('sends entry_id in the request body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-journal-entry', null))
+      await client.deleteJournalEntry('graph_1', 'je_xyz')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.entry_id).toBe('je_xyz')
+    })
+  })
+
+  describe('reverseJournalEntry', () => {
+    it('returns the reversal result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('reverse-journal-entry', {
+          original_entry_id: 'je_1',
+          reversal_entry_id: 'je_2',
+        })
+      )
+      const result = await client.reverseJournalEntry('graph_1', 'je_1', {
+        postingDate: '2026-04-01',
+        memo: 'Reversal of March entry',
+      })
+      expect(result).toMatchObject({ original_entry_id: 'je_1', reversal_entry_id: 'je_2' })
+    })
+
+    it('sends entry_id and optional fields in the body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('reverse-journal-entry', {}))
+      await client.reverseJournalEntry('graph_1', 'je_abc', {
+        postingDate: '2026-04-01',
+        memo: 'Reversal',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.entry_id).toBe('je_abc')
+      expect(body.posting_date).toBe('2026-04-01')
+      expect(body.memo).toBe('Reversal')
+    })
+
+    it('sends null for omitted optional fields', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('reverse-journal-entry', {}))
+      await client.reverseJournalEntry('graph_1', 'je_1')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.posting_date).toBeNull()
+      expect(body.memo).toBeNull()
+    })
+
+    it('POSTs to the reverse-journal-entry URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('reverse-journal-entry', {}))
+      await client.reverseJournalEntry('graph_42', 'je_1')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/reverse-journal-entry'
+      )
+    })
+  })
+
+  // ── Fact grid ───────────────────────────────────────────────────────
+
+  describe('buildFactGrid', () => {
+    it('returns the fact grid result', async () => {
+      const grid = { columns: ['period', 'value'], rows: [] }
+      mockFetch.mockResolvedValueOnce(envelopeResponse('build-fact-grid', grid))
+      const result = await client.buildFactGrid('graph_1', {
+        elements: ['us-gaap:Assets'],
+        periods: ['2026-03-31'],
+      })
+      expect(result).toMatchObject(grid)
+    })
+
+    it('sends the request body to build-fact-grid', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('build-fact-grid', {}))
+      await client.buildFactGrid('graph_42', {
+        canonical_concepts: ['revenue'],
+        entities: ['ACME'],
+        fiscal_year: 2026,
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/build-fact-grid'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.canonical_concepts).toEqual(['revenue'])
+      expect(body.fiscal_year).toBe(2026)
+    })
+
+    it('throws on 4xx', async () => {
+      mockFetch.mockResolvedValueOnce(restErrorResponse('Graph not materialized', 400))
+      await expect(client.buildFactGrid('graph_1', {})).rejects.toThrow(/Build fact grid failed/)
+    })
+  })
+
   describe('constructor', () => {
     it('creates with minimal config', () => {
       const c = new LedgerClient({ baseUrl: 'http://localhost:8000' })

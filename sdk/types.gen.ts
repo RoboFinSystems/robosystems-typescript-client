@@ -1609,10 +1609,10 @@ export type CreateGraphRequest = {
  *
  * Create a new journal entry with balanced line items.
  *
- * The entry is always created as `status='draft'`. Posting a draft
- * happens via `close-period` (for batch month-end posting) or — in
- * the future — an individual `post-journal-entry` op. This matches
- * the existing `create-manual-closing-entry` behavior.
+ * Defaults to `status='draft'` for ongoing native writes (the normal
+ * workflow: draft → review → post via close-period). Pass
+ * `status='posted'` for historical data import where entries represent
+ * already-happened business events that don't need review.
  *
  * Total debit amount must equal total credit amount or the request
  * is rejected with 422. `line_items` must contain at least two rows
@@ -1635,6 +1635,10 @@ export type CreateJournalEntryRequest = {
      * Type
      */
     type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
+    /**
+     * Status
+     */
+    status?: 'draft' | 'posted';
     /**
      * Transaction Id
      */
@@ -4686,6 +4690,34 @@ export type JournalEntryLineItemInput = {
      * Description
      */
     description?: string | null;
+};
+
+/**
+ * LinkEntityTaxonomyRequest
+ *
+ * Link an entity to a taxonomy (creates the ENTITY_HAS_TAXONOMY edge).
+ *
+ * This is how a graph declares "this entity reports under this taxonomy."
+ * For chart_of_accounts taxonomies, this tells the platform which CoA the
+ * entity uses. For reporting taxonomies, which standard (us-gaap, ifrs).
+ */
+export type LinkEntityTaxonomyRequest = {
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Basis
+     */
+    basis?: 'reporting' | 'chart_of_accounts' | 'mapping' | 'schedule';
+    /**
+     * Is Primary
+     */
+    is_primary?: boolean;
+    /**
+     * Adoption Context
+     */
+    adoption_context?: string | null;
 };
 
 /**
@@ -13269,6 +13301,70 @@ export type OpDeleteTaxonomyResponses = {
 };
 
 export type OpDeleteTaxonomyResponse = OpDeleteTaxonomyResponses[keyof OpDeleteTaxonomyResponses];
+
+export type OpLinkEntityTaxonomyData = {
+    body: LinkEntityTaxonomyRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/link-entity-taxonomy';
+};
+
+export type OpLinkEntityTaxonomyErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpLinkEntityTaxonomyError = OpLinkEntityTaxonomyErrors[keyof OpLinkEntityTaxonomyErrors];
+
+export type OpLinkEntityTaxonomyResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpLinkEntityTaxonomyResponse = OpLinkEntityTaxonomyResponses[keyof OpLinkEntityTaxonomyResponses];
 
 export type OpUpdateStructureData = {
     body: UpdateStructureRequest;
