@@ -1,13 +1,13 @@
 'use client'
 
 /**
- * Configuration for SDK extensions
+ * Configuration for SDK clients
  * Provides centralized configuration for CORS, credentials, and other settings
  */
 
 import type { TokenProvider } from './graphql/client'
 
-export interface SDKExtensionsConfig {
+export interface SDKClientConfig {
   baseUrl?: string
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: Record<string, string>
@@ -25,7 +25,7 @@ export interface SDKExtensionsConfig {
   /**
    * Dynamic credential callback, invoked on every GraphQL request.
    * When set, JWT refresh flows through automatically: the lazy
-   * `extensions` singleton picks it up at construction, and each
+   * `clients` singleton picks it up at construction, and each
    * request consults the callback for the current token instead of
    * reusing a stale captured value.
    */
@@ -36,7 +36,7 @@ export interface SDKExtensionsConfig {
 }
 
 // Default configuration
-const defaultConfig: SDKExtensionsConfig = {
+const defaultConfig: SDKClientConfig = {
   baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   credentials: 'include',
   token: undefined, // Will be set from environment or programmatically
@@ -46,13 +46,13 @@ const defaultConfig: SDKExtensionsConfig = {
 }
 
 // Global configuration singleton
-let globalConfig: SDKExtensionsConfig = { ...defaultConfig }
+let globalConfig: SDKClientConfig = { ...defaultConfig }
 
 /**
- * Set global configuration for SDK extensions
+ * Set global configuration for SDK clients
  * @param config Partial configuration to merge with defaults
  */
-export function setSDKExtensionsConfig(config: Partial<SDKExtensionsConfig>) {
+export function setSDKClientConfig(config: Partial<SDKClientConfig>) {
   globalConfig = {
     ...globalConfig,
     ...config,
@@ -60,17 +60,17 @@ export function setSDKExtensionsConfig(config: Partial<SDKExtensionsConfig>) {
 }
 
 /**
- * Get current SDK extensions configuration
+ * Get current SDK clients configuration
  * @returns Current configuration
  */
-export function getSDKExtensionsConfig(): SDKExtensionsConfig {
+export function getSDKClientConfig(): SDKClientConfig {
   return { ...globalConfig }
 }
 
 /**
  * Reset configuration to defaults
  */
-export function resetSDKExtensionsConfig() {
+export function resetSDKClientConfig() {
   globalConfig = { ...defaultConfig }
 }
 
@@ -116,7 +116,7 @@ export function extractTokenFromSDKClient(): string | undefined {
   // Import dynamically to avoid circular dependency
   const { client } = require('../sdk/client.gen')
 
-  const sdkConfig = getSDKExtensionsConfig()
+  const sdkConfig = getSDKClientConfig()
 
   // Priority 1: Use explicitly configured token
   if (sdkConfig.token) {
@@ -139,16 +139,16 @@ export function extractTokenFromSDKClient(): string | undefined {
 }
 
 /**
- * Configure SDK extensions for JWT authentication
+ * Configure SDK clients for JWT authentication
  * @param token JWT token
  * @param config Additional configuration options
  */
-export function configureWithJWT(token: string, config?: Partial<SDKExtensionsConfig>) {
+export function configureWithJWT(token: string, config?: Partial<SDKClientConfig>) {
   if (!isValidJWT(token)) {
     console.warn('Warning: Provided JWT token does not appear to be valid')
   }
 
-  setSDKExtensionsConfig({
+  setSDKClientConfig({
     ...config,
     token,
     // When using JWT, typically don't need cookies
@@ -163,8 +163,8 @@ export function configureWithJWT(token: string, config?: Partial<SDKExtensionsCo
  */
 export function getEnvironmentConfig(
   env: 'production' | 'staging' | 'development' = 'development'
-): SDKExtensionsConfig {
-  const baseConfigs: Record<string, Partial<SDKExtensionsConfig>> = {
+): SDKClientConfig {
+  const baseConfigs: Record<string, Partial<SDKClientConfig>> = {
     production: {
       baseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://api.robosystems.ai',
       credentials: 'include',

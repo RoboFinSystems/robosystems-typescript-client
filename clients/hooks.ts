@@ -1,13 +1,13 @@
 'use client'
 
 /**
- * React hooks for SDK extensions
+ * React hooks for SDK clients
  * Provides easy-to-use hooks for Next.js/React applications
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { client } from '../sdk/client.gen'
-import { extractTokenFromSDKClient, getSDKExtensionsConfig } from './config'
+import { extractTokenFromSDKClient, getSDKClientConfig } from './config'
 import type { OperationProgress, OperationResult } from './OperationClient'
 import { OperationClient } from './OperationClient'
 import type { QueryOptions, QueryResult } from './QueryClient'
@@ -35,7 +35,7 @@ export function useQuery(graphId: string) {
 
   // Initialize client
   useEffect(() => {
-    const sdkConfig = getSDKExtensionsConfig()
+    const sdkConfig = getSDKClientConfig()
     const clientConfig = client.getConfig()
 
     // Extract JWT token (uses centralized logic)
@@ -136,7 +136,7 @@ export function useStreamingQuery(graphId: string) {
   const clientRef = useRef<QueryClient>(null)
 
   useEffect(() => {
-    const sdkConfig = getSDKExtensionsConfig()
+    const sdkConfig = getSDKClientConfig()
     const clientConfig = client.getConfig()
     clientRef.current = new QueryClient({
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
@@ -230,7 +230,7 @@ export function useOperation<T = any>(operationId?: string) {
   const clientRef = useRef<OperationClient>(null)
 
   useEffect(() => {
-    const sdkConfig = getSDKExtensionsConfig()
+    const sdkConfig = getSDKClientConfig()
     const clientConfig = client.getConfig()
 
     // Extract JWT token (uses centralized logic)
@@ -343,7 +343,7 @@ export function useMultipleOperations<T = any>() {
   const clientRef = useRef<OperationClient>(null)
 
   useEffect(() => {
-    const sdkConfig = getSDKExtensionsConfig()
+    const sdkConfig = getSDKClientConfig()
     const clientConfig = client.getConfig()
 
     // Extract JWT token (uses centralized logic)
@@ -428,7 +428,7 @@ export function useSDKClients() {
   })
 
   useEffect(() => {
-    const sdkConfig = getSDKExtensionsConfig()
+    const sdkConfig = getSDKClientConfig()
     const clientConfig = client.getConfig()
 
     // Extract JWT token (uses centralized logic)

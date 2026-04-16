@@ -18,7 +18,7 @@
  * We pick graphql-request (tiny, no React, no caching) because the facade
  * doesn't need the hook ergonomics that urql/Apollo provide. Type safety
  * comes from GraphQL Code Generator, which produces typed DocumentNodes
- * from the query files in sdk-extensions/graphql/queries/.
+ * from the query files in clients/graphql/queries/.
  */
 
 import { GraphQLClient } from 'graphql-request'
@@ -113,7 +113,7 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
           // devtools/log aggregators instead of silently disappearing;
           // silently swallowing provider bugs in production is worse
           // than the noise.
-          // eslint-disable-next-line no-console
+
           console.warn(
             '[RoboSystems SDK] tokenProvider threw — sending unauthenticated request:',
             err

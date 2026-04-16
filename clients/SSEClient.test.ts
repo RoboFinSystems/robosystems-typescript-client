@@ -81,8 +81,6 @@ class MockEventSource {
 }
 
 describe('SSEClient', () => {
-  let mockEventSource: MockEventSource
-
   beforeEach(() => {
     // Mock global EventSource
     global.EventSource = MockEventSource as any

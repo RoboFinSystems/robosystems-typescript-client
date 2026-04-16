@@ -5,7 +5,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli'
  *
  * Introspects the running backend (default: local dev at port 8000) and
  * produces typed DocumentNodes from gql template literals in
- * sdk-extensions/graphql/queries/**.
+ * clients/graphql/queries/**.
  *
  * The GraphQL endpoint is **graph-scoped at the URL level** —
  * `/extensions/{graph_id}/graphql` — so we need SOME graph_id in the
@@ -18,7 +18,7 @@ import type { CodegenConfig } from '@graphql-codegen/cli'
  * robosystems/graphql/context.py:get_context), so no API key is
  * required at build time. Real data queries still require auth.
  *
- * Output lives in sdk-extensions/graphql/generated/graphql.ts and is
+ * Output lives in clients/graphql/generated/graphql.ts and is
  * committed to the repo (matches the existing sdk/ convention).
  *
  * Usage:
@@ -33,9 +33,9 @@ const config: CodegenConfig = {
   schema:
     process.env.GRAPHQL_SCHEMA_URL ||
     'http://localhost:8000/extensions/kg00000000000000000000/graphql',
-  documents: ['sdk-extensions/graphql/queries/**/*.ts'],
+  documents: ['clients/graphql/queries/**/*.ts'],
   generates: {
-    'sdk-extensions/graphql/generated/graphql.ts': {
+    'clients/graphql/generated/graphql.ts': {
       plugins: ['typescript', 'typescript-operations', 'typed-document-node'],
       config: {
         useTypeImports: true,

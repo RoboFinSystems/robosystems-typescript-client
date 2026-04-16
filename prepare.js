@@ -57,8 +57,8 @@ export * from './types.gen.js';
 export { client } from './client.gen.js';
 export * from './client/index.js';
 
-// Re-export SDK extensions
-export * from './extensions/index.js';
+// Re-export SDK artifacts
+export * from './artifacts/index.js';
 `
 
 fs.writeFileSync(path.join(currentDir, 'index.js'), indexContent)
@@ -71,36 +71,36 @@ export * from './types.gen';
 export { client } from './client.gen';
 export * from './client/index';
 
-// Re-export SDK extensions
-export * from './extensions/index';
+// Re-export SDK artifacts
+export * from './artifacts/index';
 `
 
 fs.writeFileSync(path.join(currentDir, 'index.d.ts'), indexDtsContent)
 console.log('  ✓ Created index.d.ts')
 
-// Copy SDK extensions
-console.log('🚀 Copying SDK extensions...')
-const extensionsSourceDir = path.join(__dirname, 'sdk-extensions')
-const extensionsDestDir = path.join(currentDir, 'extensions')
+// Copy SDK artifacts
+console.log('🚀 Copying SDK artifacts...')
+const artifactsSourceDir = path.join(__dirname, 'clients')
+const artifactsDestDir = path.join(currentDir, 'artifacts')
 
 // Wipe the mirror before rebuilding so stale files from old sources
 // (renamed clients, removed subdirectories) never linger in a publish.
-// Without this, `extensions/` accumulates cruft over time — every
+// Without this, `artifacts/` accumulates cruft over time — every
 // file ever mirrored stays until someone deletes it by hand.
-if (fs.existsSync(extensionsDestDir)) {
-  fs.rmSync(extensionsDestDir, { recursive: true, force: true })
+if (fs.existsSync(artifactsDestDir)) {
+  fs.rmSync(artifactsDestDir, { recursive: true, force: true })
 }
-fs.mkdirSync(extensionsDestDir, { recursive: true })
+fs.mkdirSync(artifactsDestDir, { recursive: true })
 
-// Copy extensions files
-if (fs.existsSync(extensionsSourceDir)) {
+// Copy artifacts files
+if (fs.existsSync(artifactsSourceDir)) {
   // The TypeScript compiler will have already built these files
   // Just copy the compiled .js and .d.ts files, and recurse into
-  // subdirectories (e.g. sdk-extensions/graphql/ + generated/).
+  // subdirectories (e.g. clients/graphql/ + generated/).
   //
-  // Import rewriting: the source tree has `sdk-extensions/` and `sdk/`
+  // Import rewriting: the source tree has `clients/` and `sdk/`
   // as siblings, so imports use `../sdk/...`. In the published layout
-  // `extensions/` and the generated SDK files live at the package root,
+  // `artifacts/` and the generated SDK files live at the package root,
   // so imports become `../...`. We match `../sdk/` and `../../sdk/`
   // (the latter when copying a file from a nested subdirectory).
   const walk = (srcDir, destDir, depth) => {
@@ -145,27 +145,27 @@ if (fs.existsSync(extensionsSourceDir)) {
           )
 
         fs.writeFileSync(destPath, content)
-        console.log(`  ✓ ${path.relative(extensionsSourceDir, sourcePath)}`)
+        console.log(`  ✓ ${path.relative(artifactsSourceDir, sourcePath)}`)
       }
     }
   }
 
-  walk(extensionsSourceDir, extensionsDestDir, 1)
-  console.log('  ✓ SDK extensions copied')
+  walk(artifactsSourceDir, artifactsDestDir, 1)
+  console.log('  ✓ SDK artifacts copied')
 } else {
-  console.log('  ⚠️  SDK extensions not found')
+  console.log('  ⚠️  SDK artifacts not found')
 }
 
 // Format the generated files.
 //
-// The extensions glob uses `**` so nested files — e.g. everything under
-// `extensions/graphql/` (client, generated types, queries/**) — get
-// reformatted alongside the top-level clients. A flat `extensions/*.ts`
+// The artifacts glob uses `**` so nested files — e.g. everything under
+// `artifacts/graphql/` (client, generated types, queries/**) — get
+// reformatted alongside the top-level clients. A flat `artifacts/*.ts`
 // would silently skip the entire GraphQL tree.
 console.log('💅 Formatting generated files...')
 try {
   execSync(
-    'npx prettier --write index.ts index.js index.d.ts "extensions/**/*.ts" "extensions/**/*.js" "extensions/**/*.d.ts"',
+    'npx prettier --write index.ts index.js index.d.ts "artifacts/**/*.ts" "artifacts/**/*.js" "artifacts/**/*.d.ts"',
     {
       cwd: currentDir,
       stdio: 'inherit',

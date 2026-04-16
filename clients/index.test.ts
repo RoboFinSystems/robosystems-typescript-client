@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { RoboSystemsExtensions } from './index'
+import { RoboSystemsClients } from './index'
 
 // Mock the SDK client
 vi.mock('../sdk/client.gen', () => ({
@@ -11,14 +11,14 @@ vi.mock('../sdk/client.gen', () => ({
   },
 }))
 
-describe('RoboSystemsExtensions', () => {
+describe('RoboSystemsClients', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   describe('constructor', () => {
     it('should create instance with default config', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       expect(ext).toBeDefined()
       expect(ext.query).toBeDefined()
@@ -30,7 +30,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should create instance with custom baseUrl', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         baseUrl: 'https://custom-api.com',
       })
 
@@ -39,7 +39,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should create instance with JWT token', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         token: 'eyJhbGc.eyJzdWI.SflKxw',
       })
 
@@ -48,7 +48,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should create instance with credentials option', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         credentials: 'omit',
       })
 
@@ -57,7 +57,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should create instance with custom headers', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         headers: {
           'X-Custom-Header': 'test-value',
         },
@@ -67,7 +67,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should create instance with retry config', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         maxRetries: 10,
         retryDelay: 5000,
       })
@@ -77,7 +77,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should merge config with SDK client config', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         token: 'custom-token',
       })
 
@@ -86,7 +86,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should initialize all five client types', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       // Verify each client has its signature methods
       expect(typeof ext.query.executeQuery).toBe('function')
@@ -102,7 +102,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should default credentials to include', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       // Access private config via casting
       const config = (ext as any).config
@@ -110,7 +110,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should default maxRetries to 5 and retryDelay to 1000', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       const config = (ext as any).config
       expect(config.maxRetries).toBe(5)
@@ -118,7 +118,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should fall back to SDK client baseUrl or default', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       const config = (ext as any).config
       // Should use SDK baseUrl or localhost default
@@ -127,7 +127,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should prefer explicit baseUrl over SDK client', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         baseUrl: 'https://explicit.com',
       })
 
@@ -138,7 +138,7 @@ describe('RoboSystemsExtensions', () => {
 
   describe('createSSEClient', () => {
     it('should create a new SSEClient instance', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
       const sseClient = ext.createSSEClient()
 
       expect(sseClient).toBeDefined()
@@ -149,7 +149,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should create SSEClient with config', () => {
-      const ext = new RoboSystemsExtensions({
+      const ext = new RoboSystemsClients({
         baseUrl: 'https://custom-api.com',
         token: 'test-token',
       })
@@ -160,7 +160,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should create independent SSEClient instances each time', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
       const client1 = ext.createSSEClient()
       const client2 = ext.createSSEClient()
 
@@ -170,7 +170,7 @@ describe('RoboSystemsExtensions', () => {
 
   describe('monitorOperation', () => {
     it('should delegate to operations.monitorOperation', async () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       const monitorSpy = vi.spyOn(ext.operations, 'monitorOperation').mockResolvedValue({
         success: true,
@@ -187,7 +187,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should pass progress callback through', async () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       const monitorSpy = vi.spyOn(ext.operations, 'monitorOperation').mockResolvedValue({
         success: true,
@@ -200,7 +200,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should propagate errors from operations client', async () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       vi.spyOn(ext.operations, 'monitorOperation').mockRejectedValue(new Error('Operation timeout'))
 
@@ -210,7 +210,7 @@ describe('RoboSystemsExtensions', () => {
 
   describe('close', () => {
     it('should close all three closeable clients', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       const queryCloseSpy = vi.spyOn(ext.query, 'close')
       const agentCloseSpy = vi.spyOn(ext.agent, 'close')
@@ -224,7 +224,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should not throw when called multiple times', () => {
-      const ext = new RoboSystemsExtensions()
+      const ext = new RoboSystemsClients()
 
       expect(() => {
         ext.close()
@@ -247,7 +247,7 @@ describe('RoboSystemsExtensions', () => {
         retryDelay: 3000,
       }
 
-      const ext = new RoboSystemsExtensions(fullConfig)
+      const ext = new RoboSystemsClients(fullConfig)
 
       expect(ext.query).toBeDefined()
       expect(ext.operations).toBeDefined()
@@ -259,7 +259,7 @@ describe('RoboSystemsExtensions', () => {
     })
 
     it('should use SDK client baseUrl when no baseUrl provided', () => {
-      const ext = new RoboSystemsExtensions({})
+      const ext = new RoboSystemsClients({})
 
       expect(ext.query).toBeDefined()
       expect(ext.operations).toBeDefined()
@@ -267,62 +267,62 @@ describe('RoboSystemsExtensions', () => {
   })
 })
 
-describe('extensions singleton', () => {
+describe('clients singleton', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Reset the lazy singleton between tests
     vi.resetModules()
   })
 
-  it('should export extensions object with getter properties', async () => {
-    const { extensions } = await import('./index')
+  it('should export clients object with getter properties', async () => {
+    const { clients } = await import('./index')
 
-    expect(extensions).toBeDefined()
-    expect(typeof extensions.monitorOperation).toBe('function')
-    expect(typeof extensions.createSSEClient).toBe('function')
-    expect(typeof extensions.close).toBe('function')
+    expect(clients).toBeDefined()
+    expect(typeof clients.monitorOperation).toBe('function')
+    expect(typeof clients.createSSEClient).toBe('function')
+    expect(typeof clients.close).toBe('function')
   })
 
   it('should lazily create clients on first access', async () => {
-    const { extensions } = await import('./index')
+    const { clients } = await import('./index')
 
-    const query = extensions.query
+    const query = clients.query
     expect(query).toBeDefined()
     expect(typeof query.executeQuery).toBe('function')
   })
 
   it('should return same instance on repeated access', async () => {
-    const { extensions } = await import('./index')
+    const { clients } = await import('./index')
 
-    const query1 = extensions.query
-    const query2 = extensions.query
+    const query1 = clients.query
+    const query2 = clients.query
     expect(query1).toBe(query2)
   })
 
   it('should expose all five client getters', async () => {
-    const { extensions } = await import('./index')
+    const { clients } = await import('./index')
 
-    expect(typeof extensions.query.executeQuery).toBe('function')
-    expect(typeof extensions.agent.executeQuery).toBe('function')
-    expect(typeof extensions.operations.monitorOperation).toBe('function')
-    expect(typeof extensions.ledger.listAccounts).toBe('function')
-    expect(typeof extensions.reports.create).toBe('function')
+    expect(typeof clients.query.executeQuery).toBe('function')
+    expect(typeof clients.agent.executeQuery).toBe('function')
+    expect(typeof clients.operations.monitorOperation).toBe('function')
+    expect(typeof clients.ledger.listAccounts).toBe('function')
+    expect(typeof clients.reports.create).toBe('function')
   })
 
   it('should create SSEClient from singleton', async () => {
-    const { extensions } = await import('./index')
+    const { clients } = await import('./index')
 
-    const sseClient = extensions.createSSEClient()
+    const sseClient = clients.createSSEClient()
     expect(typeof sseClient.connect).toBe('function')
     expect(typeof sseClient.close).toBe('function')
   })
 
   it('should close without error', async () => {
-    const { extensions } = await import('./index')
+    const { clients } = await import('./index')
 
     // Access to initialize
-    extensions.query
-    expect(() => extensions.close()).not.toThrow()
+    void clients.query
+    expect(() => clients.close()).not.toThrow()
   })
 })
 
@@ -383,9 +383,9 @@ describe('re-exports', () => {
   it('should re-export config functions', async () => {
     const mod = await import('./index')
 
-    expect(typeof mod.setSDKExtensionsConfig).toBe('function')
-    expect(typeof mod.getSDKExtensionsConfig).toBe('function')
-    expect(typeof mod.resetSDKExtensionsConfig).toBe('function')
+    expect(typeof mod.setSDKClientConfig).toBe('function')
+    expect(typeof mod.getSDKClientConfig).toBe('function')
+    expect(typeof mod.resetSDKClientConfig).toBe('function')
     expect(typeof mod.extractJWTFromHeader).toBe('function')
     expect(typeof mod.isValidJWT).toBe('function')
     expect(typeof mod.configureWithJWT).toBe('function')

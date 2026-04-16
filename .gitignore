@@ -13,10 +13,10 @@ sdk/**/*.js
 sdk/**/*.js.map
 sdk/**/*.d.ts
 sdk/**/*.d.ts.map
-sdk-extensions/**/*.js
-sdk-extensions/**/*.js.map
-sdk-extensions/**/*.d.ts
-sdk-extensions/**/*.d.ts.map
+clients/**/*.js
+clients/**/*.js.map
+clients/**/*.d.ts
+clients/**/*.d.ts.map
 
 # Generated files from prepare script (DO NOT COMMIT)
 /*.gen.ts
@@ -24,7 +24,7 @@ sdk-extensions/**/*.d.ts.map
 /*.gen.d.ts
 /client/
 /core/
-/extensions/
+/artifacts/
 index.js
 index.d.ts
 index.ts

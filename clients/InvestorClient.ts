@@ -361,7 +361,7 @@ export class InvestorClient {
   ): Promise<TResult> {
     try {
       const client = this.gql.get(graphId)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const raw = client.request as (doc: unknown, vars?: unknown) => Promise<any>
       const data = (await raw.call(client, document, variables)) as TData
       return pick(data)

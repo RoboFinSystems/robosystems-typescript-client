@@ -34,7 +34,7 @@ pnpm add @robosystems/client
 ### Basic SSE Usage
 
 ```typescript
-import { SSEClient, EventType } from '@robosystems/client/extensions'
+import { SSEClient, EventType } from '@robosystems/client/clients'
 
 // Initialize SSE client
 const sseClient = new SSEClient({
@@ -68,7 +68,7 @@ sseClient.close()
 ### Query Execution with Progress Monitoring
 
 ```typescript
-import { QueryClient } from '@robosystems/client/extensions'
+import { QueryClient } from '@robosystems/client/clients'
 
 const queryClient = new QueryClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -95,7 +95,7 @@ console.log(`Query completed with ${result.rowCount} results`)
 ### Table Ingestion with Progress Monitoring
 
 ```typescript
-import { TableIngestClient } from '@robosystems/client/extensions'
+import { TableIngestClient } from '@robosystems/client/clients'
 
 const tableClient = new TableIngestClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -234,7 +234,7 @@ try {
 Upload Parquet files directly to staging tables with simplified API.
 
 ```typescript
-import { TableIngestClient } from '@robosystems/client/extensions'
+import { TableIngestClient } from '@robosystems/client/clients'
 
 const tableClient = new TableIngestClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -336,7 +336,7 @@ if (result.success) {
 ### OperationClient for Long-Running Tasks
 
 ```typescript
-import { OperationClient, OperationStatus } from '@robosystems/client/extensions'
+import { OperationClient, OperationStatus } from '@robosystems/client/clients'
 
 const operationClient = new OperationClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -425,7 +425,7 @@ await operationClient.monitor('operation-id', {
 ### useSSE Hook
 
 ```typescript
-import { useSSE } from '@robosystems/client/extensions/hooks'
+import { useSSE } from '@robosystems/client/clients/hooks'
 
 function OperationMonitor({ operationId }: { operationId: string }) {
   const {
@@ -465,7 +465,7 @@ function OperationMonitor({ operationId }: { operationId: string }) {
 ### useQueryWithSSE Hook
 
 ```typescript
-import { useQueryWithSSE } from '@robosystems/client/extensions/hooks'
+import { useQueryWithSSE } from '@robosystems/client/clients/hooks'
 
 function QueryRunner() {
   const {
@@ -519,7 +519,7 @@ function QueryRunner() {
 ### useCopy Hook for Data Import
 
 ```typescript
-import { useCopy } from '@robosystems/client/extensions/hooks'
+import { useCopy } from '@robosystems/client/clients/hooks'
 
 function DataImporter({ graphId }: { graphId: string }) {
   const {
@@ -602,7 +602,7 @@ sseClient.on('circuit_breaker_closed', () => {
 ### Graceful Degradation
 
 ```typescript
-import { QueryClient, FallbackStrategy } from '@robosystems/client/extensions'
+import { QueryClient, FallbackStrategy } from '@robosystems/client/clients'
 
 const queryClient = new QueryClient({
   baseUrl: 'https://api.robosystems.ai',
@@ -671,7 +671,7 @@ NEXT_PUBLIC_PREFER_STREAMING=true
 ### Custom Configuration
 
 ```typescript
-import { RoboSystemsExtensions } from '@robosystems/client/extensions'
+import { RoboSystemsExtensions } from '@robosystems/client/clients'
 
 const extensions = new RoboSystemsExtensions({
   // API Configuration
@@ -698,7 +698,7 @@ const extensions = new RoboSystemsExtensions({
 For local development using LocalStack, configure the S3 endpoint URL:
 
 ```typescript
-import { RoboSystemsExtensions } from '@robosystems/client/extensions'
+import { RoboSystemsExtensions } from '@robosystems/client/clients'
 
 const extensions = new RoboSystemsExtensions({
   baseUrl: 'http://localhost:8000',
@@ -718,7 +718,7 @@ const result = await extensions.files.upload('graph-id', 'TableName', fileBuffer
 ### Stream Processing for Large Datasets
 
 ```typescript
-import { StreamProcessor } from '@robosystems/client/extensions'
+import { StreamProcessor } from '@robosystems/client/clients'
 
 const processor = new StreamProcessor({
   batchSize: 1000,
@@ -742,7 +742,7 @@ await processor.processStream('your-graph-id', 'MATCH (t:Transaction) RETURN t',
 ### Caching with SSE Updates
 
 ```typescript
-import { CachedQueryClient } from '@robosystems/client/extensions'
+import { CachedQueryClient } from '@robosystems/client/clients'
 
 const cachedClient = new CachedQueryClient({
   ttl: 300000, // 5 minute cache
@@ -766,7 +766,7 @@ cachedClient.on('cache_invalidated', (query) => {
 ### Mock SSE for Testing
 
 ```typescript
-import { MockSSEClient } from '@robosystems/client/extensions/testing'
+import { MockSSEClient } from '@robosystems/client/clients/testing'
 
 describe('SSE Integration', () => {
   it('should handle progress events', async () => {
