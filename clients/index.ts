@@ -11,7 +11,6 @@ import { InvestorClient } from './InvestorClient'
 import { LedgerClient } from './LedgerClient'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
-import { ReportClient } from './ReportClient'
 import { SSEClient } from './SSEClient'
 
 // Re-export the `TokenProvider` type so consumers who want to type
@@ -57,7 +56,11 @@ export class RoboSystemsClients {
   public readonly operations: OperationClient
   public readonly ledger: LedgerClient
   public readonly investor: InvestorClient
-  public readonly reports: ReportClient
+  /**
+   * @deprecated Use `ledger` instead — reports and publish lists are
+   * now part of the LedgerClient.
+   */
+  public readonly reports: LedgerClient
   private config: ResolvedConfig
 
   constructor(config: RoboSystemsClientConfig = {}) {
@@ -104,11 +107,8 @@ export class RoboSystemsClients {
       retryDelay: this.config.retryDelay,
     })
 
-    // LedgerClient / InvestorClient / ReportClient all use GraphQL
-    // internally, so they get the tokenProvider — REST-only clients
-    // (QueryClient / AgentClient / OperationClient / SSEClient) do
-    // not, because their refresh story lives in the main SDK client
-    // wrapper, not here.
+    // LedgerClient / InvestorClient use GraphQL internally, so they
+    // get the tokenProvider — REST-only clients do not.
     this.ledger = new LedgerClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
@@ -125,13 +125,8 @@ export class RoboSystemsClients {
       headers: this.config.headers,
     })
 
-    this.reports = new ReportClient({
-      baseUrl: this.config.baseUrl,
-      credentials: this.config.credentials,
-      token: this.config.token,
-      tokenProvider: this.config.tokenProvider,
-      headers: this.config.headers,
-    })
+    // Reports consolidated into LedgerClient — alias for backward compat
+    this.reports = this.ledger
   }
 
   /**
@@ -172,18 +167,9 @@ export * from './InvestorClient'
 export * from './LedgerClient'
 export * from './OperationClient'
 export * from './QueryClient'
-export * from './ReportClient'
 export * from './SSEClient'
 
-export {
-  AgentClient,
-  InvestorClient,
-  LedgerClient,
-  OperationClient,
-  QueryClient,
-  ReportClient,
-  SSEClient,
-}
+export { AgentClient, InvestorClient, LedgerClient, OperationClient, QueryClient, SSEClient }
 
 // Export React hooks
 export {
@@ -220,8 +206,9 @@ export const clients = {
   get investor() {
     return getClients().investor
   },
+  /** @deprecated Use `ledger` instead */
   get reports() {
-    return getClients().reports
+    return getClients().ledger
   },
   monitorOperation: (operationId: string, onProgress?: (progress: any) => void) =>
     getClients().monitorOperation(operationId, onProgress),

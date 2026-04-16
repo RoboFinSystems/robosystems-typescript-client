@@ -25,6 +25,7 @@
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
 import { ClientError } from 'graphql-request'
 import {
+  opAddPublishListMembers,
   opAutoMapElements,
   opBuildFactGrid,
   opClosePeriod,
@@ -34,6 +35,8 @@ import {
   opCreateJournalEntry,
   opCreateManualClosingEntry,
   opCreateMappingAssociation,
+  opCreatePublishList,
+  opCreateReport,
   opCreateSchedule,
   opCreateStructure,
   opCreateTaxonomy,
@@ -41,24 +44,31 @@ import {
   opDeleteElement,
   opDeleteJournalEntry,
   opDeleteMappingAssociation,
+  opDeletePublishList,
+  opDeleteReport,
   opDeleteSchedule,
   opDeleteStructure,
   opDeleteTaxonomy,
   opInitializeLedger,
   opLinkEntityTaxonomy,
+  opRegenerateReport,
+  opRemovePublishListMember,
   opReopenPeriod,
   opReverseJournalEntry,
   opSetCloseTarget,
+  opShareReport,
   opTruncateSchedule,
   opUpdateAssociation,
   opUpdateElement,
   opUpdateEntity,
   opUpdateJournalEntry,
+  opUpdatePublishList,
   opUpdateSchedule,
   opUpdateStructure,
   opUpdateTaxonomy,
 } from '../sdk/sdk.gen'
 import type {
+  AddPublishListMembersOperation,
   AutoMapElementsOperation,
   BulkAssociationItem,
   BulkCreateAssociationsRequest,
@@ -68,6 +78,8 @@ import type {
   CreateJournalEntryRequest,
   CreateManualClosingEntryRequest,
   CreateMappingAssociationOperation,
+  CreatePublishListRequest,
+  CreateReportRequest,
   CreateScheduleRequest,
   CreateStructureRequest,
   CreateTaxonomyRequest,
@@ -91,6 +103,7 @@ import type {
   UpdateElementRequest,
   UpdateEntityRequest,
   UpdateJournalEntryRequest,
+  UpdatePublishListOperation,
   UpdateScheduleRequest,
   UpdateStructureRequest,
   UpdateTaxonomyRequest,
@@ -108,8 +121,11 @@ import {
   GetLedgerMappingDocument,
   GetLedgerPeriodCloseStatusDocument,
   GetLedgerPeriodDraftsDocument,
+  GetLedgerPublishListDocument,
+  GetLedgerReportDocument,
   GetLedgerReportingTaxonomyDocument,
   GetLedgerScheduleFactsDocument,
+  GetLedgerStatementDocument,
   GetLedgerSummaryDocument,
   GetLedgerTransactionDocument,
   GetLedgerTrialBalanceDocument,
@@ -117,6 +133,8 @@ import {
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
   ListLedgerMappingsDocument,
+  ListLedgerPublishListsDocument,
+  ListLedgerReportsDocument,
   ListLedgerSchedulesDocument,
   ListLedgerStructuresDocument,
   ListLedgerTaxonomiesDocument,
@@ -132,8 +150,11 @@ import {
   type GetLedgerMappingQuery,
   type GetLedgerPeriodCloseStatusQuery,
   type GetLedgerPeriodDraftsQuery,
+  type GetLedgerPublishListQuery,
   type GetLedgerReportingTaxonomyQuery,
+  type GetLedgerReportQuery,
   type GetLedgerScheduleFactsQuery,
+  type GetLedgerStatementQuery,
   type GetLedgerSummaryQuery,
   type GetLedgerTransactionQuery,
   type GetLedgerTrialBalanceQuery,
@@ -141,6 +162,8 @@ import {
   type ListLedgerElementsQuery,
   type ListLedgerEntitiesQuery,
   type ListLedgerMappingsQuery,
+  type ListLedgerPublishListsQuery,
+  type ListLedgerReportsQuery,
   type ListLedgerSchedulesQuery,
   type ListLedgerStructuresQuery,
   type ListLedgerTaxonomiesQuery,
@@ -211,6 +234,42 @@ export type LedgerClosingBookStructures = NonNullable<
 
 export type LedgerFiscalCalendar = NonNullable<GetLedgerFiscalCalendarQuery['fiscalCalendar']>
 export type LedgerFiscalPeriod = LedgerFiscalCalendar['periods'][number]
+
+// Reports + publish lists + statements
+export type Report = NonNullable<GetLedgerReportQuery['report']>
+export type ReportListItem = NonNullable<ListLedgerReportsQuery['reports']>['reports'][number]
+export type StatementData = NonNullable<GetLedgerStatementQuery['statement']>
+export type StatementPeriod = StatementData['periods'][number]
+export type StatementRow = StatementData['rows'][number]
+
+export type PublishList = NonNullable<
+  ListLedgerPublishListsQuery['publishLists']
+>['publishLists'][number]
+export type PublishListDetail = NonNullable<GetLedgerPublishListQuery['publishList']>
+export type PublishListMember = PublishListDetail['members'][number]
+
+export interface PeriodSpecInput {
+  start: string
+  end: string
+  label: string
+}
+
+export interface CreateReportOptions {
+  name: string
+  mappingId: string
+  periodStart: string
+  periodEnd: string
+  taxonomyId?: string
+  periodType?: string
+  comparative?: boolean
+  periods?: PeriodSpecInput[]
+}
+
+export interface ReportOperationAck {
+  operationId: string
+  status: OperationEnvelope['status']
+  result: Record<string, unknown> | null
+}
 
 // ── Write result shapes (envelope.result payloads) ─────────────────────
 //
@@ -1396,6 +1455,264 @@ export class LedgerClient {
       throw err
     }
   }
+
+  // ── Reports ─────────────────────────────────────────────────────────
+
+  /**
+   * Kick off report creation (async). Use the returned `operationId` to
+   * subscribe to progress via SSE, then call `getReport()` once finished.
+   */
+  async createReport(graphId: string, options: CreateReportOptions): Promise<ReportOperationAck> {
+    const body: CreateReportRequest = {
+      name: options.name,
+      mapping_id: options.mappingId,
+      period_start: options.periodStart,
+      period_end: options.periodEnd,
+      taxonomy_id: options.taxonomyId ?? 'tax_usgaap_reporting',
+      period_type: options.periodType ?? 'quarterly',
+      comparative: options.comparative ?? true,
+    }
+    if (options.periods && options.periods.length > 0) {
+      body.periods = options.periods
+    }
+    const envelope = await this.callOperation(
+      'Create report',
+      opCreateReport({ path: { graph_id: graphId }, body })
+    )
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
+  }
+
+  /** List all reports for a graph (includes received shared reports). */
+  async listReports(graphId: string): Promise<ReportListItem[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerReportsDocument,
+      undefined,
+      'List reports',
+      (data) => data.reports
+    )
+    return list?.reports ?? []
+  }
+
+  /** Get a single report with its period list + available structures. */
+  async getReport(graphId: string, reportId: string): Promise<Report | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerReportDocument,
+      { reportId },
+      'Get report',
+      (data) => data.report
+    )
+  }
+
+  /**
+   * Render a financial statement — facts viewed through a structure.
+   *
+   * @param structureType - income_statement, balance_sheet, cash_flow_statement
+   */
+  async getStatement(
+    graphId: string,
+    reportId: string,
+    structureType: string
+  ): Promise<StatementData | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerStatementDocument,
+      { reportId, structureType },
+      'Get statement',
+      (data) => data.statement
+    )
+  }
+
+  /**
+   * Regenerate an existing report (async). Returns an operation id;
+   * subscribe via SSE for progress.
+   */
+  async regenerateReport(
+    graphId: string,
+    reportId: string,
+    periodStart?: string,
+    periodEnd?: string
+  ): Promise<ReportOperationAck> {
+    const envelope = await this.callOperation(
+      'Regenerate report',
+      opRegenerateReport({
+        path: { graph_id: graphId },
+        body: {
+          report_id: reportId,
+          period_start: periodStart,
+          period_end: periodEnd,
+        } as Parameters<typeof opRegenerateReport>[0]['body'],
+      })
+    )
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
+  }
+
+  /** Delete a report and its generated facts. */
+  async deleteReport(graphId: string, reportId: string): Promise<void> {
+    await this.callOperation(
+      'Delete report',
+      opDeleteReport({
+        path: { graph_id: graphId },
+        body: { report_id: reportId },
+      })
+    )
+  }
+
+  /**
+   * Share a published report to every member of a publish list (async).
+   * Each target graph receives a snapshot copy of the report's facts.
+   */
+  async shareReport(
+    graphId: string,
+    reportId: string,
+    publishListId: string
+  ): Promise<ReportOperationAck> {
+    const envelope = await this.callOperation(
+      'Share report',
+      opShareReport({
+        path: { graph_id: graphId },
+        body: {
+          report_id: reportId,
+          publish_list_id: publishListId,
+        } as Parameters<typeof opShareReport>[0]['body'],
+      })
+    )
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
+  }
+
+  /** Check if a report was received via sharing (vs locally created). */
+  isSharedReport(report: Report): boolean {
+    return report.sourceGraphId !== null
+  }
+
+  // ── Publish Lists ────────────────────────────────────────────────────
+
+  /** List publish lists with pagination. */
+  async listPublishLists(
+    graphId: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<PublishList[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerPublishListsDocument,
+      {
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List publish lists',
+      (data) => data.publishLists
+    )
+    return list?.publishLists ?? []
+  }
+
+  /** Create a new publish list. */
+  async createPublishList(
+    graphId: string,
+    name: string,
+    description?: string
+  ): Promise<Record<string, unknown>> {
+    const body: CreatePublishListRequest = {
+      name,
+      description: description ?? null,
+    }
+    const envelope = await this.callOperation(
+      'Create publish list',
+      opCreatePublishList({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Get a single publish list with its full member list. */
+  async getPublishList(graphId: string, listId: string): Promise<PublishListDetail | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerPublishListDocument,
+      { listId },
+      'Get publish list',
+      (data) => data.publishList
+    )
+  }
+
+  /** Update a publish list's name or description. */
+  async updatePublishList(
+    graphId: string,
+    listId: string,
+    updates: { name?: string; description?: string | null }
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update publish list',
+      opUpdatePublishList({
+        path: { graph_id: graphId },
+        body: {
+          list_id: listId,
+          name: updates.name,
+          description: updates.description ?? null,
+        } as UpdatePublishListOperation,
+      })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Delete a publish list. */
+  async deletePublishList(graphId: string, listId: string): Promise<void> {
+    await this.callOperation(
+      'Delete publish list',
+      opDeletePublishList({
+        path: { graph_id: graphId },
+        body: { list_id: listId },
+      })
+    )
+  }
+
+  /** Add target graphs as members of a publish list. */
+  async addPublishListMembers(
+    graphId: string,
+    listId: string,
+    targetGraphIds: string[]
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Add publish list members',
+      opAddPublishListMembers({
+        path: { graph_id: graphId },
+        body: {
+          list_id: listId,
+          target_graph_ids: targetGraphIds,
+        } as AddPublishListMembersOperation,
+      })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Remove a single member from a publish list. */
+  async removePublishListMember(
+    graphId: string,
+    listId: string,
+    memberId: string
+  ): Promise<{ deleted: boolean }> {
+    const envelope = await this.callOperation(
+      'Remove publish list member',
+      opRemovePublishListMember({
+        path: { graph_id: graphId },
+        body: { list_id: listId, member_id: memberId },
+      })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+  }
+
+  // ── Internal helpers ────────────────────────────────────────────────
 
   /**
    * Await an SDK-generated `opXxx(...)` call, throw a readable error on
