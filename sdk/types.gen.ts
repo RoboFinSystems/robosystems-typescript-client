@@ -2389,6 +2389,36 @@ export type DatabaseHealthResponse = {
      * Active alerts or warnings
      */
     alerts?: Array<string>;
+    /**
+     * Is Stale
+     *
+     * Whether the graph has staged changes not yet materialized
+     */
+    is_stale?: boolean;
+    /**
+     * Stale Reason
+     *
+     * Reason the graph was marked stale (e.g. 'file_deleted: data.parquet')
+     */
+    stale_reason?: string | null;
+    /**
+     * Stale Since
+     *
+     * ISO timestamp when the graph became stale
+     */
+    stale_since?: string | null;
+    /**
+     * Last Materialized At
+     *
+     * ISO timestamp of the last successful materialization
+     */
+    last_materialized_at?: string | null;
+    /**
+     * Hours Since Materialization
+     *
+     * Hours elapsed since last materialization
+     */
+    hours_since_materialization?: number | null;
 };
 
 /**
@@ -4838,6 +4868,50 @@ export type ManualLineItemRequest = {
      * Description
      */
     description?: string | null;
+};
+
+/**
+ * MaterializeOp
+ *
+ * Body for the materialize operation.
+ */
+export type MaterializeOp = {
+    /**
+     * Force
+     *
+     * Force materialization even if already up to date
+     */
+    force?: boolean;
+    /**
+     * Rebuild
+     *
+     * Rebuild the graph from scratch, dropping existing data
+     */
+    rebuild?: boolean;
+    /**
+     * Ignore Errors
+     *
+     * Continue past non-fatal row errors
+     */
+    ignore_errors?: boolean;
+    /**
+     * Dry Run
+     *
+     * Validate tables without writing to the graph
+     */
+    dry_run?: boolean;
+    /**
+     * Source
+     *
+     * Materialization source: 'extensions' for OLTP, omit for DuckDB staging tables
+     */
+    source?: string | null;
+    /**
+     * Materialize Embeddings
+     *
+     * Generate vector embeddings during materialization
+     */
+    materialize_embeddings?: boolean;
 };
 
 /**
@@ -7668,9 +7742,9 @@ export type UpgradeTierOp = {
     /**
      * New Tier
      *
-     * Target tier: ladybug-standard, ladybug-large, ladybug-xlarge
+     * Target infrastructure tier
      */
-    new_tier: string;
+    new_tier: 'ladybug-standard' | 'ladybug-large' | 'ladybug-xlarge';
 };
 
 /**
@@ -11232,7 +11306,7 @@ export type OpUpgradeTierResponses = {
 export type OpUpgradeTierResponse = OpUpgradeTierResponses[keyof OpUpgradeTierResponses];
 
 export type OpMaterializeData = {
-    body?: never;
+    body: MaterializeOp;
     headers?: {
         /**
          * Idempotency-Key
@@ -11245,32 +11319,7 @@ export type OpMaterializeData = {
          */
         graph_id: string;
     };
-    query?: {
-        /**
-         * Force
-         */
-        force?: boolean;
-        /**
-         * Rebuild
-         */
-        rebuild?: boolean;
-        /**
-         * Ignore Errors
-         */
-        ignore_errors?: boolean;
-        /**
-         * Dry Run
-         */
-        dry_run?: boolean;
-        /**
-         * Source
-         */
-        source?: string | null;
-        /**
-         * Materialize Embeddings
-         */
-        materialize_embeddings?: boolean;
-    };
+    query?: never;
     url: '/v1/graphs/{graph_id}/operations/materialize';
 };
 
