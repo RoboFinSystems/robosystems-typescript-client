@@ -40,6 +40,7 @@ import {
   opCreateSchedule,
   opCreateStructure,
   opCreateTaxonomy,
+  opCreateTransaction,
   opDeleteAssociation,
   opDeleteElement,
   opDeleteJournalEntry,
@@ -83,6 +84,7 @@ import type {
   CreateScheduleRequest,
   CreateStructureRequest,
   CreateTaxonomyRequest,
+  CreateTransactionRequest,
   CreateViewRequest,
   DeleteAssociationRequest,
   DeleteElementRequest,
@@ -636,6 +638,56 @@ export class LedgerClient {
       'Get transaction',
       (data) => data.transaction
     )
+  }
+
+  /**
+   * Create a standalone business-event Transaction without entries.
+   *
+   * Returns a `transaction_id` that can be passed to `createJournalEntry`
+   * to attach entries to this event. Use when a single event (invoice,
+   * payment, deposit) produces multiple entries over its lifecycle.
+   *
+   * `amount` is in minor currency units (cents).
+   * `type` is free-form: invoice, payment, bill, expense, deposit, etc.
+   */
+  async createTransaction(
+    graphId: string,
+    options: {
+      type: string
+      date: string
+      amount: number
+      currency?: string
+      description?: string
+      merchantName?: string
+      referenceNumber?: string
+      number?: string
+      category?: string
+      dueDate?: string
+      status?: 'pending' | 'posted'
+      idempotencyKey?: string
+    }
+  ): Promise<Record<string, unknown>> {
+    const body: CreateTransactionRequest = {
+      type: options.type,
+      date: options.date,
+      amount: options.amount,
+      currency: options.currency ?? 'USD',
+      status: options.status ?? 'pending',
+      description: options.description ?? null,
+      merchant_name: options.merchantName ?? null,
+      reference_number: options.referenceNumber ?? null,
+      number: options.number ?? null,
+      category: options.category ?? null,
+      due_date: options.dueDate ?? null,
+    }
+    const headers = options.idempotencyKey
+      ? { 'Idempotency-Key': options.idempotencyKey }
+      : undefined
+    const envelope = await this.callOperation(
+      'Create transaction',
+      opCreateTransaction({ path: { graph_id: graphId }, body, headers })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // ── Trial Balance ──────────────────────────────────────────────────
