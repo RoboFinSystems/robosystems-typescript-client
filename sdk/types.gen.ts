@@ -1008,6 +1008,20 @@ export type BulkDocumentUploadResponse = {
 };
 
 /**
+ * ChangeTierOp
+ *
+ * Body for the change-tier operation (supports upgrades and downgrades).
+ */
+export type ChangeTierOp = {
+    /**
+     * New Tier
+     *
+     * Target infrastructure tier
+     */
+    new_tier: 'ladybug-standard' | 'ladybug-large' | 'ladybug-xlarge';
+};
+
+/**
  * CheckoutResponse
  *
  * Response from checkout session creation.
@@ -1548,8 +1562,8 @@ export type CreateElementRequest = {
  * Request model for creating a new graph.
  *
  * Use this to create either:
- * - **Entity graphs**: Standard graphs with entity schema and optional extensions
- * - **Custom graphs**: Generic graphs with fully custom schema definitions
+ * - **Entity graphs**: Standard graphs with entity schema. Requires `initial_entity`.
+ * - **Custom graphs**: Generic graphs with a fully custom schema. Requires `custom_schema`; `initial_entity` is not used.
  */
 export type CreateGraphRequest = {
     /**
@@ -1567,7 +1581,7 @@ export type CreateGraphRequest = {
      */
     custom_schema?: CustomSchemaDefinition | null;
     /**
-     * Optional initial entity to create in the graph. If provided with entity graph, populates the first entity node.
+     * Initial entity for the graph. Required for entity graphs (when custom_schema is omitted). Omit only when providing custom_schema for a generic graph.
      */
     initial_entity?: InitialEntityData | null;
     /**
@@ -7794,20 +7808,6 @@ export type UpgradeSubscriptionRequest = {
 };
 
 /**
- * UpgradeTierOp
- *
- * Body for the upgrade-tier operation.
- */
-export type UpgradeTierOp = {
-    /**
-     * New Tier
-     *
-     * Target infrastructure tier
-     */
-    new_tier: 'ladybug-standard' | 'ladybug-large' | 'ladybug-xlarge';
-};
-
-/**
  * UserGraphsResponse
  *
  * User graphs response model.
@@ -11311,8 +11311,8 @@ export type OpRestoreBackupResponses = {
 
 export type OpRestoreBackupResponse = OpRestoreBackupResponses[keyof OpRestoreBackupResponses];
 
-export type OpUpgradeTierData = {
-    body: UpgradeTierOp;
+export type OpChangeTierData = {
+    body: ChangeTierOp;
     headers?: {
         /**
          * Idempotency-Key
@@ -11326,10 +11326,10 @@ export type OpUpgradeTierData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/operations/upgrade-tier';
+    url: '/v1/graphs/{graph_id}/operations/change-tier';
 };
 
-export type OpUpgradeTierErrors = {
+export type OpChangeTierErrors = {
     /**
      * Invalid request payload
      */
@@ -11364,16 +11364,16 @@ export type OpUpgradeTierErrors = {
     500: unknown;
 };
 
-export type OpUpgradeTierError = OpUpgradeTierErrors[keyof OpUpgradeTierErrors];
+export type OpChangeTierError = OpChangeTierErrors[keyof OpChangeTierErrors];
 
-export type OpUpgradeTierResponses = {
+export type OpChangeTierResponses = {
     /**
      * Successful Response
      */
     202: OperationEnvelope;
 };
 
-export type OpUpgradeTierResponse = OpUpgradeTierResponses[keyof OpUpgradeTierResponses];
+export type OpChangeTierResponse = OpChangeTierResponses[keyof OpChangeTierResponses];
 
 export type OpMaterializeData = {
     body: MaterializeOp;
