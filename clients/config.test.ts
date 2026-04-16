@@ -3,57 +3,57 @@ import {
   configureWithJWT,
   extractJWTFromHeader,
   getEnvironmentConfig,
-  getSDKExtensionsConfig,
+  getSDKClientConfig,
   isValidJWT,
-  resetSDKExtensionsConfig,
-  setSDKExtensionsConfig,
+  resetSDKClientConfig,
+  setSDKClientConfig,
 } from './config'
 
 describe('config', () => {
   beforeEach(() => {
-    resetSDKExtensionsConfig()
+    resetSDKClientConfig()
   })
 
-  describe('setSDKExtensionsConfig / getSDKExtensionsConfig', () => {
+  describe('setSDKClientConfig / getSDKClientConfig', () => {
     it('should set and get configuration', () => {
-      setSDKExtensionsConfig({
+      setSDKClientConfig({
         baseUrl: 'https://api.example.com',
         token: 'test-token',
       })
 
-      const config = getSDKExtensionsConfig()
+      const config = getSDKClientConfig()
       expect(config.baseUrl).toBe('https://api.example.com')
       expect(config.token).toBe('test-token')
     })
 
     it('should merge configuration with defaults', () => {
-      setSDKExtensionsConfig({ token: 'new-token' })
+      setSDKClientConfig({ token: 'new-token' })
 
-      const config = getSDKExtensionsConfig()
+      const config = getSDKClientConfig()
       expect(config.token).toBe('new-token')
       expect(config.credentials).toBe('include') // Default value
     })
 
     it('should allow partial updates', () => {
-      setSDKExtensionsConfig({ baseUrl: 'https://first.com' })
-      setSDKExtensionsConfig({ token: 'token-123' })
+      setSDKClientConfig({ baseUrl: 'https://first.com' })
+      setSDKClientConfig({ token: 'token-123' })
 
-      const config = getSDKExtensionsConfig()
+      const config = getSDKClientConfig()
       expect(config.baseUrl).toBe('https://first.com')
       expect(config.token).toBe('token-123')
     })
   })
 
-  describe('resetSDKExtensionsConfig', () => {
+  describe('resetSDKClientConfig', () => {
     it('should reset configuration to defaults', () => {
-      setSDKExtensionsConfig({
+      setSDKClientConfig({
         baseUrl: 'https://custom.com',
         token: 'custom-token',
       })
 
-      resetSDKExtensionsConfig()
+      resetSDKClientConfig()
 
-      const config = getSDKExtensionsConfig()
+      const config = getSDKClientConfig()
       expect(config.baseUrl).toBe('http://localhost:8000')
       expect(config.token).toBeUndefined()
       expect(config.credentials).toBe('include')
@@ -140,7 +140,7 @@ describe('config', () => {
     it('should configure SDK with JWT token', () => {
       configureWithJWT('abc.def.ghi')
 
-      const config = getSDKExtensionsConfig()
+      const config = getSDKClientConfig()
       expect(config.token).toBe('abc.def.ghi')
       expect(config.credentials).toBe('omit') // Default when using JWT
     })
@@ -148,7 +148,7 @@ describe('config', () => {
     it('should allow overriding credentials', () => {
       configureWithJWT('abc.def.ghi', { credentials: 'include' })
 
-      const config = getSDKExtensionsConfig()
+      const config = getSDKClientConfig()
       expect(config.credentials).toBe('include')
     })
 
@@ -158,7 +158,7 @@ describe('config', () => {
         timeout: 60000,
       })
 
-      const config = getSDKExtensionsConfig()
+      const config = getSDKClientConfig()
       expect(config.token).toBe('abc.def.ghi')
       expect(config.baseUrl).toBe('https://custom.com')
       expect(config.timeout).toBe(60000)

@@ -14,11 +14,47 @@
       "import": "./index.js",
       "default": "./index.js"
     },
-    "./extensions": {
-      "types": "./extensions/index.d.ts",
-      "require": "./extensions/index.js",
-      "import": "./extensions/index.js",
-      "default": "./extensions/index.js"
+    "./clients": {
+      "types": "./artifacts/index.d.ts",
+      "require": "./artifacts/index.js",
+      "import": "./artifacts/index.js",
+      "default": "./artifacts/index.js"
+    },
+    "./ledger": {
+      "types": "./artifacts/LedgerClient.d.ts",
+      "require": "./artifacts/LedgerClient.js",
+      "import": "./artifacts/LedgerClient.js",
+      "default": "./artifacts/LedgerClient.js"
+    },
+    "./investor": {
+      "types": "./artifacts/InvestorClient.d.ts",
+      "require": "./artifacts/InvestorClient.js",
+      "import": "./artifacts/InvestorClient.js",
+      "default": "./artifacts/InvestorClient.js"
+    },
+    "./reports": {
+      "types": "./artifacts/ReportClient.d.ts",
+      "require": "./artifacts/ReportClient.js",
+      "import": "./artifacts/ReportClient.js",
+      "default": "./artifacts/ReportClient.js"
+    },
+    "./agent": {
+      "types": "./artifacts/AgentClient.d.ts",
+      "require": "./artifacts/AgentClient.js",
+      "import": "./artifacts/AgentClient.js",
+      "default": "./artifacts/AgentClient.js"
+    },
+    "./query": {
+      "types": "./artifacts/QueryClient.d.ts",
+      "require": "./artifacts/QueryClient.js",
+      "import": "./artifacts/QueryClient.js",
+      "default": "./artifacts/QueryClient.js"
+    },
+    "./operations": {
+      "types": "./artifacts/OperationClient.d.ts",
+      "require": "./artifacts/OperationClient.js",
+      "import": "./artifacts/OperationClient.js",
+      "default": "./artifacts/OperationClient.js"
     },
     "./client": {
       "types": "./client.gen.d.ts",
@@ -54,14 +90,14 @@
     "types.gen.d.ts",
     "client/**/*",
     "core/**/*",
-    "extensions/**/*",
+    "artifacts/**/*",
     "sdk/**/*",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "generate": "npm run generate:clean && npm run generate:sdk && npm run generate:fix && npm run generate:graphql && npm run prepare:publish && npm run format && npm run lint:fix",
-    "generate:clean": "rm -rf sdk sdk-extensions/graphql/generated",
+    "generate:clean": "rm -rf sdk clients/graphql/generated",
     "generate:sdk": "npx @hey-api/openapi-ts -f openapi-ts.config.js",
     "generate:graphql": "npx graphql-codegen --config codegen.ts",
     "generate:fix": "node scripts/fix-sdk-types.js",

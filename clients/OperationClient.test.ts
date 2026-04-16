@@ -129,7 +129,7 @@ describe('OperationClient', () => {
         createMockResponse({ detail: 'Operation not found' }, { ok: false, status: 404 })
       )
 
-      const status = await operationClient.getStatus('op_nonexistent')
+      await operationClient.getStatus('op_nonexistent')
 
       // The SDK might return undefined for error responses
       // We just need to verify the call doesn't throw

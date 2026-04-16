@@ -196,7 +196,7 @@ describe('AgentClient', () => {
         })
       )
 
-      const resultPromise = client.executeQuery('graph_1', { message: 'test' })
+      void client.executeQuery('graph_1', { message: 'test' })
 
       // Wait for SSE client to connect
       await new Promise((r) => setTimeout(r, 10))

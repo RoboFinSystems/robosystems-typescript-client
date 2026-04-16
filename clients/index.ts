@@ -1,18 +1,18 @@
 /**
- * RoboSystems SDK Extensions
- * Enhanced clients with SSE support for the RoboSystems API
+ * RoboSystems SDK Clients
+ * High-level clients with SSE support for the RoboSystems API
  */
 
 import { client } from '../sdk/client.gen'
-import { extractTokenFromSDKClient, getSDKExtensionsConfig } from './config'
-import type { TokenProvider } from './graphql/client'
-import { OperationClient } from './OperationClient'
-import { QueryClient } from './QueryClient'
 import { AgentClient } from './AgentClient'
-import { SSEClient } from './SSEClient'
+import { extractTokenFromSDKClient, getSDKClientConfig } from './config'
+import type { TokenProvider } from './graphql/client'
 import { InvestorClient } from './InvestorClient'
 import { LedgerClient } from './LedgerClient'
+import { OperationClient } from './OperationClient'
+import { QueryClient } from './QueryClient'
 import { ReportClient } from './ReportClient'
+import { SSEClient } from './SSEClient'
 
 // Re-export the `TokenProvider` type so consumers who want to type
 // their own callback (`const provider: TokenProvider = () => …`) can
@@ -20,7 +20,7 @@ import { ReportClient } from './ReportClient'
 // internal `./graphql/client` module path.
 export type { TokenProvider } from './graphql/client'
 
-export interface RoboSystemsExtensionConfig {
+export interface RoboSystemsClientConfig {
   baseUrl?: string
   credentials?: 'include' | 'same-origin' | 'omit'
   /**
@@ -51,7 +51,7 @@ interface ResolvedConfig {
   retryDelay: number
 }
 
-export class RoboSystemsExtensions {
+export class RoboSystemsClients {
   public readonly query: QueryClient
   public readonly agent: AgentClient
   public readonly operations: OperationClient
@@ -60,17 +60,17 @@ export class RoboSystemsExtensions {
   public readonly reports: ReportClient
   private config: ResolvedConfig
 
-  constructor(config: RoboSystemsExtensionConfig = {}) {
+  constructor(config: RoboSystemsClientConfig = {}) {
     // Get base URL from SDK client config or use provided/default
     const sdkConfig = client.getConfig()
 
     // Extract JWT token using centralized logic
     const token = config.token || extractTokenFromSDKClient()
 
-    // `tokenProvider` falls back to the global SDK extensions config so
-    // apps can wire refresh once via `setSDKExtensionsConfig({ tokenProvider })`
+    // `tokenProvider` falls back to the global SDK clients config so
+    // apps can wire refresh once via `setSDKClientConfig({ tokenProvider })`
     // and have the lazy default singleton pick it up automatically.
-    const tokenProvider = config.tokenProvider || getSDKExtensionsConfig().tokenProvider
+    const tokenProvider = config.tokenProvider || getSDKClientConfig().tokenProvider
 
     this.config = {
       baseUrl: config.baseUrl || sdkConfig.baseUrl || 'http://localhost:8000',
@@ -166,23 +166,23 @@ export class RoboSystemsExtensions {
 }
 
 // Export all types and classes
+export * from './AgentClient'
+export * from './config'
+export * from './InvestorClient'
+export * from './LedgerClient'
 export * from './OperationClient'
 export * from './QueryClient'
-export * from './AgentClient'
-export * from './SSEClient'
-export * from './LedgerClient'
-export * from './InvestorClient'
 export * from './ReportClient'
-export * from './config'
+export * from './SSEClient'
 
 export {
+  AgentClient,
+  InvestorClient,
+  LedgerClient,
   OperationClient,
   QueryClient,
-  AgentClient,
-  SSEClient,
-  LedgerClient,
-  InvestorClient,
   ReportClient,
+  SSEClient,
 }
 
 // Export React hooks
@@ -195,56 +195,56 @@ export {
 } from './hooks'
 
 // Lazy initialization of default instance
-let _extensions: RoboSystemsExtensions | null = null
+let _clients: RoboSystemsClients | null = null
 
-function getExtensions(): RoboSystemsExtensions {
-  if (!_extensions) {
-    _extensions = new RoboSystemsExtensions()
+function getClients(): RoboSystemsClients {
+  if (!_clients) {
+    _clients = new RoboSystemsClients()
   }
-  return _extensions
+  return _clients
 }
 
-export const extensions = {
+export const clients = {
   get query() {
-    return getExtensions().query
+    return getClients().query
   },
   get agent() {
-    return getExtensions().agent
+    return getClients().agent
   },
   get operations() {
-    return getExtensions().operations
+    return getClients().operations
   },
   get ledger() {
-    return getExtensions().ledger
+    return getClients().ledger
   },
   get investor() {
-    return getExtensions().investor
+    return getClients().investor
   },
   get reports() {
-    return getExtensions().reports
+    return getClients().reports
   },
   monitorOperation: (operationId: string, onProgress?: (progress: any) => void) =>
-    getExtensions().monitorOperation(operationId, onProgress),
-  createSSEClient: () => getExtensions().createSSEClient(),
-  close: () => getExtensions().close(),
+    getClients().monitorOperation(operationId, onProgress),
+  createSSEClient: () => getClients().createSSEClient(),
+  close: () => getClients().close(),
 }
 
 // Export convenience functions that use the default instance
 export const monitorOperation = (operationId: string, onProgress?: (progress: any) => void) =>
-  getExtensions().monitorOperation(operationId, onProgress)
+  getClients().monitorOperation(operationId, onProgress)
 
 export const executeQuery = (graphId: string, query: string, parameters?: Record<string, any>) =>
-  getExtensions().query.query(graphId, query, parameters)
+  getClients().query.query(graphId, query, parameters)
 
 export const streamQuery = (
   graphId: string,
   query: string,
   parameters?: Record<string, any>,
   chunkSize?: number
-) => getExtensions().query.streamQuery(graphId, query, parameters, chunkSize)
+) => getClients().query.streamQuery(graphId, query, parameters, chunkSize)
 
 export const agentQuery = (graphId: string, message: string, context?: Record<string, any>) =>
-  getExtensions().agent.query(graphId, message, context)
+  getClients().agent.query(graphId, message, context)
 
 export const analyzeFinancials = (graphId: string, message: string) =>
-  getExtensions().agent.analyzeFinancials(graphId, message)
+  getClients().agent.analyzeFinancials(graphId, message)

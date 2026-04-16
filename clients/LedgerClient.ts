@@ -1382,7 +1382,7 @@ export class LedgerClient {
   ): Promise<TResult> {
     try {
       const client = this.gql.get(graphId)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const raw = client.request as (doc: unknown, vars?: unknown) => Promise<any>
       // graphql-request's overloads don't cleanly resolve for generic
       // helpers wrapping codegen's `Exact<>` var types, so we bypass

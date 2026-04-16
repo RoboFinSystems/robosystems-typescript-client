@@ -20,6 +20,6 @@
     "noEmit": false,
     "types": ["node"]
   },
-  "include": ["sdk/**/*.ts", "sdk-extensions/**/*.ts"],
+  "include": ["sdk/**/*.ts", "clients/**/*.ts"],
   "exclude": ["node_modules", "dist", "scripts", "**/*.test.ts", "**/*.spec.ts"]
 }
