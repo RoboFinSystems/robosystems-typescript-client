@@ -608,7 +608,8 @@ export const getConnection = <ThrowOnError extends boolean = false>(options: Opt
  * Note:
  * This operation is included - no credit consumption required.
  *
- * Returns a task ID for monitoring sync progress.
+ * Returns an `OperationEnvelope` with an `operationId` for tracking sync progress.
+ * Supports `Idempotency-Key` header to safely retry without triggering duplicate syncs.
  */
 export const syncConnection = <ThrowOnError extends boolean = false>(options: Options<SyncConnectionData, ThrowOnError>) => (options.client ?? client).post<SyncConnectionResponses, SyncConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
