@@ -8012,7 +8012,7 @@ export type RegisterUserData = {
 
 export type RegisterUserErrors = {
     /**
-     * Invalid request data or missing CAPTCHA token (production only)
+     * Invalid request
      */
     400: ErrorResponse;
     /**
@@ -8023,6 +8023,14 @@ export type RegisterUserErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
     /**
      * Registration temporarily disabled
      */
@@ -8049,7 +8057,7 @@ export type LoginUserData = {
 
 export type LoginUserErrors = {
     /**
-     * Invalid request data
+     * Invalid request
      */
     400: ErrorResponse;
     /**
@@ -8060,6 +8068,14 @@ export type LoginUserErrors = {
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type LoginUserError = LoginUserErrors[keyof LoginUserErrors];
@@ -8079,6 +8095,23 @@ export type LogoutUserData = {
     query?: never;
     url: '/v1/auth/logout';
 };
+
+export type LogoutUserErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type LogoutUserError = LogoutUserErrors[keyof LogoutUserErrors];
 
 export type LogoutUserResponses = {
     /**
@@ -8102,9 +8135,17 @@ export type GetCurrentAuthUserData = {
 
 export type GetCurrentAuthUserErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: ErrorResponse;
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetCurrentAuthUserError = GetCurrentAuthUserErrors[keyof GetCurrentAuthUserErrors];
@@ -8131,9 +8172,17 @@ export type RefreshAuthSessionData = {
 
 export type RefreshAuthSessionErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: ErrorResponse;
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type RefreshAuthSessionError = RefreshAuthSessionErrors[keyof RefreshAuthSessionErrors];
@@ -8156,13 +8205,17 @@ export type ResendVerificationEmailData = {
 
 export type ResendVerificationEmailErrors = {
     /**
-     * Email already verified
+     * Invalid request
      */
     400: ErrorResponse;
     /**
      * Rate limit exceeded
      */
     429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
     /**
      * Email service unavailable
      */
@@ -8193,13 +8246,21 @@ export type VerifyEmailData = {
 
 export type VerifyEmailErrors = {
     /**
-     * Invalid or expired token
+     * Invalid request
      */
     400: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type VerifyEmailError = VerifyEmailErrors[keyof VerifyEmailErrors];
@@ -8220,9 +8281,26 @@ export type GetPasswordPolicyData = {
     url: '/v1/auth/password/policy';
 };
 
+export type GetPasswordPolicyErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetPasswordPolicyError = GetPasswordPolicyErrors[keyof GetPasswordPolicyErrors];
+
 export type GetPasswordPolicyResponses = {
     /**
-     * Password policy requirements
+     * Successful Response
      */
     200: PasswordPolicyResponse;
 };
@@ -8238,16 +8316,28 @@ export type CheckPasswordStrengthData = {
 
 export type CheckPasswordStrengthErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CheckPasswordStrengthError = CheckPasswordStrengthErrors[keyof CheckPasswordStrengthErrors];
 
 export type CheckPasswordStrengthResponses = {
     /**
-     * Password strength analysis
+     * Successful Response
      */
     200: PasswordCheckResponse;
 };
@@ -8263,6 +8353,10 @@ export type ForgotPasswordData = {
 
 export type ForgotPasswordErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
@@ -8270,6 +8364,10 @@ export type ForgotPasswordErrors = {
      * Rate limit exceeded
      */
     429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ForgotPasswordError = ForgotPasswordErrors[keyof ForgotPasswordErrors];
@@ -8303,9 +8401,21 @@ export type ValidateResetTokenData = {
 
 export type ValidateResetTokenErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ValidateResetTokenError = ValidateResetTokenErrors[keyof ValidateResetTokenErrors];
@@ -8328,13 +8438,21 @@ export type ResetPasswordData = {
 
 export type ResetPasswordErrors = {
     /**
-     * Invalid token or password
+     * Invalid request
      */
     400: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ResetPasswordError = ResetPasswordErrors[keyof ResetPasswordErrors];
@@ -8357,13 +8475,21 @@ export type GenerateSsoTokenData = {
 
 export type GenerateSsoTokenErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: ErrorResponse;
+    400: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GenerateSsoTokenError = GenerateSsoTokenErrors[keyof GenerateSsoTokenErrors];
@@ -8386,17 +8512,21 @@ export type SsoTokenExchangeData = {
 
 export type SsoTokenExchangeErrors = {
     /**
-     * Invalid request data
+     * Invalid request
      */
     400: ErrorResponse;
-    /**
-     * Invalid SSO token
-     */
-    401: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type SsoTokenExchangeError = SsoTokenExchangeErrors[keyof SsoTokenExchangeErrors];
@@ -8419,13 +8549,21 @@ export type CompleteSsoAuthData = {
 
 export type CompleteSsoAuthErrors = {
     /**
-     * Invalid session
+     * Invalid request
      */
-    401: ErrorResponse;
+    400: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CompleteSsoAuthError = CompleteSsoAuthErrors[keyof CompleteSsoAuthErrors];
@@ -8446,9 +8584,26 @@ export type GetCaptchaConfigData = {
     url: '/v1/auth/captcha/config';
 };
 
+export type GetCaptchaConfigErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetCaptchaConfigError = GetCaptchaConfigErrors[keyof GetCaptchaConfigErrors];
+
 export type GetCaptchaConfigResponses = {
     /**
-     * CAPTCHA configuration
+     * Successful Response
      */
     200: unknown;
 };
@@ -8462,7 +8617,7 @@ export type GetServiceStatusData = {
 
 export type GetServiceStatusResponses = {
     /**
-     * Service is healthy
+     * Successful Response
      */
     200: HealthStatus;
 };
@@ -8475,6 +8630,31 @@ export type GetCurrentUserData = {
     query?: never;
     url: '/v1/user';
 };
+
+export type GetCurrentUserErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetCurrentUserError = GetCurrentUserErrors[keyof GetCurrentUserErrors];
 
 export type GetCurrentUserResponses = {
     /**
@@ -8494,9 +8674,33 @@ export type UpdateUserData = {
 
 export type UpdateUserErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Email already in use
+     */
+    409: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UpdateUserError = UpdateUserErrors[keyof UpdateUserErrors];
@@ -8519,19 +8723,27 @@ export type UpdateUserPasswordData = {
 
 export type UpdateUserPasswordErrors = {
     /**
-     * Invalid password or validation error
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * User not found
+     * Authentication required
      */
-    404: ErrorResponse;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Error updating password
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -8540,7 +8752,7 @@ export type UpdateUserPasswordError = UpdateUserPasswordErrors[keyof UpdateUserP
 
 export type UpdateUserPasswordResponses = {
     /**
-     * Password updated successfully
+     * Successful Response
      */
     200: SuccessResponse;
 };
@@ -8553,6 +8765,31 @@ export type ListUserApiKeysData = {
     query?: never;
     url: '/v1/user/api-keys';
 };
+
+export type ListUserApiKeysErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListUserApiKeysError = ListUserApiKeysErrors[keyof ListUserApiKeysErrors];
 
 export type ListUserApiKeysResponses = {
     /**
@@ -8572,9 +8809,29 @@ export type CreateUserApiKeyData = {
 
 export type CreateUserApiKeyErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CreateUserApiKeyError = CreateUserApiKeyErrors[keyof CreateUserApiKeyErrors];
@@ -8602,7 +8859,19 @@ export type RevokeUserApiKeyData = {
 
 export type RevokeUserApiKeyErrors = {
     /**
-     * API key not found
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -8610,7 +8879,11 @@ export type RevokeUserApiKeyErrors = {
      */
     422: HttpValidationError;
     /**
-     * Error revoking API key
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -8619,7 +8892,7 @@ export type RevokeUserApiKeyError = RevokeUserApiKeyErrors[keyof RevokeUserApiKe
 
 export type RevokeUserApiKeyResponses = {
     /**
-     * API key revoked successfully
+     * Successful Response
      */
     200: SuccessResponse;
 };
@@ -8640,9 +8913,33 @@ export type UpdateUserApiKeyData = {
 
 export type UpdateUserApiKeyErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UpdateUserApiKeyError = UpdateUserApiKeyErrors[keyof UpdateUserApiKeyErrors];
@@ -8662,6 +8959,31 @@ export type ListUserOrgsData = {
     query?: never;
     url: '/v1/orgs';
 };
+
+export type ListUserOrgsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListUserOrgsError = ListUserOrgsErrors[keyof ListUserOrgsErrors];
 
 export type ListUserOrgsResponses = {
     /**
@@ -8686,9 +9008,33 @@ export type GetOrgData = {
 
 export type GetOrgErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetOrgError = GetOrgErrors[keyof GetOrgErrors];
@@ -8716,9 +9062,33 @@ export type UpdateOrgData = {
 
 export type UpdateOrgErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UpdateOrgError = UpdateOrgErrors[keyof UpdateOrgErrors];
@@ -8746,9 +9116,33 @@ export type ListOrgGraphsData = {
 
 export type ListOrgGraphsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListOrgGraphsError = ListOrgGraphsErrors[keyof ListOrgGraphsErrors];
@@ -8780,9 +9174,33 @@ export type ListOrgMembersData = {
 
 export type ListOrgMembersErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListOrgMembersError = ListOrgMembersErrors[keyof ListOrgMembersErrors];
@@ -8810,9 +9228,37 @@ export type InviteOrgMemberData = {
 
 export type InviteOrgMemberErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Feature not enabled
+     */
+    501: ErrorResponse;
 };
 
 export type InviteOrgMemberError = InviteOrgMemberErrors[keyof InviteOrgMemberErrors];
@@ -8844,9 +9290,33 @@ export type RemoveOrgMemberData = {
 
 export type RemoveOrgMemberErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type RemoveOrgMemberError = RemoveOrgMemberErrors[keyof RemoveOrgMemberErrors];
@@ -8878,9 +9348,33 @@ export type UpdateOrgMemberRoleData = {
 
 export type UpdateOrgMemberRoleErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UpdateOrgMemberRoleError = UpdateOrgMemberRoleErrors[keyof UpdateOrgMemberRoleErrors];
@@ -8908,9 +9402,33 @@ export type GetOrgLimitsData = {
 
 export type GetOrgLimitsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetOrgLimitsError = GetOrgLimitsErrors[keyof GetOrgLimitsErrors];
@@ -8943,9 +9461,33 @@ export type GetOrgUsageData = {
 
 export type GetOrgUsageErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetOrgUsageError = GetOrgUsageErrors[keyof GetOrgUsageErrors];
@@ -8986,15 +9528,31 @@ export type ListConnectionsData = {
 
 export type ListConnectionsErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to list connections
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9005,7 +9563,7 @@ export type ListConnectionsResponses = {
     /**
      * Response Listconnections
      *
-     * Connections retrieved successfully
+     * Successful Response
      */
     200: Array<ConnectionResponse>;
 };
@@ -9026,23 +9584,35 @@ export type CreateConnectionData = {
 
 export type CreateConnectionErrors = {
     /**
-     * Invalid connection configuration
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * Access denied - admin role required
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Connection already exists
+     * Resource not found
      */
-    409: ErrorResponse;
+    404: ErrorResponse;
+    /**
+     * Connection already exists for this provider
+     */
+    409: unknown;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to create connection
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9051,7 +9621,7 @@ export type CreateConnectionError = CreateConnectionErrors[keyof CreateConnectio
 
 export type CreateConnectionResponses = {
     /**
-     * Connection created successfully
+     * Successful Response
      */
     201: ConnectionResponse;
 };
@@ -9072,15 +9642,31 @@ export type GetConnectionOptionsData = {
 
 export type GetConnectionOptionsErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve options
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9089,7 +9675,7 @@ export type GetConnectionOptionsError = GetConnectionOptionsErrors[keyof GetConn
 
 export type GetConnectionOptionsResponses = {
     /**
-     * Connection options retrieved successfully
+     * Successful Response
      */
     200: ConnectionOptionsResponse;
 };
@@ -9110,9 +9696,33 @@ export type InitOAuthData = {
 
 export type InitOAuthErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type InitOAuthError = InitOAuthErrors[keyof InitOAuthErrors];
@@ -9146,15 +9756,19 @@ export type OauthCallbackData = {
 
 export type OauthCallbackErrors = {
     /**
-     * OAuth error or invalid state
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * State does not match user
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Connection not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -9162,7 +9776,11 @@ export type OauthCallbackErrors = {
      */
     422: HttpValidationError;
     /**
-     * OAuth callback processing failed
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9171,7 +9789,7 @@ export type OauthCallbackError = OauthCallbackErrors[keyof OauthCallbackErrors];
 
 export type OauthCallbackResponses = {
     /**
-     * OAuth flow completed successfully
+     * Successful Response
      */
     200: unknown;
 };
@@ -9196,11 +9814,19 @@ export type DeleteConnectionData = {
 
 export type DeleteConnectionErrors = {
     /**
-     * Access denied - admin role required
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Connection not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -9208,7 +9834,11 @@ export type DeleteConnectionErrors = {
      */
     422: HttpValidationError;
     /**
-     * Failed to delete connection
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9217,7 +9847,7 @@ export type DeleteConnectionError = DeleteConnectionErrors[keyof DeleteConnectio
 
 export type DeleteConnectionResponses = {
     /**
-     * Connection deleted successfully
+     * Successful Response
      */
     200: SuccessResponse;
 };
@@ -9244,11 +9874,19 @@ export type GetConnectionData = {
 
 export type GetConnectionErrors = {
     /**
-     * Access denied to connection
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Connection not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -9256,7 +9894,11 @@ export type GetConnectionErrors = {
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve connection
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9265,7 +9907,7 @@ export type GetConnectionError = GetConnectionErrors[keyof GetConnectionErrors];
 
 export type GetConnectionResponses = {
     /**
-     * Connection details retrieved successfully
+     * Successful Response
      */
     200: ConnectionResponse;
 };
@@ -9298,15 +9940,23 @@ export type SyncConnectionData = {
 
 export type SyncConnectionErrors = {
     /**
-     * Access denied or provider not available
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Connection not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
-     * Idempotency key reused with different request body
+     * Idempotency-Key conflict — key reused with different body
      */
     409: ErrorResponse;
     /**
@@ -9314,13 +9964,17 @@ export type SyncConnectionErrors = {
      */
     422: HttpValidationError;
     /**
-     * Failed to start sync
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
     /**
      * Sync request timed out
      */
-    504: ErrorResponse;
+    504: unknown;
 };
 
 export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
@@ -9355,20 +10009,40 @@ export type ListAgentsData = {
 
 export type ListAgentsErrors = {
     /**
-     * Unauthorized - Invalid or missing authentication
+     * Invalid request
      */
-    401: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListAgentsError = ListAgentsErrors[keyof ListAgentsErrors];
 
 export type ListAgentsResponses = {
     /**
-     * List of agents retrieved successfully
+     * Successful Response
      */
     200: AgentListResponse;
 };
@@ -9396,13 +10070,25 @@ export type AutoSelectAgentData = {
 
 export type AutoSelectAgentErrors = {
     /**
-     * Invalid request parameters
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
     /**
-     * Insufficient credits for selected agent
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Insufficient credits
      */
     402: unknown;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
@@ -9410,7 +10096,7 @@ export type AutoSelectAgentErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
      * Internal server error
      */
@@ -9421,11 +10107,11 @@ export type AutoSelectAgentError = AutoSelectAgentErrors[keyof AutoSelectAgentEr
 
 export type AutoSelectAgentResponses = {
     /**
-     * Query successfully processed by selected agent
+     * Successful Response
      */
     200: AgentResponse;
     /**
-     * Query queued for async processing with operation tracking
+     * Query queued for async processing
      */
     202: unknown;
 };
@@ -9452,20 +10138,40 @@ export type GetAgentMetadataData = {
 
 export type GetAgentMetadataErrors = {
     /**
-     * Agent type not found
+     * Invalid request
      */
-    404: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetAgentMetadataError = GetAgentMetadataErrors[keyof GetAgentMetadataErrors];
 
 export type GetAgentMetadataResponses = {
     /**
-     * Agent metadata retrieved successfully
+     * Successful Response
      */
     200: AgentMetadataResponse;
 };
@@ -9497,17 +10203,25 @@ export type ExecuteSpecificAgentData = {
 
 export type ExecuteSpecificAgentErrors = {
     /**
-     * Invalid agent type or request parameters
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
     /**
-     * Insufficient credits for specified agent
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Insufficient credits
      */
     402: unknown;
     /**
-     * Agent type not found
+     * Access denied
      */
-    404: unknown;
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
@@ -9515,7 +10229,7 @@ export type ExecuteSpecificAgentErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
      * Internal server error
      */
@@ -9526,11 +10240,11 @@ export type ExecuteSpecificAgentError = ExecuteSpecificAgentErrors[keyof Execute
 
 export type ExecuteSpecificAgentResponses = {
     /**
-     * Query successfully processed by specified agent
+     * Successful Response
      */
     200: AgentResponse;
     /**
-     * Query queued for async processing with operation tracking
+     * Query queued for async processing
      */
     202: unknown;
 };
@@ -9551,28 +10265,44 @@ export type BatchProcessQueriesData = {
 
 export type BatchProcessQueriesErrors = {
     /**
-     * Invalid batch request or too many queries
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
     /**
-     * Insufficient credits for batch processing
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Insufficient credits
      */
     402: unknown;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Internal server error during batch processing
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type BatchProcessQueriesError = BatchProcessQueriesErrors[keyof BatchProcessQueriesErrors];
 
 export type BatchProcessQueriesResponses = {
     /**
-     * Batch processing completed successfully
+     * Successful Response
      */
     200: BatchAgentResponse;
 };
@@ -9593,20 +10323,40 @@ export type RecommendAgentData = {
 
 export type RecommendAgentErrors = {
     /**
-     * Invalid recommendation request
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type RecommendAgentError = RecommendAgentErrors[keyof RecommendAgentErrors];
 
 export type RecommendAgentResponses = {
     /**
-     * Recommendations generated successfully
+     * Successful Response
      */
     200: AgentRecommendationResponse;
 };
@@ -9627,15 +10377,31 @@ export type ListMcpToolsData = {
 
 export type ListMcpToolsErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve MCP tools
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9644,7 +10410,7 @@ export type ListMcpToolsError = ListMcpToolsErrors[keyof ListMcpToolsErrors];
 
 export type ListMcpToolsResponses = {
     /**
-     * MCP tools retrieved successfully
+     * Successful Response
      */
     200: McpToolsResponse;
 };
@@ -9678,21 +10444,25 @@ export type CallMcpToolData = {
 
 export type CallMcpToolErrors = {
     /**
-     * Invalid tool call
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * Insufficient credits
+     * Authentication required
      */
-    402: ErrorResponse;
+    401: ErrorResponse;
     /**
      * Access denied
      */
     403: ErrorResponse;
     /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Execution timeout
      */
-    408: ErrorResponse;
+    408: unknown;
     /**
      * Validation Error
      */
@@ -9702,20 +10472,20 @@ export type CallMcpToolErrors = {
      */
     429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
     500: ErrorResponse;
     /**
      * Service unavailable
      */
-    503: ErrorResponse;
+    503: unknown;
 };
 
 export type CallMcpToolError = CallMcpToolErrors[keyof CallMcpToolErrors];
 
 export type CallMcpToolResponses = {
     /**
-     * Tool executed successfully
+     * Successful Response
      */
     200: unknown;
     /**
@@ -9751,9 +10521,33 @@ export type ListBackupsData = {
 
 export type ListBackupsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListBackupsError = ListBackupsErrors[keyof ListBackupsErrors];
@@ -9836,9 +10630,33 @@ export type GetBackupStatsData = {
 
 export type GetBackupStatsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetBackupStatsError = GetBackupStatsErrors[keyof GetBackupStatsErrors];
@@ -9866,11 +10684,19 @@ export type GetGraphMetricsData = {
 
 export type GetGraphMetricsErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Graph not found or metrics unavailable
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -9878,7 +10704,11 @@ export type GetGraphMetricsErrors = {
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve metrics
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9887,7 +10717,7 @@ export type GetGraphMetricsError = GetGraphMetricsErrors[keyof GetGraphMetricsEr
 
 export type GetGraphMetricsResponses = {
     /**
-     * Graph metrics retrieved successfully
+     * Successful Response
      */
     200: GraphMetricsResponse;
 };
@@ -9939,15 +10769,31 @@ export type GetGraphUsageAnalyticsData = {
 
 export type GetGraphUsageAnalyticsErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve usage analytics
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -9956,7 +10802,7 @@ export type GetGraphUsageAnalyticsError = GetGraphUsageAnalyticsErrors[keyof Get
 
 export type GetGraphUsageAnalyticsResponses = {
     /**
-     * Usage analytics retrieved successfully
+     * Successful Response
      */
     200: GraphUsageResponse;
 };
@@ -9996,13 +10842,21 @@ export type ExecuteCypherQueryData = {
 
 export type ExecuteCypherQueryErrors = {
     /**
-     * Invalid query or parameters
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
     /**
      * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Query timeout
      */
@@ -10014,11 +10868,11 @@ export type ExecuteCypherQueryErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
     /**
      * Service unavailable
      */
@@ -10029,26 +10883,14 @@ export type ExecuteCypherQueryError = ExecuteCypherQueryErrors[keyof ExecuteCyph
 
 export type ExecuteCypherQueryResponses = {
     /**
-     * Query executed successfully
+     * Successful Response
      */
-    200: {
-        success?: boolean;
-        data?: Array<{
-            [key: string]: unknown;
-        }>;
-        columns?: Array<string>;
-        row_count?: number;
-        execution_time_ms?: number;
-        graph_id?: string;
-        timestamp?: string;
-    };
+    200: unknown;
     /**
-     * Query queued for execution
+     * Query queued — monitor via SSE at /v1/operations/{operation_id}/stream
      */
     202: unknown;
 };
-
-export type ExecuteCypherQueryResponse = ExecuteCypherQueryResponses[keyof ExecuteCypherQueryResponses];
 
 export type GetGraphSchemaData = {
     body?: never;
@@ -10064,17 +10906,33 @@ export type GetGraphSchemaData = {
 
 export type GetGraphSchemaErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve schema
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
     /**
      * Schema operation timed out
      */
@@ -10085,7 +10943,7 @@ export type GetGraphSchemaError = GetGraphSchemaErrors[keyof GetGraphSchemaError
 
 export type GetGraphSchemaResponses = {
     /**
-     * Schema information retrieved successfully
+     * Successful Response
      */
     200: SchemaInfoResponse;
 };
@@ -10119,28 +10977,40 @@ export type ExportGraphSchemaData = {
 
 export type ExportGraphSchemaErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
     /**
-     * Schema not found for graph
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to export schema
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ExportGraphSchemaError = ExportGraphSchemaErrors[keyof ExportGraphSchemaErrors];
 
 export type ExportGraphSchemaResponses = {
     /**
-     * Schema exported successfully
+     * Successful Response
      */
     200: SchemaExportResponse;
 };
@@ -10164,28 +11034,44 @@ export type ValidateSchemaData = {
 
 export type ValidateSchemaErrors = {
     /**
-     * Invalid schema format
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * Access denied to graph
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Schema validation failed
+     * Resource not found
      */
-    422: ErrorResponse;
+    404: ErrorResponse;
     /**
-     * Validation error
+     * Schema fails validation rules
+     */
+    422: unknown;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
+    /**
+     * Validation timed out
+     */
+    504: unknown;
 };
 
 export type ValidateSchemaError = ValidateSchemaErrors[keyof ValidateSchemaErrors];
 
 export type ValidateSchemaResponses = {
     /**
-     * Schema validation completed
+     * Successful Response
      */
     200: SchemaValidationResponse;
 };
@@ -10208,11 +11094,19 @@ export type GetCreditSummaryData = {
 
 export type GetCreditSummaryErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Credit pool not found for graph
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -10220,7 +11114,11 @@ export type GetCreditSummaryErrors = {
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve credit summary
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -10229,7 +11127,7 @@ export type GetCreditSummaryError = GetCreditSummaryErrors[keyof GetCreditSummar
 
 export type GetCreditSummaryResponses = {
     /**
-     * Credit summary retrieved successfully
+     * Successful Response
      */
     200: CreditSummaryResponse;
 };
@@ -10289,19 +11187,31 @@ export type ListCreditTransactionsData = {
 
 export type ListCreditTransactionsErrors = {
     /**
-     * Invalid transaction type filter
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * Access denied to graph
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve transactions
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -10310,7 +11220,7 @@ export type ListCreditTransactionsError = ListCreditTransactionsErrors[keyof Lis
 
 export type ListCreditTransactionsResponses = {
     /**
-     * Transaction history retrieved successfully
+     * Successful Response
      */
     200: DetailedTransactionsResponse;
 };
@@ -10331,28 +11241,40 @@ export type GetDatabaseHealthData = {
 
 export type GetDatabaseHealthErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
     /**
-     * Graph not found
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve health information
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetDatabaseHealthError = GetDatabaseHealthErrors[keyof GetDatabaseHealthErrors];
 
 export type GetDatabaseHealthResponses = {
     /**
-     * Database health retrieved successfully
+     * Successful Response
      */
     200: DatabaseHealthResponse;
 };
@@ -10373,28 +11295,40 @@ export type GetDatabaseInfoData = {
 
 export type GetDatabaseInfoErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
     /**
-     * Graph not found
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve database information
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetDatabaseInfoError = GetDatabaseInfoErrors[keyof GetDatabaseInfoErrors];
 
 export type GetDatabaseInfoResponses = {
     /**
-     * Database information retrieved successfully
+     * Successful Response
      */
     200: DatabaseInfoResponse;
 };
@@ -10415,28 +11349,40 @@ export type GetGraphLimitsData = {
 
 export type GetGraphLimitsErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
     /**
-     * Graph not found
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve limits
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetGraphLimitsError = GetGraphLimitsErrors[keyof GetGraphLimitsErrors];
 
 export type GetGraphLimitsResponses = {
     /**
-     * Limits retrieved successfully
+     * Successful Response
      */
     200: GraphLimitsResponse;
 };
@@ -10457,9 +11403,33 @@ export type ListSubgraphsData = {
 
 export type ListSubgraphsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListSubgraphsError = ListSubgraphsErrors[keyof ListSubgraphsErrors];
@@ -10493,36 +11463,40 @@ export type GetSubgraphInfoData = {
 
 export type GetSubgraphInfoErrors = {
     /**
-     * Not a valid subgraph
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
     /**
-     * Not authenticated
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
      * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Subgraph not found
+     * Resource not found
      */
-    404: unknown;
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
      * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type GetSubgraphInfoError = GetSubgraphInfoErrors[keyof GetSubgraphInfoErrors];
 
 export type GetSubgraphInfoResponses = {
     /**
-     * Subgraph information retrieved
+     * Successful Response
      */
     200: SubgraphResponse;
 };
@@ -10543,32 +11517,40 @@ export type GetSubgraphQuotaData = {
 
 export type GetSubgraphQuotaErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: unknown;
+    400: ErrorResponse;
     /**
-     * Access denied to parent graph
+     * Authentication required
      */
-    403: unknown;
+    401: ErrorResponse;
     /**
-     * Parent graph not found
+     * Access denied
      */
-    404: unknown;
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
      * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type GetSubgraphQuotaError = GetSubgraphQuotaErrors[keyof GetSubgraphQuotaErrors];
 
 export type GetSubgraphQuotaResponses = {
     /**
-     * Quota information retrieved
+     * Successful Response
      */
     200: SubgraphQuotaResponse;
 };
@@ -10591,20 +11573,40 @@ export type GetGraphSubscriptionData = {
 
 export type GetGraphSubscriptionErrors = {
     /**
-     * No subscription found
+     * Invalid request
      */
-    404: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetGraphSubscriptionError = GetGraphSubscriptionErrors[keyof GetGraphSubscriptionErrors];
 
 export type GetGraphSubscriptionResponses = {
     /**
-     * Subscription retrieved successfully
+     * Successful Response
      */
     200: GraphSubscriptionResponse;
 };
@@ -10627,24 +11629,40 @@ export type ChangeSubscriptionPlanData = {
 
 export type ChangeSubscriptionPlanErrors = {
     /**
-     * Invalid plan, validation failure, or status conflict
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
     /**
-     * No subscription found
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ChangeSubscriptionPlanError = ChangeSubscriptionPlanErrors[keyof ChangeSubscriptionPlanErrors];
 
 export type ChangeSubscriptionPlanResponses = {
     /**
-     * Plan changed successfully
+     * Successful Response
      */
     200: GraphSubscriptionResponse;
 };
@@ -10667,24 +11685,48 @@ export type CreateRepositorySubscriptionData = {
 
 export type CreateRepositorySubscriptionErrors = {
     /**
-     * Invalid request - cannot create subscription for user graphs
+     * Invalid request
      */
-    400: unknown;
+    400: ErrorResponse;
     /**
-     * User already has a subscription to this repository
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Payment required — add a payment method first
+     */
+    402: unknown;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Already subscribed to this repository
      */
     409: unknown;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CreateRepositorySubscriptionError = CreateRepositorySubscriptionErrors[keyof CreateRepositorySubscriptionErrors];
 
 export type CreateRepositorySubscriptionResponses = {
     /**
-     * Repository subscription created successfully
+     * Successful Response
      */
     201: GraphSubscriptionResponse;
 };
@@ -10705,15 +11747,19 @@ export type ListTablesData = {
 
 export type ListTablesErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: unknown;
+    400: ErrorResponse;
     /**
-     * Access denied - insufficient permissions for this graph
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Graph not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -10721,16 +11767,20 @@ export type ListTablesErrors = {
      */
     422: HttpValidationError;
     /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
      * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type ListTablesError = ListTablesErrors[keyof ListTablesErrors];
 
 export type ListTablesResponses = {
     /**
-     * Tables retrieved successfully with full metrics
+     * Successful Response
      */
     200: TableListResponse;
 };
@@ -10754,23 +11804,23 @@ export type QueryTablesData = {
 
 export type QueryTablesErrors = {
     /**
-     * Invalid SQL query syntax or execution error
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * Not authenticated
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Access denied - shared repositories or insufficient permissions
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Graph not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
-     * Query timeout exceeded
+     * Query timeout
      */
     408: unknown;
     /**
@@ -10778,16 +11828,20 @@ export type QueryTablesErrors = {
      */
     422: HttpValidationError;
     /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
      * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type QueryTablesError = QueryTablesErrors[keyof QueryTablesErrors];
 
 export type QueryTablesResponses = {
     /**
-     * Query executed successfully
+     * Successful Response
      */
     200: TableQueryResponse;
 };
@@ -10808,9 +11862,37 @@ export type SearchDocumentsData = {
 
 export type SearchDocumentsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Text search not available
+     */
+    503: unknown;
 };
 
 export type SearchDocumentsError = SearchDocumentsErrors[keyof SearchDocumentsErrors];
@@ -10842,9 +11924,37 @@ export type GetDocumentSectionData = {
 
 export type GetDocumentSectionErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Text search not available
+     */
+    503: unknown;
 };
 
 export type GetDocumentSectionError = GetDocumentSectionErrors[keyof GetDocumentSectionErrors];
@@ -10877,9 +11987,33 @@ export type ListDocumentsData = {
 
 export type ListDocumentsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListDocumentsError = ListDocumentsErrors[keyof ListDocumentsErrors];
@@ -10907,9 +12041,33 @@ export type UploadDocumentData = {
 
 export type UploadDocumentErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UploadDocumentError = UploadDocumentErrors[keyof UploadDocumentErrors];
@@ -10941,9 +12099,33 @@ export type DeleteDocumentData = {
 
 export type DeleteDocumentErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type DeleteDocumentError = DeleteDocumentErrors[keyof DeleteDocumentErrors];
@@ -10975,9 +12157,33 @@ export type GetDocumentData = {
 
 export type GetDocumentErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetDocumentError = GetDocumentErrors[keyof GetDocumentErrors];
@@ -11009,9 +12215,33 @@ export type UpdateDocumentData = {
 
 export type UpdateDocumentErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UpdateDocumentError = UpdateDocumentErrors[keyof UpdateDocumentErrors];
@@ -11039,9 +12269,33 @@ export type UploadDocumentsBulkData = {
 
 export type UploadDocumentsBulkErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UploadDocumentsBulkError = UploadDocumentsBulkErrors[keyof UploadDocumentsBulkErrors];
@@ -11075,25 +12329,25 @@ export type OpCreateSubgraphData = {
 
 export type OpCreateSubgraphErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -11101,11 +12355,11 @@ export type OpCreateSubgraphErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateSubgraphError = OpCreateSubgraphErrors[keyof OpCreateSubgraphErrors];
@@ -11139,25 +12393,25 @@ export type OpDeleteSubgraphData = {
 
 export type OpDeleteSubgraphErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -11165,11 +12419,11 @@ export type OpDeleteSubgraphErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteSubgraphError = OpDeleteSubgraphErrors[keyof OpDeleteSubgraphErrors];
@@ -11203,25 +12457,25 @@ export type OpCreateBackupData = {
 
 export type OpCreateBackupErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -11229,11 +12483,11 @@ export type OpCreateBackupErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateBackupError = OpCreateBackupErrors[keyof OpCreateBackupErrors];
@@ -11267,25 +12521,25 @@ export type OpRestoreBackupData = {
 
 export type OpRestoreBackupErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -11293,11 +12547,11 @@ export type OpRestoreBackupErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpRestoreBackupError = OpRestoreBackupErrors[keyof OpRestoreBackupErrors];
@@ -11331,25 +12585,25 @@ export type OpChangeTierData = {
 
 export type OpChangeTierErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -11357,11 +12611,11 @@ export type OpChangeTierErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpChangeTierError = OpChangeTierErrors[keyof OpChangeTierErrors];
@@ -11395,25 +12649,25 @@ export type OpMaterializeData = {
 
 export type OpMaterializeErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -11421,11 +12675,11 @@ export type OpMaterializeErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpMaterializeError = OpMaterializeErrors[keyof OpMaterializeErrors];
@@ -11466,28 +12720,40 @@ export type ListFilesData = {
 
 export type ListFilesErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: unknown;
+    400: ErrorResponse;
     /**
-     * Access denied - insufficient permissions
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Graph not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListFilesError = ListFilesErrors[keyof ListFilesErrors];
 
 export type ListFilesResponses = {
     /**
-     * Files retrieved successfully
+     * Successful Response
      */
     200: ListTableFilesResponse;
 };
@@ -11511,32 +12777,40 @@ export type CreateFileUploadData = {
 
 export type CreateFileUploadErrors = {
     /**
-     * Invalid file format or parameters
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * Not authenticated
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Access denied - shared repositories or insufficient permissions
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Graph not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CreateFileUploadError = CreateFileUploadErrors[keyof CreateFileUploadErrors];
 
 export type CreateFileUploadResponses = {
     /**
-     * Upload URL generated successfully
+     * Successful Response
      */
     200: FileUploadResponse;
 };
@@ -11570,28 +12844,40 @@ export type DeleteFileData = {
 
 export type DeleteFileErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: unknown;
+    400: ErrorResponse;
     /**
-     * Access denied - shared repositories or insufficient permissions
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * File not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type DeleteFileError = DeleteFileErrors[keyof DeleteFileErrors];
 
 export type DeleteFileResponses = {
     /**
-     * File deleted successfully
+     * Successful Response
      */
     200: DeleteFileResponse;
 };
@@ -11618,28 +12904,40 @@ export type GetFileData = {
 
 export type GetFileErrors = {
     /**
-     * Not authenticated
+     * Invalid request
      */
-    401: unknown;
+    400: ErrorResponse;
     /**
-     * Access denied - insufficient permissions
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * File not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetFileError = GetFileErrors[keyof GetFileErrors];
 
 export type GetFileResponses = {
     /**
-     * File information retrieved successfully
+     * Successful Response
      */
     200: GetFileInfoResponse;
 };
@@ -11669,25 +12967,33 @@ export type UpdateFileData = {
 
 export type UpdateFileErrors = {
     /**
-     * Invalid status or file not in S3
+     * Invalid request
      */
     400: ErrorResponse;
     /**
-     * Not authenticated
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
      * Access denied
      */
     403: ErrorResponse;
     /**
-     * File not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type UpdateFileError = UpdateFileErrors[keyof UpdateFileErrors];
@@ -11696,7 +13002,7 @@ export type UpdateFileResponses = {
     /**
      * Response Updatefile
      *
-     * File status updated successfully
+     * Successful Response
      */
     200: {
         [key: string]: unknown;
@@ -11714,14 +13020,32 @@ export type GetGraphsData = {
 
 export type GetGraphsErrors = {
     /**
-     * Error retrieving graphs
+     * Invalid request
      */
-    500: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
+
+export type GetGraphsError = GetGraphsErrors[keyof GetGraphsErrors];
 
 export type GetGraphsResponses = {
     /**
-     * Graphs retrieved successfully
+     * Successful Response
      */
     200: UserGraphsResponse;
 };
@@ -11743,9 +13067,41 @@ export type CreateGraphData = {
 
 export type CreateGraphErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Payment required — add a payment method or check org graph limit
+     */
+    402: unknown;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CreateGraphError = CreateGraphErrors[keyof CreateGraphErrors];
@@ -11768,14 +13124,32 @@ export type GetAvailableExtensionsData = {
 
 export type GetAvailableExtensionsErrors = {
     /**
-     * Failed to retrieve extensions
+     * Invalid request
      */
-    500: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
+
+export type GetAvailableExtensionsError = GetAvailableExtensionsErrors[keyof GetAvailableExtensionsErrors];
 
 export type GetAvailableExtensionsResponses = {
     /**
-     * Extensions retrieved successfully
+     * Successful Response
      */
     200: AvailableExtensionsResponse;
 };
@@ -11796,20 +13170,36 @@ export type GetAvailableGraphTiersData = {
 
 export type GetAvailableGraphTiersErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve tiers
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetAvailableGraphTiersError = GetAvailableGraphTiersErrors[keyof GetAvailableGraphTiersErrors];
 
 export type GetAvailableGraphTiersResponses = {
     /**
-     * Tiers retrieved successfully
+     * Successful Response
      */
     200: AvailableGraphTiersResponse;
 };
@@ -11825,14 +13215,32 @@ export type GetGraphCapacityData = {
 
 export type GetGraphCapacityErrors = {
     /**
-     * Failed to check capacity
+     * Invalid request
      */
-    500: unknown;
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
+
+export type GetGraphCapacityError = GetGraphCapacityErrors[keyof GetGraphCapacityErrors];
 
 export type GetGraphCapacityResponses = {
     /**
-     * Capacity status retrieved successfully
+     * Successful Response
      */
     200: GraphCapacityResponse;
 };
@@ -11853,11 +13261,19 @@ export type SelectGraphData = {
 
 export type SelectGraphErrors = {
     /**
-     * Access denied to graph
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
      */
     403: ErrorResponse;
     /**
-     * Graph not found
+     * Resource not found
      */
     404: ErrorResponse;
     /**
@@ -11865,7 +13281,11 @@ export type SelectGraphErrors = {
      */
     422: HttpValidationError;
     /**
-     * Error selecting graph
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -11874,7 +13294,7 @@ export type SelectGraphError = SelectGraphErrors[keyof SelectGraphErrors];
 
 export type SelectGraphResponses = {
     /**
-     * Graph selected successfully
+     * Successful Response
      */
     200: SuccessResponse;
 };
@@ -11890,7 +13310,15 @@ export type GetServiceOfferingsData = {
 
 export type GetServiceOfferingsErrors = {
     /**
-     * Failed to retrieve service offerings
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
      */
     500: ErrorResponse;
 };
@@ -11899,7 +13327,7 @@ export type GetServiceOfferingsError = GetServiceOfferingsErrors[keyof GetServic
 
 export type GetServiceOfferingsResponses = {
     /**
-     * Complete service offerings retrieved successfully
+     * Successful Response
      */
     200: ServiceOfferingsResponse;
 };
@@ -11941,28 +13369,40 @@ export type StreamOperationEventsData = {
 
 export type StreamOperationEventsErrors = {
     /**
-     * Access denied to operation
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
     /**
-     * Operation not found
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to create event stream
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type StreamOperationEventsError = StreamOperationEventsErrors[keyof StreamOperationEventsErrors];
 
 export type StreamOperationEventsResponses = {
     /**
-     * SSE stream of operation events
+     * SSE stream — Content-Type: text/event-stream
      */
     200: unknown;
 };
@@ -11983,21 +13423,33 @@ export type GetOperationStatusData = {
 
 export type GetOperationStatusErrors = {
     /**
-     * Access denied to operation
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
     /**
-     * Operation not found
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Failed to retrieve operation status
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetOperationStatusError = GetOperationStatusErrors[keyof GetOperationStatusErrors];
@@ -12006,7 +13458,7 @@ export type GetOperationStatusResponses = {
     /**
      * Response Getoperationstatus
      *
-     * Operation status retrieved successfully
+     * Successful Response
      */
     200: {
         [key: string]: unknown;
@@ -12031,15 +13483,23 @@ export type CancelOperationData = {
 
 export type CancelOperationErrors = {
     /**
-     * Access denied to operation
+     * Invalid request
      */
-    403: unknown;
+    400: ErrorResponse;
     /**
-     * Operation not found
+     * Authentication required
      */
-    404: unknown;
+    401: ErrorResponse;
     /**
-     * Operation cannot be cancelled (already completed)
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Operation already completed or failed — cannot cancel
      */
     409: unknown;
     /**
@@ -12047,9 +13507,13 @@ export type CancelOperationErrors = {
      */
     422: HttpValidationError;
     /**
-     * Failed to cancel operation
+     * Rate limit exceeded
      */
-    500: unknown;
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CancelOperationError = CancelOperationErrors[keyof CancelOperationErrors];
@@ -12058,7 +13522,7 @@ export type CancelOperationResponses = {
     /**
      * Response Canceloperation
      *
-     * Operation cancelled successfully
+     * Successful Response
      */
     200: {
         [key: string]: unknown;
@@ -12081,9 +13545,33 @@ export type GetOrgBillingCustomerData = {
 
 export type GetOrgBillingCustomerErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetOrgBillingCustomerError = GetOrgBillingCustomerErrors[keyof GetOrgBillingCustomerErrors];
@@ -12111,9 +13599,33 @@ export type CreatePortalSessionData = {
 
 export type CreatePortalSessionErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CreatePortalSessionError = CreatePortalSessionErrors[keyof CreatePortalSessionErrors];
@@ -12141,9 +13653,33 @@ export type ListOrgSubscriptionsData = {
 
 export type ListOrgSubscriptionsErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListOrgSubscriptionsError = ListOrgSubscriptionsErrors[keyof ListOrgSubscriptionsErrors];
@@ -12177,9 +13713,33 @@ export type GetOrgSubscriptionData = {
 
 export type GetOrgSubscriptionErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetOrgSubscriptionError = GetOrgSubscriptionErrors[keyof GetOrgSubscriptionErrors];
@@ -12211,9 +13771,33 @@ export type CancelOrgSubscriptionData = {
 
 export type CancelOrgSubscriptionErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CancelOrgSubscriptionError = CancelOrgSubscriptionErrors[keyof CancelOrgSubscriptionErrors];
@@ -12248,9 +13832,33 @@ export type ListOrgInvoicesData = {
 
 export type ListOrgInvoicesErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type ListOrgInvoicesError = ListOrgInvoicesErrors[keyof ListOrgInvoicesErrors];
@@ -12278,9 +13886,33 @@ export type GetOrgUpcomingInvoiceData = {
 
 export type GetOrgUpcomingInvoiceErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetOrgUpcomingInvoiceError = GetOrgUpcomingInvoiceErrors[keyof GetOrgUpcomingInvoiceErrors];
@@ -12305,9 +13937,33 @@ export type CreateCheckoutSessionData = {
 
 export type CreateCheckoutSessionErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Payment required
+     */
+    402: unknown;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type CreateCheckoutSessionError = CreateCheckoutSessionErrors[keyof CreateCheckoutSessionErrors];
@@ -12335,9 +13991,33 @@ export type GetCheckoutStatusData = {
 
 export type GetCheckoutStatusErrors = {
     /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
      * Validation Error
      */
     422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
 };
 
 export type GetCheckoutStatusError = GetCheckoutStatusErrors[keyof GetCheckoutStatusErrors];
@@ -12455,25 +14135,25 @@ export type OpUpdateEntityData = {
 
 export type OpUpdateEntityErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12481,11 +14161,11 @@ export type OpUpdateEntityErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateEntityError = OpUpdateEntityErrors[keyof OpUpdateEntityErrors];
@@ -12519,25 +14199,25 @@ export type OpInitializeLedgerData = {
 
 export type OpInitializeLedgerErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12545,11 +14225,11 @@ export type OpInitializeLedgerErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpInitializeLedgerError = OpInitializeLedgerErrors[keyof OpInitializeLedgerErrors];
@@ -12583,25 +14263,25 @@ export type OpSetCloseTargetData = {
 
 export type OpSetCloseTargetErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12609,11 +14289,11 @@ export type OpSetCloseTargetErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpSetCloseTargetError = OpSetCloseTargetErrors[keyof OpSetCloseTargetErrors];
@@ -12647,25 +14327,25 @@ export type OpClosePeriodData = {
 
 export type OpClosePeriodErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12673,11 +14353,11 @@ export type OpClosePeriodErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpClosePeriodError = OpClosePeriodErrors[keyof OpClosePeriodErrors];
@@ -12711,25 +14391,25 @@ export type OpReopenPeriodData = {
 
 export type OpReopenPeriodErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12737,11 +14417,11 @@ export type OpReopenPeriodErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpReopenPeriodError = OpReopenPeriodErrors[keyof OpReopenPeriodErrors];
@@ -12775,25 +14455,25 @@ export type OpCreateScheduleData = {
 
 export type OpCreateScheduleErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12801,11 +14481,11 @@ export type OpCreateScheduleErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateScheduleError = OpCreateScheduleErrors[keyof OpCreateScheduleErrors];
@@ -12839,25 +14519,25 @@ export type OpTruncateScheduleData = {
 
 export type OpTruncateScheduleErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12865,11 +14545,11 @@ export type OpTruncateScheduleErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpTruncateScheduleError = OpTruncateScheduleErrors[keyof OpTruncateScheduleErrors];
@@ -12903,25 +14583,25 @@ export type OpCreateClosingEntryData = {
 
 export type OpCreateClosingEntryErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12929,11 +14609,11 @@ export type OpCreateClosingEntryErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateClosingEntryError = OpCreateClosingEntryErrors[keyof OpCreateClosingEntryErrors];
@@ -12967,25 +14647,25 @@ export type OpCreateManualClosingEntryData = {
 
 export type OpCreateManualClosingEntryErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -12993,11 +14673,11 @@ export type OpCreateManualClosingEntryErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateManualClosingEntryError = OpCreateManualClosingEntryErrors[keyof OpCreateManualClosingEntryErrors];
@@ -13031,25 +14711,25 @@ export type OpCreateTaxonomyData = {
 
 export type OpCreateTaxonomyErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -13057,11 +14737,11 @@ export type OpCreateTaxonomyErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateTaxonomyError = OpCreateTaxonomyErrors[keyof OpCreateTaxonomyErrors];
@@ -13095,25 +14775,25 @@ export type OpCreateStructureData = {
 
 export type OpCreateStructureErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -13121,11 +14801,11 @@ export type OpCreateStructureErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateStructureError = OpCreateStructureErrors[keyof OpCreateStructureErrors];
@@ -13159,25 +14839,25 @@ export type OpCreateMappingAssociationData = {
 
 export type OpCreateMappingAssociationErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -13185,11 +14865,11 @@ export type OpCreateMappingAssociationErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
@@ -13223,25 +14903,25 @@ export type OpDeleteMappingAssociationData = {
 
 export type OpDeleteMappingAssociationErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -13249,11 +14929,11 @@ export type OpDeleteMappingAssociationErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteMappingAssociationError = OpDeleteMappingAssociationErrors[keyof OpDeleteMappingAssociationErrors];
@@ -14439,25 +16119,25 @@ export type OpAutoMapElementsData = {
 
 export type OpAutoMapElementsErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14465,11 +16145,11 @@ export type OpAutoMapElementsErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpAutoMapElementsError = OpAutoMapElementsErrors[keyof OpAutoMapElementsErrors];
@@ -14503,25 +16183,25 @@ export type OpCreateReportData = {
 
 export type OpCreateReportErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14529,11 +16209,11 @@ export type OpCreateReportErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateReportError = OpCreateReportErrors[keyof OpCreateReportErrors];
@@ -14567,25 +16247,25 @@ export type OpRegenerateReportData = {
 
 export type OpRegenerateReportErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14593,11 +16273,11 @@ export type OpRegenerateReportErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpRegenerateReportError = OpRegenerateReportErrors[keyof OpRegenerateReportErrors];
@@ -14631,25 +16311,25 @@ export type OpDeleteReportData = {
 
 export type OpDeleteReportErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14657,11 +16337,11 @@ export type OpDeleteReportErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteReportError = OpDeleteReportErrors[keyof OpDeleteReportErrors];
@@ -14695,25 +16375,25 @@ export type OpShareReportData = {
 
 export type OpShareReportErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14721,11 +16401,11 @@ export type OpShareReportErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpShareReportError = OpShareReportErrors[keyof OpShareReportErrors];
@@ -14759,25 +16439,25 @@ export type OpCreatePublishListData = {
 
 export type OpCreatePublishListErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14785,11 +16465,11 @@ export type OpCreatePublishListErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreatePublishListError = OpCreatePublishListErrors[keyof OpCreatePublishListErrors];
@@ -14823,25 +16503,25 @@ export type OpUpdatePublishListData = {
 
 export type OpUpdatePublishListErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14849,11 +16529,11 @@ export type OpUpdatePublishListErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdatePublishListError = OpUpdatePublishListErrors[keyof OpUpdatePublishListErrors];
@@ -14887,25 +16567,25 @@ export type OpDeletePublishListData = {
 
 export type OpDeletePublishListErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14913,11 +16593,11 @@ export type OpDeletePublishListErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeletePublishListError = OpDeletePublishListErrors[keyof OpDeletePublishListErrors];
@@ -14951,25 +16631,25 @@ export type OpAddPublishListMembersData = {
 
 export type OpAddPublishListMembersErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14977,11 +16657,11 @@ export type OpAddPublishListMembersErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpAddPublishListMembersError = OpAddPublishListMembersErrors[keyof OpAddPublishListMembersErrors];
@@ -15015,25 +16695,25 @@ export type OpRemovePublishListMemberData = {
 
 export type OpRemovePublishListMemberErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15041,11 +16721,11 @@ export type OpRemovePublishListMemberErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpRemovePublishListMemberError = OpRemovePublishListMemberErrors[keyof OpRemovePublishListMemberErrors];
@@ -15079,25 +16759,25 @@ export type OpBuildFactGridData = {
 
 export type OpBuildFactGridErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15105,11 +16785,11 @@ export type OpBuildFactGridErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpBuildFactGridError = OpBuildFactGridErrors[keyof OpBuildFactGridErrors];
@@ -15143,25 +16823,25 @@ export type OpCreatePortfolioData = {
 
 export type OpCreatePortfolioErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15169,11 +16849,11 @@ export type OpCreatePortfolioErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreatePortfolioError = OpCreatePortfolioErrors[keyof OpCreatePortfolioErrors];
@@ -15207,25 +16887,25 @@ export type OpUpdatePortfolioData = {
 
 export type OpUpdatePortfolioErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15233,11 +16913,11 @@ export type OpUpdatePortfolioErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdatePortfolioError = OpUpdatePortfolioErrors[keyof OpUpdatePortfolioErrors];
@@ -15271,25 +16951,25 @@ export type OpDeletePortfolioData = {
 
 export type OpDeletePortfolioErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15297,11 +16977,11 @@ export type OpDeletePortfolioErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeletePortfolioError = OpDeletePortfolioErrors[keyof OpDeletePortfolioErrors];
@@ -15335,25 +17015,25 @@ export type OpCreateSecurityData = {
 
 export type OpCreateSecurityErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15361,11 +17041,11 @@ export type OpCreateSecurityErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateSecurityError = OpCreateSecurityErrors[keyof OpCreateSecurityErrors];
@@ -15399,25 +17079,25 @@ export type OpUpdateSecurityData = {
 
 export type OpUpdateSecurityErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15425,11 +17105,11 @@ export type OpUpdateSecurityErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateSecurityError = OpUpdateSecurityErrors[keyof OpUpdateSecurityErrors];
@@ -15463,25 +17143,25 @@ export type OpDeleteSecurityData = {
 
 export type OpDeleteSecurityErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15489,11 +17169,11 @@ export type OpDeleteSecurityErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteSecurityError = OpDeleteSecurityErrors[keyof OpDeleteSecurityErrors];
@@ -15527,25 +17207,25 @@ export type OpCreatePositionData = {
 
 export type OpCreatePositionErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15553,11 +17233,11 @@ export type OpCreatePositionErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreatePositionError = OpCreatePositionErrors[keyof OpCreatePositionErrors];
@@ -15591,25 +17271,25 @@ export type OpUpdatePositionData = {
 
 export type OpUpdatePositionErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15617,11 +17297,11 @@ export type OpUpdatePositionErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdatePositionError = OpUpdatePositionErrors[keyof OpUpdatePositionErrors];
@@ -15655,25 +17335,25 @@ export type OpDeletePositionData = {
 
 export type OpDeletePositionErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -15681,11 +17361,11 @@ export type OpDeletePositionErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeletePositionError = OpDeletePositionErrors[keyof OpDeletePositionErrors];
