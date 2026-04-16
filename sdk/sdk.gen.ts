@@ -1838,15 +1838,16 @@ export const opUpgradeTier = <ThrowOnError extends boolean = false>(options: Opt
  *
  * Materialize graph from staging tables or extensions OLTP.
  *
- * Delegates to the existing materialize_graph handler which handles
- * distributed locking, source routing, and Dagster/direct dispatch.
- *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
 export const opMaterialize = <ThrowOnError extends boolean = false>(options: Options<OpMaterializeData, ThrowOnError>) => (options.client ?? client).post<OpMaterializeResponses, OpMaterializeErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/materialize',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
