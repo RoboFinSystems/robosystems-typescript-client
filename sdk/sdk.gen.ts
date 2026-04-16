@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetMaterializationStatusData, GetMaterializationStatusErrors, GetMaterializationStatusResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, MaterializeGraphData, MaterializeGraphErrors, MaterializeGraphResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateAssociationsData, OpCreateAssociationsErrors, OpCreateAssociationsResponses, OpCreateClosingEntryData, OpCreateClosingEntryErrors, OpCreateClosingEntryResponses, OpCreateElementData, OpCreateElementErrors, OpCreateElementResponses, OpCreateJournalEntryData, OpCreateJournalEntryErrors, OpCreateJournalEntryResponses, OpCreateManualClosingEntryData, OpCreateManualClosingEntryErrors, OpCreateManualClosingEntryResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioData, OpCreatePortfolioErrors, OpCreatePortfolioResponses, OpCreatePositionData, OpCreatePositionErrors, OpCreatePositionResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateScheduleData, OpCreateScheduleErrors, OpCreateScheduleResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateStructureData, OpCreateStructureErrors, OpCreateStructureResponses, OpCreateTaxonomyData, OpCreateTaxonomyErrors, OpCreateTaxonomyResponses, OpDeleteAssociationData, OpDeleteAssociationErrors, OpDeleteAssociationResponses, OpDeleteElementData, OpDeleteElementErrors, OpDeleteElementResponses, OpDeleteJournalEntryData, OpDeleteJournalEntryErrors, OpDeleteJournalEntryResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioData, OpDeletePortfolioErrors, OpDeletePortfolioResponses, OpDeletePositionData, OpDeletePositionErrors, OpDeletePositionResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteScheduleData, OpDeleteScheduleErrors, OpDeleteScheduleResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpDeleteStructureData, OpDeleteStructureErrors, OpDeleteStructureResponses, OpDeleteTaxonomyData, OpDeleteTaxonomyErrors, OpDeleteTaxonomyResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpLinkEntityTaxonomyData, OpLinkEntityTaxonomyErrors, OpLinkEntityTaxonomyResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpReverseJournalEntryData, OpReverseJournalEntryErrors, OpReverseJournalEntryResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpTruncateScheduleData, OpTruncateScheduleErrors, OpTruncateScheduleResponses, OpUpdateAssociationData, OpUpdateAssociationErrors, OpUpdateAssociationResponses, OpUpdateElementData, OpUpdateElementErrors, OpUpdateElementResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdateJournalEntryData, OpUpdateJournalEntryErrors, OpUpdateJournalEntryResponses, OpUpdatePortfolioData, OpUpdatePortfolioErrors, OpUpdatePortfolioResponses, OpUpdatePositionData, OpUpdatePositionErrors, OpUpdatePositionResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateScheduleData, OpUpdateScheduleErrors, OpUpdateScheduleResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, OpUpdateStructureData, OpUpdateStructureErrors, OpUpdateStructureResponses, OpUpdateTaxonomyData, OpUpdateTaxonomyErrors, OpUpdateTaxonomyResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
+import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateAssociationsData, OpCreateAssociationsErrors, OpCreateAssociationsResponses, OpCreateBackupData, OpCreateBackupErrors, OpCreateBackupResponses, OpCreateClosingEntryData, OpCreateClosingEntryErrors, OpCreateClosingEntryResponses, OpCreateElementData, OpCreateElementErrors, OpCreateElementResponses, OpCreateJournalEntryData, OpCreateJournalEntryErrors, OpCreateJournalEntryResponses, OpCreateManualClosingEntryData, OpCreateManualClosingEntryErrors, OpCreateManualClosingEntryResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioData, OpCreatePortfolioErrors, OpCreatePortfolioResponses, OpCreatePositionData, OpCreatePositionErrors, OpCreatePositionResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateScheduleData, OpCreateScheduleErrors, OpCreateScheduleResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateStructureData, OpCreateStructureErrors, OpCreateStructureResponses, OpCreateSubgraphData, OpCreateSubgraphErrors, OpCreateSubgraphResponses, OpCreateTaxonomyData, OpCreateTaxonomyErrors, OpCreateTaxonomyResponses, OpDeleteAssociationData, OpDeleteAssociationErrors, OpDeleteAssociationResponses, OpDeleteElementData, OpDeleteElementErrors, OpDeleteElementResponses, OpDeleteJournalEntryData, OpDeleteJournalEntryErrors, OpDeleteJournalEntryResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioData, OpDeletePortfolioErrors, OpDeletePortfolioResponses, OpDeletePositionData, OpDeletePositionErrors, OpDeletePositionResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteScheduleData, OpDeleteScheduleErrors, OpDeleteScheduleResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpDeleteStructureData, OpDeleteStructureErrors, OpDeleteStructureResponses, OpDeleteSubgraphData, OpDeleteSubgraphErrors, OpDeleteSubgraphResponses, OpDeleteTaxonomyData, OpDeleteTaxonomyErrors, OpDeleteTaxonomyResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpLinkEntityTaxonomyData, OpLinkEntityTaxonomyErrors, OpLinkEntityTaxonomyResponses, OpMaterializeData, OpMaterializeErrors, OpMaterializeResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpRestoreBackupData, OpRestoreBackupErrors, OpRestoreBackupResponses, OpReverseJournalEntryData, OpReverseJournalEntryErrors, OpReverseJournalEntryResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpTruncateScheduleData, OpTruncateScheduleErrors, OpTruncateScheduleResponses, OpUpdateAssociationData, OpUpdateAssociationErrors, OpUpdateAssociationResponses, OpUpdateElementData, OpUpdateElementErrors, OpUpdateElementResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdateJournalEntryData, OpUpdateJournalEntryErrors, OpUpdateJournalEntryResponses, OpUpdatePortfolioData, OpUpdatePortfolioErrors, OpUpdatePortfolioResponses, OpUpdatePositionData, OpUpdatePositionErrors, OpUpdatePositionResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateScheduleData, OpUpdateScheduleErrors, OpUpdateScheduleResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, OpUpdateStructureData, OpUpdateStructureErrors, OpUpdateStructureResponses, OpUpdateTaxonomyData, OpUpdateTaxonomyErrors, OpUpdateTaxonomyResponses, OpUpgradeTierData, OpUpgradeTierErrors, OpUpgradeTierResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -919,80 +919,6 @@ export const listBackups = <ThrowOnError extends boolean = false>(options: Optio
 });
 
 /**
- * Create Backup
- *
- * Create a backup of the graph database.
- *
- * Creates a complete backup of the graph database (.lbug file) with:
- * - **Format**: Full database backup only (complete .lbug file)
- * - **Compression**: Always enabled for optimal storage
- * - **Encryption**: Optional AES-256 encryption for security
- * - **Retention**: Configurable retention period (1-2555 days)
- *
- * **Backup Features:**
- * - **Complete Backup**: Full database file backup
- * - **Consistency**: Point-in-time consistent snapshot
- * - **Download Support**: Unencrypted backups can be downloaded
- * - **Restore Support**: Future support for encrypted backup restoration
- *
- * **Operation State Machine:**
- * ```
- * pending → processing → completed
- * ↘ failed
- * ```
- * - **pending**: Backup queued, waiting to start
- * - **processing**: Actively backing up database
- * - **completed**: Backup successfully created and stored
- * - **failed**: Backup failed (check error message)
- *
- * **Expected Durations:**
- * Operation times vary by database size:
- * - **Small** (<1GB): 30 seconds - 2 minutes
- * - **Medium** (1-10GB): 2-10 minutes
- * - **Large** (10-100GB): 10-30 minutes
- * - **Very Large** (>100GB): 30+ minutes
- *
- * **Progress Monitoring:**
- * Use the returned operation_id to connect to the SSE stream:
- * ```javascript
- * const eventSource = new EventSource('/v1/operations/{operation_id}/stream');
- * eventSource.addEventListener('operation_progress', (event) => {
- * const data = JSON.parse(event.data);
- * console.log('Backup progress:', data.progress_percent + '%');
- * console.log('Status:', data.status); // pending, processing, completed, failed
- * });
- * ```
- *
- * **SSE Connection Limits:**
- * - Maximum 5 concurrent SSE connections per user
- * - Rate limited to 10 new connections per minute
- * - Automatic circuit breaker for Redis failures
- * - Graceful degradation if event system unavailable
- *
- * **Important Notes:**
- * - Only full_dump format is supported (no CSV/JSON exports)
- * - Compression is always enabled
- * - Encrypted backups cannot be downloaded (security measure)
- * - All backups are stored securely in cloud storage
- *
- * **Credit Consumption:**
- * - Base cost: 25.0 credits
- * - Large databases (>10GB): 50.0 credits
- * - Multiplied by graph tier
- *
- * Returns operation details for SSE monitoring.
- */
-export const createBackup = <ThrowOnError extends boolean = false>(options: Options<CreateBackupData, ThrowOnError>) => (options.client ?? client).post<CreateBackupResponses, CreateBackupErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/backups',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Get temporary download URL for backup
  *
  * Generate a temporary download URL for a backup (unencrypted, compressed .lbug files only)
@@ -1001,85 +927,6 @@ export const getBackupDownloadUrl = <ThrowOnError extends boolean = false>(optio
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/backups/{backup_id}/download',
     ...options
-});
-
-/**
- * Restore Encrypted Backup
- *
- * Restore a graph database from an encrypted backup.
- *
- * Restores a complete graph database from an encrypted backup:
- * - **Format**: Only full_dump backups can be restored
- * - **Encryption**: Only encrypted backups can be restored (security requirement)
- * - **System Backup**: Creates automatic backup of existing database before restore
- * - **Verification**: Optionally verifies database integrity after restore
- *
- * **Restore Features:**
- * - **Atomic Operation**: Complete replacement of database
- * - **Rollback Protection**: System backup created before restore
- * - **Data Integrity**: Verification ensures successful restore
- * - **Security**: Only encrypted backups to prevent data tampering
- *
- * **Operation State Machine:**
- * ```
- * pending → backing_up_current → downloading → restoring → verifying → completed
- * ↘ failed
- * ```
- * - **pending**: Restore queued, waiting to start
- * - **backing_up_current**: Creating safety backup of existing database
- * - **downloading**: Downloading backup from storage
- * - **restoring**: Replacing database with backup contents
- * - **verifying**: Verifying database integrity (if enabled)
- * - **completed**: Restore successful, database operational
- * - **failed**: Restore failed (rollback may be available)
- *
- * **Expected Durations:**
- * Operation times vary by database size (includes backup + restore):
- * - **Small** (<1GB): 1-3 minutes
- * - **Medium** (1-10GB): 5-15 minutes
- * - **Large** (10-100GB): 20-45 minutes
- * - **Very Large** (>100GB): 45+ minutes
- *
- * Note: Restore operations take longer than backups due to safety backup step.
- *
- * **Progress Monitoring:**
- * Use the returned operation_id to connect to the SSE stream:
- * ```javascript
- * const eventSource = new EventSource('/v1/operations/{operation_id}/stream');
- * eventSource.addEventListener('operation_progress', (event) => {
- * const data = JSON.parse(event.data);
- * console.log('Restore progress:', data.message);
- * console.log('Status:', data.status); // Shows current state
- * });
- * ```
- *
- * **SSE Connection Limits:**
- * - Maximum 5 concurrent SSE connections per user
- * - Rate limited to 10 new connections per minute
- * - Automatic circuit breaker for Redis failures
- * - Graceful degradation if event system unavailable
- *
- * **Important Notes:**
- * - Only encrypted backups can be restored (security measure)
- * - Existing database is backed up to S3 before restore
- * - Restore is a destructive operation - existing data is replaced
- * - System backups are stored separately for recovery
- *
- * **Credit Consumption:**
- * - Base cost: 100.0 credits
- * - Large databases (>10GB): 200.0 credits
- * - Multiplied by graph tier
- *
- * Returns operation details for SSE monitoring.
- */
-export const restoreBackup = <ThrowOnError extends boolean = false>(options: Options<RestoreBackupData, ThrowOnError>) => (options.client ?? client).post<RestoreBackupResponses, RestoreBackupErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/backups/{backup_id}/restore',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
 });
 
 /**
@@ -1552,85 +1399,6 @@ export const listSubgraphs = <ThrowOnError extends boolean = false>(options: Opt
 });
 
 /**
- * Create Subgraph
- *
- * Create a new subgraph within a parent graph, with optional data forking.
- *
- * **Requirements:**
- * - Valid authentication
- * - Parent graph must exist and be accessible to the user
- * - User must have 'admin' permission on the parent graph
- * - Parent graph tier must support subgraphs (LadybugDB Large/XLarge)
- * - Must be within subgraph quota limits
- * - Subgraph name must be unique within the parent graph
- *
- * **Fork Mode:**
- * When `fork_parent=true`, the operation:
- * - Returns immediately with an operation_id for SSE monitoring
- * - Copies data from parent graph to the new subgraph
- * - Supports selective forking via metadata.fork_options
- * - Tracks progress in real-time via SSE
- *
- * **Returns:**
- * - Without fork: Immediate SubgraphResponse with created subgraph details
- * - With fork: Operation response with SSE monitoring endpoint
- *
- * **Subgraph ID format:** `{parent_id}_{subgraph_name}` (e.g., kg1234567890abcdef_dev)
- *
- * **Usage:**
- * - Subgraphs share parent's credit pool
- * - Subgraph ID can be used in all standard `/v1/graphs/{graph_id}*` endpoints
- * - Permissions inherited from parent graph
- */
-export const createSubgraph = <ThrowOnError extends boolean = false>(options: Options<CreateSubgraphData, ThrowOnError>) => (options.client ?? client).post<CreateSubgraphResponses, CreateSubgraphErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/subgraphs',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Delete Subgraph
- *
- * Delete a subgraph database.
- *
- * **Requirements:**
- * - Must be a valid subgraph (not parent graph)
- * - User must have admin access to parent graph
- * - Subgraph name must be alphanumeric (1-20 characters)
- * - Optional backup before deletion
- *
- * **Deletion Options:**
- * - `force`: Delete even if contains data
- * - `backup_first`: Create backup before deletion
- *
- * **Warning:**
- * Deletion is permanent unless backup is created.
- * All data in the subgraph will be lost.
- *
- * **Backup Location:**
- * If backup requested, stored in S3 graph database bucket at:
- * `s3://{graph_s3_bucket}/{instance_id}/{database_name}_{timestamp}.backup`
- *
- * **Notes:**
- * - Use the subgraph name (e.g., 'dev', 'staging') not the full subgraph ID
- * - Deletion does not affect parent graph's credit pool or permissions
- * - Backup creation consumes credits from parent graph's allocation
- */
-export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Options<DeleteSubgraphData, ThrowOnError>) => (options.client ?? client).delete<DeleteSubgraphResponses, DeleteSubgraphErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Get Subgraph Details
  *
  * Get detailed information about a specific subgraph.
@@ -1660,7 +1428,7 @@ export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Op
  */
 export const getSubgraphInfo = <ThrowOnError extends boolean = false>(options: Options<GetSubgraphInfoData, ThrowOnError>) => (options.client ?? client).get<GetSubgraphInfoResponses, GetSubgraphInfoErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}/info',
+    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}',
     ...options
 });
 
@@ -1978,106 +1746,107 @@ export const uploadDocumentsBulk = <ThrowOnError extends boolean = false>(option
 });
 
 /**
- * Get Materialization Status
+ * Create Subgraph
  *
- * Get current materialization status for the graph.
+ * Create a new subgraph, optionally forking parent data.
  *
- * Shows whether the graph is stale (DuckDB has changes not yet in graph database),
- * when it was last materialized, and how long since last materialization.
- *
- * **Status Information:**
- * - Whether graph is currently stale
- * - Reason for staleness if applicable
- * - When graph became stale
- * - When graph was last materialized
- * - Total materialization count
- * - Hours since last materialization
- *
- * **Use Cases:**
- * - Decide if materialization is needed
- * - Monitor graph freshness
- * - Track materialization history
- * - Understand data pipeline state
- *
- * **Important Notes:**
- * - Stale graph means DuckDB has changes not in graph
- * - Graph becomes stale after file deletions
- * - Materialization clears staleness
- * - Status retrieval is included - no credit consumption
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const getMaterializationStatus = <ThrowOnError extends boolean = false>(options: Options<GetMaterializationStatusData, ThrowOnError>) => (options.client ?? client).get<GetMaterializationStatusResponses, GetMaterializationStatusErrors, ThrowOnError>({
+export const opCreateSubgraph = <ThrowOnError extends boolean = false>(options: Options<OpCreateSubgraphData, ThrowOnError>) => (options.client ?? client).post<OpCreateSubgraphResponses, OpCreateSubgraphErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/materialize',
-    ...options
-});
-
-/**
- * Materialize Graph from DuckDB
- *
- * Rebuild entire graph from DuckDB staging tables (materialized view pattern).
- *
- * This endpoint rebuilds the complete graph database from the current state of DuckDB
- * staging tables. It automatically discovers all tables, ingests them in the correct
- * order (nodes before relationships), and clears the staleness flag.
- *
- * **When to Use:**
- * - After batch uploads (files uploaded with ingest_to_graph=false)
- * - After cascade file deletions (graph marked stale)
- * - To ensure graph consistency with DuckDB state
- * - Periodic full refresh
- *
- * **What Happens:**
- * 1. Discovers all tables for the graph from PostgreSQL registry
- * 2. Sorts tables (nodes before relationships)
- * 3. Ingests all tables from DuckDB to graph in order
- * 4. Clears staleness flag on success
- * 5. Returns detailed materialization report
- *
- * **Staleness Check:**
- * By default, only materializes if graph is stale (after deletions or missed ingestions).
- * Use `force=true` to rebuild regardless of staleness.
- *
- * **Rebuild Feature:**
- * Setting `rebuild=true` regenerates the entire graph database from scratch:
- * - Deletes existing graph database
- * - Recreates with fresh schema from active GraphSchema
- * - Ingests all data files
- * - Safe operation - DuckDB is source of truth
- * - Useful for schema changes or data corrections
- * - Graph marked as 'rebuilding' during process
- *
- * **Table Ordering:**
- * Node tables (PascalCase) are ingested before relationship tables (UPPERCASE) to
- * ensure referential integrity.
- *
- * **Error Handling:**
- * With `ignore_errors=true` (default), continues materializing even if individual
- * rows fail. Failed rows are logged but don't stop the process.
- *
- * **Concurrency Control:**
- * Only one materialization can run per graph at a time. If another materialization is in progress,
- * you'll receive a 409 Conflict error. The distributed lock automatically expires after
- * the configured TTL (default: 1 hour) to prevent deadlocks from failed materializations.
- *
- * **Performance:**
- * Full graph materialization can take minutes for large datasets. Consider running
- * during off-peak hours for production systems.
- *
- * **Dry Run:**
- * Set `dry_run=true` to validate limits without executing. Returns current usage, tier limits,
- * and any warnings or errors. No lock is acquired, no SSE operation is created.
- *
- * **Credits:**
- * Materialization is included - no credit consumption
- */
-export const materializeGraph = <ThrowOnError extends boolean = false>(options: Options<MaterializeGraphData, ThrowOnError>) => (options.client ?? client).post<MaterializeGraphResponses, MaterializeGraphErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/materialize',
+    url: '/v1/graphs/{graph_id}/operations/create-subgraph',
     ...options,
     headers: {
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Delete Subgraph
+ *
+ * Delete a subgraph database.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opDeleteSubgraph = <ThrowOnError extends boolean = false>(options: Options<OpDeleteSubgraphData, ThrowOnError>) => (options.client ?? client).post<OpDeleteSubgraphResponses, OpDeleteSubgraphErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/operations/delete-subgraph',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Backup
+ *
+ * Create a backup of the graph database (async).
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opCreateBackup = <ThrowOnError extends boolean = false>(options: Options<OpCreateBackupData, ThrowOnError>) => (options.client ?? client).post<OpCreateBackupResponses, OpCreateBackupErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/operations/create-backup',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Restore Backup
+ *
+ * Restore a graph database from an encrypted backup.
+ *
+ * Blocked for entity graphs — OLTP is the source of truth, use
+ * the materialize operation instead.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opRestoreBackup = <ThrowOnError extends boolean = false>(options: Options<OpRestoreBackupData, ThrowOnError>) => (options.client ?? client).post<OpRestoreBackupResponses, OpRestoreBackupErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/operations/restore-backup',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Upgrade Tier
+ *
+ * Change the infrastructure tier on a graph (async EBS migration).
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opUpgradeTier = <ThrowOnError extends boolean = false>(options: Options<OpUpgradeTierData, ThrowOnError>) => (options.client ?? client).post<OpUpgradeTierResponses, OpUpgradeTierErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/operations/upgrade-tier',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Materialize Graph
+ *
+ * Materialize graph from staging tables or extensions OLTP.
+ *
+ * Delegates to the existing materialize_graph handler which handles
+ * distributed locking, source routing, and Dagster/direct dispatch.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opMaterialize = <ThrowOnError extends boolean = false>(options: Options<OpMaterializeData, ThrowOnError>) => (options.client ?? client).post<OpMaterializeResponses, OpMaterializeErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/operations/materialize',
+    ...options
 });
 
 /**
