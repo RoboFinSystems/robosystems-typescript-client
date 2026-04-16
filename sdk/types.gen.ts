@@ -764,26 +764,6 @@ export type BackupResponse = {
 };
 
 /**
- * BackupRestoreRequest
- *
- * Request model for restoring from a backup.
- */
-export type BackupRestoreRequest = {
-    /**
-     * Create System Backup
-     *
-     * Create a system backup of existing database before restore
-     */
-    create_system_backup?: boolean;
-    /**
-     * Verify After Restore
-     *
-     * Verify database integrity after restore
-     */
-    verify_after_restore?: boolean;
-};
-
-/**
  * BackupStatsResponse
  *
  * Response model for backup statistics.
@@ -2710,67 +2690,29 @@ export type DeleteStructureRequest = {
 };
 
 /**
- * DeleteSubgraphRequest
+ * DeleteSubgraphOp
  *
- * Request model for deleting a subgraph.
+ * Body for the delete-subgraph operation.
  */
-export type DeleteSubgraphRequest = {
+export type DeleteSubgraphOp = {
+    /**
+     * Subgraph Name
+     *
+     * Subgraph name to delete (e.g., 'dev', 'staging')
+     */
+    subgraph_name: string;
     /**
      * Force
      *
-     * Force deletion even if subgraph contains data
+     * Delete even if subgraph contains data
      */
     force?: boolean;
     /**
      * Backup First
      *
-     * Create a backup before deletion
+     * Create a backup before deleting
      */
     backup_first?: boolean;
-    /**
-     * Backup Location
-     *
-     * S3 location for backup (uses default if not specified)
-     */
-    backup_location?: string | null;
-};
-
-/**
- * DeleteSubgraphResponse
- *
- * Response model for subgraph deletion.
- */
-export type DeleteSubgraphResponse = {
-    /**
-     * Graph Id
-     *
-     * Deleted subgraph identifier
-     */
-    graph_id: string;
-    /**
-     * Status
-     *
-     * Deletion status
-     */
-    status: string;
-    /**
-     * Backup Location
-     *
-     * Location of backup if created
-     */
-    backup_location?: string | null;
-    /**
-     * Deleted At
-     *
-     * When deletion occurred
-     */
-    deleted_at: string;
-    /**
-     * Message
-     *
-     * Additional information about the deletion
-     */
-    message?: string | null;
 };
 
 /**
@@ -4899,142 +4841,6 @@ export type ManualLineItemRequest = {
 };
 
 /**
- * MaterializeRequest
- */
-export type MaterializeRequest = {
-    /**
-     * Force
-     *
-     * Force materialization even if graph is not stale
-     */
-    force?: boolean;
-    /**
-     * Rebuild
-     *
-     * Delete and recreate graph database before materialization
-     */
-    rebuild?: boolean;
-    /**
-     * Ignore Errors
-     *
-     * Continue ingestion on row errors
-     */
-    ignore_errors?: boolean;
-    /**
-     * Dry Run
-     *
-     * Validate limits without executing materialization. Returns usage, limits, and warnings.
-     */
-    dry_run?: boolean;
-    /**
-     * Source
-     *
-     * Data source for materialization. Auto-detected from graph type if not specified. 'staged' materializes from uploaded files (generic graphs). 'extensions' materializes from the extensions OLTP database (entity graphs).
-     */
-    source?: string | null;
-    /**
-     * Materialize Embeddings
-     *
-     * Include embedding columns in materialization and build HNSW vector indexes in the graph database. When false (default), embedding columns are NULLed out to save space. Set to true for graphs that need vector search.
-     */
-    materialize_embeddings?: boolean;
-};
-
-/**
- * MaterializeResponse
- *
- * Response for queued materialization operation.
- */
-export type MaterializeResponse = {
-    /**
-     * Status
-     *
-     * Operation status
-     */
-    status?: string;
-    /**
-     * Graph Id
-     *
-     * Graph database identifier
-     */
-    graph_id: string;
-    /**
-     * Operation Id
-     *
-     * SSE operation ID for progress tracking
-     */
-    operation_id: string;
-    /**
-     * Message
-     *
-     * Human-readable status message
-     */
-    message: string;
-    /**
-     * Limit Check
-     *
-     * Limit check results (only present for dry_run requests)
-     */
-    limit_check?: {
-        [key: string]: unknown;
-    } | null;
-};
-
-/**
- * MaterializeStatusResponse
- */
-export type MaterializeStatusResponse = {
-    /**
-     * Graph Id
-     *
-     * Graph database identifier
-     */
-    graph_id: string;
-    /**
-     * Is Stale
-     *
-     * Whether graph is currently stale
-     */
-    is_stale: boolean;
-    /**
-     * Stale Reason
-     *
-     * Reason for staleness if applicable
-     */
-    stale_reason?: string | null;
-    /**
-     * Stale Since
-     *
-     * When graph became stale (ISO timestamp)
-     */
-    stale_since?: string | null;
-    /**
-     * Last Materialized At
-     *
-     * When graph was last materialized (ISO timestamp)
-     */
-    last_materialized_at?: string | null;
-    /**
-     * Materialization Count
-     *
-     * Total number of materializations performed
-     */
-    materialization_count?: number;
-    /**
-     * Hours Since Materialization
-     *
-     * Hours since last materialization
-     */
-    hours_since_materialization?: number | null;
-    /**
-     * Message
-     *
-     * Human-readable status summary
-     */
-    message: string;
-};
-
-/**
  * OAuthCallbackRequest
  *
  * OAuth callback parameters.
@@ -5223,40 +5029,33 @@ export type OperationCosts = {
 /**
  * OperationEnvelope
  *
- * Uniform response shape for every extensions operation endpoint.
+ * Uniform response shape for every operation endpoint.
  *
- * Every dispatch through `/extensions/{domain}/{graph_id}/operations/{op}`
- * returns an envelope carrying an `op_<ULID>` operation_id. That id is the
- * bridge to the platform's monitoring surface: pass it to
- * `GET /v1/operations/{operation_id}/stream` (see `routers/operations.py`)
- * to subscribe to SSE progress events. Sync commands complete in the
- * envelope itself; async commands (`status: "pending"`, HTTP 202) hand off
- * to a background worker and stream their tail through the same SSE
- * endpoint until completion. Failed dispatches still mint an `operation_id`
- * so the audit log and any partial SSE events stay correlatable.
+ * Every dispatch through an operation surface returns an envelope carrying
+ * an ``op_<ULID>`` operation_id.  That id is the bridge to the platform's
+ * monitoring surface: pass it to
+ * ``GET /v1/operations/{operation_id}/stream`` (see ``routers/operations.py``)
+ * to subscribe to SSE progress events.  Sync commands complete in the
+ * envelope itself; async commands (``status: "pending"``, HTTP 202) hand
+ * off to a background worker and stream their tail through the same SSE
+ * endpoint until completion.  Failed dispatches still mint an
+ * ``operation_id`` so the audit log and any partial SSE events stay
+ * correlatable.
  *
  * Fields:
- * - `operation`: kebab-case command name (e.g. `close-period`)
- * - `operation_id`: `op_`-prefixed ULID; always present, usable for audit
- * correlation and — for async commands — SSE subscription via
- * `/v1/operations/{operation_id}/stream`
- * - `status`: `"completed"` (sync, HTTP 200), `"pending"` (async, HTTP 202),
- * or `"failed"` (error responses)
- * - `result`: the domain-specific payload (the original Pydantic response)
- * or `None` for async/failed cases
- * - `at`: ISO-8601 UTC timestamp of when the envelope was minted (for sync
- * ops this is the completion time; for async/pending it's the enqueue time)
- * - `created_by`: user ID of the caller who initiated this operation, for
- * audit correlation without having to cross-reference the audit log.
- * Always populated for dispatcher-routed calls; may be `None` for legacy
- * direct `wrap_completed(...)` callers.
- * - `idempotent_replay`: `True` when the dispatcher returned this envelope
- * from the idempotency cache (the underlying command did NOT execute
- * again). `False` on every fresh execution. Clients can use this to
- * distinguish "my retry succeeded" from "the server re-ran the command"
- * without having to track their own request identity. The metrics
- * decorator also reads this attribute to suppress business-event counter
- * increments on replays so dashboards stay honest.
+ * - ``operation``: kebab-case command name (e.g. ``close-period``)
+ * - ``operation_id``: ``op_``-prefixed ULID; always present, usable for
+ * audit correlation and — for async commands — SSE subscription via
+ * ``/v1/operations/{operation_id}/stream``
+ * - ``status``: ``"completed"`` (sync, HTTP 200), ``"pending"``
+ * (async, HTTP 202), or ``"failed"`` (error responses)
+ * - ``result``: the domain-specific payload (the original Pydantic
+ * response) or ``None`` for async/failed cases
+ * - ``at``: ISO-8601 UTC timestamp of when the envelope was minted
+ * - ``created_by``: user ID of the caller who initiated this operation
+ * - ``idempotent_replay``: ``True`` when the dispatcher returned this
+ * envelope from the idempotency cache (the underlying command did NOT
+ * execute again)
  */
 export type OperationEnvelope = {
     /**
@@ -6084,6 +5883,32 @@ export type ResetPasswordValidateResponse = {
  * Response modes for execution.
  */
 export type ResponseMode = 'auto' | 'sync' | 'async' | 'stream';
+
+/**
+ * RestoreBackupOp
+ *
+ * Body for the restore-backup operation.
+ */
+export type RestoreBackupOp = {
+    /**
+     * Backup Id
+     *
+     * Backup identifier to restore from
+     */
+    backup_id: string;
+    /**
+     * Create System Backup
+     *
+     * Create a system backup of existing database before restore
+     */
+    create_system_backup?: boolean;
+    /**
+     * Verify After Restore
+     *
+     * Verify database integrity after restore
+     */
+    verify_after_restore?: boolean;
+};
 
 /**
  * ReverseJournalEntryRequest
@@ -7832,6 +7657,20 @@ export type UpgradeSubscriptionRequest = {
      * New plan name to change to
      */
     new_plan_name: string;
+};
+
+/**
+ * UpgradeTierOp
+ *
+ * Body for the upgrade-tier operation.
+ */
+export type UpgradeTierOp = {
+    /**
+     * New Tier
+     *
+     * Target tier: ladybug-standard, ladybug-large, ladybug-xlarge
+     */
+    new_tier: string;
 };
 
 /**
@@ -9784,50 +9623,6 @@ export type ListBackupsResponses = {
 
 export type ListBackupsResponse = ListBackupsResponses[keyof ListBackupsResponses];
 
-export type CreateBackupData = {
-    body: BackupCreateRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/backups';
-};
-
-export type CreateBackupErrors = {
-    /**
-     * Invalid backup configuration
-     */
-    400: ErrorResponse;
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to initiate backup
-     */
-    500: ErrorResponse;
-};
-
-export type CreateBackupError = CreateBackupErrors[keyof CreateBackupErrors];
-
-export type CreateBackupResponses = {
-    /**
-     * Backup creation started
-     */
-    202: unknown;
-};
-
 export type GetBackupDownloadUrlData = {
     body?: never;
     path: {
@@ -9882,56 +9677,6 @@ export type GetBackupDownloadUrlResponses = {
 };
 
 export type GetBackupDownloadUrlResponse = GetBackupDownloadUrlResponses[keyof GetBackupDownloadUrlResponses];
-
-export type RestoreBackupData = {
-    body: BackupRestoreRequest;
-    path: {
-        /**
-         * Backup Id
-         *
-         * Backup identifier
-         */
-        backup_id: string;
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/backups/{backup_id}/restore';
-};
-
-export type RestoreBackupErrors = {
-    /**
-     * Invalid restore configuration
-     */
-    400: ErrorResponse;
-    /**
-     * Access denied - admin role required
-     */
-    403: ErrorResponse;
-    /**
-     * Backup not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Failed to initiate restore
-     */
-    500: ErrorResponse;
-};
-
-export type RestoreBackupError = RestoreBackupErrors[keyof RestoreBackupErrors];
-
-export type RestoreBackupResponses = {
-    /**
-     * Restore started
-     */
-    202: unknown;
-};
 
 export type GetBackupStatsData = {
     body?: never;
@@ -10584,94 +10329,6 @@ export type ListSubgraphsResponses = {
 
 export type ListSubgraphsResponse2 = ListSubgraphsResponses[keyof ListSubgraphsResponses];
 
-export type CreateSubgraphData = {
-    body: CreateSubgraphRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/subgraphs';
-};
-
-export type CreateSubgraphErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type CreateSubgraphError = CreateSubgraphErrors[keyof CreateSubgraphErrors];
-
-export type CreateSubgraphResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-};
-
-export type DeleteSubgraphData = {
-    body: DeleteSubgraphRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Subgraph Name
-         *
-         * Subgraph name to delete (e.g., 'dev', 'staging')
-         */
-        subgraph_name: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}';
-};
-
-export type DeleteSubgraphErrors = {
-    /**
-     * Invalid subgraph identifier
-     */
-    400: unknown;
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Insufficient permissions
-     */
-    403: unknown;
-    /**
-     * Subgraph not found
-     */
-    404: unknown;
-    /**
-     * Subgraph contains data (use force=true)
-     */
-    409: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Internal server error
-     */
-    500: unknown;
-};
-
-export type DeleteSubgraphError = DeleteSubgraphErrors[keyof DeleteSubgraphErrors];
-
-export type DeleteSubgraphResponses = {
-    /**
-     * Subgraph deleted successfully
-     */
-    200: DeleteSubgraphResponse;
-};
-
-export type DeleteSubgraphResponse2 = DeleteSubgraphResponses[keyof DeleteSubgraphResponses];
-
 export type GetSubgraphInfoData = {
     body?: never;
     path: {
@@ -10687,7 +10344,7 @@ export type GetSubgraphInfoData = {
         subgraph_name: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}/info';
+    url: '/v1/graphs/{graph_id}/subgraphs/{subgraph_name}';
 };
 
 export type GetSubgraphInfoErrors = {
@@ -11254,8 +10911,14 @@ export type UploadDocumentsBulkResponses = {
 
 export type UploadDocumentsBulkResponse = UploadDocumentsBulkResponses[keyof UploadDocumentsBulkResponses];
 
-export type GetMaterializationStatusData = {
-    body?: never;
+export type OpCreateSubgraphData = {
+    body: CreateSubgraphRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -11263,96 +10926,399 @@ export type GetMaterializationStatusData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/materialize';
+    url: '/v1/graphs/{graph_id}/operations/create-subgraph';
 };
 
-export type GetMaterializationStatusErrors = {
+export type OpCreateSubgraphErrors = {
     /**
-     * Not authenticated
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
      */
     401: unknown;
     /**
-     * Access denied - insufficient permissions
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Graph not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Validation Error
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    422: HttpValidationError;
-};
-
-export type GetMaterializationStatusError = GetMaterializationStatusErrors[keyof GetMaterializationStatusErrors];
-
-export type GetMaterializationStatusResponses = {
-    /**
-     * Materialization status retrieved successfully
-     */
-    200: MaterializeStatusResponse;
-};
-
-export type GetMaterializationStatusResponse = GetMaterializationStatusResponses[keyof GetMaterializationStatusResponses];
-
-export type MaterializeGraphData = {
-    body: MaterializeRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/materialize';
-};
-
-export type MaterializeGraphErrors = {
-    /**
-     * Graph not stale and force=false
-     */
-    400: ErrorResponse;
-    /**
-     * Not authenticated
-     */
-    401: unknown;
-    /**
-     * Access denied - shared repositories or insufficient permissions
-     */
-    403: ErrorResponse;
-    /**
-     * Graph not found
-     */
-    404: ErrorResponse;
-    /**
-     * Conflict - another materialization is already in progress for this graph
-     */
-    409: ErrorResponse;
-    /**
-     * Graph content limit exceeded - data too large for current tier
-     */
-    413: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
     422: HttpValidationError;
     /**
-     * Internal server error
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
      */
     500: unknown;
 };
 
-export type MaterializeGraphError = MaterializeGraphErrors[keyof MaterializeGraphErrors];
+export type OpCreateSubgraphError = OpCreateSubgraphErrors[keyof OpCreateSubgraphErrors];
 
-export type MaterializeGraphResponses = {
+export type OpCreateSubgraphResponses = {
     /**
-     * Graph materialized successfully
+     * Successful Response
      */
-    200: MaterializeResponse;
+    200: OperationEnvelope;
 };
 
-export type MaterializeGraphResponse = MaterializeGraphResponses[keyof MaterializeGraphResponses];
+export type OpCreateSubgraphResponse = OpCreateSubgraphResponses[keyof OpCreateSubgraphResponses];
+
+export type OpDeleteSubgraphData = {
+    body: DeleteSubgraphOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/delete-subgraph';
+};
+
+export type OpDeleteSubgraphErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpDeleteSubgraphError = OpDeleteSubgraphErrors[keyof OpDeleteSubgraphErrors];
+
+export type OpDeleteSubgraphResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteSubgraphResponse = OpDeleteSubgraphResponses[keyof OpDeleteSubgraphResponses];
+
+export type OpCreateBackupData = {
+    body: BackupCreateRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/create-backup';
+};
+
+export type OpCreateBackupErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateBackupError = OpCreateBackupErrors[keyof OpCreateBackupErrors];
+
+export type OpCreateBackupResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type OpCreateBackupResponse = OpCreateBackupResponses[keyof OpCreateBackupResponses];
+
+export type OpRestoreBackupData = {
+    body: RestoreBackupOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/restore-backup';
+};
+
+export type OpRestoreBackupErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpRestoreBackupError = OpRestoreBackupErrors[keyof OpRestoreBackupErrors];
+
+export type OpRestoreBackupResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type OpRestoreBackupResponse = OpRestoreBackupResponses[keyof OpRestoreBackupResponses];
+
+export type OpUpgradeTierData = {
+    body: UpgradeTierOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/upgrade-tier';
+};
+
+export type OpUpgradeTierErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpUpgradeTierError = OpUpgradeTierErrors[keyof OpUpgradeTierErrors];
+
+export type OpUpgradeTierResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type OpUpgradeTierResponse = OpUpgradeTierResponses[keyof OpUpgradeTierResponses];
+
+export type OpMaterializeData = {
+    body?: never;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Force
+         */
+        force?: boolean;
+        /**
+         * Rebuild
+         */
+        rebuild?: boolean;
+        /**
+         * Ignore Errors
+         */
+        ignore_errors?: boolean;
+        /**
+         * Dry Run
+         */
+        dry_run?: boolean;
+        /**
+         * Source
+         */
+        source?: string | null;
+        /**
+         * Materialize Embeddings
+         */
+        materialize_embeddings?: boolean;
+    };
+    url: '/v1/graphs/{graph_id}/operations/materialize';
+};
+
+export type OpMaterializeErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpMaterializeError = OpMaterializeErrors[keyof OpMaterializeErrors];
+
+export type OpMaterializeResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type OpMaterializeResponse = OpMaterializeResponses[keyof OpMaterializeResponses];
 
 export type ListFilesData = {
     body?: never;

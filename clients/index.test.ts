@@ -97,8 +97,8 @@ describe('RoboSystemsClients', () => {
       expect(typeof ext.operations.closeAll).toBe('function')
       expect(typeof ext.ledger.listAccounts).toBe('function')
       expect(typeof ext.ledger.getTrialBalance).toBe('function')
-      expect(typeof ext.reports.create).toBe('function')
-      expect(typeof ext.reports.statement).toBe('function')
+      expect(typeof ext.reports.createReport).toBe('function')
+      expect(typeof ext.reports.getStatement).toBe('function')
     })
 
     it('should default credentials to include', () => {
@@ -306,7 +306,7 @@ describe('clients singleton', () => {
     expect(typeof clients.agent.executeQuery).toBe('function')
     expect(typeof clients.operations.monitorOperation).toBe('function')
     expect(typeof clients.ledger.listAccounts).toBe('function')
-    expect(typeof clients.reports.create).toBe('function')
+    expect(typeof clients.reports.createReport).toBe('function')
   })
 
   it('should create SSEClient from singleton', async () => {
@@ -373,7 +373,6 @@ describe('re-exports', () => {
     expect(typeof mod.OperationClient).toBe('function')
     expect(typeof mod.SSEClient).toBe('function')
     expect(typeof mod.LedgerClient).toBe('function')
-    expect(typeof mod.ReportClient).toBe('function')
 
     // Verify they can be instantiated
     const q = new mod.QueryClient({ baseUrl: 'http://test.com' })

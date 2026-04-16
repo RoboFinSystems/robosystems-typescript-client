@@ -32,12 +32,6 @@
       "import": "./artifacts/InvestorClient.js",
       "default": "./artifacts/InvestorClient.js"
     },
-    "./reports": {
-      "types": "./artifacts/ReportClient.d.ts",
-      "require": "./artifacts/ReportClient.js",
-      "import": "./artifacts/ReportClient.js",
-      "default": "./artifacts/ReportClient.js"
-    },
     "./agent": {
       "types": "./artifacts/AgentClient.d.ts",
       "require": "./artifacts/AgentClient.js",
