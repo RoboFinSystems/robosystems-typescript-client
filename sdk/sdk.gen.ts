@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpChangeTierData, OpChangeTierErrors, OpChangeTierResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateAssociationsData, OpCreateAssociationsErrors, OpCreateAssociationsResponses, OpCreateBackupData, OpCreateBackupErrors, OpCreateBackupResponses, OpCreateClosingEntryData, OpCreateClosingEntryErrors, OpCreateClosingEntryResponses, OpCreateElementData, OpCreateElementErrors, OpCreateElementResponses, OpCreateJournalEntryData, OpCreateJournalEntryErrors, OpCreateJournalEntryResponses, OpCreateManualClosingEntryData, OpCreateManualClosingEntryErrors, OpCreateManualClosingEntryResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioData, OpCreatePortfolioErrors, OpCreatePortfolioResponses, OpCreatePositionData, OpCreatePositionErrors, OpCreatePositionResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateScheduleData, OpCreateScheduleErrors, OpCreateScheduleResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateStructureData, OpCreateStructureErrors, OpCreateStructureResponses, OpCreateSubgraphData, OpCreateSubgraphErrors, OpCreateSubgraphResponses, OpCreateTaxonomyData, OpCreateTaxonomyErrors, OpCreateTaxonomyResponses, OpCreateTransactionData, OpCreateTransactionErrors, OpCreateTransactionResponses, OpDeleteAssociationData, OpDeleteAssociationErrors, OpDeleteAssociationResponses, OpDeleteElementData, OpDeleteElementErrors, OpDeleteElementResponses, OpDeleteJournalEntryData, OpDeleteJournalEntryErrors, OpDeleteJournalEntryResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioData, OpDeletePortfolioErrors, OpDeletePortfolioResponses, OpDeletePositionData, OpDeletePositionErrors, OpDeletePositionResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteScheduleData, OpDeleteScheduleErrors, OpDeleteScheduleResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpDeleteStructureData, OpDeleteStructureErrors, OpDeleteStructureResponses, OpDeleteSubgraphData, OpDeleteSubgraphErrors, OpDeleteSubgraphResponses, OpDeleteTaxonomyData, OpDeleteTaxonomyErrors, OpDeleteTaxonomyResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpLinkEntityTaxonomyData, OpLinkEntityTaxonomyErrors, OpLinkEntityTaxonomyResponses, OpMaterializeData, OpMaterializeErrors, OpMaterializeResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpRestoreBackupData, OpRestoreBackupErrors, OpRestoreBackupResponses, OpReverseJournalEntryData, OpReverseJournalEntryErrors, OpReverseJournalEntryResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpTruncateScheduleData, OpTruncateScheduleErrors, OpTruncateScheduleResponses, OpUpdateAssociationData, OpUpdateAssociationErrors, OpUpdateAssociationResponses, OpUpdateElementData, OpUpdateElementErrors, OpUpdateElementResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdateJournalEntryData, OpUpdateJournalEntryErrors, OpUpdateJournalEntryResponses, OpUpdatePortfolioData, OpUpdatePortfolioErrors, OpUpdatePortfolioResponses, OpUpdatePositionData, OpUpdatePositionErrors, OpUpdatePositionResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateScheduleData, OpUpdateScheduleErrors, OpUpdateScheduleResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, OpUpdateStructureData, OpUpdateStructureErrors, OpUpdateStructureResponses, OpUpdateTaxonomyData, OpUpdateTaxonomyErrors, OpUpdateTaxonomyResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
+import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigErrors, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyErrors, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysErrors, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsErrors, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserErrors, LogoutUserResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpChangeTierData, OpChangeTierErrors, OpChangeTierResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateAssociationsData, OpCreateAssociationsErrors, OpCreateAssociationsResponses, OpCreateBackupData, OpCreateBackupErrors, OpCreateBackupResponses, OpCreateClosingEntryData, OpCreateClosingEntryErrors, OpCreateClosingEntryResponses, OpCreateElementData, OpCreateElementErrors, OpCreateElementResponses, OpCreateJournalEntryData, OpCreateJournalEntryErrors, OpCreateJournalEntryResponses, OpCreateManualClosingEntryData, OpCreateManualClosingEntryErrors, OpCreateManualClosingEntryResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioData, OpCreatePortfolioErrors, OpCreatePortfolioResponses, OpCreatePositionData, OpCreatePositionErrors, OpCreatePositionResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateScheduleData, OpCreateScheduleErrors, OpCreateScheduleResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateStructureData, OpCreateStructureErrors, OpCreateStructureResponses, OpCreateSubgraphData, OpCreateSubgraphErrors, OpCreateSubgraphResponses, OpCreateTaxonomyData, OpCreateTaxonomyErrors, OpCreateTaxonomyResponses, OpCreateTransactionData, OpCreateTransactionErrors, OpCreateTransactionResponses, OpDeleteAssociationData, OpDeleteAssociationErrors, OpDeleteAssociationResponses, OpDeleteElementData, OpDeleteElementErrors, OpDeleteElementResponses, OpDeleteJournalEntryData, OpDeleteJournalEntryErrors, OpDeleteJournalEntryResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioData, OpDeletePortfolioErrors, OpDeletePortfolioResponses, OpDeletePositionData, OpDeletePositionErrors, OpDeletePositionResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteScheduleData, OpDeleteScheduleErrors, OpDeleteScheduleResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpDeleteStructureData, OpDeleteStructureErrors, OpDeleteStructureResponses, OpDeleteSubgraphData, OpDeleteSubgraphErrors, OpDeleteSubgraphResponses, OpDeleteTaxonomyData, OpDeleteTaxonomyErrors, OpDeleteTaxonomyResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpLinkEntityTaxonomyData, OpLinkEntityTaxonomyErrors, OpLinkEntityTaxonomyResponses, OpMaterializeData, OpMaterializeErrors, OpMaterializeResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpRestoreBackupData, OpRestoreBackupErrors, OpRestoreBackupResponses, OpReverseJournalEntryData, OpReverseJournalEntryErrors, OpReverseJournalEntryResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpTruncateScheduleData, OpTruncateScheduleErrors, OpTruncateScheduleResponses, OpUpdateAssociationData, OpUpdateAssociationErrors, OpUpdateAssociationResponses, OpUpdateElementData, OpUpdateElementErrors, OpUpdateElementResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdateJournalEntryData, OpUpdateJournalEntryErrors, OpUpdateJournalEntryResponses, OpUpdatePortfolioData, OpUpdatePortfolioErrors, OpUpdatePortfolioResponses, OpUpdatePositionData, OpUpdatePositionErrors, OpUpdatePositionResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateScheduleData, OpUpdateScheduleErrors, OpUpdateScheduleResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, OpUpdateStructureData, OpUpdateStructureErrors, OpUpdateStructureResponses, OpUpdateTaxonomyData, OpUpdateTaxonomyErrors, OpUpdateTaxonomyResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, UploadDocumentsBulkData, UploadDocumentsBulkErrors, UploadDocumentsBulkResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -21,11 +21,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * Register New User
  *
- * Register a new user account with email and password.
- *
- * **Organization Creation**: RoboSystems is an org-centric platform. When you register, a personal organization is automatically created for you. All resources (graphs, subscriptions, billing) belong to organizations, not individual users. You can later upgrade your personal org to a team or enterprise organization.
- *
- * **Security Controls**: CAPTCHA and email verification are disabled in development for API testing, but required in production.
+ * Creates the user and a personal organization. CAPTCHA required in production. Sends verification email when email verification is enabled.
  */
 export const registerUser = <ThrowOnError extends boolean = false>(options: Options<RegisterUserData, ThrowOnError>) => (options.client ?? client).post<RegisterUserResponses, RegisterUserErrors, ThrowOnError>({
     url: '/v1/auth/register',
@@ -39,7 +35,7 @@ export const registerUser = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * User Login
  *
- * Authenticate user with email and password.
+ * Returns a JWT token on success. IP-based progressive delays apply after repeated failures.
  */
 export const loginUser = <ThrowOnError extends boolean = false>(options: Options<LoginUserData, ThrowOnError>) => (options.client ?? client).post<LoginUserResponses, LoginUserErrors, ThrowOnError>({
     url: '/v1/auth/login',
@@ -52,22 +48,18 @@ export const loginUser = <ThrowOnError extends boolean = false>(options: Options
 
 /**
  * User Logout
- *
- * Logout user and invalidate session.
  */
-export const logoutUser = <ThrowOnError extends boolean = false>(options?: Options<LogoutUserData, ThrowOnError>) => (options?.client ?? client).post<LogoutUserResponses, unknown, ThrowOnError>({ url: '/v1/auth/logout', ...options });
+export const logoutUser = <ThrowOnError extends boolean = false>(options?: Options<LogoutUserData, ThrowOnError>) => (options?.client ?? client).post<LogoutUserResponses, LogoutUserErrors, ThrowOnError>({ url: '/v1/auth/logout', ...options });
 
 /**
  * Get Current User
- *
- * Get the currently authenticated user.
  */
 export const getCurrentAuthUser = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentAuthUserData, ThrowOnError>) => (options?.client ?? client).get<GetCurrentAuthUserResponses, GetCurrentAuthUserErrors, ThrowOnError>({ url: '/v1/auth/me', ...options });
 
 /**
  * Refresh Session
  *
- * Refresh authentication session with a new JWT token.
+ * Revokes the current token and issues a new one. Accepts recently-expired tokens within the grace period.
  */
 export const refreshAuthSession = <ThrowOnError extends boolean = false>(options?: Options<RefreshAuthSessionData, ThrowOnError>) => (options?.client ?? client).post<RefreshAuthSessionResponses, RefreshAuthSessionErrors, ThrowOnError>({ url: '/v1/auth/refresh', ...options });
 
@@ -94,15 +86,11 @@ export const verifyEmail = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Get Password Policy
- *
- * Get current password policy requirements for frontend validation
  */
-export const getPasswordPolicy = <ThrowOnError extends boolean = false>(options?: Options<GetPasswordPolicyData, ThrowOnError>) => (options?.client ?? client).get<GetPasswordPolicyResponses, unknown, ThrowOnError>({ url: '/v1/auth/password/policy', ...options });
+export const getPasswordPolicy = <ThrowOnError extends boolean = false>(options?: Options<GetPasswordPolicyData, ThrowOnError>) => (options?.client ?? client).get<GetPasswordPolicyResponses, GetPasswordPolicyErrors, ThrowOnError>({ url: '/v1/auth/password/policy', ...options });
 
 /**
  * Check Password Strength
- *
- * Check password strength and get validation feedback
  */
 export const checkPasswordStrength = <ThrowOnError extends boolean = false>(options: Options<CheckPasswordStrengthData, ThrowOnError>) => (options.client ?? client).post<CheckPasswordStrengthResponses, CheckPasswordStrengthErrors, ThrowOnError>({
     url: '/v1/auth/password/check',
@@ -130,14 +118,14 @@ export const forgotPassword = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Validate Reset Token
  *
- * Check if a password reset token is valid without consuming it.
+ * Check if a password reset token is valid without consuming it. Returns masked email on success.
  */
 export const validateResetToken = <ThrowOnError extends boolean = false>(options: Options<ValidateResetTokenData, ThrowOnError>) => (options.client ?? client).get<ValidateResetTokenResponses, ValidateResetTokenErrors, ThrowOnError>({ url: '/v1/auth/password/reset/validate', ...options });
 
 /**
  * Reset Password
  *
- * Reset password with token from email. Returns JWT for auto-login.
+ * Reset password with token from email. Invalidates all existing sessions. Returns JWT for auto-login.
  */
 export const resetPassword = <ThrowOnError extends boolean = false>(options: Options<ResetPasswordData, ThrowOnError>) => (options.client ?? client).post<ResetPasswordResponses, ResetPasswordErrors, ThrowOnError>({
     url: '/v1/auth/password/reset',
@@ -151,14 +139,14 @@ export const resetPassword = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Generate SSO Token
  *
- * Generate a temporary SSO token for cross-app authentication.
+ * Step 1 of 3 in the cross-app SSO flow. Issues a single-use token (60s TTL) for handoff to a target application.
  */
 export const generateSsoToken = <ThrowOnError extends boolean = false>(options?: Options<GenerateSsoTokenData, ThrowOnError>) => (options?.client ?? client).post<GenerateSsoTokenResponses, GenerateSsoTokenErrors, ThrowOnError>({ url: '/v1/auth/sso-token', ...options });
 
 /**
  * SSO Token Exchange
  *
- * Exchange SSO token for secure session handoff to target application.
+ * Step 2 of 3. Exchanges the SSO token for a short-lived session ID. Avoids passing tokens in redirect URLs.
  */
 export const ssoTokenExchange = <ThrowOnError extends boolean = false>(options: Options<SsoTokenExchangeData, ThrowOnError>) => (options.client ?? client).post<SsoTokenExchangeResponses, SsoTokenExchangeErrors, ThrowOnError>({
     url: '/v1/auth/sso-exchange',
@@ -172,7 +160,7 @@ export const ssoTokenExchange = <ThrowOnError extends boolean = false>(options: 
 /**
  * Complete SSO Authentication
  *
- * Complete SSO authentication using session ID from secure handoff.
+ * Step 3 of 3. Exchanges the session ID for a full JWT token. Called by the target app after redirect.
  */
 export const completeSsoAuth = <ThrowOnError extends boolean = false>(options: Options<CompleteSsoAuthData, ThrowOnError>) => (options.client ?? client).post<CompleteSsoAuthResponses, CompleteSsoAuthErrors, ThrowOnError>({
     url: '/v1/auth/sso-complete',
@@ -186,23 +174,21 @@ export const completeSsoAuth = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get CAPTCHA Configuration
  *
- * Get CAPTCHA configuration including site key and whether CAPTCHA is required.
+ * Returns site key and whether CAPTCHA is required. Site key is null when CAPTCHA is disabled.
  */
-export const getCaptchaConfig = <ThrowOnError extends boolean = false>(options?: Options<GetCaptchaConfigData, ThrowOnError>) => (options?.client ?? client).get<GetCaptchaConfigResponses, unknown, ThrowOnError>({ url: '/v1/auth/captcha/config', ...options });
+export const getCaptchaConfig = <ThrowOnError extends boolean = false>(options?: Options<GetCaptchaConfigData, ThrowOnError>) => (options?.client ?? client).get<GetCaptchaConfigResponses, GetCaptchaConfigErrors, ThrowOnError>({ url: '/v1/auth/captcha/config', ...options });
 
 /**
  * Health Check
  *
- * Service health check endpoint for monitoring and load balancers
+ * Unprotected — used by load balancers and monitoring. No authentication required.
  */
 export const getServiceStatus = <ThrowOnError extends boolean = false>(options?: Options<GetServiceStatusData, ThrowOnError>) => (options?.client ?? client).get<GetServiceStatusResponses, unknown, ThrowOnError>({ url: '/v1/status', ...options });
 
 /**
  * Get Current User
- *
- * Returns information about the currently authenticated user.
  */
-export const getCurrentUser = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentUserData, ThrowOnError>) => (options?.client ?? client).get<GetCurrentUserResponses, unknown, ThrowOnError>({
+export const getCurrentUser = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentUserData, ThrowOnError>) => (options?.client ?? client).get<GetCurrentUserResponses, GetCurrentUserErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/user',
     ...options
@@ -210,8 +196,6 @@ export const getCurrentUser = <ThrowOnError extends boolean = false>(options?: O
 
 /**
  * Update User Profile
- *
- * Update the current user's profile information.
  */
 export const updateUser = <ThrowOnError extends boolean = false>(options: Options<UpdateUserData, ThrowOnError>) => (options.client ?? client).put<UpdateUserResponses, UpdateUserErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -226,7 +210,7 @@ export const updateUser = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Update Password
  *
- * Update the current user's password.
+ * Requires current password verification. Not available for SSO-only accounts.
  */
 export const updateUserPassword = <ThrowOnError extends boolean = false>(options: Options<UpdateUserPasswordData, ThrowOnError>) => (options.client ?? client).put<UpdateUserPasswordResponses, UpdateUserPasswordErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -240,10 +224,8 @@ export const updateUserPassword = <ThrowOnError extends boolean = false>(options
 
 /**
  * List API Keys
- *
- * Get all API keys for the current user.
  */
-export const listUserApiKeys = <ThrowOnError extends boolean = false>(options?: Options<ListUserApiKeysData, ThrowOnError>) => (options?.client ?? client).get<ListUserApiKeysResponses, unknown, ThrowOnError>({
+export const listUserApiKeys = <ThrowOnError extends boolean = false>(options?: Options<ListUserApiKeysData, ThrowOnError>) => (options?.client ?? client).get<ListUserApiKeysResponses, ListUserApiKeysErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/user/api-keys',
     ...options
@@ -252,7 +234,7 @@ export const listUserApiKeys = <ThrowOnError extends boolean = false>(options?: 
 /**
  * Create API Key
  *
- * Create a new API key for the current user.
+ * The raw key value is only returned once at creation time and cannot be retrieved again.
  */
 export const createUserApiKey = <ThrowOnError extends boolean = false>(options: Options<CreateUserApiKeyData, ThrowOnError>) => (options.client ?? client).post<CreateUserApiKeyResponses, CreateUserApiKeyErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -267,7 +249,7 @@ export const createUserApiKey = <ThrowOnError extends boolean = false>(options: 
 /**
  * Revoke API Key
  *
- * Revoke (deactivate) an API key.
+ * Deactivates the key immediately. Requests using the revoked key will fail with 401.
  */
 export const revokeUserApiKey = <ThrowOnError extends boolean = false>(options: Options<RevokeUserApiKeyData, ThrowOnError>) => (options.client ?? client).delete<RevokeUserApiKeyResponses, RevokeUserApiKeyErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -277,8 +259,6 @@ export const revokeUserApiKey = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Update API Key
- *
- * Update an API key's name or description.
  */
 export const updateUserApiKey = <ThrowOnError extends boolean = false>(options: Options<UpdateUserApiKeyData, ThrowOnError>) => (options.client ?? client).put<UpdateUserApiKeyResponses, UpdateUserApiKeyErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -292,10 +272,8 @@ export const updateUserApiKey = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * List User's Organizations
- *
- * Get all organizations the current user belongs to, with their role in each.
  */
-export const listUserOrgs = <ThrowOnError extends boolean = false>(options?: Options<ListUserOrgsData, ThrowOnError>) => (options?.client ?? client).get<ListUserOrgsResponses, unknown, ThrowOnError>({
+export const listUserOrgs = <ThrowOnError extends boolean = false>(options?: Options<ListUserOrgsData, ThrowOnError>) => (options?.client ?? client).get<ListUserOrgsResponses, ListUserOrgsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/orgs',
     ...options
@@ -303,8 +281,6 @@ export const listUserOrgs = <ThrowOnError extends boolean = false>(options?: Opt
 
 /**
  * Get Organization
- *
- * Get detailed information about an organization.
  */
 export const getOrg = <ThrowOnError extends boolean = false>(options: Options<GetOrgData, ThrowOnError>) => (options.client ?? client).get<GetOrgResponses, GetOrgErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -315,7 +291,7 @@ export const getOrg = <ThrowOnError extends boolean = false>(options: Options<Ge
 /**
  * Update Organization
  *
- * Update organization information. Requires admin or owner role.
+ * Requires admin or owner role. Only owners can change the org type.
  */
 export const updateOrg = <ThrowOnError extends boolean = false>(options: Options<UpdateOrgData, ThrowOnError>) => (options.client ?? client).put<UpdateOrgResponses, UpdateOrgErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -329,8 +305,6 @@ export const updateOrg = <ThrowOnError extends boolean = false>(options: Options
 
 /**
  * List Organization Graphs
- *
- * Get all graphs belonging to an organization.
  */
 export const listOrgGraphs = <ThrowOnError extends boolean = false>(options: Options<ListOrgGraphsData, ThrowOnError>) => (options.client ?? client).get<ListOrgGraphsResponses, ListOrgGraphsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -340,8 +314,6 @@ export const listOrgGraphs = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * List Organization Members
- *
- * Get all members of an organization with their roles.
  */
 export const listOrgMembers = <ThrowOnError extends boolean = false>(options: Options<ListOrgMembersData, ThrowOnError>) => (options.client ?? client).get<ListOrgMembersResponses, ListOrgMembersErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -352,10 +324,7 @@ export const listOrgMembers = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Invite Member
  *
- * Invite a user to join the organization. Requires admin or owner role.
- *
- * **⚠️ FEATURE NOT READY**: This endpoint is disabled by default (ORG_MEMBER_INVITATIONS_ENABLED=false).
- * Returns 501 NOT IMPLEMENTED when disabled. See endpoint implementation for TODO list before enabling.
+ * Disabled by default (ORG_MEMBER_INVITATIONS_ENABLED=false). Returns 501 when disabled. Requires admin or owner role.
  */
 export const inviteOrgMember = <ThrowOnError extends boolean = false>(options: Options<InviteOrgMemberData, ThrowOnError>) => (options.client ?? client).post<InviteOrgMemberResponses, InviteOrgMemberErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -370,7 +339,7 @@ export const inviteOrgMember = <ThrowOnError extends boolean = false>(options: O
 /**
  * Remove Member
  *
- * Remove a member from the organization. Requires admin or owner role.
+ * Requires admin or owner role. Members may remove themselves.
  */
 export const removeOrgMember = <ThrowOnError extends boolean = false>(options: Options<RemoveOrgMemberData, ThrowOnError>) => (options.client ?? client).delete<RemoveOrgMemberResponses, RemoveOrgMemberErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -381,7 +350,7 @@ export const removeOrgMember = <ThrowOnError extends boolean = false>(options: O
 /**
  * Update Member Role
  *
- * Update a member's role in the organization. Requires admin or owner role.
+ * Requires admin or owner role. Owner promotion/demotion requires a dedicated ownership transfer workflow.
  */
 export const updateOrgMemberRole = <ThrowOnError extends boolean = false>(options: Options<UpdateOrgMemberRoleData, ThrowOnError>) => (options.client ?? client).put<UpdateOrgMemberRoleResponses, UpdateOrgMemberRoleErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -395,8 +364,6 @@ export const updateOrgMemberRole = <ThrowOnError extends boolean = false>(option
 
 /**
  * Get Organization Limits
- *
- * Get the current limits and quotas for an organization.
  */
 export const getOrgLimits = <ThrowOnError extends boolean = false>(options: Options<GetOrgLimitsData, ThrowOnError>) => (options.client ?? client).get<GetOrgLimitsResponses, GetOrgLimitsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -407,7 +374,7 @@ export const getOrgLimits = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Get Organization Usage
  *
- * Get detailed usage statistics for an organization aggregated across all graphs.
+ * Aggregated across all graphs in the org. Use the `days` query param to control the lookback window (default 30).
  */
 export const getOrgUsage = <ThrowOnError extends boolean = false>(options: Options<GetOrgUsageData, ThrowOnError>) => (options.client ?? client).get<GetOrgUsageResponses, GetOrgUsageErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -417,21 +384,6 @@ export const getOrgUsage = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * List Connections
- *
- * List all data connections in the graph.
- *
- * Returns active and inactive connections with their current status.
- * Connections can be filtered by:
- * - **Entity**: Show connections for a specific entity
- * - **Provider**: Filter by connection type (sec, quickbooks)
- *
- * Each connection shows:
- * - Current sync status and health
- * - Last successful sync timestamp
- * - Configuration metadata
- * - Error messages if any
- *
- * No credits are consumed for listing connections.
  */
 export const listConnections = <ThrowOnError extends boolean = false>(options: Options<ListConnectionsData, ThrowOnError>) => (options.client ?? client).get<ListConnectionsResponses, ListConnectionsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -442,22 +394,7 @@ export const listConnections = <ThrowOnError extends boolean = false>(options: O
 /**
  * Create Connection
  *
- * Create a new data connection for external system integration.
- *
- * This endpoint initiates connections to external data sources:
- *
- * **SEC Connections**:
- * - Provide entity CIK for automatic filing retrieval
- * - No authentication needed
- * - Begins immediate data sync
- *
- * **QuickBooks Connections**:
- * - Returns OAuth URL for authorization
- * - Requires admin permissions in QuickBooks
- * - Complete with OAuth callback
- *
- * Note:
- * This operation is included - no credit consumption required.
+ * SEC: provide entity CIK, no auth needed. QuickBooks: returns an OAuth URL — complete the flow to activate. One connection allowed per provider per graph.
  */
 export const createConnection = <ThrowOnError extends boolean = false>(options: Options<CreateConnectionData, ThrowOnError>) => (options.client ?? client).post<CreateConnectionResponses, CreateConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -472,21 +409,7 @@ export const createConnection = <ThrowOnError extends boolean = false>(options: 
 /**
  * List Connection Options
  *
- * Get metadata about all available data connection providers.
- *
- * This endpoint returns comprehensive information about each supported provider:
- *
- * **SEC EDGAR**: Public entity financial filings
- * - No authentication required (public data)
- * - 10-K, 10-Q, 8-K reports with XBRL data
- * - Historical and real-time filing access
- *
- * **QuickBooks Online**: Full accounting system integration
- * - OAuth 2.0 authentication
- * - Chart of accounts, transactions, trial balance
- * - Real-time sync capabilities
- *
- * No credits are consumed for viewing connection options.
+ * Returns available providers and their requirements. Only enabled providers are included (gated by feature flags). SEC requires no auth; QuickBooks requires OAuth 2.0.
  */
 export const getConnectionOptions = <ThrowOnError extends boolean = false>(options: Options<GetConnectionOptionsData, ThrowOnError>) => (options.client ?? client).get<GetConnectionOptionsResponses, GetConnectionOptionsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -495,12 +418,7 @@ export const getConnectionOptions = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
- * Init Oauth
- *
- * Initialize OAuth flow for a connection.
- *
- * This generates an authorization URL that the frontend should redirect the user to.
- * Currently supports: QuickBooks
+ * Initialize OAuth Flow
  */
 export const initOAuth = <ThrowOnError extends boolean = false>(options: Options<InitOAuthData, ThrowOnError>) => (options.client ?? client).post<InitOAuthResponses, InitOAuthErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -515,25 +433,7 @@ export const initOAuth = <ThrowOnError extends boolean = false>(options: Options
 /**
  * OAuth Callback
  *
- * Handle OAuth callback from provider after user authorization.
- *
- * This endpoint completes the OAuth flow:
- * 1. Validates the OAuth state parameter
- * 2. Exchanges authorization code for access tokens
- * 3. Stores tokens securely
- * 4. Updates connection status
- * 5. Optionally triggers initial sync
- *
- * Supported providers:
- * - **QuickBooks**: Accounting data integration
- *
- * Security measures:
- * - State validation prevents session hijacking
- * - User context is verified
- * - Tokens are encrypted before storage
- * - Full audit trail is maintained
- *
- * No credits are consumed for OAuth callbacks.
+ * Completes the OAuth authorization flow after provider redirect. Exchanges the authorization code for tokens, stores them, and triggers an initial sync. This is a redirect target — not typically called directly.
  */
 export const oauthCallback = <ThrowOnError extends boolean = false>(options: Options<OauthCallbackData, ThrowOnError>) => (options.client ?? client).post<OauthCallbackResponses, OauthCallbackErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -548,18 +448,7 @@ export const oauthCallback = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Delete Connection
  *
- * Delete a data connection and clean up related resources.
- *
- * This operation:
- * - Removes the connection configuration
- * - Preserves any imported data in the graph
- * - Performs provider-specific cleanup
- * - Revokes stored credentials
- *
- * Note:
- * This operation is included - no credit consumption required.
- *
- * Only users with admin role can delete connections.
+ * Removes the connection and revokes credentials. Imported data is preserved in the graph. Requires admin role.
  */
 export const deleteConnection = <ThrowOnError extends boolean = false>(options: Options<DeleteConnectionData, ThrowOnError>) => (options.client ?? client).delete<DeleteConnectionResponses, DeleteConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -569,17 +458,6 @@ export const deleteConnection = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Get Connection
- *
- * Get detailed information about a specific connection.
- *
- * Returns comprehensive connection details including:
- * - Current status and health indicators
- * - Authentication state
- * - Sync history and statistics
- * - Error details if any
- * - Provider-specific metadata
- *
- * No credits are consumed for viewing connection details.
  */
 export const getConnection = <ThrowOnError extends boolean = false>(options: Options<GetConnectionData, ThrowOnError>) => (options.client ?? client).get<GetConnectionResponses, GetConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -590,26 +468,7 @@ export const getConnection = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Sync Connection
  *
- * Trigger a data synchronization for the connection.
- *
- * Initiates data sync based on provider type:
- *
- * **SEC Sync**:
- * - Downloads latest filings from EDGAR
- * - Parses XBRL data and updates graph
- * - Typically completes in 5-10 minutes
- *
- * **QuickBooks Sync**:
- * - Fetches latest transactions and balances
- * - Updates chart of accounts
- * - Generates fresh trial balance
- * - Duration depends on data volume
- *
- * Note:
- * This operation is included - no credit consumption required.
- *
- * Returns an `OperationEnvelope` with an `operationId` for tracking sync progress.
- * Supports `Idempotency-Key` header to safely retry without triggering duplicate syncs.
+ * SEC: downloads latest EDGAR filings (5-10 min). QuickBooks: fetches transactions, balances, and chart of accounts. Returns an `OperationEnvelope` — monitor progress via SSE at `/v1/operations/{operation_id}/stream`. Supports `Idempotency-Key`.
  */
 export const syncConnection = <ThrowOnError extends boolean = false>(options: Options<SyncConnectionData, ThrowOnError>) => (options.client ?? client).post<SyncConnectionResponses, SyncConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -622,17 +481,9 @@ export const syncConnection = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * List available agents
+ * List Available Agents
  *
- * Get a comprehensive list of all available agents with their metadata.
- *
- * **Returns:**
- * - Agent types and names
- * - Capabilities and supported modes
- * - Version information
- * - Credit requirements
- *
- * Use the optional `capability` filter to find agents with specific capabilities.
+ * Filter by capability using the `capability` query param (e.g., `financial_analysis`, `rag_search`).
  */
 export const listAgents = <ThrowOnError extends boolean = false>(options: Options<ListAgentsData, ThrowOnError>) => (options.client ?? client).get<ListAgentsResponses, ListAgentsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -641,66 +492,9 @@ export const listAgents = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
- * Auto-select agent for query
+ * Auto-select Agent for Query
  *
- * Automatically select the best agent for your query with intelligent execution strategy.
- *
- * **Agent Selection Process:**
- *
- * The orchestrator intelligently routes your query by:
- * 1. Analyzing query intent and complexity
- * 2. Enriching context with RAG if enabled
- * 3. Evaluating all available agents against selection criteria
- * 4. Selecting the best match based on confidence scores
- * 5. Choosing execution strategy (sync/SSE/async) based on expected time
- * 6. Executing the query with the selected agent
- *
- * **Available Agent Types:**
- * - `financial`: Financial analysis, SEC filings, company metrics
- * - `research`: General research, data exploration, trend analysis
- * - `rag`: Knowledge base search using RAG enrichment
- *
- * **Execution Modes:**
- * - `quick`: Fast responses (~2-5s), suitable for simple queries
- * - `standard`: Balanced approach (~5-15s), default mode
- * - `extended`: Comprehensive analysis (~15-60s), deep research
- * - `streaming`: Real-time response streaming
- *
- * **Execution Strategies (automatic):**
- * - Fast operations (<5s): Immediate synchronous response
- * - Medium operations (5-30s): SSE streaming with progress updates
- * - Long operations (>30s): Background queue with operation tracking
- *
- * **Response Mode Override:**
- * Use query parameter `?mode=sync|async` to override automatic strategy selection.
- *
- * **Confidence Score Interpretation:**
- * - `0.9-1.0`: High confidence, agent is ideal match
- * - `0.7-0.9`: Good confidence, agent is suitable
- * - `0.5-0.7`: Moderate confidence, agent can handle but may not be optimal
- * - `0.3-0.5`: Low confidence, fallback agent used
- * - `<0.3`: Very low confidence, consider using specific agent endpoint
- *
- * **Credit Costs:**
- * - Quick mode: 5-10 credits per query
- * - Standard mode: 15-25 credits per query
- * - Extended mode: 30-75 credits per query
- * - RAG enrichment: +5-15 credits (if enabled)
- *
- * **Use Cases:**
- * - Ask questions without specifying agent type
- * - Get intelligent routing for complex multi-domain queries
- * - Leverage conversation history for contextual understanding
- * - Enable RAG for knowledge base enrichment
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * Agents operate on the specified graph/subgraph's data independently. RAG enrichment
- * and knowledge base search are scoped to the specific graph/subgraph.
- *
- * See request/response examples in the "Examples" dropdown below.
+ * Routes to the best agent for your query. Agents: `financial` (SEC, accounting), `research` (deep analysis), `rag` (knowledge base, free). Credit cost by mode: `quick` 5-10, `standard` 15-25, `extended` 30-75. Execution strategy (sync/SSE/async) auto-selected; override with `?mode=sync|async`.
  */
 export const autoSelectAgent = <ThrowOnError extends boolean = false>(options: Options<AutoSelectAgentData, ThrowOnError>) => (options.client ?? client).post<AutoSelectAgentResponses, AutoSelectAgentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -713,19 +507,7 @@ export const autoSelectAgent = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * Get agent metadata
- *
- * Get comprehensive metadata for a specific agent type.
- *
- * **Returns:**
- * - Agent name and description
- * - Version information
- * - Supported capabilities and modes
- * - Credit requirements
- * - Author and tags
- * - Configuration options
- *
- * Use this to understand agent capabilities before execution.
+ * Get Agent Metadata
  */
 export const getAgentMetadata = <ThrowOnError extends boolean = false>(options: Options<GetAgentMetadataData, ThrowOnError>) => (options.client ?? client).get<GetAgentMetadataResponses, GetAgentMetadataErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -734,24 +516,9 @@ export const getAgentMetadata = <ThrowOnError extends boolean = false>(options: 
 });
 
 /**
- * Execute specific agent
+ * Execute Specific Agent
  *
- * Execute a specific agent type directly with intelligent execution strategy.
- *
- * Available agents:
- * - **financial**: Financial analysis, SEC filings, accounting data
- * - **research**: Deep research and comprehensive analysis
- * - **rag**: Fast retrieval without AI (no credits required)
- *
- * **Execution Strategies (automatic):**
- * - Fast operations (<5s): Immediate synchronous response
- * - Medium operations (5-30s): SSE streaming with progress updates
- * - Long operations (>30s): Background queue with operation tracking
- *
- * **Response Mode Override:**
- * Use query parameter `?mode=sync|async` to override automatic strategy selection.
- *
- * Use this endpoint when you know which agent you want to use.
+ * Available: `financial` (SEC filings, accounting), `research` (deep analysis), `rag` (retrieval, no credits). Execution strategy auto-selected; override with `?mode=sync|async`.
  */
 export const executeSpecificAgent = <ThrowOnError extends boolean = false>(options: Options<ExecuteSpecificAgentData, ThrowOnError>) => (options.client ?? client).post<ExecuteSpecificAgentResponses, ExecuteSpecificAgentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -764,22 +531,9 @@ export const executeSpecificAgent = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
- * Batch process multiple queries
+ * Batch Process Queries
  *
- * Process multiple queries either sequentially or in parallel.
- *
- * **Features:**
- * - Process up to 10 queries in a single request
- * - Sequential or parallel execution modes
- * - Automatic error handling per query
- * - Credit checking before execution
- *
- * **Use Cases:**
- * - Bulk analysis of multiple entities
- * - Comparative analysis across queries
- * - Automated report generation
- *
- * Returns individual results for each query with execution metrics.
+ * Process up to 10 queries sequentially or in parallel. Partial failure is supported — each result has individual error handling.
  */
 export const batchProcessQueries = <ThrowOnError extends boolean = false>(options: Options<BatchProcessQueriesData, ThrowOnError>) => (options.client ?? client).post<BatchProcessQueriesResponses, BatchProcessQueriesErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -792,22 +546,9 @@ export const batchProcessQueries = <ThrowOnError extends boolean = false>(option
 });
 
 /**
- * Get agent recommendations
+ * Get Agent Recommendations
  *
- * Get intelligent agent recommendations for a specific query.
- *
- * **How it works:**
- * 1. Analyzes query content and structure
- * 2. Evaluates agent capabilities
- * 3. Calculates confidence scores
- * 4. Returns ranked recommendations
- *
- * **Use this when:**
- * - Unsure which agent to use
- * - Need to understand agent suitability
- * - Want confidence scores for decision making
- *
- * Returns top agents ranked by confidence with explanations.
+ * Returns agents ranked by confidence score for a query, with explanations. Use before execution when unsure which agent to pick.
  */
 export const recommendAgent = <ThrowOnError extends boolean = false>(options: Options<RecommendAgentData, ThrowOnError>) => (options.client ?? client).post<RecommendAgentResponses, RecommendAgentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -822,27 +563,7 @@ export const recommendAgent = <ThrowOnError extends boolean = false>(options: Op
 /**
  * List MCP Tools
  *
- * Get available Model Context Protocol tools for graph analysis.
- *
- * This endpoint returns a comprehensive list of MCP tools optimized for AI agents:
- * - Tool schemas with detailed parameter documentation
- * - Context-aware descriptions based on graph type
- * - Capability indicators for streaming and progress
- *
- * The tool list is customized based on:
- * - Graph type (shared repository vs user graph)
- * - User permissions and subscription tier
- * - Available graph capabilities for the selected graph
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * The returned tool list is identical for parent graphs and subgraphs, as all
- * MCP tools work uniformly across graph boundaries.
- *
- * **Note:**
- * MCP tool listing is included - no credit consumption required.
+ * Returns tool schemas with capability hints (streaming, caching, timeouts) per tool. Tool list is context-aware by graph type; identical for parent graphs and subgraphs.
  */
 export const listMcpTools = <ThrowOnError extends boolean = false>(options: Options<ListMcpToolsData, ThrowOnError>) => (options.client ?? client).get<ListMcpToolsResponses, ListMcpToolsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -853,50 +574,7 @@ export const listMcpTools = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Execute MCP Tool
  *
- * Execute an MCP tool with intelligent response optimization.
- *
- * This endpoint automatically selects the best execution strategy based on:
- * - Tool type and estimated complexity
- * - Client capabilities (AI agent detection)
- * - System load and queue status
- * - Graph type (shared repository vs user graph)
- *
- * **Response Formats:**
- * - **JSON**: Direct response for small/fast operations
- * - **SSE**: Server-Sent Events for progress monitoring
- * - **NDJSON**: Newline-delimited JSON for streaming
- * - **Queued**: Asynchronous execution with status monitoring
- *
- * **SSE Streaming Support:**
- * - Maximum 5 concurrent SSE connections per user
- * - Rate limited to 10 new connections per minute
- * - Automatic circuit breaker for Redis failures
- * - Graceful degradation to direct response if SSE unavailable
- * - Progress events for long-running operations
- *
- * **AI Agent Optimization:**
- * The Node.js MCP client transparently handles all response formats,
- * presenting a unified interface to AI agents. Streaming responses are
- * automatically aggregated for seamless consumption.
- *
- * **Error Handling:**
- * - `429 Too Many Requests`: Connection limit or rate limit exceeded
- * - `503 Service Unavailable`: SSE system temporarily disabled
- * - `408 Request Timeout`: Tool execution exceeded timeout
- * - Clients should implement exponential backoff on errors
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * MCP tools operate on the specified graph/subgraph independently. Each subgraph
- * has its own schema, data, and can be queried separately via MCP.
- *
- * **Credit Model:**
- * MCP tool execution is included - no credit consumption required. Database
- * operations (queries, schema inspection, analytics) are completely free.
- * Only AI operations that invoke Claude or other LLM APIs consume credits,
- * which happens at the AI agent layer, not the MCP tool layer.
+ * Strategy auto-selected by tool type and load: JSON for fast tools, SSE for long queries, NDJSON for large results. Database operations (Cypher, schema, info) consume no credits — only AI LLM calls cost credits.
  */
 export const callMcpTool = <ThrowOnError extends boolean = false>(options: Options<CallMcpToolData, ThrowOnError>) => (options.client ?? client).post<CallMcpToolResponses, CallMcpToolErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -910,8 +588,6 @@ export const callMcpTool = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * List graph database backups
- *
- * List all backups for the specified graph database
  */
 export const listBackups = <ThrowOnError extends boolean = false>(options: Options<ListBackupsData, ThrowOnError>) => (options.client ?? client).get<ListBackupsResponses, ListBackupsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -932,8 +608,6 @@ export const getBackupDownloadUrl = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Get backup statistics
- *
- * Get comprehensive backup statistics for the specified graph database
  */
 export const getBackupStats = <ThrowOnError extends boolean = false>(options: Options<GetBackupStatsData, ThrowOnError>) => (options.client ?? client).get<GetBackupStatsResponses, GetBackupStatsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -943,24 +617,6 @@ export const getBackupStats = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Get Graph Metrics
- *
- * Get comprehensive metrics for the graph database.
- *
- * Provides detailed analytics including:
- * - **Node Statistics**: Counts by type (Entity, Report, Account, Transaction)
- * - **Relationship Metrics**: Connection counts and patterns
- * - **Data Quality**: Completeness scores and validation results
- * - **Performance Metrics**: Query response times and database health
- * - **Storage Analytics**: Database size and growth trends
- *
- * This data helps with:
- * - Monitoring data completeness
- * - Identifying data quality issues
- * - Capacity planning
- * - Performance optimization
- *
- * Note:
- * This operation is included - no credit consumption required.
  */
 export const getGraphMetrics = <ThrowOnError extends boolean = false>(options: Options<GetGraphMetricsData, ThrowOnError>) => (options.client ?? client).get<GetGraphMetricsResponses, GetGraphMetricsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -971,35 +627,7 @@ export const getGraphMetrics = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get Graph Usage Analytics
  *
- * Get comprehensive usage analytics tracked by the GraphUsage model.
- *
- * Provides temporal usage patterns including:
- * - **Storage Analytics**: GB-hours for billing, breakdown by type (files, tables, graphs, subgraphs)
- * - **Credit Analytics**: Consumption patterns, operation breakdown, cached vs billable
- * - **Performance Insights**: Operation stats, slow queries, performance scoring
- * - **Recent Events**: Latest usage events with full details
- *
- * Time ranges available:
- * - `24h` - Last 24 hours (hourly breakdown)
- * - `7d` - Last 7 days (daily breakdown)
- * - `30d` - Last 30 days (daily breakdown)
- * - `current_month` - Current billing month
- * - `last_month` - Previous billing month
- *
- * Include options:
- * - `storage` - Storage usage summary (GB-hours, averages, peaks)
- * - `credits` - Credit consumption analytics
- * - `performance` - Performance insights and optimization opportunities
- * - `events` - Recent usage events (last 50)
- *
- * Useful for:
- * - Billing and cost analysis
- * - Capacity planning
- * - Performance optimization
- * - Usage trend analysis
- *
- * Note:
- * This operation is included - no credit consumption required.
+ * Time ranges: 24h, 7d, 30d, current_month, last_month. Toggle storage, credits, performance, and events sections via query params.
  */
 export const getGraphUsageAnalytics = <ThrowOnError extends boolean = false>(options: Options<GetGraphUsageAnalyticsData, ThrowOnError>) => (options.client ?? client).get<GetGraphUsageAnalyticsResponses, GetGraphUsageAnalyticsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1010,74 +638,7 @@ export const getGraphUsageAnalytics = <ThrowOnError extends boolean = false>(opt
 /**
  * Execute Cypher Query
  *
- * Execute a Cypher query with intelligent response optimization.
- *
- * **IMPORTANT: Write operations depend on graph type:**
- * - **Main Graphs**: READ-ONLY. Write operations (CREATE, MERGE, SET, DELETE) are not allowed.
- * - **Subgraphs**: WRITE-ENABLED. Full Cypher write operations are supported for development and report creation.
- *
- * To load data into main graphs, use the staging pipeline:
- * 1. Create file upload: `POST /v1/graphs/{graph_id}/tables/{table_name}/files`
- * 2. Ingest to graph: `POST /v1/graphs/{graph_id}/tables/ingest`
- *
- * **Security Best Practice - Use Parameterized Queries:**
- * ALWAYS use query parameters instead of string interpolation to prevent injection attacks:
- * - ✅ SAFE: `MATCH (n:Entity {type: $entity_type}) RETURN n` with `parameters: {"entity_type": "Company"}`
- * - ❌ UNSAFE: `MATCH (n:Entity {type: "Company"}) RETURN n` with user input concatenated into query string
- *
- * Query parameters provide automatic escaping and type safety. All examples in this API use parameterized queries.
- *
- * This endpoint automatically selects the best execution strategy based on:
- * - Query characteristics (size, complexity)
- * - Client capabilities (SSE, NDJSON, JSON)
- * - System load (queue status, concurrent queries)
- * - User preferences (mode parameter, headers)
- *
- * **Response Modes:**
- * - `auto` (default): Intelligent automatic selection
- * - `sync`: Force synchronous JSON response (best for testing)
- * - `async`: Force queued response with SSE monitoring endpoints (no polling needed)
- * - `stream`: Force streaming response (SSE or NDJSON)
- *
- * **Client Detection:**
- * - Automatically detects testing tools (Postman, Swagger UI)
- * - Adjusts behavior for better interactive experience
- * - Respects Accept and Prefer headers for capabilities
- *
- * **Streaming Support (SSE):**
- * - Real-time events with progress updates
- * - Maximum 5 concurrent SSE connections per user
- * - Rate limited to 10 new connections per minute
- * - Automatic circuit breaker for Redis failures
- * - Graceful degradation if event system unavailable
- * - 30-second keepalive to prevent timeouts
- *
- * **Streaming Support (NDJSON):**
- * - Efficient line-delimited JSON for large results
- * - Automatic chunking (configurable 10-10000 rows)
- * - No connection limits (stateless streaming)
- *
- * **Queue Management:**
- * - Automatic queuing under high load
- * - Real-time monitoring via SSE events (no polling needed)
- * - Priority based on subscription tier
- * - Queue position and progress updates pushed via SSE
- * - Connect to returned `/v1/operations/{id}/stream` endpoint for updates
- *
- * **Error Handling:**
- * - `429 Too Many Requests`: Rate limit or connection limit exceeded
- * - `503 Service Unavailable`: Circuit breaker open or SSE disabled
- * - Clients should implement exponential backoff
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * Subgraphs share the same instance as their parent graph and have independent data.
- *
- * **Note:**
- * Query operations are included - no credit consumption required.
- * Queue position is based on subscription tier for priority.
+ * Main graphs are **read-only** — use the staging pipeline to ingest data. Subgraphs support full writes. Always use parameterized queries (`parameters: {"key": "val"}`) to prevent injection. Response modes: `auto` (default), `sync`, `async`, `stream`. Under load, queries are queued and emit an `operation_id` for SSE monitoring at `/v1/operations/{id}/stream`.
  */
 export const executeCypherQuery = <ThrowOnError extends boolean = false>(options: Options<ExecuteCypherQueryData, ThrowOnError>) => (options.client ?? client).post<ExecuteCypherQueryResponses, ExecuteCypherQueryErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1092,50 +653,7 @@ export const executeCypherQuery = <ThrowOnError extends boolean = false>(options
 /**
  * Get Runtime Graph Schema
  *
- * Get runtime schema information for the specified graph database.
- *
- * ## What This Returns
- *
- * This endpoint inspects the **actual current state** of the graph database and returns:
- * - **Node Labels**: All node types currently in the database
- * - **Relationship Types**: All relationship types currently in the database
- * - **Node Properties**: Properties discovered from actual data (up to 10 properties per node type)
- *
- * ## Runtime vs Declared Schema
- *
- * **Use this endpoint** (`/schema`) when you need to know:
- * - What data is ACTUALLY in the database right now
- * - What properties exist on real nodes
- * - What relationships have been created
- * - Current database structure for querying
- *
- * **Use `/schema/export` instead** when you need:
- * - The original schema definition used to create the graph
- * - Schema in a specific format (JSON, YAML, Cypher DDL)
- * - Schema for documentation or version control
- * - Schema to replicate in another graph
- *
- * ## Example Use Cases
- *
- * - **Building queries**: See what node labels and properties exist to write accurate Cypher
- * - **Data exploration**: Discover what's in an unfamiliar graph
- * - **Schema drift detection**: Compare runtime vs declared schema
- * - **API integration**: Dynamically adapt to current graph structure
- *
- * ## Performance Note
- *
- * Property discovery is limited to 10 properties per node type for performance.
- * For complete schema definitions, use `/schema/export`.
- *
- * ## Subgraph Support
- *
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * Each subgraph has independent schema and data. The returned schema reflects
- * only the specified graph/subgraph's actual structure.
- *
- * This operation is included - no credit consumption required.
+ * Runtime schema from actual graph data — node labels, relationship types, and up to 10 sample properties per node type. For the original schema definition or structured export formats, use `/schema/export`.
  */
 export const getGraphSchema = <ThrowOnError extends boolean = false>(options: Options<GetGraphSchemaData, ThrowOnError>) => (options.client ?? client).get<GetGraphSchemaResponses, GetGraphSchemaErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1146,53 +664,7 @@ export const getGraphSchema = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Export Declared Graph Schema
  *
- * Export the declared schema definition of an existing graph.
- *
- * ## What This Returns
- *
- * This endpoint returns the **original schema definition** that was used to create the graph:
- * - The schema as it was **declared** during graph creation
- * - Complete node and relationship definitions
- * - Property types and constraints
- * - Schema metadata (name, version, type)
- *
- * ## Runtime vs Declared Schema
- *
- * **Use this endpoint** (`/schema/export`) when you need:
- * - The original schema definition used to create the graph
- * - Schema in a specific format (JSON, YAML, Cypher DDL)
- * - Schema for documentation or version control
- * - Schema to replicate in another graph
- *
- * **Use `/schema` instead** when you need:
- * - What data is ACTUALLY in the database right now
- * - What properties exist on real nodes (discovered from data)
- * - Current runtime database structure for querying
- *
- * ## Export Formats
- *
- * ### JSON Format (`format=json`)
- * Returns structured JSON with nodes, relationships, and properties.
- * Best for programmatic access and API integration.
- *
- * ### YAML Format (`format=yaml`)
- * Returns human-readable YAML with comments.
- * Best for documentation and configuration management.
- *
- * ### Cypher DDL Format (`format=cypher`)
- * Returns Cypher CREATE statements for recreating the schema.
- * Best for database migration and replication.
- *
- * ## Data Statistics
- *
- * Set `include_data_stats=true` to include:
- * - Node counts by label
- * - Relationship counts by type
- * - Total nodes and relationships
- *
- * This combines declared schema with runtime statistics.
- *
- * This operation is included - no credit consumption required.
+ * Returns the original schema definition from graph creation, not the runtime state. Set `include_data_stats=true` to add live node/relationship counts. Use `/schema` to inspect what's actually in the database.
  */
 export const exportGraphSchema = <ThrowOnError extends boolean = false>(options: Options<ExportGraphSchemaData, ThrowOnError>) => (options.client ?? client).get<ExportGraphSchemaResponses, ExportGraphSchemaErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1203,35 +675,7 @@ export const exportGraphSchema = <ThrowOnError extends boolean = false>(options:
 /**
  * Validate Schema
  *
- * Validate a custom schema definition before deployment.
- *
- * This endpoint performs comprehensive validation including:
- * - **Structure Validation**: Ensures proper JSON/YAML format
- * - **Type Checking**: Validates data types (STRING, INT, DOUBLE, etc.)
- * - **Constraint Verification**: Checks primary keys and unique constraints
- * - **Relationship Integrity**: Validates node references in relationships
- * - **Naming Conventions**: Ensures valid identifiers
- * - **Compatibility**: Checks against existing extensions if specified
- *
- * Supported formats:
- * - JSON schema definitions
- * - YAML schema definitions
- * - Direct dictionary format
- *
- * Validation helps prevent:
- * - Schema deployment failures
- * - Data integrity issues
- * - Performance problems
- * - Naming conflicts
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * Schema validation is performed against the specified graph/subgraph's current
- * schema and data structure.
- *
- * This operation is included - no credit consumption required.
+ * Validates a custom schema definition before deployment — checks structure, types, constraints, and relationship references. Returns errors and warnings without applying changes. Supports JSON, YAML, and dict formats.
  */
 export const validateSchema = <ThrowOnError extends boolean = false>(options: Options<ValidateSchemaData, ThrowOnError>) => (options.client ?? client).post<ValidateSchemaResponses, ValidateSchemaErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1245,16 +689,6 @@ export const validateSchema = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Get Credit Summary
- *
- * Retrieve comprehensive credit usage summary for the specified graph.
- *
- * This endpoint provides:
- * - Current credit balance and monthly allocation
- * - Credit consumption metrics for the current month
- * - Graph tier and credit multiplier information
- * - Usage percentage to help monitor credit consumption
- *
- * No credits are consumed for checking credit status.
  */
 export const getCreditSummary = <ThrowOnError extends boolean = false>(options: Options<GetCreditSummaryData, ThrowOnError>) => (options.client ?? client).get<GetCreditSummaryResponses, GetCreditSummaryErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1264,22 +698,6 @@ export const getCreditSummary = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * List Credit Transactions
- *
- * Retrieve detailed credit transaction history for the specified graph.
- *
- * This enhanced endpoint provides:
- * - Detailed transaction records with idempotency information
- * - Summary by operation type to identify high-consumption operations
- * - Date range filtering for analysis
- * - Metadata search capabilities
- *
- * Transaction types include:
- * - ALLOCATION: Monthly credit allocations
- * - CONSUMPTION: Credit usage for operations
- * - BONUS: Bonus credits added by admins
- * - REFUND: Credit refunds
- *
- * No credits are consumed for viewing transaction history.
  */
 export const listCreditTransactions = <ThrowOnError extends boolean = false>(options: Options<ListCreditTransactionsData, ThrowOnError>) => (options.client ?? client).get<ListCreditTransactionsResponses, ListCreditTransactionsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1289,31 +707,6 @@ export const listCreditTransactions = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Database Health Check
- *
- * Get comprehensive health information for the graph database.
- *
- * Returns detailed health metrics including:
- * - **Connection Status**: Database connectivity and responsiveness
- * - **Performance Metrics**: Query execution times and throughput
- * - **Resource Usage**: Memory and storage utilization
- * - **Error Monitoring**: Recent error rates and patterns
- * - **Uptime Statistics**: Service availability metrics
- *
- * Health indicators:
- * - **Status**: healthy, degraded, or unhealthy
- * - **Query Performance**: Average execution times
- * - **Error Rates**: Recent failure percentages
- * - **Resource Usage**: Memory and storage consumption
- * - **Alerts**: Active warnings or issues
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * Health metrics are specific to the requested graph/subgraph. Subgraphs share the
- * same physical instance as their parent but have independent health indicators.
- *
- * This endpoint provides essential monitoring data for operational visibility.
  */
 export const getDatabaseHealth = <ThrowOnError extends boolean = false>(options: Options<GetDatabaseHealthData, ThrowOnError>) => (options.client ?? client).get<GetDatabaseHealthResponses, GetDatabaseHealthErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1323,32 +716,6 @@ export const getDatabaseHealth = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Database Information
- *
- * Get comprehensive database information and statistics.
- *
- * Returns detailed database metrics including:
- * - **Database Metadata**: Name, path, size, and timestamps
- * - **Schema Information**: Node labels, relationship types, and counts
- * - **Storage Statistics**: Database size and usage metrics
- * - **Data Composition**: Node and relationship counts
- * - **Backup Information**: Available backups and last backup date
- * - **Configuration**: Read-only status and schema version
- *
- * Database statistics:
- * - **Size**: Storage usage in bytes and MB
- * - **Content**: Node and relationship counts
- * - **Schema**: Available labels and relationship types
- * - **Backup Status**: Backup availability and recency
- * - **Timestamps**: Creation and modification dates
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * Returned metrics are specific to the requested graph/subgraph. Subgraphs have
- * independent size, node/relationship counts, and backup status.
- *
- * This endpoint provides essential database information for capacity planning and monitoring.
  */
 export const getDatabaseInfo = <ThrowOnError extends boolean = false>(options: Options<GetDatabaseInfoData, ThrowOnError>) => (options.client ?? client).get<GetDatabaseInfoResponses, GetDatabaseInfoErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1359,19 +726,7 @@ export const getDatabaseInfo = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get Graph Operational Limits
  *
- * Get comprehensive operational limits for the graph database.
- *
- * Returns all operational limits that apply to this graph including:
- * - **Storage Limits**: Maximum storage size and current usage
- * - **Query Limits**: Timeouts, complexity, row limits
- * - **Copy/Ingestion Limits**: File sizes, timeouts, concurrent operations
- * - **Backup Limits**: Frequency, retention, size limits
- * - **Rate Limits**: Requests per minute/hour based on tier
- * - **Credit Limits**: AI operation credits (if applicable)
- * - **Content Limits**: Per-operation materialization limits (if applicable)
- * - **Instance Usage**: Aggregate storage across parent + subgraphs (user graphs only)
- *
- * **Note**: Limits vary based on subscription tier (ladybug-standard, ladybug-large, ladybug-xlarge).
+ * Limits vary by subscription tier (ladybug-standard, ladybug-large, ladybug-xlarge). Includes storage, query, backup, rate, credit, and instance usage limits.
  */
 export const getGraphLimits = <ThrowOnError extends boolean = false>(options: Options<GetGraphLimitsData, ThrowOnError>) => (options.client ?? client).get<GetGraphLimitsResponses, GetGraphLimitsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1381,17 +736,6 @@ export const getGraphLimits = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * List Subgraphs
- *
- * List all subgraphs for a parent graph.
- *
- * **Requirements:**
- * - Valid authentication
- * - Parent graph must exist and be accessible to the user
- * - User must have at least 'read' permission on the parent graph
- *
- * **Returns:**
- * - List of all subgraphs for the parent graph
- * - Each subgraph includes its ID, name, description, type, status, and creation date
  */
 export const listSubgraphs = <ThrowOnError extends boolean = false>(options: Options<ListSubgraphsData, ThrowOnError>) => (options.client ?? client).get<ListSubgraphsResponses, ListSubgraphsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1402,30 +746,7 @@ export const listSubgraphs = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Get Subgraph Details
  *
- * Get detailed information about a specific subgraph.
- *
- * **Requirements:**
- * - User must have read access to parent graph
- * - Subgraph name must be alphanumeric (1-20 characters)
- *
- * **Response includes:**
- * - Full subgraph metadata
- * - Database statistics (nodes, edges)
- * - Size information
- * - Schema configuration
- * - Creation/modification timestamps
- * - Last access time (when available)
- *
- * **Statistics:**
- * Real-time statistics queried from LadybugDB:
- * - Node count
- * - Edge count
- * - Database size on disk
- * - Schema information
- *
- * **Note:**
- * Use the subgraph name (e.g., 'dev', 'staging') not the full subgraph ID.
- * The full ID is returned in the response (e.g., 'kg0123456789abcdef_dev').
+ * Pass the subgraph name (e.g., `dev`) not the full subgraph ID (e.g., `kg0123_dev`).
  */
 export const getSubgraphInfo = <ThrowOnError extends boolean = false>(options: Options<GetSubgraphInfoData, ThrowOnError>) => (options.client ?? client).get<GetSubgraphInfoResponses, GetSubgraphInfoErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1436,23 +757,7 @@ export const getSubgraphInfo = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get Subgraph Quota
  *
- * Get subgraph quota and usage information for a parent graph.
- *
- * **Shows:**
- * - Current subgraph count
- * - Maximum allowed subgraphs per tier
- * - Remaining capacity
- * - Total size usage across all subgraphs
- *
- * **Tier Limits:**
- * - Standard: Up to 3 subgraphs (dedicated m7g.large instance)
- * - Large: Up to 10 subgraphs (dedicated r7g.large instance)
- * - XLarge: Up to 25 subgraphs (dedicated r7g.xlarge instance)
- * - Limits are defined in graph.yml deployment configuration
- *
- * **Size Tracking:**
- * Provides aggregate size metrics when available.
- * Individual subgraph sizes shown in list endpoint.
+ * Tier capacity: Standard 3, Large 10, XLarge 25 subgraphs. Use the list endpoint for per-subgraph sizes.
  */
 export const getSubgraphQuota = <ThrowOnError extends boolean = false>(options: Options<GetSubgraphQuotaData, ThrowOnError>) => (options.client ?? client).get<GetSubgraphQuotaResponses, GetSubgraphQuotaErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1461,14 +766,9 @@ export const getSubgraphQuota = <ThrowOnError extends boolean = false>(options: 
 });
 
 /**
- * Get Graph and Shared Repository Subscription
+ * Get Graph Subscription
  *
- * Get subscription details for a graph or shared repository.
- *
- * For user graphs (kg*): Returns the graph's subscription (owned by graph creator)
- * For shared repositories (sec, industry, etc.): Returns user's personal subscription to that repository
- *
- * This unified endpoint automatically detects the resource type and returns the appropriate subscription.
+ * Detects resource type automatically: user graphs (kg*) return the graph's subscription; shared repositories return the user's personal subscription to that repo.
  */
 export const getGraphSubscription = <ThrowOnError extends boolean = false>(options: Options<GetGraphSubscriptionData, ThrowOnError>) => (options.client ?? client).get<GetGraphSubscriptionResponses, GetGraphSubscriptionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1479,24 +779,7 @@ export const getGraphSubscription = <ThrowOnError extends boolean = false>(optio
 /**
  * Change Subscription Plan
  *
- * Change the plan on an existing subscription.
- *
- * **For shared repositories** (sec, industry, etc.): Changes access tier (e.g., starter -> advanced).
- * Synchronous — takes effect immediately.
- *
- * **For user graphs** (kg*): Changes infrastructure tier (e.g., ladybug-standard -> ladybug-large).
- * Asynchronous — returns an `operation_id` for tracking the EBS volume migration via SSE.
- *
- * Stripe handles proration automatically for both types.
- *
- * **Requirements:**
- * - User must be an OWNER of their organization
- * - Subscription must be active
- * - New plan must be valid for the resource type
- *
- * **Downgrade restrictions (graphs only):**
- * - Subgraph count must fit the target tier's limit
- * - Storage usage must fit the target tier's limit
+ * For repositories: synchronous tier change. For user graphs: use `POST /v1/graphs/{graph_id}/operations/change-tier` instead — this endpoint rejects graph tier changes. Requires org owner role.
  */
 export const changeSubscriptionPlan = <ThrowOnError extends boolean = false>(options: Options<ChangeSubscriptionPlanData, ThrowOnError>) => (options.client ?? client).patch<ChangeSubscriptionPlanResponses, ChangeSubscriptionPlanErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1511,12 +794,7 @@ export const changeSubscriptionPlan = <ThrowOnError extends boolean = false>(opt
 /**
  * Create Repository Subscription
  *
- * Create a new subscription to a shared repository.
- *
- * This endpoint is ONLY for shared repositories (sec, industry, economic).
- * User graph subscriptions are created automatically when the graph is provisioned.
- *
- * The subscription will be created in ACTIVE status immediately and credits will be allocated.
+ * For shared repositories only (sec, industry, etc.). User graph subscriptions are created automatically during provisioning.
  */
 export const createRepositorySubscription = <ThrowOnError extends boolean = false>(options: Options<CreateRepositorySubscriptionData, ThrowOnError>) => (options.client ?? client).post<CreateRepositorySubscriptionResponses, CreateRepositorySubscriptionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1531,40 +809,7 @@ export const createRepositorySubscription = <ThrowOnError extends boolean = fals
 /**
  * List Staging Tables
  *
- * List all DuckDB staging tables with comprehensive metrics and status.
- *
- * Get a complete inventory of all staging tables for a graph, including
- * file counts, storage sizes, and row estimates. Essential for monitoring
- * the data pipeline and determining which tables are ready for ingestion.
- *
- * **Returned Metrics:**
- * - Table name and type (node/relationship)
- * - File count per table
- * - Total storage size in bytes
- * - Estimated row count
- * - S3 location pattern
- * - Ready-for-ingestion status
- *
- * **Use Cases:**
- * - Monitor data upload progress
- * - Check which tables have files ready
- * - Track storage consumption
- * - Validate pipeline before ingestion
- * - Capacity planning
- *
- * **Workflow:**
- * 1. List tables to see current state
- * 2. Upload files to empty tables
- * 3. Re-list to verify uploads
- * 4. Check file counts and sizes
- * 5. Ingest when ready
- *
- * **Important Notes:**
- * - Tables with `file_count > 0` have data ready
- * - Check `total_size_bytes` for storage monitoring
- * - Use `s3_location` to verify upload paths
- * - Empty tables (file_count=0) are skipped during ingestion
- * - Table queries are included - no credit consumption
+ * Returns file count, storage size, row count, and S3 location per table. Tables with `file_count=0` are skipped during ingestion.
  */
 export const listTables = <ThrowOnError extends boolean = false>(options: Options<ListTablesData, ThrowOnError>) => (options.client ?? client).get<ListTablesResponses, ListTablesErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1575,62 +820,7 @@ export const listTables = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Query Staging Tables with SQL
  *
- * Execute SQL queries on DuckDB staging tables for data inspection and validation.
- *
- * Query raw staging data directly with SQL before ingestion into the graph database.
- * Useful for data quality checks, validation, and exploratory analysis.
- *
- * **Security Best Practice - Use Parameterized Queries:**
- * ALWAYS use query parameters instead of string concatenation to prevent SQL injection:
- * - ✅ SAFE: `SELECT * FROM Entity WHERE type = ? LIMIT ?` with `parameters: ["Company", 100]`
- * - ❌ UNSAFE: `SELECT * FROM Entity WHERE type = 'Company' LIMIT 100` with user input concatenated into SQL string
- *
- * Query parameters provide automatic escaping and type safety. Use `?` placeholders with parameters array.
- *
- * **Use Cases:**
- * - Validate data quality before graph ingestion
- * - Inspect row-level data for debugging
- * - Run analytics on staging tables
- * - Check for duplicates, nulls, or data issues
- * - Preview data transformations
- *
- * **Workflow:**
- * 1. Upload data files via `POST /tables/{table_name}/files`
- * 2. Query staging tables to validate: `POST /tables/query`
- * 3. Fix any data issues by re-uploading
- * 4. Ingest validated data: `POST /tables/ingest`
- *
- * **Supported SQL:**
- * - Full DuckDB SQL syntax
- * - SELECT, JOIN, WHERE, GROUP BY, ORDER BY
- * - Aggregations, window functions, CTEs
- * - Multiple table joins across staging area
- *
- * **Common Operations:**
- * - Count rows: `SELECT COUNT(*) FROM Entity`
- * - Filter by type: `SELECT * FROM Entity WHERE entity_type = ? LIMIT ?` with `parameters: ["Company", 100]`
- * - Check for nulls: `SELECT * FROM Entity WHERE name IS NULL LIMIT 10`
- * - Find duplicates: `SELECT identifier, COUNT(*) as cnt FROM Entity GROUP BY identifier HAVING COUNT(*) > 1`
- * - Filter amounts: `SELECT * FROM Transaction WHERE amount > ? AND date >= ?` with `parameters: [1000, "2024-01-01"]`
- *
- * **Limits:**
- * - Query timeout: 30 seconds
- * - Result limit: 10,000 rows (use LIMIT clause)
- * - Read-only: No INSERT, UPDATE, DELETE
- * - User's tables only: Cannot query other users' data
- *
- * **Subgraph Support:**
- * This endpoint accepts both parent graph IDs and subgraph IDs.
- * - Parent graph: Use `graph_id` like `kg0123456789abcdef`
- * - Subgraph: Use full subgraph ID like `kg0123456789abcdef_dev`
- * Each subgraph has its own independent staging tables.
- *
- * **Shared Repositories:**
- * Shared repositories (SEC, etc.) do not allow direct SQL queries.
- * Use the graph query endpoint instead: `POST /v1/graphs/{graph_id}/query`
- *
- * **Note:**
- * Staging table queries are included - no credit consumption
+ * Execute SQL against DuckDB staging tables for pre-ingestion validation. Use `?` placeholders with the `parameters` array to prevent injection. Read-only (SELECT only), 30s timeout, 10K row limit. Not allowed on shared repositories.
  */
 export const queryTables = <ThrowOnError extends boolean = false>(options: Options<QueryTablesData, ThrowOnError>) => (options.client ?? client).post<QueryTablesResponses, QueryTablesErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1643,9 +833,9 @@ export const queryTables = <ThrowOnError extends boolean = false>(options: Optio
 });
 
 /**
- * Search Documents
+ * Search Graph Documents
  *
- * Search filing narratives and text content within a graph.
+ * Shared repositories require a subscription; subscription plan determines search rate limits.
  */
 export const searchDocuments = <ThrowOnError extends boolean = false>(options: Options<SearchDocumentsData, ThrowOnError>) => (options.client ?? client).post<SearchDocumentsResponses, SearchDocumentsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1659,8 +849,6 @@ export const searchDocuments = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Get Document Section
- *
- * Retrieve the full text of a document section by ID.
  */
 export const getDocumentSection = <ThrowOnError extends boolean = false>(options: Options<GetDocumentSectionData, ThrowOnError>) => (options.client ?? client).get<GetDocumentSectionResponses, GetDocumentSectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1670,8 +858,6 @@ export const getDocumentSection = <ThrowOnError extends boolean = false>(options
 
 /**
  * List Documents
- *
- * List documents for a graph from PostgreSQL.
  */
 export const listDocuments = <ThrowOnError extends boolean = false>(options: Options<ListDocumentsData, ThrowOnError>) => (options.client ?? client).get<ListDocumentsResponses, ListDocumentsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1682,7 +868,7 @@ export const listDocuments = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Upload Document
  *
- * Upload a markdown document. Stored in PostgreSQL, synced to OpenSearch.
+ * Stored in PostgreSQL, synced to OpenSearch for search. Not allowed on shared repositories.
  */
 export const uploadDocument = <ThrowOnError extends boolean = false>(options: Options<UploadDocumentData, ThrowOnError>) => (options.client ?? client).post<UploadDocumentResponses, UploadDocumentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1696,8 +882,6 @@ export const uploadDocument = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Delete Document
- *
- * Delete a document from PostgreSQL and OpenSearch.
  */
 export const deleteDocument = <ThrowOnError extends boolean = false>(options: Options<DeleteDocumentData, ThrowOnError>) => (options.client ?? client).delete<DeleteDocumentResponses, DeleteDocumentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1707,8 +891,6 @@ export const deleteDocument = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Get Document
- *
- * Get a document with full content from PostgreSQL.
  */
 export const getDocument = <ThrowOnError extends boolean = false>(options: Options<GetDocumentData, ThrowOnError>) => (options.client ?? client).get<GetDocumentResponses, GetDocumentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1719,7 +901,7 @@ export const getDocument = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Update Document
  *
- * Update a document's content and/or metadata. Re-syncs to OpenSearch.
+ * Updates content and/or metadata. Re-syncs to OpenSearch.
  */
 export const updateDocument = <ThrowOnError extends boolean = false>(options: Options<UpdateDocumentData, ThrowOnError>) => (options.client ?? client).put<UpdateDocumentResponses, UpdateDocumentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1732,9 +914,9 @@ export const updateDocument = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * Upload Documents Bulk
+ * Bulk Upload Documents
  *
- * Upload multiple markdown documents (max 50).
+ * Upload up to 50 documents at once. Partial success is supported — check the errors array in the response.
  */
 export const uploadDocumentsBulk = <ThrowOnError extends boolean = false>(options: Options<UploadDocumentsBulkData, ThrowOnError>) => (options.client ?? client).post<UploadDocumentsBulkResponses, UploadDocumentsBulkErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1749,7 +931,7 @@ export const uploadDocumentsBulk = <ThrowOnError extends boolean = false>(option
 /**
  * Create Subgraph
  *
- * Create a new subgraph, optionally forking parent data.
+ * Set `fork_parent=true` to clone parent graph data into the new subgraph (async, returns a pending `OperationEnvelope`). Without `fork_parent`, creates an empty subgraph synchronously.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1766,7 +948,7 @@ export const opCreateSubgraph = <ThrowOnError extends boolean = false>(options: 
 /**
  * Delete Subgraph
  *
- * Delete a subgraph database.
+ * Set `backup_first=true` to create a safety backup before deletion. Requires admin role on the parent graph.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1783,7 +965,7 @@ export const opDeleteSubgraph = <ThrowOnError extends boolean = false>(options: 
 /**
  * Create Backup
  *
- * Create a backup of the graph database (async).
+ * Not allowed on shared repositories. Only `full_dump` format supported. Retention capped at tier maximum. Monitor progress via SSE at `/v1/operations/{operation_id}/stream`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1800,10 +982,7 @@ export const opCreateBackup = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Restore Backup
  *
- * Restore a graph database from an encrypted backup.
- *
- * Blocked for entity graphs — OLTP is the source of truth, use
- * the materialize operation instead.
+ * Only encrypted backups can be restored. Not allowed on entity graphs (use `materialize` instead) or shared repositories.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1820,7 +999,7 @@ export const opRestoreBackup = <ThrowOnError extends boolean = false>(options: O
 /**
  * Change Tier
  *
- * Change the infrastructure tier on a graph (async EBS migration).
+ * Async EBS migration (3-5 min). Valid tiers: `ladybug-standard`, `ladybug-large`, `ladybug-xlarge`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1837,7 +1016,7 @@ export const opChangeTier = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Materialize Graph
  *
- * Materialize graph from staging tables or extensions OLTP.
+ * Rebuilds LadybugDB from staging tables (file uploads) or extensions OLTP data. Set `dry_run=true` to preview without changes.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1854,37 +1033,7 @@ export const opMaterialize = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * List Files in Graph
  *
- * List all files in the graph with optional filtering.
- *
- * Get a complete inventory of files across all tables or filtered by table name,
- * status, or other criteria. Files are first-class resources with independent lifecycle.
- *
- * **Query Parameters:**
- * - `table_name` (optional): Filter by table name
- * - `status` (optional): Filter by upload status (uploaded, pending, failed, etc.)
- *
- * **Use Cases:**
- * - Monitor file upload progress across all tables
- * - Verify files are ready for ingestion
- * - Check file metadata and sizes
- * - Track storage usage per graph
- * - Identify failed or incomplete uploads
- * - Audit file provenance
- *
- * **Returned Metadata:**
- * - File ID, name, and format (parquet, csv, json)
- * - Size in bytes and row count (if available)
- * - Upload status and timestamps
- * - DuckDB and graph ingestion status
- * - Table association
- *
- * **File Lifecycle Tracking:**
- * Multi-layer status across S3 → DuckDB → Graph pipeline
- *
- * **Important Notes:**
- * - Files are graph-scoped, not table-scoped
- * - Use table_name parameter to filter by table
- * - File listing is included - no credit consumption
+ * Filter by `table_name` or upload `status`. Files are graph-scoped resources with S3 → DuckDB → Graph lifecycle tracking.
  */
 export const listFiles = <ThrowOnError extends boolean = false>(options: Options<ListFilesData, ThrowOnError>) => (options.client ?? client).get<ListFilesResponses, ListFilesErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1895,33 +1044,7 @@ export const listFiles = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Create File Upload
  *
- * Generate presigned S3 URL for file upload.
- *
- * Initiate file upload by generating a secure, time-limited presigned S3 URL.
- * Files are first-class resources uploaded directly to S3.
- *
- * **Request Body:**
- * - `file_name`: Name of the file (1-255 characters)
- * - `file_format`: Format (parquet, csv, json)
- * - `table_name`: Table to associate file with
- *
- * **Upload Workflow:**
- * 1. Call this endpoint to get presigned URL
- * 2. PUT file directly to S3 URL
- * 3. Call PATCH /files/{file_id} with status='uploaded'
- * 4. Backend validates and stages in DuckDB immediately
- * 5. Background task ingests to graph
- *
- * **Supported Formats:**
- * - Parquet, CSV, JSON
- *
- * **Auto-Table Creation:**
- * Tables are automatically created if they don't exist.
- *
- * **Important Notes:**
- * - Presigned URLs expire (default: 1 hour)
- * - Files are graph-scoped, independent resources
- * - Upload URL generation is included - no credit consumption
+ * Returns a presigned S3 URL for direct upload. After uploading, call `PATCH /files/{file_id}` with `status=uploaded` to trigger DuckDB staging. Tables are auto-created if missing. Not allowed on entity graphs or shared repositories.
  */
 export const createFileUpload = <ThrowOnError extends boolean = false>(options: Options<CreateFileUploadData, ThrowOnError>) => (options.client ?? client).post<CreateFileUploadResponses, CreateFileUploadErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1936,41 +1059,7 @@ export const createFileUpload = <ThrowOnError extends boolean = false>(options: 
 /**
  * Delete File
  *
- * Delete file from all layers.
- *
- * Remove file from S3, database tracking, and optionally from DuckDB and graph.
- * Files are deleted by file_id, independent of table context.
- *
- * **Query Parameters:**
- * - `cascade` (optional, default=false): Delete from all layers including DuckDB
- *
- * **What Happens (cascade=false):**
- * 1. File deleted from S3
- * 2. Database record removed
- * 3. Table statistics updated
- *
- * **What Happens (cascade=true):**
- * 1. File data deleted from all DuckDB tables (by file_id)
- * 2. Graph marked as stale
- * 3. File deleted from S3
- * 4. Database record removed
- * 5. Table statistics updated
- *
- * **Use Cases:**
- * - Remove incorrect or duplicate files
- * - Clean up failed uploads
- * - Delete files before graph ingestion
- * - Surgical data removal with cascade
- *
- * **Security:**
- * - Write access required
- * - Shared repositories block deletions
- * - Full audit trail
- *
- * **Important:**
- * - Use cascade=true for immediate DuckDB cleanup
- * - Graph rebuild recommended after cascade deletion
- * - File deletion is included - no credit consumption
+ * Removes from S3 and database. `cascade=true` also deletes data from DuckDB tables and marks the graph stale (rebuild recommended). Not allowed on shared repositories.
  */
 export const deleteFile = <ThrowOnError extends boolean = false>(options: Options<DeleteFileData, ThrowOnError>) => (options.client ?? client).delete<DeleteFileResponses, DeleteFileErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1981,41 +1070,7 @@ export const deleteFile = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Get File Information
  *
- * Get detailed information about a specific file.
- *
- * Retrieve comprehensive metadata for a single file by file_id, independent of
- * table context. Files are first-class resources with complete lifecycle tracking.
- *
- * **Returned Information:**
- * - File ID, name, format, size
- * - Upload status and timestamps
- * - **Enhanced Multi-Layer Status** (new in this version):
- * - S3 layer: upload_status, uploaded_at, size_bytes, row_count
- * - DuckDB layer: duckdb_status, duckdb_staged_at, duckdb_row_count
- * - Graph layer: graph_status, graph_ingested_at
- * - Table association
- * - S3 location
- *
- * **Multi-Layer Pipeline Visibility:**
- * The `layers` object provides independent status tracking across the three-tier
- * data pipeline:
- * - **S3 (Immutable Source)**: File upload and validation
- * - **DuckDB (Mutable Staging)**: Immediate queryability with file provenance
- * - **Graph (Immutable View)**: Optional graph database materialization
- *
- * Each layer shows its own status, timestamp, and row count (where applicable),
- * enabling precise debugging and monitoring of the data ingestion flow.
- *
- * **Use Cases:**
- * - Validate file upload completion
- * - Monitor multi-layer ingestion progress in real-time
- * - Debug upload or staging issues at specific layers
- * - Verify file metadata and row counts
- * - Track file provenance through the pipeline
- * - Identify bottlenecks in the ingestion process
- *
- * **Note:**
- * File info retrieval is included - no credit consumption
+ * Returns per-layer status (`layers.s3`, `layers.duckdb`, `layers.graph`) for pipeline debugging.
  */
 export const getFile = <ThrowOnError extends boolean = false>(options: Options<GetFileData, ThrowOnError>) => (options.client ?? client).get<GetFileResponses, GetFileErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2026,32 +1081,7 @@ export const getFile = <ThrowOnError extends boolean = false>(options: Options<G
 /**
  * Update File Status
  *
- * Update file status and trigger processing.
- *
- * Update file status after upload completion. Setting status='uploaded' triggers
- * immediate DuckDB staging and optional graph ingestion.
- *
- * **Request Body:**
- * - `status`: New status (uploaded, disabled, failed)
- * - `ingest_to_graph` (optional): If true, auto-ingest to graph after DuckDB staging
- *
- * **What Happens (status='uploaded'):**
- * 1. File validated in S3
- * 2. Row count calculated
- * 3. DuckDB staging triggered immediately (background task)
- * 4. If ingest_to_graph=true, graph ingestion queued
- * 5. File queryable in DuckDB within seconds
- *
- * **Use Cases:**
- * - Signal upload completion
- * - Trigger immediate DuckDB staging
- * - Enable/disable files
- * - Mark failed uploads
- *
- * **Important:**
- * - Files must exist in S3 before marking uploaded
- * - DuckDB staging happens asynchronously
- * - Graph ingestion is optional (ingest_to_graph flag)
+ * Setting `status=uploaded` validates the file in S3, calculates row count, and triggers DuckDB staging. Small files use direct staging; large files use a background Dagster job with an `operation_id` for SSE monitoring. Set `ingest_to_graph=true` to auto-chain graph materialization.
  */
 export const updateFile = <ThrowOnError extends boolean = false>(options: Options<UpdateFileData, ThrowOnError>) => (options.client ?? client).patch<UpdateFileResponses, UpdateFileErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2064,49 +1094,7 @@ export const updateFile = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
- * Get User Graphs and Repositories
- *
- * List all graph databases and shared repositories accessible to the current user.
- *
- * Returns a unified list of both user-created graphs and shared repositories (like SEC data)
- * that the user has access to, including their role/access level and selection status.
- *
- * **Returned Information:**
- * - Graph/Repository ID and display name
- * - User's role/access level (admin/member for graphs, read/write/admin for repositories)
- * - Selection status (only user graphs can be selected)
- * - Creation timestamp
- * - Repository type indicator (isRepository: true for shared repositories)
- *
- * **User Graphs (isRepository: false):**
- * - Collaborative workspaces that can be shared with other users
- * - Roles: `admin` (full access, can invite users) or `member` (read/write access)
- * - Can be selected as active workspace
- * - Graphs you create or have been invited to
- *
- * **Shared Repositories (isRepository: true):**
- * - Read-only data repositories (e.g., SEC filings)
- * - Access levels: `read`, `write` (for data contributions), `admin`
- * - Cannot be selected (each has separate subscription)
- * - Require separate subscriptions (personal, cannot be shared)
- *
- * **Selected Graph Concept:**
- * The "selected" graph is the user's currently active workspace (user graphs only).
- * Many API operations default to the selected graph if no graph_id is provided.
- * Users can change their selected graph via `POST /v1/graphs/{graph_id}/select`.
- *
- * **Use Cases:**
- * - Display unified graph/repository selector in UI
- * - Show all accessible data sources (both owned graphs and subscribed repositories)
- * - Identify currently active workspace
- * - Filter by type (user graphs vs repositories)
- *
- * **Empty Response:**
- * New users receive an empty list with `selectedGraphId: null`. Users should create
- * a graph or subscribe to a repository.
- *
- * **Note:**
- * Graph listing is included - no credit consumption required.
+ * List User Graphs and Repositories
  */
 export const getGraphs = <ThrowOnError extends boolean = false>(options?: Options<GetGraphsData, ThrowOnError>) => (options?.client ?? client).get<GetGraphsResponses, GetGraphsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2117,66 +1105,7 @@ export const getGraphs = <ThrowOnError extends boolean = false>(options?: Option
 /**
  * Create New Graph Database
  *
- * Create a new graph database with specified schema and an initial entity.
- *
- * This endpoint starts an asynchronous graph creation operation and returns
- * connection details for monitoring progress via Server-Sent Events (SSE).
- *
- * **Graph Creation Options:**
- *
- * 1. **Entity Graph** (`initial_entity` required, `custom_schema` omitted):
- * - Creates graph structure with entity schema extensions
- * - `initial_entity` is required — entity graphs must have an entity
- * - Set `create_entity=False` to defer entity population (e.g. file-based ingestion)
- * - Example: Creating a company graph with the company pre-populated
- *
- * 2. **Custom Graph** (`custom_schema` provided, no `initial_entity`):
- * - Creates a generic graph with a fully custom schema
- * - `initial_entity` is not used
- * - Example: Analytics graphs, custom data models
- *
- * **Required Fields:**
- * - `metadata.graph_name`: Unique name for the graph
- * - `instance_tier`: Resource tier (ladybug-standard, ladybug-large, ladybug-xlarge)
- * - `initial_entity`: Entity data — required for entity graphs (omit only when providing `custom_schema`)
- *
- * **Optional Fields:**
- * - `metadata.description`: Human-readable description of the graph's purpose
- * - `metadata.schema_extensions`: List of schema extensions (roboledger, roboinvestor, etc.)
- * - `tags`: Organizational tags (max 10)
- * - `create_entity`: Whether to populate entity data on creation (default: true)
- *
- * **Monitoring Progress:**
- * Use the returned `operation_id` to connect to the SSE stream:
- * ```javascript
- * const eventSource = new EventSource('/v1/operations/{operation_id}/stream');
- * eventSource.onmessage = (event) => {
- * const data = JSON.parse(event.data);
- * console.log('Progress:', data.progress_percent + '%');
- * };
- * ```
- *
- * **SSE Connection Limits:**
- * - Maximum 5 concurrent SSE connections per user
- * - Rate limited to 10 new connections per minute
- * - Automatic circuit breaker for Redis failures
- * - Graceful degradation if event system unavailable
- *
- * **Events Emitted:**
- * - `operation_started`: Graph creation begins
- * - `operation_progress`: Schema loading, database setup, etc.
- * - `operation_completed`: Graph ready with connection details
- * - `operation_error`: Creation failed with error details
- *
- * **Error Handling:**
- * - `429 Too Many Requests`: SSE connection limit exceeded
- * - `503 Service Unavailable`: SSE system temporarily disabled
- * - Clients should implement exponential backoff on errors
- *
- * **Response includes:**
- * - `operation_id`: Unique identifier for monitoring
- * - `_links.stream`: SSE endpoint for real-time updates
- * - `_links.status`: Point-in-time status check endpoint
+ * Creates a graph asynchronously. Returns an `OperationEnvelope` with `operation_id` for SSE progress at `/v1/operations/{operation_id}/stream`. Entity graphs require `initial_entity`. Supports `Idempotency-Key` header.
  */
 export const createGraph = <ThrowOnError extends boolean = false>(options: Options<CreateGraphData, ThrowOnError>) => (options.client ?? client).post<CreateGraphResponses, CreateGraphErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2190,35 +1119,6 @@ export const createGraph = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Get Available Schema Extensions
- *
- * List all available schema extensions for graph creation.
- *
- * Schema extensions provide pre-built industry-specific data models that extend
- * the base graph schema with specialized nodes, relationships, and properties.
- *
- * **Available Extensions:**
- * - **RoboLedger**: Complete accounting system with XBRL reporting, general ledger, and financial statements
- * - **RoboInvestor**: Investment portfolio management with securities tracking, trade execution, and risk analysis
- * - **RoboSCM**: Supply chain management and logistics
- * - **RoboFO**: Front office operations and CRM
- * - **RoboHRM**: Human resources management
- * - **RoboEPM**: Enterprise performance management
- * - **RoboReport**: Business intelligence and reporting
- *
- * **Extension Information:**
- * Each extension includes:
- * - Display name and description
- * - Node and relationship counts
- * - Context-aware capabilities (e.g., SEC repositories get different features than entity graphs)
- *
- * **Use Cases:**
- * - Browse available extensions before creating a graph
- * - Understand extension capabilities and data models
- * - Plan graph schema based on business requirements
- * - Combine multiple extensions for comprehensive data modeling
- *
- * **Note:**
- * Extension listing is included - no credit consumption required.
  */
 export const getAvailableExtensions = <ThrowOnError extends boolean = false>(options?: Options<GetAvailableExtensionsData, ThrowOnError>) => (options?.client ?? client).get<GetAvailableExtensionsResponses, GetAvailableExtensionsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2228,32 +1128,6 @@ export const getAvailableExtensions = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Get Available Graph Tiers
- *
- * List all available graph database tier configurations.
- *
- * This endpoint provides comprehensive technical specifications for each available
- * graph database tier, including instance types, resource limits, and features.
- *
- * **Tier Information:**
- * Each tier includes:
- * - Technical specifications (instance type, memory, storage)
- * - Resource limits (subgraphs, credits, rate limits)
- * - Feature list with capabilities
- * - Availability status
- *
- * **Available Tiers:**
- * - **ladybug-standard**: Dedicated entry-level tier
- * - **ladybug-large**: Dedicated professional tier with subgraph support
- * - **ladybug-xlarge**: Enterprise tier with maximum resources
- *
- * **Use Cases:**
- * - Display tier options in graph creation UI
- * - Show technical specifications for tier selection
- * - Validate tier availability before graph creation
- * - Display feature comparisons
- *
- * **Note:**
- * Tier listing is included - no credit consumption required.
  */
 export const getAvailableGraphTiers = <ThrowOnError extends boolean = false>(options?: Options<GetAvailableGraphTiersData, ThrowOnError>) => (options?.client ?? client).get<GetAvailableGraphTiersResponses, GetAvailableGraphTiersErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2264,26 +1138,7 @@ export const getAvailableGraphTiers = <ThrowOnError extends boolean = false>(opt
 /**
  * Get Graph Tier Capacity
  *
- * Check current infrastructure capacity for each graph database tier.
- *
- * Returns a status per tier indicating whether instances are immediately available,
- * can be provisioned on demand, or are at capacity.
- *
- * **Status Values:**
- * - `ready` — An instance slot is available; graph creation will succeed immediately
- * - `scalable` — No slots right now, but a new instance can be provisioned (3-5 min)
- * - `at_capacity` — Tier is full and cannot auto-scale; contact support
- *
- * **Use Cases:**
- * - Pre-flight check before entering the graph creation wizard
- * - Show availability badges on tier selection cards
- * - Gate tier selection and show contact form for at-capacity tiers
- *
- * **Caching:**
- * Results are cached for 60 seconds to avoid excessive infrastructure queries.
- *
- * **Note:**
- * No credit consumption required. Does not expose instance counts or IPs.
+ * Status per tier: `ready` (slot available), `scalable` (can provision, 3-5 min), `at_capacity` (contact support). Cached 60s.
  */
 export const getGraphCapacity = <ThrowOnError extends boolean = false>(options?: Options<GetGraphCapacityData, ThrowOnError>) => (options?.client ?? client).get<GetGraphCapacityResponses, GetGraphCapacityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2293,36 +1148,6 @@ export const getGraphCapacity = <ThrowOnError extends boolean = false>(options?:
 
 /**
  * Select Graph
- *
- * Select a specific graph as the active workspace for the user.
- *
- * The selected graph becomes the default context for operations in client applications
- * and can be used to maintain user workspace preferences across sessions.
- *
- * **Functionality:**
- * - Sets the specified graph as the user's currently selected graph
- * - Deselects any previously selected graph (only one can be selected at a time)
- * - Persists selection across sessions until changed
- * - Returns confirmation with the selected graph ID
- *
- * **Requirements:**
- * - User must have access to the graph (as admin or member)
- * - Graph must exist and not be deleted
- * - User can only select graphs they have permission to access
- *
- * **Use Cases:**
- * - Switch between multiple graphs in a multi-graph environment
- * - Set default workspace after creating a new graph
- * - Restore user's preferred workspace on login
- * - Support graph context switching in client applications
- *
- * **Client Integration:**
- * Many client operations can default to the selected graph, simplifying API calls
- * by eliminating the need to specify graph_id repeatedly. Check the selected
- * graph with `GET /v1/graphs` which returns `selectedGraphId`.
- *
- * **Note:**
- * Graph selection is included - no credit consumption required.
  */
 export const selectGraph = <ThrowOnError extends boolean = false>(options: Options<SelectGraphData, ThrowOnError>) => (options.client ?? client).post<SelectGraphResponses, SelectGraphErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2333,81 +1158,14 @@ export const selectGraph = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Get Service Offerings
  *
- * Get comprehensive information about all subscription offerings.
- *
- * This endpoint provides complete information about both graph database subscriptions
- * and shared repository subscriptions. This is the primary endpoint for frontend
- * applications to display subscription options.
- *
- * **Pricing Model:**
- * - Graph subscriptions are **per-graph** with infrastructure-based pricing
- * - Each graph you create has its own monthly subscription
- * - Organizations can have multiple graphs with different infrastructure tiers
- * - Credits are allocated per-graph, not shared across organization
- *
- * Includes:
- * - Graph infrastructure tiers (ladybug-standard, ladybug-large, ladybug-xlarge) - per-graph pricing
- * - Shared repository subscriptions - org-level
- * - Operation costs and credit information
- * - Features and capabilities for each tier
- * - Enabled/disabled status for repositories
- *
- * All data comes from the config-based systems to ensure accuracy with backend behavior.
- *
- * No authentication required - this is public service information.
+ * Returns all subscription tiers, shared repository plans, and AI credit costs. No authentication required.
  */
 export const getServiceOfferings = <ThrowOnError extends boolean = false>(options?: Options<GetServiceOfferingsData, ThrowOnError>) => (options?.client ?? client).get<GetServiceOfferingsResponses, GetServiceOfferingsErrors, ThrowOnError>({ url: '/v1/offering', ...options });
 
 /**
  * Stream Operation Events
  *
- * Stream real-time events for an operation using Server-Sent Events (SSE).
- *
- * This endpoint provides real-time monitoring for all non-immediate operations including:
- * - Graph creation and management
- * - Agent analysis processing
- * - Database backups and restores
- * - Data synchronization tasks
- *
- * **Event Types:**
- * - `operation_started`: Operation began execution
- * - `operation_progress`: Progress update with details
- * - `operation_completed`: Operation finished successfully
- * - `operation_error`: Operation failed with error details
- * - `operation_cancelled`: Operation was cancelled
- *
- * **Features:**
- * - **Event Replay**: Use `from_sequence` parameter to replay missed events
- * - **Automatic Reconnection**: Client can reconnect and resume from last seen event
- * - **Real-time Updates**: Live progress updates during execution
- * - **Timeout Handling**: 30-second keepalive messages prevent connection timeouts
- * - **Graceful Degradation**: Automatic fallback if Redis is unavailable
- *
- * **Connection Limits:**
- * - Maximum 5 concurrent SSE connections per user
- * - Rate limited to 10 new connections per minute
- * - Automatic cleanup of stale connections
- * - Circuit breaker protection for Redis failures
- *
- * **Client Usage:**
- * ```javascript
- * const eventSource = new EventSource('/v1/operations/abc123/stream');
- * eventSource.onmessage = (event) => {
- * const data = JSON.parse(event.data);
- * console.log('Progress:', data);
- * };
- * eventSource.onerror = (error) => {
- * // Handle connection errors or rate limits
- * console.error('SSE Error:', error);
- * };
- * ```
- *
- * **Error Handling:**
- * - `429 Too Many Requests`: Connection limit or rate limit exceeded
- * - `503 Service Unavailable`: SSE system temporarily disabled
- * - Clients should implement exponential backoff on errors
- *
- * **No credits are consumed for SSE connections.**
+ * Server-Sent Events stream for real-time operation progress. Use `from_sequence` to replay missed events on reconnect. Max 5 concurrent SSE connections per user. Consumes no credits.
  */
 export const streamOperationEvents = <ThrowOnError extends boolean = false>(options: Options<StreamOperationEventsData, ThrowOnError>) => (options.client ?? client).get<StreamOperationEventsResponses, StreamOperationEventsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2418,19 +1176,7 @@ export const streamOperationEvents = <ThrowOnError extends boolean = false>(opti
 /**
  * Get Operation Status
  *
- * Get current status and metadata for an operation.
- *
- * Returns detailed information including:
- * - Current status (pending, running, completed, failed, cancelled)
- * - Creation and update timestamps
- * - Operation type and associated graph
- * - Result data (for completed operations)
- * - Error details (for failed operations)
- *
- * This endpoint provides a point-in-time status check, while the `/stream` endpoint
- * provides real-time updates. Use this for polling or initial status checks.
- *
- * **No credits are consumed for status checks.**
+ * Point-in-time status check. Use `/stream` for real-time updates. Consumes no credits.
  */
 export const getOperationStatus = <ThrowOnError extends boolean = false>(options: Options<GetOperationStatusData, ThrowOnError>) => (options.client ?? client).get<GetOperationStatusResponses, GetOperationStatusErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2441,15 +1187,7 @@ export const getOperationStatus = <ThrowOnError extends boolean = false>(options
 /**
  * Cancel Operation
  *
- * Cancel a pending or running operation.
- *
- * Cancels the specified operation if it's still in progress. Once cancelled,
- * the operation cannot be resumed and will emit a cancellation event to any
- * active SSE connections.
- *
- * **Note**: Completed or already failed operations cannot be cancelled.
- *
- * **No credits are consumed for cancellation requests.**
+ * Cancels a pending or running operation. Emits a cancellation event to any active SSE connections. Cannot cancel completed or failed operations.
  */
 export const cancelOperation = <ThrowOnError extends boolean = false>(options: Options<CancelOperationData, ThrowOnError>) => (options.client ?? client).delete<CancelOperationResponses, CancelOperationErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2460,13 +1198,7 @@ export const cancelOperation = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get Organization Customer Info
  *
- * Get billing customer information for an organization including payment methods on file.
- *
- * Returns customer details, payment methods, and whether invoice billing is enabled.
- *
- * **Requirements:**
- * - User must be a member of the organization
- * - Sensitive payment details are only visible to owners
+ * Payment method details are only visible to org owners.
  */
 export const getOrgBillingCustomer = <ThrowOnError extends boolean = false>(options: Options<GetOrgBillingCustomerData, ThrowOnError>) => (options.client ?? client).get<GetOrgBillingCustomerResponses, GetOrgBillingCustomerErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2477,19 +1209,7 @@ export const getOrgBillingCustomer = <ThrowOnError extends boolean = false>(opti
 /**
  * Create Customer Portal Session
  *
- * Create a Stripe Customer Portal session for managing payment methods.
- *
- * The portal allows users to:
- * - Add new payment methods
- * - Remove existing payment methods
- * - Update default payment method
- * - View billing history
- *
- * The user will be redirected to Stripe's hosted portal page and returned to the billing page when done.
- *
- * **Requirements:**
- * - User must be an OWNER of the organization
- * - Organization must have a Stripe customer ID (i.e., has gone through checkout at least once)
+ * Returns a Stripe Customer Portal URL for managing payment methods and billing history. Requires org owner role.
  */
 export const createPortalSession = <ThrowOnError extends boolean = false>(options: Options<CreatePortalSessionData, ThrowOnError>) => (options.client ?? client).post<CreatePortalSessionResponses, CreatePortalSessionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2499,13 +1219,6 @@ export const createPortalSession = <ThrowOnError extends boolean = false>(option
 
 /**
  * List Organization Subscriptions
- *
- * List all active and past subscriptions for an organization.
- *
- * Includes both graph and repository subscriptions with their status, pricing, and billing information.
- *
- * **Requirements:**
- * - User must be a member of the organization
  */
 export const listOrgSubscriptions = <ThrowOnError extends boolean = false>(options: Options<ListOrgSubscriptionsData, ThrowOnError>) => (options.client ?? client).get<ListOrgSubscriptionsResponses, ListOrgSubscriptionsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2515,11 +1228,6 @@ export const listOrgSubscriptions = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Get Organization Subscription Details
- *
- * Get detailed information about a specific subscription.
- *
- * **Requirements:**
- * - User must be a member of the organization
  */
 export const getOrgSubscription = <ThrowOnError extends boolean = false>(options: Options<GetOrgSubscriptionData, ThrowOnError>) => (options.client ?? client).get<GetOrgSubscriptionResponses, GetOrgSubscriptionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2530,12 +1238,7 @@ export const getOrgSubscription = <ThrowOnError extends boolean = false>(options
 /**
  * Cancel Organization Subscription
  *
- * Cancel an organization subscription.
- *
- * The subscription will remain active until the end of the current billing period.
- *
- * **Requirements:**
- * - User must be an OWNER of the organization
+ * Cancels at period end — subscription remains active through the current billing cycle. Requires org owner role.
  */
 export const cancelOrgSubscription = <ThrowOnError extends boolean = false>(options: Options<CancelOrgSubscriptionData, ThrowOnError>) => (options.client ?? client).post<CancelOrgSubscriptionResponses, CancelOrgSubscriptionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2546,13 +1249,7 @@ export const cancelOrgSubscription = <ThrowOnError extends boolean = false>(opti
 /**
  * List Organization Invoices
  *
- * List payment history and invoices for an organization.
- *
- * Returns past invoices with payment status, amounts, and line items.
- *
- * **Requirements:**
- * - User must be a member of the organization
- * - Full invoice details are only visible to owners and admins
+ * Requires admin or owner role.
  */
 export const listOrgInvoices = <ThrowOnError extends boolean = false>(options: Options<ListOrgInvoicesData, ThrowOnError>) => (options.client ?? client).get<ListOrgInvoicesResponses, ListOrgInvoicesErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2563,13 +1260,7 @@ export const listOrgInvoices = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get Organization Upcoming Invoice
  *
- * Get preview of the next invoice for an organization.
- *
- * Returns estimated charges for the next billing period.
- *
- * **Requirements:**
- * - User must be a member of the organization
- * - Full invoice details are only visible to owners and admins
+ * Requires admin or owner role. Returns null if no billing activity yet.
  */
 export const getOrgUpcomingInvoice = <ThrowOnError extends boolean = false>(options: Options<GetOrgUpcomingInvoiceData, ThrowOnError>) => (options.client ?? client).get<GetOrgUpcomingInvoiceResponses, GetOrgUpcomingInvoiceErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2580,23 +1271,7 @@ export const getOrgUpcomingInvoice = <ThrowOnError extends boolean = false>(opti
 /**
  * Create Payment Checkout Session
  *
- * Create a Stripe checkout session for collecting payment method.
- *
- * This endpoint is used when an organization owner needs to add a payment method before
- * provisioning resources. It creates a pending subscription and redirects
- * to Stripe Checkout to collect payment details.
- *
- * **Flow:**
- * 1. Owner tries to create a graph but org has no payment method
- * 2. Frontend calls this endpoint with graph configuration
- * 3. Backend creates a subscription in PENDING_PAYMENT status for the user's org
- * 4. Returns Stripe Checkout URL
- * 5. User completes payment on Stripe
- * 6. Webhook activates subscription and provisions resource
- *
- * **Requirements:**
- * - User must be an OWNER of their organization
- * - Enterprise customers (with invoice_billing_enabled) should not call this endpoint.
+ * Initiates a Stripe checkout session for payment collection. Creates a pending subscription; the webhook activates it and provisions the resource after payment completes. Returns billing_disabled=true with no URL when billing is off. Requires org owner role.
  */
 export const createCheckoutSession = <ThrowOnError extends boolean = false>(options: Options<CreateCheckoutSessionData, ThrowOnError>) => (options.client ?? client).post<CreateCheckoutSessionResponses, CreateCheckoutSessionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2611,21 +1286,7 @@ export const createCheckoutSession = <ThrowOnError extends boolean = false>(opti
 /**
  * Get Checkout Session Status
  *
- * Poll the status of a checkout session.
- *
- * Frontend should poll this endpoint after user returns from Stripe Checkout
- * to determine when the resource is ready.
- *
- * **Status Values:**
- * - `pending_payment`: Waiting for payment to complete
- * - `provisioning`: Payment confirmed, resource being created
- * - `active`: Resource is ready (resource_id will be set)
- * - `failed`: Something went wrong (error field will be set)
- * - `canceled`: Payment was canceled
- *
- * **When status is 'active':**
- * - For graphs: `resource_id` will be the graph_id, and `operation_id` can be used to monitor SSE progress
- * - For repositories: `resource_id` will be the repository name and access is immediately available
+ * Poll after returning from Stripe Checkout. Status progresses: pending_payment → provisioning → active. When active, resource_id is populated; for graphs, operation_id tracks SSE provisioning progress.
  */
 export const getCheckoutStatus = <ThrowOnError extends boolean = false>(options: Options<GetCheckoutStatusData, ThrowOnError>) => (options.client ?? client).get<GetCheckoutStatusResponses, GetCheckoutStatusErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -2666,7 +1327,7 @@ export const handleHttpPostExtensionsGraphIdGraphqlPost = <ThrowOnError extends 
 /**
  * Update Entity
  *
- * Update entity details. Only provided (non-null) fields are updated.
+ * Only provided (non-null) fields are updated.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2683,7 +1344,7 @@ export const opUpdateEntity = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Initialize Ledger
  *
- * One-time ledger initialization — create fiscal calendar + seed periods.
+ * One-time setup: creates the fiscal calendar and seeds periods. Returns 409 if already initialized.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2700,7 +1361,7 @@ export const opInitializeLedger = <ThrowOnError extends boolean = false>(options
 /**
  * Set Close Target
  *
- * Set the user-controlled close target (YYYY-MM).
+ * Period format: YYYY-MM. The close target is the user-controlled goal date, distinct from `closed_through` (what's actually closed).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2717,7 +1378,7 @@ export const opSetCloseTarget = <ThrowOnError extends boolean = false>(options: 
 /**
  * Close Fiscal Period
  *
- * Close a fiscal period — the final commit action.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2734,7 +1395,7 @@ export const opClosePeriod = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Reopen Fiscal Period
  *
- * Reopen a closed fiscal period — decrements `closed_through`.
+ * Decrements `closed_through` by one — only the most recently closed period can be reopened.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2751,7 +1412,7 @@ export const opReopenPeriod = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Create Schedule
  *
- * Create a schedule with pre-generated monthly facts.
+ * Creates a schedule and pre-generates monthly amortization facts spanning the period range.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2768,7 +1429,7 @@ export const opCreateSchedule = <ThrowOnError extends boolean = false>(options: 
 /**
  * Truncate Schedule (End Early)
  *
- * End a schedule early — delete forward facts + stale drafts.
+ * Ends a schedule early by deleting forward facts and any stale draft closing entries past the cutoff.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2785,7 +1446,7 @@ export const opTruncateSchedule = <ThrowOnError extends boolean = false>(options
 /**
  * Create Closing Entry
  *
- * Create a draft closing entry from a schedule's facts for a period.
+ * Creates a draft closing entry pre-populated from a schedule's facts for the given period.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2802,7 +1463,7 @@ export const opCreateClosingEntry = <ThrowOnError extends boolean = false>(optio
 /**
  * Create Manual Closing Entry
  *
- * Create a manual (non-schedule) draft closing entry.
+ * Creates a draft closing entry with manually specified amounts — not tied to a schedule.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2819,7 +1480,7 @@ export const opCreateManualClosingEntry = <ThrowOnError extends boolean = false>
 /**
  * Create Taxonomy
  *
- * Create a new taxonomy definition.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2836,7 +1497,7 @@ export const opCreateTaxonomy = <ThrowOnError extends boolean = false>(options: 
 /**
  * Create Structure
  *
- * Create a new structure (statement, mapping, schedule, etc.).
+ * Structures organize elements within a taxonomy. Types: `statement`, `mapping`, `schedule`, `presentation`, `calculation`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2853,7 +1514,7 @@ export const opCreateStructure = <ThrowOnError extends boolean = false>(options:
 /**
  * Create Mapping Association
  *
- * Add a mapping association (CoA element → reporting concept).
+ * Links a chart-of-accounts element to a reporting concept (CoA element → US GAAP concept).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2870,7 +1531,7 @@ export const opCreateMappingAssociation = <ThrowOnError extends boolean = false>
 /**
  * Delete Mapping Association
  *
- * Remove a mapping association.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3193,18 +1854,7 @@ export const opDeleteSchedule = <ThrowOnError extends boolean = false>(options: 
 /**
  * Auto-Map Elements via AI (async)
  *
- * Trigger autonomous CoA → US GAAP mapping via background worker.
- *
- * This is the only async/Dagster-dispatched ledger operation. Instead
- * of running synchronously, it enqueues a `MappingAgent` task and
- * returns a `pending` envelope with the worker-issued operation_id —
- * callers subscribe via `/v1/operations/{operation_id}/stream` for SSE
- * progress events.
- *
- * Confidence thresholds (in the agent):
- * - ≥0.90: auto-approved mapping
- * - 0.70-0.89: flagged for review
- * - <0.70: skipped (left unmapped)
+ * Dispatches to the background worker — returns a `pending` envelope immediately. Monitor via SSE at `/v1/operations/{operation_id}/stream`. Confidence thresholds: ≥0.90 auto-approved, 0.70–0.89 flagged for review, <0.70 skipped.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3221,7 +1871,7 @@ export const opAutoMapElements = <ThrowOnError extends boolean = false>(options:
 /**
  * Create Report
  *
- * Create a report definition, generate facts, and mark as published.
+ * Generates report facts from the ledger and marks the report as published.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3238,7 +1888,7 @@ export const opCreateReport = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Regenerate Report
  *
- * Regenerate a report with new period dates.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3255,7 +1905,7 @@ export const opRegenerateReport = <ThrowOnError extends boolean = false>(options
 /**
  * Delete Report
  *
- * Delete a report definition and its facts.
+ * Deletes the report definition and all generated facts.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3272,7 +1922,7 @@ export const opDeleteReport = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Share Report
  *
- * Share a published report to a publish list's members.
+ * Only published reports can be shared. Sends the report to all members of the target publish list.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3289,7 +1939,7 @@ export const opShareReport = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Create Publish List
  *
- * Create a new publish list.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3306,7 +1956,7 @@ export const opCreatePublishList = <ThrowOnError extends boolean = false>(option
 /**
  * Update Publish List
  *
- * Update a publish list's name / description.
+ * Updates the publish list's `name` and/or `description`. Membership is managed via add/remove-member operations.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3323,7 +1973,7 @@ export const opUpdatePublishList = <ThrowOnError extends boolean = false>(option
 /**
  * Delete Publish List
  *
- * Delete a publish list.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3340,7 +1990,7 @@ export const opDeletePublishList = <ThrowOnError extends boolean = false>(option
 /**
  * Add Members to Publish List
  *
- * Add target graphs as members of a publish list.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3357,7 +2007,7 @@ export const opAddPublishListMembers = <ThrowOnError extends boolean = false>(op
 /**
  * Remove Member from Publish List
  *
- * Remove a target graph from a publish list.
+ *
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3374,17 +2024,7 @@ export const opRemovePublishListMember = <ThrowOnError extends boolean = false>(
 /**
  * Build Fact Grid
  *
- * Build a multi-dimensional fact grid against the graph schema.
- *
- * Queries `Fact` nodes by element qnames or canonical concepts with
- * optional filters for periods, entities, filing form, fiscal context,
- * and period type. Returns a deduplicated pivot table plus optional
- * summary statistics.
- *
- * This is a graph-database read — the query runs against LadybugDB,
- * not the extensions OLTP database. The same operation works for
- * roboledger tenant graphs (post-materialization) and the SEC shared
- * repository (which uses the same XBRL hypercube schema).
+ * Queries LadybugDB `Fact` nodes by element qnames or canonical concepts, with filters for periods, entities, form, and fiscal context. Returns a deduplicated pivot table. Works on both roboledger tenant graphs (post-materialization) and the SEC shared repository.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3435,7 +2075,7 @@ export const opUpdatePortfolio = <ThrowOnError extends boolean = false>(options:
 /**
  * Delete Portfolio
  *
- *
+ * Returns 409 if the portfolio has active positions — dispose them first.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3486,7 +2126,7 @@ export const opUpdateSecurity = <ThrowOnError extends boolean = false>(options: 
 /**
  * Delete Security
  *
- *
+ * Soft-deletes the security (`is_active=false`). Historical positions referencing it remain valid.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3503,7 +2143,7 @@ export const opDeleteSecurity = <ThrowOnError extends boolean = false>(options: 
 /**
  * Create Position
  *
- *
+ * Returns 409 if an active position for this security already exists in the portfolio.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3537,7 +2177,7 @@ export const opUpdatePosition = <ThrowOnError extends boolean = false>(options: 
 /**
  * Delete Position
  *
- *
+ * Soft-deletes the position (`is_active=false`). Historical holding records referencing it remain valid.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
