@@ -9214,6 +9214,12 @@ export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionRe
 
 export type SyncConnectionData = {
     body: SyncConnectionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
@@ -9232,13 +9238,17 @@ export type SyncConnectionData = {
 
 export type SyncConnectionErrors = {
     /**
-     * Access denied - admin role required
+     * Access denied or provider not available
      */
     403: ErrorResponse;
     /**
      * Connection not found
      */
     404: ErrorResponse;
+    /**
+     * Idempotency key reused with different request body
+     */
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -9247,19 +9257,19 @@ export type SyncConnectionErrors = {
      * Failed to start sync
      */
     500: ErrorResponse;
+    /**
+     * Sync request timed out
+     */
+    504: ErrorResponse;
 };
 
 export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
 
 export type SyncConnectionResponses = {
     /**
-     * Response Syncconnection
-     *
-     * Sync started successfully
+     * Successful Response
      */
-    200: {
-        [key: string]: unknown;
-    };
+    202: OperationEnvelope;
 };
 
 export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
@@ -11660,6 +11670,12 @@ export type GetGraphsResponse = GetGraphsResponses[keyof GetGraphsResponses];
 
 export type CreateGraphData = {
     body: CreateGraphRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path?: never;
     query?: never;
     url: '/v1/graphs';
@@ -11678,8 +11694,10 @@ export type CreateGraphResponses = {
     /**
      * Successful Response
      */
-    202: unknown;
+    202: OperationEnvelope;
 };
+
+export type CreateGraphResponse = CreateGraphResponses[keyof CreateGraphResponses];
 
 export type GetAvailableExtensionsData = {
     body?: never;
