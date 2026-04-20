@@ -2003,6 +2003,221 @@ export type ListLedgerUnmappedElementsQuery = {
   }>
 }
 
+export type ListLibraryTaxonomyArcsQueryVariables = Exact<{
+  taxonomyId: Scalars['ID']['input']
+  associationType: InputMaybe<Scalars['String']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+}>
+
+export type ListLibraryTaxonomyArcsQuery = {
+  libraryTaxonomyArcCount: number
+  libraryTaxonomyArcs: Array<{
+    id: string
+    structureId: string
+    structureName: string | null
+    fromElementId: string
+    fromElementQname: string | null
+    fromElementName: string | null
+    toElementId: string
+    toElementQname: string | null
+    toElementName: string | null
+    associationType: string
+    arcrole: string | null
+    orderValue: number | null
+    weight: number | null
+  }>
+}
+
+export type GetLibraryElementArcsQueryVariables = Exact<{
+  id: Scalars['ID']['input']
+}>
+
+export type GetLibraryElementArcsQuery = {
+  libraryElementArcs: Array<{
+    id: string
+    direction: string
+    associationType: string
+    arcrole: string | null
+    taxonomyId: string | null
+    taxonomyStandard: string | null
+    taxonomyName: string | null
+    structureId: string | null
+    structureName: string | null
+    peer: {
+      id: string
+      qname: string
+      name: string
+      classification: string | null
+      statementContext: string | null
+      derivationRole: string | null
+      source: string
+    }
+  }>
+}
+
+export type GetLibraryElementEquivalentsQueryVariables = Exact<{
+  id: Scalars['ID']['input']
+}>
+
+export type GetLibraryElementEquivalentsQuery = {
+  libraryElementEquivalents: {
+    element: {
+      id: string
+      qname: string
+      name: string
+      classification: string | null
+      statementContext: string | null
+      derivationRole: string | null
+      source: string
+    }
+    equivalents: Array<{
+      id: string
+      qname: string
+      name: string
+      classification: string | null
+      statementContext: string | null
+      derivationRole: string | null
+      source: string
+    }>
+  } | null
+}
+
+export type ListLibraryElementsQueryVariables = Exact<{
+  taxonomyId: InputMaybe<Scalars['ID']['input']>
+  source: InputMaybe<Scalars['String']['input']>
+  classification: InputMaybe<Scalars['String']['input']>
+  statementContext: InputMaybe<Scalars['String']['input']>
+  derivationRole: InputMaybe<Scalars['String']['input']>
+  elementType: InputMaybe<Scalars['String']['input']>
+  isAbstract: InputMaybe<Scalars['Boolean']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+  includeLabels?: Scalars['Boolean']['input']
+  includeReferences?: Scalars['Boolean']['input']
+}>
+
+export type ListLibraryElementsQuery = {
+  libraryElements: Array<{
+    id: string
+    qname: string
+    namespace: string | null
+    name: string
+    classification: string | null
+    statementContext: string | null
+    derivationRole: string | null
+    balanceType: string
+    periodType: string
+    isAbstract: boolean
+    isMonetary: boolean
+    elementType: string
+    source: string
+    taxonomyId: string | null
+    parentId: string | null
+    labels?: Array<{ role: string; language: string; text: string }>
+    references?: Array<{ refType: string | null; citation: string; uri: string | null }>
+  }>
+}
+
+export type SearchLibraryElementsQueryVariables = Exact<{
+  query: Scalars['String']['input']
+  source: InputMaybe<Scalars['String']['input']>
+  limit?: Scalars['Int']['input']
+}>
+
+export type SearchLibraryElementsQuery = {
+  searchLibraryElements: Array<{
+    id: string
+    qname: string
+    namespace: string | null
+    name: string
+    classification: string | null
+    statementContext: string | null
+    derivationRole: string | null
+    balanceType: string
+    periodType: string
+    isAbstract: boolean
+    isMonetary: boolean
+    elementType: string
+    source: string
+    taxonomyId: string | null
+    parentId: string | null
+    labels: Array<{ role: string; language: string; text: string }>
+    references: Array<{ refType: string | null; citation: string; uri: string | null }>
+  }>
+}
+
+export type GetLibraryElementQueryVariables = Exact<{
+  id: InputMaybe<Scalars['ID']['input']>
+  qname: InputMaybe<Scalars['String']['input']>
+}>
+
+export type GetLibraryElementQuery = {
+  libraryElement: {
+    id: string
+    qname: string
+    namespace: string | null
+    name: string
+    classification: string | null
+    statementContext: string | null
+    derivationRole: string | null
+    balanceType: string
+    periodType: string
+    isAbstract: boolean
+    isMonetary: boolean
+    elementType: string
+    source: string
+    taxonomyId: string | null
+    parentId: string | null
+    labels: Array<{ role: string; language: string; text: string }>
+    references: Array<{ refType: string | null; citation: string; uri: string | null }>
+  } | null
+}
+
+export type ListLibraryTaxonomiesQueryVariables = Exact<{
+  standard: InputMaybe<Scalars['String']['input']>
+  includeElementCount?: Scalars['Boolean']['input']
+}>
+
+export type ListLibraryTaxonomiesQuery = {
+  libraryTaxonomies: Array<{
+    id: string
+    name: string
+    description: string | null
+    standard: string | null
+    version: string | null
+    namespaceUri: string | null
+    taxonomyType: string
+    isShared: boolean
+    isActive: boolean
+    isLocked: boolean
+    elementCount: number | null
+  }>
+}
+
+export type GetLibraryTaxonomyQueryVariables = Exact<{
+  id: InputMaybe<Scalars['ID']['input']>
+  standard: InputMaybe<Scalars['String']['input']>
+  version: InputMaybe<Scalars['String']['input']>
+  includeElementCount?: Scalars['Boolean']['input']
+}>
+
+export type GetLibraryTaxonomyQuery = {
+  libraryTaxonomy: {
+    id: string
+    name: string
+    description: string | null
+    standard: string | null
+    version: string | null
+    namespaceUri: string | null
+    taxonomyType: string
+    isShared: boolean
+    isActive: boolean
+    isLocked: boolean
+    elementCount: number | null
+  } | null
+}
+
 export const GetInvestorHoldingsDocument = {
   kind: 'Document',
   definitions: [
@@ -4686,3 +4901,810 @@ export const ListLedgerUnmappedElementsDocument = {
   ListLedgerUnmappedElementsQuery,
   ListLedgerUnmappedElementsQueryVariables
 >
+export const ListLibraryTaxonomyArcsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLibraryTaxonomyArcs' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'associationType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '200' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryTaxonomyArcCount' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'taxonomyId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
+              },
+            ],
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryTaxonomyArcs' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'taxonomyId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'associationType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'associationType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'structureName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'fromElementId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'fromElementQname' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'fromElementName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'toElementId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'toElementQname' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'toElementName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'associationType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'arcrole' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'orderValue' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'weight' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLibraryTaxonomyArcsQuery, ListLibraryTaxonomyArcsQueryVariables>
+export const GetLibraryElementArcsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLibraryElementArcs' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryElementArcs' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'direction' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'associationType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'arcrole' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyStandard' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'structureName' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'peer' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLibraryElementArcsQuery, GetLibraryElementArcsQueryVariables>
+export const GetLibraryElementEquivalentsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLibraryElementEquivalents' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryElementEquivalents' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'element' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'equivalents' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  GetLibraryElementEquivalentsQuery,
+  GetLibraryElementEquivalentsQueryVariables
+>
+export const ListLibraryElementsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLibraryElements' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'classification' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'statementContext' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'derivationRole' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'elementType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'isAbstract' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '50' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeLabels' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeReferences' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryElements' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'taxonomyId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'source' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'classification' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'classification' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'statementContext' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'statementContext' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'derivationRole' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'derivationRole' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'elementType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'elementType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'isAbstract' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'isAbstract' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeLabels' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeLabels' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeReferences' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeReferences' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isMonetary' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'elementType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'parentId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'labels' },
+                  directives: [
+                    {
+                      kind: 'Directive',
+                      name: { kind: 'Name', value: 'include' },
+                      arguments: [
+                        {
+                          kind: 'Argument',
+                          name: { kind: 'Name', value: 'if' },
+                          value: {
+                            kind: 'Variable',
+                            name: { kind: 'Name', value: 'includeLabels' },
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'role' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'text' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'references' },
+                  directives: [
+                    {
+                      kind: 'Directive',
+                      name: { kind: 'Name', value: 'include' },
+                      arguments: [
+                        {
+                          kind: 'Argument',
+                          name: { kind: 'Name', value: 'if' },
+                          value: {
+                            kind: 'Variable',
+                            name: { kind: 'Name', value: 'includeReferences' },
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'refType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'citation' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'uri' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLibraryElementsQuery, ListLibraryElementsQueryVariables>
+export const SearchLibraryElementsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'SearchLibraryElements' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '50' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'searchLibraryElements' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'query' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'query' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'source' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isMonetary' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'elementType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'parentId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'labels' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'role' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'text' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'references' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'refType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'citation' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'uri' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SearchLibraryElementsQuery, SearchLibraryElementsQueryVariables>
+export const GetLibraryElementDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLibraryElement' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'qname' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryElement' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'qname' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'qname' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isMonetary' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'elementType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'parentId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'labels' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'role' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'language' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'text' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'references' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'refType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'citation' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'uri' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLibraryElementQuery, GetLibraryElementQueryVariables>
+export const ListLibraryTaxonomiesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLibraryTaxonomies' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'standard' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeElementCount' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryTaxonomies' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'standard' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'standard' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeElementCount' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeElementCount' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'standard' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'namespaceUri' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isShared' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isLocked' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'elementCount' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLibraryTaxonomiesQuery, ListLibraryTaxonomiesQueryVariables>
+export const GetLibraryTaxonomyDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLibraryTaxonomy' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'standard' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'version' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeElementCount' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryTaxonomy' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'standard' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'standard' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'version' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'version' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeElementCount' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeElementCount' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'standard' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'version' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'namespaceUri' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isShared' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isLocked' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'elementCount' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLibraryTaxonomyQuery, GetLibraryTaxonomyQueryVariables>
