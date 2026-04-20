@@ -32,6 +32,7 @@ import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
 import {
   GetLibraryElementArcsDocument,
+  GetLibraryElementClassificationsDocument,
   GetLibraryElementDocument,
   GetLibraryElementEquivalentsDocument,
   GetLibraryTaxonomyDocument,
@@ -40,6 +41,7 @@ import {
   ListLibraryTaxonomyArcsDocument,
   SearchLibraryElementsDocument,
   type GetLibraryElementArcsQuery,
+  type GetLibraryElementClassificationsQuery,
   type GetLibraryElementEquivalentsQuery,
   type GetLibraryElementQuery,
   type GetLibraryTaxonomyQuery,
@@ -66,6 +68,8 @@ export type LibraryReference = LibraryElementDetail['references'][number]
 
 export type LibraryArc = ListLibraryTaxonomyArcsQuery['libraryTaxonomyArcs'][number]
 export type LibraryElementArc = GetLibraryElementArcsQuery['libraryElementArcs'][number]
+export type LibraryElementClassification =
+  GetLibraryElementClassificationsQuery['libraryElementClassifications'][number]
 export type LibraryEquivalence = NonNullable<
   GetLibraryElementEquivalentsQuery['libraryElementEquivalents']
 >
@@ -75,12 +79,8 @@ export type LibraryEquivalence = NonNullable<
 export interface ListLibraryElementsOptions {
   taxonomyId?: string
   source?: string
-  /** Economic nature axis (asset | liability | equity | inflow | outflow | cashflow). */
+  /** FASB elementsOfFinancialStatements axis (asset | liability | equity | revenue | expense | …). */
   classification?: string
-  /** Reporting context (balance_sheet | income_statement | cash_flow | …). */
-  statementContext?: string
-  /** Structural role (primitive | aggregate | ratio | identifier | structural). */
-  derivationRole?: string
   elementType?: string
   /** `true` → abstract only; `false` → concrete only; omit for both. */
   isAbstract?: boolean | null
@@ -201,8 +201,6 @@ export class LibraryClient {
         taxonomyId: options?.taxonomyId ?? null,
         source: options?.source ?? null,
         classification: options?.classification ?? null,
-        statementContext: options?.statementContext ?? null,
-        derivationRole: options?.derivationRole ?? null,
         elementType: options?.elementType ?? null,
         isAbstract: options?.isAbstract ?? null,
         limit: options?.limit ?? 50,
@@ -298,6 +296,20 @@ export class LibraryClient {
       { id },
       'Get library element arcs',
       (data) => data.libraryElementArcs
+    )
+  }
+
+  /** All classification traits (category + identifier) assigned to this element. */
+  async getLibraryElementClassifications(
+    graphId: string,
+    id: string
+  ): Promise<LibraryElementClassification[]> {
+    return this.gqlQuery(
+      graphId,
+      GetLibraryElementClassificationsDocument,
+      { id },
+      'Get library element classifications',
+      (data) => data.libraryElementClassifications
     )
   }
 

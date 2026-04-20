@@ -25,7 +25,7 @@ export type Scalars = {
 export type Account = {
   accountType: Maybe<Scalars['String']['output']>
   balanceType: Scalars['String']['output']
-  classification: Scalars['String']['output']
+  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   currency: Scalars['String']['output']
   depth: Scalars['Int']['output']
@@ -81,7 +81,7 @@ export type AccountTreeNode = {
   accountType: Maybe<Scalars['String']['output']>
   balanceType: Scalars['String']['output']
   children: Array<AccountTreeNode>
-  classification: Scalars['String']['output']
+  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   depth: Scalars['Int']['output']
   id: Scalars['ID']['output']
@@ -186,7 +186,7 @@ export type ElementList = {
 }
 
 export type FactRow = {
-  classification: Scalars['String']['output']
+  classification: Maybe<Scalars['String']['output']>
   depth: Scalars['Int']['output']
   elementId: Scalars['String']['output']
   elementName: Scalars['String']['output']
@@ -383,10 +383,8 @@ export type LibraryAssociation = {
 export type LibraryElement = {
   /** debit | credit */
   balanceType: Scalars['String']['output']
-  /** Economic nature axis (7 SFAC 6 primitives): asset | liability | equity | revenue | expense | gain | loss. Null for structural rows, metadata rows, and computed ratios. */
+  /** FASB elementsOfFinancialStatements axis: asset | contraAsset | liability | contraLiability | equity | contraEquity | temporaryEquity | revenue | expense | expenseReversal | gain | loss | comprehensiveIncome | investmentByOwners | distributionToOwners. Null for structural rows. */
   classification: Maybe<Scalars['String']['output']>
-  /** Structural role — primitive | subtotal | total | reconciliation | movement | ratio | identifier | structural. */
-  derivationRole: Maybe<Scalars['String']['output']>
   /** concept | abstract | axis | member | hypercube */
   elementType: Scalars['String']['output']
   id: Scalars['String']['output']
@@ -403,8 +401,6 @@ export type LibraryElement = {
   references: Array<LibraryReference>
   /** sfac6 | fac | us-gaap | rs-gaap | … */
   source: Scalars['String']['output']
-  /** Which report the element belongs to — balance_sheet | income_statement | cash_flow | equity_changes | disclosure | metadata | analysis. */
-  statementContext: Maybe<Scalars['String']['output']>
   taxonomyId: Maybe<Scalars['String']['output']>
 }
 
@@ -420,6 +416,17 @@ export type LibraryElementArc = {
   taxonomyId: Maybe<Scalars['String']['output']>
   taxonomyName: Maybe<Scalars['String']['output']>
   taxonomyStandard: Maybe<Scalars['String']['output']>
+}
+
+export type LibraryElementClassification = {
+  /** Classification axis (e.g. elementsOfFinancialStatements) */
+  category: Scalars['String']['output']
+  /** Value within the axis (e.g. expense) */
+  identifier: Scalars['String']['output']
+  /** True for the element's primary EFS classification */
+  isPrimary: Scalars['Boolean']['output']
+  /** Human-readable name */
+  name: Maybe<Scalars['String']['output']>
 }
 
 export type LibraryElementTreeNode = {
@@ -657,6 +664,7 @@ export type Query = {
   holdings: Maybe<HoldingsList>
   libraryElement: Maybe<LibraryElement>
   libraryElementArcs: Array<LibraryElementArc>
+  libraryElementClassifications: Array<LibraryElementClassification>
   libraryElementEquivalents: Maybe<LibraryEquivalence>
   libraryElementTree: Maybe<LibraryElementTreeNode>
   libraryElements: Array<LibraryElement>
@@ -735,6 +743,10 @@ export type QueryLibraryElementArcsArgs = {
   id: Scalars['ID']['input']
 }
 
+export type QueryLibraryElementClassificationsArgs = {
+  id: Scalars['ID']['input']
+}
+
 export type QueryLibraryElementEquivalentsArgs = {
   id: Scalars['ID']['input']
 }
@@ -746,7 +758,6 @@ export type QueryLibraryElementTreeArgs = {
 
 export type QueryLibraryElementsArgs = {
   classification?: InputMaybe<Scalars['String']['input']>
-  derivationRole?: InputMaybe<Scalars['String']['input']>
   elementType?: InputMaybe<Scalars['String']['input']>
   includeLabels?: Scalars['Boolean']['input']
   includeReferences?: Scalars['Boolean']['input']
@@ -754,7 +765,6 @@ export type QueryLibraryElementsArgs = {
   limit?: Scalars['Int']['input']
   offset?: Scalars['Int']['input']
   source?: InputMaybe<Scalars['String']['input']>
-  statementContext?: InputMaybe<Scalars['String']['input']>
   taxonomyId?: InputMaybe<Scalars['ID']['input']>
 }
 
@@ -1046,7 +1056,7 @@ export type TrialBalanceRow = {
   accountId: Scalars['String']['output']
   accountName: Scalars['String']['output']
   accountType: Maybe<Scalars['String']['output']>
-  classification: Scalars['String']['output']
+  classification: Maybe<Scalars['String']['output']>
   netBalance: Scalars['Float']['output']
   totalCredits: Scalars['Float']['output']
   totalDebits: Scalars['Float']['output']
@@ -1054,7 +1064,7 @@ export type TrialBalanceRow = {
 
 export type UnmappedElement = {
   balanceType: Scalars['String']['output']
-  classification: Scalars['String']['output']
+  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   externalSource: Maybe<Scalars['String']['output']>
   id: Scalars['String']['output']
@@ -1291,7 +1301,7 @@ export type GetLedgerAccountTreeQuery = {
       id: string
       code: string | null
       name: string
-      classification: string
+      classification: string | null
       accountType: string | null
       balanceType: string
       depth: number
@@ -1300,7 +1310,7 @@ export type GetLedgerAccountTreeQuery = {
         id: string
         code: string | null
         name: string
-        classification: string
+        classification: string | null
         accountType: string | null
         balanceType: string
         depth: number
@@ -1309,7 +1319,7 @@ export type GetLedgerAccountTreeQuery = {
           id: string
           code: string | null
           name: string
-          classification: string
+          classification: string | null
           accountType: string | null
           balanceType: string
           depth: number
@@ -1318,7 +1328,7 @@ export type GetLedgerAccountTreeQuery = {
             id: string
             code: string | null
             name: string
-            classification: string
+            classification: string | null
             accountType: string | null
             balanceType: string
             depth: number
@@ -1344,7 +1354,7 @@ export type ListLedgerAccountsQuery = {
       code: string | null
       name: string
       description: string | null
-      classification: string
+      classification: string | null
       subClassification: string | null
       balanceType: string
       parentId: string | null
@@ -1817,7 +1827,7 @@ export type GetLedgerStatementQuery = {
       elementId: string
       elementQname: string
       elementName: string
-      classification: string
+      classification: string | null
       values: Array<number | null>
       isSubtotal: boolean
       depth: number
@@ -1973,7 +1983,7 @@ export type GetLedgerTrialBalanceQuery = {
       accountId: string
       accountCode: string
       accountName: string
-      classification: string
+      classification: string | null
       accountType: string | null
       totalDebits: number
       totalCredits: number
@@ -1991,7 +2001,7 @@ export type ListLedgerUnmappedElementsQuery = {
     id: string
     code: string | null
     name: string
-    classification: string
+    classification: string | null
     balanceType: string
     externalSource: string | null
     suggestedTargets: Array<{
@@ -2044,15 +2054,20 @@ export type GetLibraryElementArcsQuery = {
     taxonomyName: string | null
     structureId: string | null
     structureName: string | null
-    peer: {
-      id: string
-      qname: string
-      name: string
-      classification: string | null
-      statementContext: string | null
-      derivationRole: string | null
-      source: string
-    }
+    peer: { id: string; qname: string; name: string; classification: string | null; source: string }
+  }>
+}
+
+export type GetLibraryElementClassificationsQueryVariables = Exact<{
+  id: Scalars['ID']['input']
+}>
+
+export type GetLibraryElementClassificationsQuery = {
+  libraryElementClassifications: Array<{
+    category: string
+    identifier: string
+    name: string | null
+    isPrimary: boolean
   }>
 }
 
@@ -2067,8 +2082,6 @@ export type GetLibraryElementEquivalentsQuery = {
       qname: string
       name: string
       classification: string | null
-      statementContext: string | null
-      derivationRole: string | null
       source: string
     }
     equivalents: Array<{
@@ -2076,8 +2089,6 @@ export type GetLibraryElementEquivalentsQuery = {
       qname: string
       name: string
       classification: string | null
-      statementContext: string | null
-      derivationRole: string | null
       source: string
     }>
   } | null
@@ -2087,8 +2098,6 @@ export type ListLibraryElementsQueryVariables = Exact<{
   taxonomyId: InputMaybe<Scalars['ID']['input']>
   source: InputMaybe<Scalars['String']['input']>
   classification: InputMaybe<Scalars['String']['input']>
-  statementContext: InputMaybe<Scalars['String']['input']>
-  derivationRole: InputMaybe<Scalars['String']['input']>
   elementType: InputMaybe<Scalars['String']['input']>
   isAbstract: InputMaybe<Scalars['Boolean']['input']>
   limit?: Scalars['Int']['input']
@@ -2104,8 +2113,6 @@ export type ListLibraryElementsQuery = {
     namespace: string | null
     name: string
     classification: string | null
-    statementContext: string | null
-    derivationRole: string | null
     balanceType: string
     periodType: string
     isAbstract: boolean
@@ -2132,8 +2139,6 @@ export type SearchLibraryElementsQuery = {
     namespace: string | null
     name: string
     classification: string | null
-    statementContext: string | null
-    derivationRole: string | null
     balanceType: string
     periodType: string
     isAbstract: boolean
@@ -2159,8 +2164,6 @@ export type GetLibraryElementQuery = {
     namespace: string | null
     name: string
     classification: string | null
-    statementContext: string | null
-    derivationRole: string | null
     balanceType: string
     periodType: string
     isAbstract: boolean
@@ -5056,8 +5059,6 @@ export const GetLibraryElementArcsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                     ],
                   },
@@ -5070,6 +5071,54 @@ export const GetLibraryElementArcsDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLibraryElementArcsQuery, GetLibraryElementArcsQueryVariables>
+export const GetLibraryElementClassificationsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLibraryElementClassifications' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryElementClassifications' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'identifier' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isPrimary' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  GetLibraryElementClassificationsQuery,
+  GetLibraryElementClassificationsQueryVariables
+>
 export const GetLibraryElementEquivalentsDocument = {
   kind: 'Document',
   definitions: [
@@ -5113,8 +5162,6 @@ export const GetLibraryElementEquivalentsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                     ],
                   },
@@ -5129,8 +5176,6 @@ export const GetLibraryElementEquivalentsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                     ],
                   },
@@ -5167,16 +5212,6 @@ export const ListLibraryElementsDocument = {
         {
           kind: 'VariableDefinition',
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'classification' } },
-          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'statementContext' } },
-          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'derivationRole' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
         },
         {
@@ -5250,16 +5285,6 @@ export const ListLibraryElementsDocument = {
               },
               {
                 kind: 'Argument',
-                name: { kind: 'Name', value: 'statementContext' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'statementContext' } },
-              },
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'derivationRole' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'derivationRole' } },
-              },
-              {
-                kind: 'Argument',
                 name: { kind: 'Name', value: 'elementType' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'elementType' } },
               },
@@ -5297,8 +5322,6 @@ export const ListLibraryElementsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
@@ -5433,8 +5456,6 @@ export const SearchLibraryElementsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
@@ -5520,8 +5541,6 @@ export const GetLibraryElementDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'statementContext' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'derivationRole' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },

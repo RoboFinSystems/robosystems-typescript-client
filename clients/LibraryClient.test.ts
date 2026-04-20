@@ -24,8 +24,6 @@ const sampleElement = {
   namespace: 'sfac6',
   name: 'Assets',
   classification: 'asset',
-  statementContext: 'balance_sheet',
-  derivationRole: 'primitive',
   balanceType: 'debit',
   periodType: 'instant',
   isAbstract: false,
@@ -126,13 +124,11 @@ describe('LibraryClient', () => {
       mockFetch.mockResolvedValueOnce(gqlResponse({ libraryElements: [] }))
       await client.listLibraryElements(LIBRARY_GRAPH_ID, {
         classification: 'asset',
-        statementContext: 'balance_sheet',
       })
       const init = mockFetch.mock.calls[0][1] as RequestInit
       const body = JSON.parse(init.body as string)
       expect(body.variables.limit).toBe(50)
       expect(body.variables.classification).toBe('asset')
-      expect(body.variables.statementContext).toBe('balance_sheet')
     })
   })
 
@@ -210,9 +206,7 @@ describe('LibraryClient', () => {
                 id: 'el_peer',
                 qname: 'rs-gaap:CostOfGoodsSold',
                 name: 'Cost of Goods Sold',
-                classification: 'outflow',
-                statementContext: 'income_statement',
-                derivationRole: 'primitive',
+                classification: 'expense',
                 source: 'rs-gaap',
               },
             },

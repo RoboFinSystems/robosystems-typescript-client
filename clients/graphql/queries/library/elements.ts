@@ -3,9 +3,8 @@ import { gql } from 'graphql-request'
 /**
  * List library elements with filters + pagination.
  *
- * The three classification axes (`classification` / `statementContext` /
- * `derivationRole`) AND together. `isAbstract=true` → only abstract
- * grouping concepts; `false` → only concrete; omit for both.
+ * `classification` filters on the FASB elementsOfFinancialStatements axis.
+ * `isAbstract=true` → abstract only; `false` → concrete only; omit for both.
  *
  * `includeLabels` / `includeReferences` default `false`; the list view
  * doesn't render them and they add N+1-ish payload weight.
@@ -15,8 +14,6 @@ export const LIST_LIBRARY_ELEMENTS = gql`
     $taxonomyId: ID
     $source: String
     $classification: String
-    $statementContext: String
-    $derivationRole: String
     $elementType: String
     $isAbstract: Boolean
     $limit: Int! = 50
@@ -28,8 +25,6 @@ export const LIST_LIBRARY_ELEMENTS = gql`
       taxonomyId: $taxonomyId
       source: $source
       classification: $classification
-      statementContext: $statementContext
-      derivationRole: $derivationRole
       elementType: $elementType
       isAbstract: $isAbstract
       limit: $limit
@@ -42,8 +37,6 @@ export const LIST_LIBRARY_ELEMENTS = gql`
       namespace
       name
       classification
-      statementContext
-      derivationRole
       balanceType
       periodType
       isAbstract
@@ -78,8 +71,6 @@ export const SEARCH_LIBRARY_ELEMENTS = gql`
       namespace
       name
       classification
-      statementContext
-      derivationRole
       balanceType
       periodType
       isAbstract
@@ -114,8 +105,6 @@ export const GET_LIBRARY_ELEMENT = gql`
       namespace
       name
       classification
-      statementContext
-      derivationRole
       balanceType
       periodType
       isAbstract

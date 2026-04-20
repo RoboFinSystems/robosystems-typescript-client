@@ -60,10 +60,23 @@ export const GET_LIBRARY_ELEMENT_ARCS = gql`
         qname
         name
         classification
-        statementContext
-        derivationRole
         source
       }
+    }
+  }
+`
+
+/**
+ * All classification traits assigned to an element — every category/identifier
+ * pair from element_classifications, sorted by category then identifier.
+ */
+export const GET_LIBRARY_ELEMENT_CLASSIFICATIONS = gql`
+  query GetLibraryElementClassifications($id: ID!) {
+    libraryElementClassifications(id: $id) {
+      category
+      identifier
+      name
+      isPrimary
     }
   }
 `
@@ -80,8 +93,6 @@ export const GET_LIBRARY_ELEMENT_EQUIVALENTS = gql`
         qname
         name
         classification
-        statementContext
-        derivationRole
         source
       }
       equivalents {
@@ -89,8 +100,6 @@ export const GET_LIBRARY_ELEMENT_EQUIVALENTS = gql`
         qname
         name
         classification
-        statementContext
-        derivationRole
         source
       }
     }

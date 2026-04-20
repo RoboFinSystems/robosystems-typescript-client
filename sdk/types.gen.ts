@@ -1468,11 +1468,7 @@ export type CreateElementRequest = {
     /**
      * Classification
      */
-    classification: 'asset' | 'liability' | 'equity' | 'inflow' | 'outflow' | 'cashflow';
-    /**
-     * Sub Classification
-     */
-    sub_classification?: string | null;
+    classification: 'asset' | 'contraAsset' | 'liability' | 'contraLiability' | 'equity' | 'contraEquity' | 'temporaryEquity' | 'revenue' | 'expense' | 'expenseReversal' | 'gain' | 'loss' | 'comprehensiveIncome' | 'investmentByOwners' | 'distributionToOwners';
     /**
      * Balance Type
      */
@@ -1500,7 +1496,7 @@ export type CreateElementRequest = {
     /**
      * Source
      */
-    source?: 'native' | 'sfac6' | 'fac' | 'rs-gaap' | 'us-gaap' | 'ifrs' | 'quickbooks' | 'xero' | 'plaid' | 'import';
+    source?: 'native' | 'fac' | 'rs-gaap' | 'us-gaap' | 'ifrs' | 'quickbooks' | 'xero' | 'plaid' | 'import';
     /**
      * Currency
      */
@@ -7429,14 +7425,6 @@ export type UpdateElementRequest = {
      * Description
      */
     description?: string | null;
-    /**
-     * Classification
-     */
-    classification?: 'asset' | 'liability' | 'equity' | 'inflow' | 'outflow' | 'cashflow' | null;
-    /**
-     * Sub Classification
-     */
-    sub_classification?: string | null;
     /**
      * Balance Type
      */
