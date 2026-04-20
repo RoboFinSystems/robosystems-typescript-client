@@ -160,7 +160,7 @@ export type DraftLineItem = {
 
 export type Element = {
   balanceType: Scalars['String']['output']
-  classification: Scalars['String']['output']
+  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   depth: Scalars['Int']['output']
   description: Maybe<Scalars['String']['output']>
@@ -363,6 +363,121 @@ export type LedgerTransactionSummary = {
   type: Scalars['String']['output']
 }
 
+export type LibraryAssociation = {
+  arcrole: Maybe<Scalars['String']['output']>
+  /** presentation | calculation | mapping | equivalence | general-special | essence-alias */
+  associationType: Scalars['String']['output']
+  fromElementId: Scalars['String']['output']
+  fromElementName: Maybe<Scalars['String']['output']>
+  fromElementQname: Maybe<Scalars['String']['output']>
+  id: Scalars['String']['output']
+  orderValue: Maybe<Scalars['Float']['output']>
+  structureId: Scalars['String']['output']
+  structureName: Maybe<Scalars['String']['output']>
+  toElementId: Scalars['String']['output']
+  toElementName: Maybe<Scalars['String']['output']>
+  toElementQname: Maybe<Scalars['String']['output']>
+  weight: Maybe<Scalars['Float']['output']>
+}
+
+export type LibraryElement = {
+  /** debit | credit */
+  balanceType: Scalars['String']['output']
+  /** Economic nature axis (7 SFAC 6 primitives): asset | liability | equity | revenue | expense | gain | loss. Null for structural rows, metadata rows, and computed ratios. */
+  classification: Maybe<Scalars['String']['output']>
+  /** Structural role — primitive | subtotal | total | reconciliation | movement | ratio | identifier | structural. */
+  derivationRole: Maybe<Scalars['String']['output']>
+  /** concept | abstract | axis | member | hypercube */
+  elementType: Scalars['String']['output']
+  id: Scalars['String']['output']
+  isAbstract: Scalars['Boolean']['output']
+  isMonetary: Scalars['Boolean']['output']
+  labels: Array<LibraryLabel>
+  name: Scalars['String']['output']
+  namespace: Maybe<Scalars['String']['output']>
+  parentId: Maybe<Scalars['String']['output']>
+  /** instant | duration */
+  periodType: Scalars['String']['output']
+  /** Qualified name, e.g. 'sfac6:Assets' */
+  qname: Scalars['String']['output']
+  references: Array<LibraryReference>
+  /** sfac6 | fac | us-gaap | rs-gaap | … */
+  source: Scalars['String']['output']
+  /** Which report the element belongs to — balance_sheet | income_statement | cash_flow | equity_changes | disclosure | metadata | analysis. */
+  statementContext: Maybe<Scalars['String']['output']>
+  taxonomyId: Maybe<Scalars['String']['output']>
+}
+
+export type LibraryElementArc = {
+  arcrole: Maybe<Scalars['String']['output']>
+  associationType: Scalars['String']['output']
+  /** 'outgoing' (this element is source) | 'incoming' (target) */
+  direction: Scalars['String']['output']
+  id: Scalars['String']['output']
+  peer: LibraryElement
+  structureId: Maybe<Scalars['String']['output']>
+  structureName: Maybe<Scalars['String']['output']>
+  taxonomyId: Maybe<Scalars['String']['output']>
+  taxonomyName: Maybe<Scalars['String']['output']>
+  taxonomyStandard: Maybe<Scalars['String']['output']>
+}
+
+export type LibraryElementTreeNode = {
+  children: Array<LibraryElementTreeNode>
+  element: LibraryElement
+}
+
+export type LibraryEquivalence = {
+  element: LibraryElement
+  equivalents: Array<LibraryElement>
+}
+
+export type LibraryLabel = {
+  /** Language code */
+  language: Scalars['String']['output']
+  /** Label role: standard/documentation/verbose/… */
+  role: Scalars['String']['output']
+  /** Label text */
+  text: Scalars['String']['output']
+}
+
+export type LibraryReference = {
+  /** Full citation text */
+  citation: Scalars['String']['output']
+  /** 'ASC' | 'SEC' | 'SFAC' | 'IFRS' | 'Other' */
+  refType: Maybe<Scalars['String']['output']>
+  /** Dereferenceable URL if available */
+  uri: Maybe<Scalars['String']['output']>
+}
+
+export type LibraryStructure = {
+  id: Scalars['String']['output']
+  isActive: Scalars['Boolean']['output']
+  name: Scalars['String']['output']
+  /** Original XBRL role URI if any */
+  roleUri: Maybe<Scalars['String']['output']>
+  /** balance_sheet | income_statement | cash_flow_statement | custom | … */
+  structureType: Scalars['String']['output']
+  taxonomyId: Scalars['String']['output']
+}
+
+export type LibraryTaxonomy = {
+  description: Maybe<Scalars['String']['output']>
+  /** Total elements in this taxonomy (computed on demand) */
+  elementCount: Maybe<Scalars['Int']['output']>
+  id: Scalars['String']['output']
+  isActive: Scalars['Boolean']['output']
+  isLocked: Scalars['Boolean']['output']
+  isShared: Scalars['Boolean']['output']
+  name: Scalars['String']['output']
+  namespaceUri: Maybe<Scalars['String']['output']>
+  /** sfac6 | fac | us-gaap | rs-gaap | ifrs */
+  standard: Maybe<Scalars['String']['output']>
+  /** chart_of_accounts | reporting | mapping | schedule */
+  taxonomyType: Scalars['String']['output']
+  version: Maybe<Scalars['String']['output']>
+}
+
 export type MappedTrialBalance = {
   mappingId: Scalars['String']['output']
   rows: Array<MappedTrialBalanceRow>
@@ -540,6 +655,17 @@ export type Query = {
   fiscalCalendar: Maybe<FiscalCalendar>
   hello: Scalars['String']['output']
   holdings: Maybe<HoldingsList>
+  libraryElement: Maybe<LibraryElement>
+  libraryElementArcs: Array<LibraryElementArc>
+  libraryElementEquivalents: Maybe<LibraryEquivalence>
+  libraryElementTree: Maybe<LibraryElementTreeNode>
+  libraryElements: Array<LibraryElement>
+  libraryStructure: Maybe<LibraryStructure>
+  libraryStructures: Array<LibraryStructure>
+  libraryTaxonomies: Array<LibraryTaxonomy>
+  libraryTaxonomy: Maybe<LibraryTaxonomy>
+  libraryTaxonomyArcCount: Scalars['Int']['output']
+  libraryTaxonomyArcs: Array<LibraryAssociation>
   mappedTrialBalance: Maybe<MappedTrialBalance>
   mapping: Maybe<MappingDetail>
   mappingCoverage: Maybe<MappingCoverage>
@@ -557,6 +683,7 @@ export type Query = {
   reports: Maybe<ReportList>
   scheduleFacts: Maybe<ScheduleFacts>
   schedules: Maybe<ScheduleList>
+  searchLibraryElements: Array<LibraryElement>
   securities: Maybe<SecurityList>
   security: Maybe<Security>
   statement: Maybe<Statement>
@@ -597,6 +724,70 @@ export type QueryEntitiesArgs = {
 
 export type QueryHoldingsArgs = {
   portfolioId: Scalars['String']['input']
+}
+
+export type QueryLibraryElementArgs = {
+  id?: InputMaybe<Scalars['ID']['input']>
+  qname?: InputMaybe<Scalars['String']['input']>
+}
+
+export type QueryLibraryElementArcsArgs = {
+  id: Scalars['ID']['input']
+}
+
+export type QueryLibraryElementEquivalentsArgs = {
+  id: Scalars['ID']['input']
+}
+
+export type QueryLibraryElementTreeArgs = {
+  id: Scalars['ID']['input']
+  maxDepth?: Scalars['Int']['input']
+}
+
+export type QueryLibraryElementsArgs = {
+  classification?: InputMaybe<Scalars['String']['input']>
+  derivationRole?: InputMaybe<Scalars['String']['input']>
+  elementType?: InputMaybe<Scalars['String']['input']>
+  includeLabels?: Scalars['Boolean']['input']
+  includeReferences?: Scalars['Boolean']['input']
+  isAbstract?: InputMaybe<Scalars['Boolean']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+  source?: InputMaybe<Scalars['String']['input']>
+  statementContext?: InputMaybe<Scalars['String']['input']>
+  taxonomyId?: InputMaybe<Scalars['ID']['input']>
+}
+
+export type QueryLibraryStructureArgs = {
+  id: Scalars['ID']['input']
+}
+
+export type QueryLibraryStructuresArgs = {
+  structureType?: InputMaybe<Scalars['String']['input']>
+  taxonomyId?: InputMaybe<Scalars['ID']['input']>
+}
+
+export type QueryLibraryTaxonomiesArgs = {
+  includeElementCount?: Scalars['Boolean']['input']
+  standard?: InputMaybe<Scalars['String']['input']>
+}
+
+export type QueryLibraryTaxonomyArgs = {
+  id?: InputMaybe<Scalars['ID']['input']>
+  includeElementCount?: Scalars['Boolean']['input']
+  standard?: InputMaybe<Scalars['String']['input']>
+  version?: InputMaybe<Scalars['String']['input']>
+}
+
+export type QueryLibraryTaxonomyArcCountArgs = {
+  taxonomyId: Scalars['ID']['input']
+}
+
+export type QueryLibraryTaxonomyArcsArgs = {
+  associationType?: InputMaybe<Scalars['String']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+  taxonomyId: Scalars['ID']['input']
 }
 
 export type QueryMappedTrialBalanceArgs = {
@@ -660,6 +851,12 @@ export type QueryScheduleFactsArgs = {
   periodEnd?: InputMaybe<Scalars['Date']['input']>
   periodStart?: InputMaybe<Scalars['Date']['input']>
   structureId: Scalars['String']['input']
+}
+
+export type QuerySearchLibraryElementsArgs = {
+  limit?: Scalars['Int']['input']
+  query: Scalars['String']['input']
+  source?: InputMaybe<Scalars['String']['input']>
 }
 
 export type QuerySecuritiesArgs = {
@@ -1200,7 +1397,7 @@ export type ListLedgerElementsQuery = {
       description: string | null
       qname: string | null
       namespace: string | null
-      classification: string
+      classification: string | null
       subClassification: string | null
       balanceType: string
       periodType: string
