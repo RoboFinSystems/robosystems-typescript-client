@@ -1652,7 +1652,7 @@ export type CreateMappingAssociationOperation = {
     /**
      * Association Type
      */
-    association_type?: 'presentation' | 'calculation' | 'mapping';
+    association_type?: 'presentation' | 'calculation' | 'mapping' | 'equivalence';
     /**
      * Order Value
      */
@@ -7407,6 +7407,13 @@ export type UpdateAssociationRequest = {
  * immutable. `parent_id` honors `model_dump(exclude_unset=True)` semantics:
  * omit the field to leave unchanged, pass `null` to clear the parent
  * (make root).
+ *
+ * ``classification`` updates the element's primary FASB
+ * elementsOfFinancialStatements assignment (in ``element_classifications``,
+ * not a direct column on ``elements``). Omit to leave unchanged. Passing a
+ * value replaces the current primary EFS assignment; there is no
+ * set-to-null semantics (use the UI/admin path for full classification
+ * teardown — here we only support correction of a misclassified account).
  */
 export type UpdateElementRequest = {
     /**
@@ -7441,6 +7448,10 @@ export type UpdateElementRequest = {
      * Currency
      */
     currency?: string | null;
+    /**
+     * Classification
+     */
+    classification?: 'asset' | 'contraAsset' | 'liability' | 'contraLiability' | 'equity' | 'contraEquity' | 'temporaryEquity' | 'revenue' | 'expense' | 'expenseReversal' | 'gain' | 'loss' | 'comprehensiveIncome' | 'investmentByOwners' | 'distributionToOwners' | null;
 };
 
 /**
