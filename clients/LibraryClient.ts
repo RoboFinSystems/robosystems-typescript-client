@@ -81,6 +81,8 @@ export interface ListLibraryElementsOptions {
   source?: string
   /** FASB elementsOfFinancialStatements axis (asset | liability | equity | revenue | expense | …). */
   classification?: string
+  /** Cash-flow activity axis (operatingActivity | investingActivity | financingActivity). */
+  activityType?: string
   elementType?: string
   /** `true` → abstract only; `false` → concrete only; omit for both. */
   isAbstract?: boolean | null
@@ -201,6 +203,7 @@ export class LibraryClient {
         taxonomyId: options?.taxonomyId ?? null,
         source: options?.source ?? null,
         classification: options?.classification ?? null,
+        activityType: options?.activityType ?? null,
         elementType: options?.elementType ?? null,
         isAbstract: options?.isAbstract ?? null,
         limit: options?.limit ?? 50,

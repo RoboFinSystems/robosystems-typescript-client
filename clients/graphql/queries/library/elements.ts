@@ -4,6 +4,10 @@ import { gql } from 'graphql-request'
  * List library elements with filters + pagination.
  *
  * `classification` filters on the FASB elementsOfFinancialStatements axis.
+ * `activityType` filters on the cash-flow activity axis
+ * (operatingActivity / investingActivity / financingActivity). Both axes
+ * apply independently and can be combined.
+ *
  * `isAbstract=true` → abstract only; `false` → concrete only; omit for both.
  *
  * `includeLabels` / `includeReferences` default `false`; the list view
@@ -14,6 +18,7 @@ export const LIST_LIBRARY_ELEMENTS = gql`
     $taxonomyId: ID
     $source: String
     $classification: String
+    $activityType: String
     $elementType: String
     $isAbstract: Boolean
     $limit: Int! = 50
@@ -25,6 +30,7 @@ export const LIST_LIBRARY_ELEMENTS = gql`
       taxonomyId: $taxonomyId
       source: $source
       classification: $classification
+      activityType: $activityType
       elementType: $elementType
       isAbstract: $isAbstract
       limit: $limit
