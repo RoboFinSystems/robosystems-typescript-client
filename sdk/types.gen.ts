@@ -968,46 +968,6 @@ export type BulkCreateAssociationsRequest = {
 };
 
 /**
- * BulkDocumentUploadRequest
- *
- * Bulk upload multiple markdown documents.
- */
-export type BulkDocumentUploadRequest = {
-    /**
-     * Documents
-     *
-     * Documents to upload (max 50)
-     */
-    documents: Array<DocumentUploadRequest>;
-};
-
-/**
- * BulkDocumentUploadResponse
- *
- * Response from bulk document upload.
- */
-export type BulkDocumentUploadResponse = {
-    /**
-     * Total Documents
-     */
-    total_documents: number;
-    /**
-     * Total Sections Indexed
-     */
-    total_sections_indexed: number;
-    /**
-     * Results
-     */
-    results: Array<DocumentUploadResponse>;
-    /**
-     * Errors
-     */
-    errors?: Array<{
-        [key: string]: unknown;
-    }> | null;
-};
-
-/**
  * ChangeTierOp
  *
  * Body for the change-tier operation (supports upgrades and downgrades).
@@ -1421,6 +1381,11 @@ export type CreateCheckoutRequest = {
 
 /**
  * CreateClosingEntryOperation
+ *
+ * CQRS-shaped body for `POST /operations/create-closing-entry`.
+ *
+ * `structure_id` moves into the body so REST + MCP share a single body
+ * type via the registrar.
  */
 export type CreateClosingEntryOperation = {
     /**
@@ -1449,6 +1414,8 @@ export type CreateClosingEntryOperation = {
     memo?: string | null;
     /**
      * Structure Id
+     *
+     * Schedule structure the closing entry is derived from.
      */
     structure_id: string;
 };
@@ -1501,11 +1468,7 @@ export type CreateElementRequest = {
     /**
      * Classification
      */
-    classification: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
-    /**
-     * Sub Classification
-     */
-    sub_classification?: string | null;
+    classification: 'asset' | 'contraAsset' | 'liability' | 'contraLiability' | 'equity' | 'contraEquity' | 'temporaryEquity' | 'revenue' | 'expense' | 'expenseReversal' | 'gain' | 'loss' | 'comprehensiveIncome' | 'investmentByOwners' | 'distributionToOwners';
     /**
      * Balance Type
      */
@@ -1533,7 +1496,7 @@ export type CreateElementRequest = {
     /**
      * Source
      */
-    source?: 'native' | 'sfac6' | 'us-gaap' | 'ifrs' | 'quickbooks' | 'xero' | 'plaid' | 'import';
+    source?: 'native' | 'fac' | 'rs-gaap' | 'us-gaap' | 'ifrs' | 'quickbooks' | 'xero' | 'plaid' | 'import';
     /**
      * Currency
      */
@@ -1671,6 +1634,11 @@ export type CreateManualClosingEntryRequest = {
 
 /**
  * CreateMappingAssociationOperation
+ *
+ * CQRS-shaped body for `POST /operations/create-mapping-association`.
+ *
+ * Bundles the target mapping structure's `mapping_id` with the association
+ * payload so REST + MCP share a single body type via the registrar.
  */
 export type CreateMappingAssociationOperation = {
     /**
@@ -1684,7 +1652,7 @@ export type CreateMappingAssociationOperation = {
     /**
      * Association Type
      */
-    association_type?: 'presentation' | 'calculation' | 'mapping';
+    association_type?: 'presentation' | 'calculation' | 'mapping' | 'equivalence';
     /**
      * Order Value
      */
@@ -1703,6 +1671,8 @@ export type CreateMappingAssociationOperation = {
     suggested_by?: string | null;
     /**
      * Mapping Id
+     *
+     * Target mapping structure ID.
      */
     mapping_id: string;
 };
@@ -2716,20 +2686,28 @@ export type DeleteMappingAssociationOperation = {
 
 /**
  * DeletePortfolioOperation
+ *
+ * CQRS body for `POST /operations/delete-portfolio`.
  */
 export type DeletePortfolioOperation = {
     /**
      * Portfolio Id
+     *
+     * Target portfolio ID.
      */
     portfolio_id: string;
 };
 
 /**
  * DeletePositionOperation
+ *
+ * CQRS body for `POST /operations/delete-position` (soft delete).
  */
 export type DeletePositionOperation = {
     /**
      * Position Id
+     *
+     * Target position ID.
      */
     position_id: string;
 };
@@ -2773,10 +2751,14 @@ export type DeleteScheduleRequest = {
 
 /**
  * DeleteSecurityOperation
+ *
+ * CQRS body for `POST /operations/delete-security` (soft delete).
  */
 export type DeleteSecurityOperation = {
     /**
      * Security Id
+     *
+     * Target security ID.
      */
     security_id: string;
 };
@@ -3517,6 +3499,48 @@ export type FileUploadResponse = {
      * S3 object key
      */
     s3_key: string;
+};
+
+/**
+ * FinancialStatementAnalysisRequest
+ *
+ * Request for financial-statement-analysis (graph-backed Cypher).
+ */
+export type FinancialStatementAnalysisRequest = {
+    /**
+     * Statement Type
+     *
+     * income_statement | balance_sheet | cash_flow_statement | equity_statement
+     */
+    statement_type: string;
+    /**
+     * Ticker
+     *
+     * Company ticker (required on shared-repo graphs, ignored otherwise)
+     */
+    ticker?: string | null;
+    /**
+     * Report Id
+     *
+     * Specific report identifier. If omitted, auto-resolves latest by ticker + filters.
+     */
+    report_id?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Filter by fiscal year focus when auto-resolving the report
+     */
+    fiscal_year?: number | null;
+    /**
+     * Period Type
+     *
+     * annual | quarterly | instant
+     */
+    period_type?: string | null;
+    /**
+     * Limit
+     */
+    limit?: number;
 };
 
 /**
@@ -4856,6 +4880,50 @@ export type ListTableFilesResponse = {
      * Total size of all files in bytes
      */
     total_size_bytes: number;
+};
+
+/**
+ * LiveFinancialStatementRequest
+ *
+ * Request for live-financial-statement (OLTP, entity graphs only).
+ */
+export type LiveFinancialStatementRequest = {
+    /**
+     * Statement Type
+     *
+     * income_statement | balance_sheet | equity_statement
+     */
+    statement_type: string;
+    /**
+     * Period Start
+     *
+     * Explicit window start. Overrides period_type/fiscal_year.
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     *
+     * Explicit window end. Overrides period_type/fiscal_year.
+     */
+    period_end?: string | null;
+    /**
+     * Period Type
+     *
+     * annual | quarterly | instant (ignored when dates supplied)
+     */
+    period_type?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Fiscal year for annual window (anchored on FiscalCalendar)
+     */
+    fiscal_year?: number | null;
+    /**
+     * Limit
+     *
+     * Max fact rows returned
+     */
+    limit?: number;
 };
 
 /**
@@ -7209,6 +7277,13 @@ export type TransactionSummaryResponse = {
 
 /**
  * TruncateScheduleOperation
+ *
+ * CQRS-shaped body for `POST /operations/truncate-schedule`.
+ *
+ * Bundles the target schedule's `structure_id` with the update payload so
+ * the single-body signature matches the registrar/MCP contract. The REST
+ * handler, GraphQL resolver, and MCP tool all resolve to the same
+ * `cmd_truncate_schedule(session, body, created_by=...)`.
  */
 export type TruncateScheduleOperation = {
     /**
@@ -7225,6 +7300,8 @@ export type TruncateScheduleOperation = {
     reason: string;
     /**
      * Structure Id
+     *
+     * Target schedule structure ID.
      */
     structure_id: string;
 };
@@ -7330,6 +7407,13 @@ export type UpdateAssociationRequest = {
  * immutable. `parent_id` honors `model_dump(exclude_unset=True)` semantics:
  * omit the field to leave unchanged, pass `null` to clear the parent
  * (make root).
+ *
+ * ``classification`` updates the element's primary FASB
+ * elementsOfFinancialStatements assignment (in ``element_classifications``,
+ * not a direct column on ``elements``). Omit to leave unchanged. Passing a
+ * value replaces the current primary EFS assignment; there is no
+ * set-to-null semantics (use the UI/admin path for full classification
+ * teardown — here we only support correction of a misclassified account).
  */
 export type UpdateElementRequest = {
     /**
@@ -7349,14 +7433,6 @@ export type UpdateElementRequest = {
      */
     description?: string | null;
     /**
-     * Classification
-     */
-    classification?: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense' | null;
-    /**
-     * Sub Classification
-     */
-    sub_classification?: string | null;
-    /**
      * Balance Type
      */
     balance_type?: 'debit' | 'credit' | null;
@@ -7372,6 +7448,10 @@ export type UpdateElementRequest = {
      * Currency
      */
     currency?: string | null;
+    /**
+     * Classification
+     */
+    classification?: 'asset' | 'contraAsset' | 'liability' | 'contraLiability' | 'equity' | 'contraEquity' | 'temporaryEquity' | 'revenue' | 'expense' | 'expenseReversal' | 'gain' | 'loss' | 'comprehensiveIncome' | 'investmentByOwners' | 'distributionToOwners' | null;
 };
 
 /**
@@ -7554,6 +7634,11 @@ export type UpdatePasswordRequest = {
 
 /**
  * UpdatePortfolioOperation
+ *
+ * CQRS body for `POST /operations/update-portfolio`.
+ *
+ * Folds `portfolio_id` into the payload so REST + MCP share one body
+ * type via the registrar. Unset fields are ignored (partial update).
  */
 export type UpdatePortfolioOperation = {
     /**
@@ -7578,12 +7663,16 @@ export type UpdatePortfolioOperation = {
     base_currency?: string | null;
     /**
      * Portfolio Id
+     *
+     * Target portfolio ID.
      */
     portfolio_id: string;
 };
 
 /**
  * UpdatePositionOperation
+ *
+ * CQRS body for `POST /operations/update-position`.
  */
 export type UpdatePositionOperation = {
     /**
@@ -7628,6 +7717,8 @@ export type UpdatePositionOperation = {
     notes?: string | null;
     /**
      * Position Id
+     *
+     * Target position ID.
      */
     position_id: string;
 };
@@ -7679,6 +7770,8 @@ export type UpdateScheduleRequest = {
 
 /**
  * UpdateSecurityOperation
+ *
+ * CQRS body for `POST /operations/update-security`.
  */
 export type UpdateSecurityOperation = {
     /**
@@ -7721,6 +7814,8 @@ export type UpdateSecurityOperation = {
     outstanding_shares?: number | null;
     /**
      * Security Id
+     *
+     * Target security ID.
      */
     security_id: string;
 };
@@ -12255,60 +12350,6 @@ export type UpdateDocumentResponses = {
 
 export type UpdateDocumentResponse = UpdateDocumentResponses[keyof UpdateDocumentResponses];
 
-export type UploadDocumentsBulkData = {
-    body: BulkDocumentUploadRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/documents/bulk';
-};
-
-export type UploadDocumentsBulkErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type UploadDocumentsBulkError = UploadDocumentsBulkErrors[keyof UploadDocumentsBulkErrors];
-
-export type UploadDocumentsBulkResponses = {
-    /**
-     * Successful Response
-     */
-    200: BulkDocumentUploadResponse;
-};
-
-export type UploadDocumentsBulkResponse = UploadDocumentsBulkResponses[keyof UploadDocumentsBulkResponses];
-
 export type OpCreateSubgraphData = {
     body: CreateSubgraphRequest;
     headers?: {
@@ -14435,262 +14476,6 @@ export type OpReopenPeriodResponses = {
 
 export type OpReopenPeriodResponse = OpReopenPeriodResponses[keyof OpReopenPeriodResponses];
 
-export type OpCreateScheduleData = {
-    body: CreateScheduleRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-schedule';
-};
-
-export type OpCreateScheduleErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OpCreateScheduleError = OpCreateScheduleErrors[keyof OpCreateScheduleErrors];
-
-export type OpCreateScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateScheduleResponse = OpCreateScheduleResponses[keyof OpCreateScheduleResponses];
-
-export type OpTruncateScheduleData = {
-    body: TruncateScheduleOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule';
-};
-
-export type OpTruncateScheduleErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OpTruncateScheduleError = OpTruncateScheduleErrors[keyof OpTruncateScheduleErrors];
-
-export type OpTruncateScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpTruncateScheduleResponse = OpTruncateScheduleResponses[keyof OpTruncateScheduleResponses];
-
-export type OpCreateClosingEntryData = {
-    body: CreateClosingEntryOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-closing-entry';
-};
-
-export type OpCreateClosingEntryErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OpCreateClosingEntryError = OpCreateClosingEntryErrors[keyof OpCreateClosingEntryErrors];
-
-export type OpCreateClosingEntryResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateClosingEntryResponse = OpCreateClosingEntryResponses[keyof OpCreateClosingEntryResponses];
-
-export type OpCreateManualClosingEntryData = {
-    body: CreateManualClosingEntryRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-manual-closing-entry';
-};
-
-export type OpCreateManualClosingEntryErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OpCreateManualClosingEntryError = OpCreateManualClosingEntryErrors[keyof OpCreateManualClosingEntryErrors];
-
-export type OpCreateManualClosingEntryResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateManualClosingEntryResponse = OpCreateManualClosingEntryResponses[keyof OpCreateManualClosingEntryResponses];
-
 export type OpCreateTaxonomyData = {
     body: CreateTaxonomyRequest;
     headers?: {
@@ -14818,70 +14603,6 @@ export type OpCreateStructureResponses = {
 };
 
 export type OpCreateStructureResponse = OpCreateStructureResponses[keyof OpCreateStructureResponses];
-
-export type OpCreateMappingAssociationData = {
-    body: CreateMappingAssociationOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association';
-};
-
-export type OpCreateMappingAssociationErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
-
-export type OpCreateMappingAssociationResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateMappingAssociationResponse = OpCreateMappingAssociationResponses[keyof OpCreateMappingAssociationResponses];
 
 export type OpDeleteMappingAssociationData = {
     body: DeleteMappingAssociationOperation;
@@ -15971,6 +15692,262 @@ export type OpReverseJournalEntryResponses = {
 
 export type OpReverseJournalEntryResponse = OpReverseJournalEntryResponses[keyof OpReverseJournalEntryResponses];
 
+export type OpCreateScheduleData = {
+    body: CreateScheduleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-schedule';
+};
+
+export type OpCreateScheduleErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateScheduleError = OpCreateScheduleErrors[keyof OpCreateScheduleErrors];
+
+export type OpCreateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateScheduleResponse = OpCreateScheduleResponses[keyof OpCreateScheduleResponses];
+
+export type OpTruncateScheduleData = {
+    body: TruncateScheduleOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule';
+};
+
+export type OpTruncateScheduleErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpTruncateScheduleError = OpTruncateScheduleErrors[keyof OpTruncateScheduleErrors];
+
+export type OpTruncateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpTruncateScheduleResponse = OpTruncateScheduleResponses[keyof OpTruncateScheduleResponses];
+
+export type OpCreateClosingEntryData = {
+    body: CreateClosingEntryOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-closing-entry';
+};
+
+export type OpCreateClosingEntryErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateClosingEntryError = OpCreateClosingEntryErrors[keyof OpCreateClosingEntryErrors];
+
+export type OpCreateClosingEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateClosingEntryResponse = OpCreateClosingEntryResponses[keyof OpCreateClosingEntryResponses];
+
+export type OpCreateManualClosingEntryData = {
+    body: CreateManualClosingEntryRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-manual-closing-entry';
+};
+
+export type OpCreateManualClosingEntryErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateManualClosingEntryError = OpCreateManualClosingEntryErrors[keyof OpCreateManualClosingEntryErrors];
+
+export type OpCreateManualClosingEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateManualClosingEntryResponse = OpCreateManualClosingEntryResponses[keyof OpCreateManualClosingEntryResponses];
+
 export type OpUpdateScheduleData = {
     body: UpdateScheduleRequest;
     headers?: {
@@ -16098,6 +16075,70 @@ export type OpDeleteScheduleResponses = {
 };
 
 export type OpDeleteScheduleResponse = OpDeleteScheduleResponses[keyof OpDeleteScheduleResponses];
+
+export type OpCreateMappingAssociationData = {
+    body: CreateMappingAssociationOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association';
+};
+
+export type OpCreateMappingAssociationErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
+
+export type OpCreateMappingAssociationResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateMappingAssociationResponse = OpCreateMappingAssociationResponses[keyof OpCreateMappingAssociationResponses];
 
 export type OpAutoMapElementsData = {
     body: AutoMapElementsOperation;
@@ -16739,6 +16780,70 @@ export type OpRemovePublishListMemberResponses = {
 
 export type OpRemovePublishListMemberResponse = OpRemovePublishListMemberResponses[keyof OpRemovePublishListMemberResponses];
 
+export type OpLiveFinancialStatementData = {
+    body: LiveFinancialStatementRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/live-financial-statement';
+};
+
+export type OpLiveFinancialStatementErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpLiveFinancialStatementError = OpLiveFinancialStatementErrors[keyof OpLiveFinancialStatementErrors];
+
+export type OpLiveFinancialStatementResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpLiveFinancialStatementResponse = OpLiveFinancialStatementResponses[keyof OpLiveFinancialStatementResponses];
+
 export type OpBuildFactGridData = {
     body: CreateViewRequest;
     headers?: {
@@ -16803,8 +16908,8 @@ export type OpBuildFactGridResponses = {
 
 export type OpBuildFactGridResponse = OpBuildFactGridResponses[keyof OpBuildFactGridResponses];
 
-export type OpCreatePortfolioData = {
-    body: CreatePortfolioRequest;
+export type OpFinancialStatementAnalysisData = {
+    body: FinancialStatementAnalysisRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -16818,10 +16923,10 @@ export type OpCreatePortfolioData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio';
+    url: '/extensions/roboledger/{graph_id}/operations/financial-statement-analysis';
 };
 
-export type OpCreatePortfolioErrors = {
+export type OpFinancialStatementAnalysisErrors = {
     /**
      * Invalid request
      */
@@ -16854,6 +16959,70 @@ export type OpCreatePortfolioErrors = {
      * Internal server error
      */
     500: ErrorResponse;
+};
+
+export type OpFinancialStatementAnalysisError = OpFinancialStatementAnalysisErrors[keyof OpFinancialStatementAnalysisErrors];
+
+export type OpFinancialStatementAnalysisResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpFinancialStatementAnalysisResponse = OpFinancialStatementAnalysisResponses[keyof OpFinancialStatementAnalysisResponses];
+
+export type OpCreatePortfolioData = {
+    body: CreatePortfolioRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio';
+};
+
+export type OpCreatePortfolioErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
 };
 
 export type OpCreatePortfolioError = OpCreatePortfolioErrors[keyof OpCreatePortfolioErrors];
@@ -16887,25 +17056,25 @@ export type OpUpdatePortfolioData = {
 
 export type OpUpdatePortfolioErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -16913,11 +17082,11 @@ export type OpUpdatePortfolioErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpUpdatePortfolioError = OpUpdatePortfolioErrors[keyof OpUpdatePortfolioErrors];
@@ -16951,25 +17120,25 @@ export type OpDeletePortfolioData = {
 
 export type OpDeletePortfolioErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -16977,11 +17146,11 @@ export type OpDeletePortfolioErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpDeletePortfolioError = OpDeletePortfolioErrors[keyof OpDeletePortfolioErrors];
@@ -17015,25 +17184,25 @@ export type OpCreateSecurityData = {
 
 export type OpCreateSecurityErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -17041,11 +17210,11 @@ export type OpCreateSecurityErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpCreateSecurityError = OpCreateSecurityErrors[keyof OpCreateSecurityErrors];
@@ -17079,25 +17248,25 @@ export type OpUpdateSecurityData = {
 
 export type OpUpdateSecurityErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -17105,11 +17274,11 @@ export type OpUpdateSecurityErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpUpdateSecurityError = OpUpdateSecurityErrors[keyof OpUpdateSecurityErrors];
@@ -17143,25 +17312,25 @@ export type OpDeleteSecurityData = {
 
 export type OpDeleteSecurityErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -17169,11 +17338,11 @@ export type OpDeleteSecurityErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpDeleteSecurityError = OpDeleteSecurityErrors[keyof OpDeleteSecurityErrors];
@@ -17207,25 +17376,25 @@ export type OpCreatePositionData = {
 
 export type OpCreatePositionErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -17233,11 +17402,11 @@ export type OpCreatePositionErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpCreatePositionError = OpCreatePositionErrors[keyof OpCreatePositionErrors];
@@ -17271,25 +17440,25 @@ export type OpUpdatePositionData = {
 
 export type OpUpdatePositionErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -17297,11 +17466,11 @@ export type OpUpdatePositionErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpUpdatePositionError = OpUpdatePositionErrors[keyof OpUpdatePositionErrors];
@@ -17335,25 +17504,25 @@ export type OpDeletePositionData = {
 
 export type OpDeletePositionErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -17361,11 +17530,11 @@ export type OpDeletePositionErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
 export type OpDeletePositionError = OpDeletePositionErrors[keyof OpDeletePositionErrors];

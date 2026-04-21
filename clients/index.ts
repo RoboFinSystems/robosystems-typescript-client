@@ -9,6 +9,7 @@ import { extractTokenFromSDKClient, getSDKClientConfig } from './config'
 import type { TokenProvider } from './graphql/client'
 import { InvestorClient } from './InvestorClient'
 import { LedgerClient } from './LedgerClient'
+import { LibraryClient } from './LibraryClient'
 import { OperationClient } from './OperationClient'
 import { QueryClient } from './QueryClient'
 import { SSEClient } from './SSEClient'
@@ -56,6 +57,7 @@ export class RoboSystemsClients {
   public readonly operations: OperationClient
   public readonly ledger: LedgerClient
   public readonly investor: InvestorClient
+  public readonly library: LibraryClient
   /**
    * @deprecated Use `ledger` instead — reports and publish lists are
    * now part of the LedgerClient.
@@ -125,6 +127,17 @@ export class RoboSystemsClients {
       headers: this.config.headers,
     })
 
+    // Library uses GraphQL and accepts graphId per-call — pass either
+    // the `"library"` sentinel (canonical) or any tenant graph_id
+    // (tenant library copy + CoA).
+    this.library = new LibraryClient({
+      baseUrl: this.config.baseUrl,
+      credentials: this.config.credentials,
+      token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
+      headers: this.config.headers,
+    })
+
     // Reports consolidated into LedgerClient — alias for backward compat
     this.reports = this.ledger
   }
@@ -165,11 +178,20 @@ export * from './AgentClient'
 export * from './config'
 export * from './InvestorClient'
 export * from './LedgerClient'
+export * from './LibraryClient'
 export * from './OperationClient'
 export * from './QueryClient'
 export * from './SSEClient'
 
-export { AgentClient, InvestorClient, LedgerClient, OperationClient, QueryClient, SSEClient }
+export {
+  AgentClient,
+  InvestorClient,
+  LedgerClient,
+  LibraryClient,
+  OperationClient,
+  QueryClient,
+  SSEClient,
+}
 
 // Export React hooks
 export {
@@ -205,6 +227,9 @@ export const clients = {
   },
   get investor() {
     return getClients().investor
+  },
+  get library() {
+    return getClients().library
   },
   /** @deprecated Use `ledger` instead */
   get reports() {
