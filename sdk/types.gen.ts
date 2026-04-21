@@ -1562,6 +1562,35 @@ export type CreateGraphRequest = {
 };
 
 /**
+ * CreateInformationBlockRequest
+ *
+ * Generic create request — discriminator + typed-at-dispatch payload.
+ *
+ * ``block_type`` selects the registry entry. ``payload`` is validated
+ * against ``BlockTypeRegistryEntry.create_request_model`` (e.g.
+ * :class:`CreateScheduleRequest` for ``block_type='schedule'``) by the
+ * command dispatcher. Chosen over a Pydantic discriminated union on the
+ * top-level request so adding a block type is one registry line, not a
+ * union-arm edit at the request-model layer.
+ */
+export type CreateInformationBlockRequest = {
+    /**
+     * Block Type
+     *
+     * Block type discriminator. Must match a registered entry in robosystems.operations.information_block.registry.REGISTRY.
+     */
+    block_type: string;
+    /**
+     * Payload
+     *
+     * Block-type-specific creation payload. Shape-validated against the registry entry's `create_request_model` at dispatch time; the validation error surfaces as a 422 at the API boundary.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * CreateJournalEntryRequest
  *
  * Create a new journal entry with balanced line items.
@@ -2655,6 +2684,31 @@ export type DeleteFileResponse = {
      * Whether graph was marked as stale
      */
     graph_marked_stale?: boolean;
+};
+
+/**
+ * DeleteInformationBlockRequest
+ *
+ * Generic delete request — mirrors :class:`CreateInformationBlockRequest`.
+ *
+ * Validated against the registry entry's ``delete_request_model``.
+ * Block types that don't support deletion raise ``NotImplementedError``.
+ */
+export type DeleteInformationBlockRequest = {
+    /**
+     * Block Type
+     *
+     * Block type discriminator. Must match a registered entry.
+     */
+    block_type: string;
+    /**
+     * Payload
+     *
+     * Block-type-specific delete payload. Typically carries just the structure_id. Shape-validated against the registry entry's `delete_request_model` at dispatch time.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -7548,6 +7602,33 @@ export type UpdateEntityRequest = {
      * Address Country
      */
     address_country?: string | null;
+};
+
+/**
+ * UpdateInformationBlockRequest
+ *
+ * Generic update request — mirrors :class:`CreateInformationBlockRequest`.
+ *
+ * Validated against the registry entry's ``update_request_model``.
+ * Block types that don't support updates (e.g. the statement family,
+ * whose Structures are library-seeded) surface ``NotImplementedError``
+ * from their dispatch handler, which the registrar maps to HTTP 501.
+ */
+export type UpdateInformationBlockRequest = {
+    /**
+     * Block Type
+     *
+     * Block type discriminator. Must match a registered entry.
+     */
+    block_type: string;
+    /**
+     * Payload
+     *
+     * Block-type-specific update payload. Typically carries the structure_id plus whichever fields are editable for this block type. Shape-validated against the registry entry's `update_request_model` at dispatch time.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -16075,6 +16156,198 @@ export type OpDeleteScheduleResponses = {
 };
 
 export type OpDeleteScheduleResponse = OpDeleteScheduleResponses[keyof OpDeleteScheduleResponses];
+
+export type OpCreateInformationBlockData = {
+    body: CreateInformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-information-block';
+};
+
+export type OpCreateInformationBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateInformationBlockError = OpCreateInformationBlockErrors[keyof OpCreateInformationBlockErrors];
+
+export type OpCreateInformationBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateInformationBlockResponse = OpCreateInformationBlockResponses[keyof OpCreateInformationBlockResponses];
+
+export type OpUpdateInformationBlockData = {
+    body: UpdateInformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/update-information-block';
+};
+
+export type OpUpdateInformationBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpUpdateInformationBlockError = OpUpdateInformationBlockErrors[keyof OpUpdateInformationBlockErrors];
+
+export type OpUpdateInformationBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpUpdateInformationBlockResponse = OpUpdateInformationBlockResponses[keyof OpUpdateInformationBlockResponses];
+
+export type OpDeleteInformationBlockData = {
+    body: DeleteInformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/delete-information-block';
+};
+
+export type OpDeleteInformationBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpDeleteInformationBlockError = OpDeleteInformationBlockErrors[keyof OpDeleteInformationBlockErrors];
+
+export type OpDeleteInformationBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteInformationBlockResponse = OpDeleteInformationBlockResponses[keyof OpDeleteInformationBlockResponses];
 
 export type OpCreateMappingAssociationData = {
     body: CreateMappingAssociationOperation;

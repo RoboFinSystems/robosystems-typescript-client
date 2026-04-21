@@ -113,6 +113,7 @@ import type {
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
 import {
+  GetInformationBlockDocument,
   GetLedgerAccountRollupsDocument,
   GetLedgerAccountTreeDocument,
   GetLedgerClosingBookStructuresDocument,
@@ -126,22 +127,22 @@ import {
   GetLedgerPublishListDocument,
   GetLedgerReportDocument,
   GetLedgerReportingTaxonomyDocument,
-  GetLedgerScheduleFactsDocument,
   GetLedgerStatementDocument,
   GetLedgerSummaryDocument,
   GetLedgerTransactionDocument,
   GetLedgerTrialBalanceDocument,
+  ListInformationBlocksDocument,
   ListLedgerAccountsDocument,
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
   ListLedgerMappingsDocument,
   ListLedgerPublishListsDocument,
   ListLedgerReportsDocument,
-  ListLedgerSchedulesDocument,
   ListLedgerStructuresDocument,
   ListLedgerTaxonomiesDocument,
   ListLedgerTransactionsDocument,
   ListLedgerUnmappedElementsDocument,
+  type GetInformationBlockQuery,
   type GetLedgerAccountRollupsQuery,
   type GetLedgerAccountTreeQuery,
   type GetLedgerClosingBookStructuresQuery,
@@ -155,18 +156,17 @@ import {
   type GetLedgerPublishListQuery,
   type GetLedgerReportingTaxonomyQuery,
   type GetLedgerReportQuery,
-  type GetLedgerScheduleFactsQuery,
   type GetLedgerStatementQuery,
   type GetLedgerSummaryQuery,
   type GetLedgerTransactionQuery,
   type GetLedgerTrialBalanceQuery,
+  type ListInformationBlocksQuery,
   type ListLedgerAccountsQuery,
   type ListLedgerElementsQuery,
   type ListLedgerEntitiesQuery,
   type ListLedgerMappingsQuery,
   type ListLedgerPublishListsQuery,
   type ListLedgerReportsQuery,
-  type ListLedgerSchedulesQuery,
   type ListLedgerStructuresQuery,
   type ListLedgerTaxonomiesQuery,
   type ListLedgerTransactionsQuery,
@@ -217,10 +217,11 @@ export type LedgerMappingInfo = LedgerMappingList['structures'][number]
 export type LedgerMapping = NonNullable<GetLedgerMappingQuery['mapping']>
 export type LedgerMappingCoverage = NonNullable<GetLedgerMappingCoverageQuery['mappingCoverage']>
 
-export type LedgerScheduleList = NonNullable<ListLedgerSchedulesQuery['schedules']>
-export type LedgerSchedule = LedgerScheduleList['schedules'][number]
-export type LedgerScheduleFacts = NonNullable<GetLedgerScheduleFactsQuery['scheduleFacts']>
-export type LedgerScheduleFact = LedgerScheduleFacts['facts'][number]
+export type InformationBlock = NonNullable<GetInformationBlockQuery['informationBlock']>
+export type InformationBlockList = ListInformationBlocksQuery['informationBlocks']
+export type InformationBlockElement = InformationBlock['elements'][number]
+export type InformationBlockConnection = InformationBlock['connections'][number]
+export type InformationBlockFact = InformationBlock['facts'][number]
 
 export type LedgerPeriodCloseStatus = NonNullable<
   GetLedgerPeriodCloseStatusQuery['periodCloseStatus']
@@ -1072,39 +1073,54 @@ export class LedgerClient {
     return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
-  // ── Schedules ──────────────────────────────────────────────────────
+  // ── Information Blocks ─────────────────────────────────────────────
 
-  /** List all schedule structures with metadata. */
-  async listSchedules(graphId: string): Promise<LedgerSchedule[]> {
-    const list = await this.gqlQuery(
+  /**
+   * Fetch an Information Block envelope by id — the generic
+   * cross-block-type read. Returns `null` when the block doesn't exist
+   * (or its type isn't registered). See `information-block.md`.
+   */
+  async getInformationBlock(graphId: string, id: string): Promise<InformationBlock | null> {
+    const block = await this.gqlQuery(
       graphId,
-      ListLedgerSchedulesDocument,
-      undefined,
-      'List schedules',
-      (data) => data.schedules
+      GetInformationBlockDocument,
+      { id },
+      'Get information block',
+      (data) => data.informationBlock ?? null
     )
-    return list?.schedules ?? []
+    return block ?? null
   }
 
-  /** Schedule facts optionally filtered by period window. */
-  async getScheduleFacts(
+  /**
+   * List Information Block envelopes with optional block_type + category
+   * filters. Replaces the old `listSchedules` method — callers use
+   * `{blockType: 'schedule'}` to get the same set of blocks.
+   */
+  async listInformationBlocks(
     graphId: string,
-    structureId: string,
-    options?: { periodStart?: string; periodEnd?: string }
-  ): Promise<LedgerScheduleFact[]> {
-    const facts = await this.gqlQuery(
+    options?: {
+      blockType?: string
+      category?: string
+      limit?: number
+      offset?: number
+    }
+  ): Promise<InformationBlockList> {
+    const blocks = await this.gqlQuery(
       graphId,
-      GetLedgerScheduleFactsDocument,
+      ListInformationBlocksDocument,
       {
-        structureId,
-        periodStart: options?.periodStart ?? null,
-        periodEnd: options?.periodEnd ?? null,
+        blockType: options?.blockType ?? null,
+        category: options?.category ?? null,
+        limit: options?.limit ?? null,
+        offset: options?.offset ?? null,
       },
-      'Get schedule facts',
-      (data) => data.scheduleFacts
+      'List information blocks',
+      (data) => data.informationBlocks
     )
-    return facts?.facts ?? []
+    return blocks ?? []
   }
+
+  // ── Schedules ──────────────────────────────────────────────────────
 
   /** Create a new schedule with pre-generated monthly facts. */
   async createSchedule(graphId: string, options: CreateScheduleOptions): Promise<ScheduleCreated> {

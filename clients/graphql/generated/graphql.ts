@@ -89,6 +89,13 @@ export type AccountTreeNode = {
   name: Scalars['String']['output']
 }
 
+export type Artifact = {
+  mechanics: Scalars['JSON']['output']
+  parentheticalNote: Maybe<Scalars['String']['output']>
+  template: Maybe<Scalars['JSON']['output']>
+  topic: Maybe<Scalars['String']['output']>
+}
+
 export type Association = {
   approvedBy: Maybe<Scalars['String']['output']>
   associationType: Scalars['String']['output']
@@ -252,6 +259,69 @@ export type HoldingsList = {
   holdings: Array<Holding>
   totalEntities: Scalars['Int']['output']
   totalPositions: Scalars['Int']['output']
+}
+
+export type InformationBlock = {
+  artifact: Artifact
+  blockType: Scalars['String']['output']
+  category: Scalars['String']['output']
+  connections: Array<InformationBlockConnection>
+  dimensions: Array<Scalars['JSON']['output']>
+  displayName: Scalars['String']['output']
+  elements: Array<InformationBlockElement>
+  factSet: Maybe<Scalars['JSON']['output']>
+  facts: Array<InformationBlockFact>
+  id: Scalars['ID']['output']
+  informationModel: InformationModel
+  name: Scalars['String']['output']
+  rules: Array<Scalars['JSON']['output']>
+  taxonomyId: Maybe<Scalars['String']['output']>
+  taxonomyName: Maybe<Scalars['String']['output']>
+  verificationResults: Array<Scalars['JSON']['output']>
+}
+
+export type InformationBlockConnection = {
+  arcrole: Maybe<Scalars['String']['output']>
+  /** presentation | calculation | mapping | equivalence | general-special | essence-alias */
+  associationType: Scalars['String']['output']
+  fromElementId: Scalars['String']['output']
+  id: Scalars['String']['output']
+  orderValue: Maybe<Scalars['Float']['output']>
+  toElementId: Scalars['String']['output']
+  weight: Maybe<Scalars['Float']['output']>
+}
+
+export type InformationBlockElement = {
+  balanceType: Maybe<Scalars['String']['output']>
+  code: Maybe<Scalars['String']['output']>
+  /** concept | abstract | axis | member | hypercube */
+  elementType: Scalars['String']['output']
+  id: Scalars['String']['output']
+  isAbstract: Scalars['Boolean']['output']
+  isMonetary: Scalars['Boolean']['output']
+  name: Scalars['String']['output']
+  periodType: Maybe<Scalars['String']['output']>
+  qname: Maybe<Scalars['String']['output']>
+}
+
+export type InformationBlockFact = {
+  elementId: Scalars['String']['output']
+  /** historical | in_scope */
+  factScope: Scalars['String']['output']
+  factSetId: Maybe<Scalars['String']['output']>
+  id: Scalars['String']['output']
+  periodEnd: Scalars['Date']['output']
+  periodStart: Maybe<Scalars['Date']['output']>
+  periodType: Scalars['String']['output']
+  unit: Scalars['String']['output']
+  value: Scalars['Float']['output']
+}
+
+export type InformationModel = {
+  /** roll_up | roll_forward | variance | adjustment | set | arithmetic | textblock. Null for block types where the concept arrangement is implicit in their mechanics. */
+  conceptArrangement: Maybe<Scalars['String']['output']>
+  /** aggregation | nonaggregation, or null if non-hypercube. */
+  memberArrangement: Maybe<Scalars['String']['output']>
 }
 
 export type LedgerEntity = {
@@ -662,6 +732,8 @@ export type Query = {
   fiscalCalendar: Maybe<FiscalCalendar>
   hello: Scalars['String']['output']
   holdings: Maybe<HoldingsList>
+  informationBlock: Maybe<InformationBlock>
+  informationBlocks: Array<InformationBlock>
   libraryElement: Maybe<LibraryElement>
   libraryElementArcs: Array<LibraryElementArc>
   libraryElementClassifications: Array<LibraryElementClassification>
@@ -689,8 +761,6 @@ export type Query = {
   report: Maybe<Report>
   reportingTaxonomy: Maybe<Taxonomy>
   reports: Maybe<ReportList>
-  scheduleFacts: Maybe<ScheduleFacts>
-  schedules: Maybe<ScheduleList>
   searchLibraryElements: Array<LibraryElement>
   securities: Maybe<SecurityList>
   security: Maybe<Security>
@@ -732,6 +802,17 @@ export type QueryEntitiesArgs = {
 
 export type QueryHoldingsArgs = {
   portfolioId: Scalars['String']['input']
+}
+
+export type QueryInformationBlockArgs = {
+  id: Scalars['ID']['input']
+}
+
+export type QueryInformationBlocksArgs = {
+  blockType?: InputMaybe<Scalars['String']['input']>
+  category?: InputMaybe<Scalars['String']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
 }
 
 export type QueryLibraryElementArgs = {
@@ -859,12 +940,6 @@ export type QueryReportArgs = {
   reportId: Scalars['String']['input']
 }
 
-export type QueryScheduleFactsArgs = {
-  periodEnd?: InputMaybe<Scalars['Date']['input']>
-  periodStart?: InputMaybe<Scalars['Date']['input']>
-  structureId: Scalars['String']['input']
-}
-
 export type QuerySearchLibraryElementsArgs = {
   limit?: Scalars['Int']['input']
   query: Scalars['String']['input']
@@ -941,33 +1016,6 @@ export type Report = {
 
 export type ReportList = {
   reports: Array<Report>
-}
-
-export type ScheduleFact = {
-  elementId: Scalars['String']['output']
-  elementName: Scalars['String']['output']
-  periodEnd: Scalars['Date']['output']
-  periodStart: Scalars['Date']['output']
-  value: Scalars['Float']['output']
-}
-
-export type ScheduleFacts = {
-  facts: Array<ScheduleFact>
-  structureId: Scalars['String']['output']
-}
-
-export type ScheduleList = {
-  schedules: Array<ScheduleSummary>
-}
-
-export type ScheduleSummary = {
-  entryTemplate: Maybe<Scalars['JSON']['output']>
-  name: Scalars['String']['output']
-  periodsWithEntries: Scalars['Int']['output']
-  scheduleMetadata: Maybe<Scalars['JSON']['output']>
-  structureId: Scalars['ID']['output']
-  taxonomyName: Scalars['String']['output']
-  totalPeriods: Scalars['Int']['output']
 }
 
 export type Security = {
@@ -1515,6 +1563,117 @@ export type GetLedgerFiscalCalendarQuery = {
   } | null
 }
 
+export type GetInformationBlockQueryVariables = Exact<{
+  id: Scalars['ID']['input']
+}>
+
+export type GetInformationBlockQuery = {
+  informationBlock: {
+    id: string
+    blockType: string
+    name: string
+    displayName: string
+    category: string
+    taxonomyId: string | null
+    taxonomyName: string | null
+    informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
+    artifact: {
+      topic: string | null
+      parentheticalNote: string | null
+      template: any | null
+      mechanics: any
+    }
+    elements: Array<{
+      id: string
+      qname: string | null
+      name: string
+      code: string | null
+      elementType: string
+      isAbstract: boolean
+      isMonetary: boolean
+      balanceType: string | null
+      periodType: string | null
+    }>
+    connections: Array<{
+      id: string
+      fromElementId: string
+      toElementId: string
+      associationType: string
+      arcrole: string | null
+      orderValue: number | null
+      weight: number | null
+    }>
+    facts: Array<{
+      id: string
+      elementId: string
+      value: number
+      periodStart: any | null
+      periodEnd: any
+      periodType: string
+      unit: string
+      factScope: string
+      factSetId: string | null
+    }>
+  } | null
+}
+
+export type ListInformationBlocksQueryVariables = Exact<{
+  blockType: InputMaybe<Scalars['String']['input']>
+  category: InputMaybe<Scalars['String']['input']>
+  limit: InputMaybe<Scalars['Int']['input']>
+  offset: InputMaybe<Scalars['Int']['input']>
+}>
+
+export type ListInformationBlocksQuery = {
+  informationBlocks: Array<{
+    id: string
+    blockType: string
+    name: string
+    displayName: string
+    category: string
+    taxonomyId: string | null
+    taxonomyName: string | null
+    informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
+    artifact: {
+      topic: string | null
+      parentheticalNote: string | null
+      template: any | null
+      mechanics: any
+    }
+    elements: Array<{
+      id: string
+      qname: string | null
+      name: string
+      code: string | null
+      elementType: string
+      isAbstract: boolean
+      isMonetary: boolean
+      balanceType: string | null
+      periodType: string | null
+    }>
+    connections: Array<{
+      id: string
+      fromElementId: string
+      toElementId: string
+      associationType: string
+      arcrole: string | null
+      orderValue: number | null
+      weight: number | null
+    }>
+    facts: Array<{
+      id: string
+      elementId: string
+      value: number
+      periodStart: any | null
+      periodEnd: any
+      periodType: string
+      unit: string
+      factScope: string
+      factSetId: string | null
+    }>
+  }>
+}
+
 export type GetLedgerMappedTrialBalanceQueryVariables = Exact<{
   mappingId: Scalars['String']['input']
   startDate: InputMaybe<Scalars['Date']['input']>
@@ -1773,41 +1932,6 @@ export type ListLedgerReportsQuery = {
       sharedAt: any | null
       periods: Array<{ start: any; end: any; label: string }> | null
       structures: Array<{ id: string; name: string; structureType: string }>
-    }>
-  } | null
-}
-
-export type GetLedgerScheduleFactsQueryVariables = Exact<{
-  structureId: Scalars['String']['input']
-  periodStart: InputMaybe<Scalars['Date']['input']>
-  periodEnd: InputMaybe<Scalars['Date']['input']>
-}>
-
-export type GetLedgerScheduleFactsQuery = {
-  scheduleFacts: {
-    structureId: string
-    facts: Array<{
-      elementId: string
-      elementName: string
-      value: number
-      periodStart: any
-      periodEnd: any
-    }>
-  } | null
-}
-
-export type ListLedgerSchedulesQueryVariables = Exact<{ [key: string]: never }>
-
-export type ListLedgerSchedulesQuery = {
-  schedules: {
-    schedules: Array<{
-      structureId: string
-      name: string
-      taxonomyName: string
-      entryTemplate: any | null
-      scheduleMetadata: any | null
-      totalPeriods: number
-      periodsWithEntries: number
     }>
   } | null
 }
@@ -3458,6 +3582,281 @@ export const GetLedgerFiscalCalendarDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLedgerFiscalCalendarQuery, GetLedgerFiscalCalendarQueryVariables>
+export const GetInformationBlockDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetInformationBlock' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'informationBlock' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'displayName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'informationModel' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'conceptArrangement' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'memberArrangement' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'artifact' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'topic' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'parentheticalNote' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'template' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'mechanics' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'elements' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isMonetary' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'connections' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'fromElementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'toElementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'associationType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'arcrole' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'orderValue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'weight' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'facts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetInformationBlockQuery, GetInformationBlockQueryVariables>
+export const ListInformationBlocksDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListInformationBlocks' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'category' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'informationBlocks' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'blockType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'category' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'category' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'displayName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'informationModel' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'conceptArrangement' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'memberArrangement' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'artifact' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'topic' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'parentheticalNote' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'template' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'mechanics' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'elements' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isMonetary' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'connections' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'fromElementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'toElementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'associationType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'arcrole' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'orderValue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'weight' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'facts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListInformationBlocksQuery, ListInformationBlocksQueryVariables>
 export const GetLedgerMappedTrialBalanceDocument = {
   kind: 'Document',
   definitions: [
@@ -4199,122 +4598,6 @@ export const ListLedgerReportsDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerReportsQuery, ListLedgerReportsQueryVariables>
-export const GetLedgerScheduleFactsDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: { kind: 'Name', value: 'GetLedgerScheduleFacts' },
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'structureId' } },
-          type: {
-            kind: 'NonNullType',
-            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'periodStart' } },
-          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'periodEnd' } },
-          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'scheduleFacts' },
-            arguments: [
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'structureId' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'structureId' } },
-              },
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'periodStart' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'periodStart' } },
-              },
-              {
-                kind: 'Argument',
-                name: { kind: 'Name', value: 'periodEnd' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'periodEnd' } },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'facts' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'elementName' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'value' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetLedgerScheduleFactsQuery, GetLedgerScheduleFactsQueryVariables>
-export const ListLedgerSchedulesDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: { kind: 'Name', value: 'ListLedgerSchedules' },
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: { kind: 'Name', value: 'schedules' },
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: { kind: 'Name', value: 'schedules' },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'entryTemplate' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'scheduleMetadata' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'totalPeriods' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'periodsWithEntries' } },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<ListLedgerSchedulesQuery, ListLedgerSchedulesQueryVariables>
 export const GetLedgerStatementDocument = {
   kind: 'Document',
   definitions: [
