@@ -383,7 +383,7 @@ export type LibraryAssociation = {
 export type LibraryElement = {
   /** debit | credit */
   balanceType: Scalars['String']['output']
-  /** FASB elementsOfFinancialStatements axis: asset | contraAsset | liability | contraLiability | equity | contraEquity | temporaryEquity | revenue | expense | expenseReversal | gain | loss | comprehensiveIncome | investmentByOwners | distributionToOwners. Null for structural rows. */
+  /** FASB elementsOfFinancialStatements axis: asset | contraAsset | liability | contraLiability | equity | contraEquity | temporaryEquity | revenue | expense | expenseReversal | gain | loss | comprehensiveIncome | investmentByOwners | distributionToOwners | metric (derived subtotals, not SFAC 6 primary elements). Null for structural rows. */
   classification: Maybe<Scalars['String']['output']>
   /** concept | abstract | axis | member | hypercube */
   elementType: Scalars['String']['output']
