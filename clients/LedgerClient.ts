@@ -32,22 +32,22 @@ import {
   opCreateAssociations,
   opCreateClosingEntry,
   opCreateElement,
+  opCreateInformationBlock,
   opCreateJournalEntry,
   opCreateManualClosingEntry,
   opCreateMappingAssociation,
   opCreatePublishList,
   opCreateReport,
-  opCreateSchedule,
   opCreateStructure,
   opCreateTaxonomy,
   opCreateTransaction,
   opDeleteAssociation,
   opDeleteElement,
+  opDeleteInformationBlock,
   opDeleteJournalEntry,
   opDeleteMappingAssociation,
   opDeletePublishList,
   opDeleteReport,
-  opDeleteSchedule,
   opDeleteStructure,
   opDeleteTaxonomy,
   opInitializeLedger,
@@ -62,9 +62,9 @@ import {
   opUpdateAssociation,
   opUpdateElement,
   opUpdateEntity,
+  opUpdateInformationBlock,
   opUpdateJournalEntry,
   opUpdatePublishList,
-  opUpdateSchedule,
   opUpdateStructure,
   opUpdateTaxonomy,
 } from '../sdk/sdk.gen'
@@ -76,21 +76,21 @@ import type {
   ClosePeriodOperation,
   CreateClosingEntryOperation,
   CreateElementRequest,
+  CreateInformationBlockRequest,
   CreateJournalEntryRequest,
   CreateManualClosingEntryRequest,
   CreateMappingAssociationOperation,
   CreatePublishListRequest,
   CreateReportRequest,
-  CreateScheduleRequest,
   CreateStructureRequest,
   CreateTaxonomyRequest,
   CreateTransactionRequest,
   CreateViewRequest,
   DeleteAssociationRequest,
   DeleteElementRequest,
+  DeleteInformationBlockRequest,
   DeleteJournalEntryRequest,
   DeleteMappingAssociationOperation,
-  DeleteScheduleRequest,
   DeleteStructureRequest,
   DeleteTaxonomyRequest,
   InitializeLedgerRequest,
@@ -104,9 +104,9 @@ import type {
   UpdateAssociationRequest,
   UpdateElementRequest,
   UpdateEntityRequest,
+  UpdateInformationBlockRequest,
   UpdateJournalEntryRequest,
   UpdatePublishListOperation,
-  UpdateScheduleRequest,
   UpdateStructureRequest,
   UpdateTaxonomyRequest,
 } from '../sdk/types.gen'
@@ -1124,32 +1124,35 @@ export class LedgerClient {
 
   /** Create a new schedule with pre-generated monthly facts. */
   async createSchedule(graphId: string, options: CreateScheduleOptions): Promise<ScheduleCreated> {
-    const body: CreateScheduleRequest = {
-      name: options.name,
-      element_ids: options.elementIds,
-      period_start: options.periodStart,
-      period_end: options.periodEnd,
-      monthly_amount: options.monthlyAmount,
-      entry_template: {
-        debit_element_id: options.entryTemplate.debitElementId,
-        credit_element_id: options.entryTemplate.creditElementId,
-        entry_type: options.entryTemplate.entryType,
-        memo_template: options.entryTemplate.memoTemplate,
+    const body: CreateInformationBlockRequest = {
+      block_type: 'schedule',
+      payload: {
+        name: options.name,
+        element_ids: options.elementIds,
+        period_start: options.periodStart,
+        period_end: options.periodEnd,
+        monthly_amount: options.monthlyAmount,
+        entry_template: {
+          debit_element_id: options.entryTemplate.debitElementId,
+          credit_element_id: options.entryTemplate.creditElementId,
+          entry_type: options.entryTemplate.entryType,
+          memo_template: options.entryTemplate.memoTemplate,
+        },
+        taxonomy_id: options.taxonomyId,
+        schedule_metadata: options.scheduleMetadata
+          ? {
+              method: options.scheduleMetadata.method,
+              original_amount: options.scheduleMetadata.originalAmount,
+              residual_value: options.scheduleMetadata.residualValue,
+              useful_life_months: options.scheduleMetadata.usefulLifeMonths,
+              asset_element_id: options.scheduleMetadata.assetElementId,
+            }
+          : undefined,
       },
-      taxonomy_id: options.taxonomyId,
-      schedule_metadata: options.scheduleMetadata
-        ? {
-            method: options.scheduleMetadata.method,
-            original_amount: options.scheduleMetadata.originalAmount,
-            residual_value: options.scheduleMetadata.residualValue,
-            useful_life_months: options.scheduleMetadata.usefulLifeMonths,
-            asset_element_id: options.scheduleMetadata.assetElementId,
-          }
-        : undefined,
     }
     const envelope = await this.callOperation(
       'Create schedule',
-      opCreateSchedule({ path: { graph_id: graphId }, body })
+      opCreateInformationBlock({ path: { graph_id: graphId }, body })
     )
     const raw = envelope.result as unknown as RawScheduleCreatedResult
     return {
@@ -1164,21 +1167,29 @@ export class LedgerClient {
   /** Update mutable fields on a schedule (name, entry_template, metadata). */
   async updateSchedule(
     graphId: string,
-    body: UpdateScheduleRequest
+    structureId: string,
+    options: { name?: string }
   ): Promise<Record<string, unknown>> {
+    const body: UpdateInformationBlockRequest = {
+      block_type: 'schedule',
+      payload: { structure_id: structureId, ...options },
+    }
     const envelope = await this.callOperation(
       'Update schedule',
-      opUpdateSchedule({ path: { graph_id: graphId }, body })
+      opUpdateInformationBlock({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   /** Permanently delete a schedule (cascades through facts + associations). */
   async deleteSchedule(graphId: string, structureId: string): Promise<{ deleted: boolean }> {
-    const body: DeleteScheduleRequest = { structure_id: structureId }
+    const body: DeleteInformationBlockRequest = {
+      block_type: 'schedule',
+      payload: { structure_id: structureId },
+    }
     const envelope = await this.callOperation(
       'Delete schedule',
-      opDeleteSchedule({ path: { graph_id: graphId }, body })
+      opDeleteInformationBlock({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }

@@ -269,21 +269,38 @@ export type InformationBlock = {
   dimensions: Array<Scalars['JSON']['output']>
   displayName: Scalars['String']['output']
   elements: Array<InformationBlockElement>
-  factSet: Maybe<Scalars['JSON']['output']>
+  factSet: Maybe<InformationBlockFactSet>
   facts: Array<InformationBlockFact>
   id: Scalars['ID']['output']
   informationModel: InformationModel
   name: Scalars['String']['output']
-  rules: Array<Scalars['JSON']['output']>
+  rules: Array<InformationBlockRule>
   taxonomyId: Maybe<Scalars['String']['output']>
   taxonomyName: Maybe<Scalars['String']['output']>
-  verificationResults: Array<Scalars['JSON']['output']>
+  verificationResults: Array<InformationBlockVerificationResult>
+}
+
+export type InformationBlockClassification = {
+  /** One of the categories in the `public.classifications` CHECK constraint — e.g. 'concept_arrangement', 'member_arrangement', 'named_disclosure' for association-level; 'liquidity', 'activityType', etc. for element-level. */
+  category: Scalars['String']['output']
+  /** AI/adapter-supplied confidence (0.0-1.0). Null for deterministic library-seeded rows. */
+  confidence: Maybe<Scalars['Float']['output']>
+  /** Classification vocabulary row id. */
+  id: Scalars['String']['output']
+  /** Vocabulary identifier within the category — e.g. 'RollUp', 'aggregation', 'AssetsRollUp'. */
+  identifier: Scalars['String']['output']
+  /** Whether this is the canonical classification for the (association|element, category) pair. Non-primary rows capture alternates / AI suggestions alongside the chosen primary. */
+  isPrimary: Scalars['Boolean']['output']
+  /** Provenance — 'arcrole_analysis', 'disclosure_mechanics', 'us-gaap-metamodel', adapter name, etc. */
+  source: Maybe<Scalars['String']['output']>
 }
 
 export type InformationBlockConnection = {
   arcrole: Maybe<Scalars['String']['output']>
   /** presentation | calculation | mapping | equivalence | general-special | essence-alias */
   associationType: Scalars['String']['output']
+  /** Association-level classifications (Phase epsilon) — concept_arrangement, member_arrangement, named_disclosure rows from the junction. Empty for library-seeded associations that haven't been classified yet. */
+  classifications: Array<InformationBlockClassification>
   fromElementId: Scalars['String']['output']
   id: Scalars['String']['output']
   orderValue: Maybe<Scalars['Float']['output']>
@@ -315,6 +332,61 @@ export type InformationBlockFact = {
   periodType: Scalars['String']['output']
   unit: Scalars['String']['output']
   value: Scalars['Float']['output']
+}
+
+export type InformationBlockFactSet = {
+  entityId: Scalars['String']['output']
+  /** 'report' | 'schedule' | 'custom'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint. */
+  factsetType: Scalars['String']['output']
+  id: Scalars['String']['output']
+  periodEnd: Scalars['Date']['output']
+  periodStart: Maybe<Scalars['Date']['output']>
+  /** Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands. */
+  reportId: Maybe<Scalars['String']['output']>
+  structureId: Maybe<Scalars['String']['output']>
+}
+
+export type InformationBlockRule = {
+  id: Scalars['String']['output']
+  /** One of 8 cm:VerificationRule subclasses — AutomatedAccountingAndReportingChecks, FundamentalAccountingConceptRelation, PeerConsistencyRule, PriorPeriodConsistencyRule, ReportLevelModelStructureRule, ReportingSystemSpecificRule, ToDoManualTask, XBRLTechnicalSyntaxRule. */
+  ruleCategory: Scalars['String']['output']
+  ruleExpression: Scalars['String']['output']
+  ruleMessage: Maybe<Scalars['String']['output']>
+  /** Provenance — 'forked' (from an upstream artifact, e.g. Seattle Method) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the ``public.rules`` CHECK constraint. */
+  ruleOrigin: Scalars['String']['output']
+  /** One of 10 cm:BusinessRulePattern mechanisms — Adjustment, CoExists, EqualTo, Exists, GreaterThan, GreaterThanOrEqualToZero, LessThan, RollForward, RollUp, Variance. */
+  rulePattern: Scalars['String']['output']
+  /** Failure severity — 'info' | 'warning' | 'error'. Enum closure enforced by the ``public.rules`` CHECK constraint. */
+  ruleSeverity: Scalars['String']['output']
+  ruleTarget: Maybe<InformationBlockRuleTarget>
+  ruleVariables: Array<InformationBlockRuleVariable>
+}
+
+export type InformationBlockRuleTarget = {
+  /** Which atom type the rule targets — 'structure' | 'element' | 'association'. Enum closure enforced by the ``public.rules`` CHECK constraint. */
+  targetKind: Scalars['String']['output']
+  /** UUID of the target atom — structure_id, element_id, or association_id depending on ``target_kind``. */
+  targetRefId: Scalars['String']['output']
+}
+
+export type InformationBlockRuleVariable = {
+  /** Local name in the rule expression, e.g. 'Assets'. */
+  variableName: Scalars['String']['output']
+  /** Concept qname the variable resolves to, e.g. 'fac:Assets'. */
+  variableQname: Scalars['String']['output']
+}
+
+export type InformationBlockVerificationResult = {
+  evaluatedAt: Maybe<Scalars['DateTime']['output']>
+  factSetId: Maybe<Scalars['String']['output']>
+  id: Scalars['String']['output']
+  message: Maybe<Scalars['String']['output']>
+  periodEnd: Maybe<Scalars['Date']['output']>
+  periodStart: Maybe<Scalars['Date']['output']>
+  ruleId: Scalars['String']['output']
+  /** 'pass' | 'fail' | 'error' | 'skipped'. Enum closure enforced by the ``public.verification_results`` CHECK constraint. */
+  status: Scalars['String']['output']
+  structureId: Maybe<Scalars['String']['output']>
 }
 
 export type InformationModel = {

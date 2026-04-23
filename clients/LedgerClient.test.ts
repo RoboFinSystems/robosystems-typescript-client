@@ -625,9 +625,10 @@ describe('LedgerClient', () => {
 
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
-      expect(body.element_ids).toEqual(['elem_1'])
-      expect(body.monthly_amount).toBe(100000)
-      expect(body.entry_template.debit_element_id).toBe('elem_depr_exp')
+      expect(body.block_type).toBe('schedule')
+      expect(body.payload.element_ids).toEqual(['elem_1'])
+      expect(body.payload.monthly_amount).toBe(100000)
+      expect(body.payload.entry_template.debit_element_id).toBe('elem_depr_exp')
     })
   })
 
@@ -991,44 +992,53 @@ describe('LedgerClient', () => {
   describe('updateSchedule', () => {
     it('returns the updated schedule result', async () => {
       mockFetch.mockResolvedValueOnce(
-        envelopeResponse('update-schedule', { structure_id: 'str_1', name: 'Updated' })
+        envelopeResponse('update-information-block', { structure_id: 'str_1', name: 'Updated' })
       )
-      const result = await client.updateSchedule('graph_1', {
-        structure_id: 'str_1',
-        name: 'Updated',
-      })
+      const result = await client.updateSchedule('graph_1', 'str_1', { name: 'Updated' })
       expect(result).toMatchObject({ name: 'Updated' })
     })
 
-    it('POSTs to the update-schedule URL', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('update-schedule', {}))
-      await client.updateSchedule('graph_42', { structure_id: 'str_1' })
+    it('POSTs to the update-information-block URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-information-block', {}))
+      await client.updateSchedule('graph_42', 'str_1', {})
       const req = mockFetch.mock.calls[0][0] as Request
       expect(req.url).toBe(
-        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-schedule'
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-information-block'
       )
+    })
+
+    it('wraps payload with block_type schedule', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-information-block', {}))
+      await client.updateSchedule('graph_1', 'str_1', { name: 'Renamed' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.block_type).toBe('schedule')
+      expect(body.payload.structure_id).toBe('str_1')
     })
   })
 
   describe('deleteSchedule', () => {
     it('returns deleted: true from the envelope', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-schedule', { deleted: true }))
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('delete-information-block', { deleted: true })
+      )
       const result = await client.deleteSchedule('graph_1', 'str_1')
       expect(result.deleted).toBe(true)
     })
 
     it('falls back to deleted: true when result is null', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-schedule', null))
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-information-block', null))
       const result = await client.deleteSchedule('graph_1', 'str_1')
       expect(result.deleted).toBe(true)
     })
 
-    it('sends structure_id in the request body', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-schedule', null))
+    it('wraps structure_id in block_type schedule payload', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-information-block', null))
       await client.deleteSchedule('graph_1', 'str_abc')
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
-      expect(body.structure_id).toBe('str_abc')
+      expect(body.block_type).toBe('schedule')
+      expect(body.payload.structure_id).toBe('str_abc')
     })
   })
 
