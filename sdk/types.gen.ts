@@ -1562,6 +1562,35 @@ export type CreateGraphRequest = {
 };
 
 /**
+ * CreateInformationBlockRequest
+ *
+ * Generic create request — discriminator + typed-at-dispatch payload.
+ *
+ * ``block_type`` selects the registry entry. ``payload`` is validated
+ * against ``BlockTypeRegistryEntry.create_request_model`` (e.g.
+ * :class:`CreateScheduleRequest` for ``block_type='schedule'``) by the
+ * command dispatcher. Chosen over a Pydantic discriminated union on the
+ * top-level request so adding a block type is one registry line, not a
+ * union-arm edit at the request-model layer.
+ */
+export type CreateInformationBlockRequest = {
+    /**
+     * Block Type
+     *
+     * Block type discriminator. Must match a registered entry in robosystems.operations.information_block.registry.REGISTRY.
+     */
+    block_type: string;
+    /**
+     * Payload
+     *
+     * Block-type-specific creation payload. Shape-validated against the registry entry's `create_request_model` at dispatch time; the validation error surfaces as a 422 at the API boundary.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * CreateJournalEntryRequest
  *
  * Create a new journal entry with balanced line items.
@@ -1837,56 +1866,6 @@ export type CreateRepositorySubscriptionRequest = {
      * Plan name for the repository subscription
      */
     plan_name: string;
-};
-
-/**
- * CreateScheduleRequest
- */
-export type CreateScheduleRequest = {
-    /**
-     * Name
-     *
-     * Schedule name
-     */
-    name: string;
-    /**
-     * Taxonomy Id
-     *
-     * Taxonomy ID (auto-creates if omitted)
-     */
-    taxonomy_id?: string | null;
-    /**
-     * Element Ids
-     *
-     * Element IDs to include
-     */
-    element_ids: Array<string>;
-    /**
-     * Period Start
-     *
-     * First period start
-     */
-    period_start: string;
-    /**
-     * Period End
-     *
-     * Last period end
-     */
-    period_end: string;
-    /**
-     * Monthly Amount
-     *
-     * Monthly amount in cents
-     */
-    monthly_amount: number;
-    entry_template: EntryTemplateRequest;
-    schedule_metadata?: ScheduleMetadataRequest | null;
-    /**
-     * Closed Through
-     *
-     * If provided, facts with period_end ≤ this date are flagged as 'historical' (already reflected in opening balances, ignored by the close workflow). Used during initial ledger setup to create schedules whose early facts have already been captured elsewhere.
-     */
-    closed_through?: string | null;
 };
 
 /**
@@ -2658,6 +2637,31 @@ export type DeleteFileResponse = {
 };
 
 /**
+ * DeleteInformationBlockRequest
+ *
+ * Generic delete request — mirrors :class:`CreateInformationBlockRequest`.
+ *
+ * Validated against the registry entry's ``delete_request_model``.
+ * Block types that don't support deletion raise ``NotImplementedError``.
+ */
+export type DeleteInformationBlockRequest = {
+    /**
+     * Block Type
+     *
+     * Block type discriminator. Must match a registered entry.
+     */
+    block_type: string;
+    /**
+     * Payload
+     *
+     * Block-type-specific delete payload. Typically carries just the structure_id. Shape-validated against the registry entry's `delete_request_model` at dispatch time.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * DeleteJournalEntryRequest
  *
  * Hard delete a draft journal entry. Posted entries cannot be
@@ -2730,23 +2734,6 @@ export type DeleteReportOperation = {
      * Report Id
      */
     report_id: string;
-};
-
-/**
- * DeleteScheduleRequest
- *
- * Delete a schedule — cascades through facts and associations.
- *
- * Hard deletes the Structure, all Facts tied to it, and all
- * Associations tied to it. This is a permanent, irreversible
- * operation. For ending a schedule early without removing history,
- * use truncate-schedule instead.
- */
-export type DeleteScheduleRequest = {
-    /**
-     * Structure Id
-     */
-    structure_id: string;
 };
 
 /**
@@ -3263,42 +3250,6 @@ export type EnhancedFileStatusLayers = {
 };
 
 /**
- * EntryTemplateRequest
- */
-export type EntryTemplateRequest = {
-    /**
-     * Debit Element Id
-     *
-     * Element to debit (e.g., Depreciation Expense)
-     */
-    debit_element_id: string;
-    /**
-     * Credit Element Id
-     *
-     * Element to credit (e.g., Accumulated Depreciation)
-     */
-    credit_element_id: string;
-    /**
-     * Entry Type
-     *
-     * Entry type for generated entries
-     */
-    entry_type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
-    /**
-     * Memo Template
-     *
-     * Memo template ({structure_name} is replaced)
-     */
-    memo_template?: string;
-    /**
-     * Auto Reverse
-     *
-     * Auto-generate a reversing entry on the first day of the next period
-     */
-    auto_reverse?: boolean;
-};
-
-/**
  * ErrorResponse
  *
  * Standard error response format used across all API endpoints.
@@ -3331,6 +3282,45 @@ export type ErrorResponse = {
      * Timestamp when the error occurred
      */
     timestamp?: string | null;
+};
+
+/**
+ * EvaluateRulesRequest
+ *
+ * Request body for the ``evaluate-rules`` operation (Phase delta.3).
+ *
+ * Runs every rule scoped to ``structure_id`` (plus element/association-
+ * scoped rules for the structure's atoms), binds ``$Variable`` references
+ * to facts via qname lookup, and writes one
+ * :class:`VerificationResult` row per rule.
+ *
+ * Optional ``period_start`` / ``period_end`` narrow the fact-binding
+ * window; without them the engine uses the most recent ``in_scope`` fact
+ * for each element regardless of period.
+ */
+export type EvaluateRulesRequest = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Fact Set Id
+     *
+     * Optional FactSet id to stamp on each VerificationResult row. Allows results to be scoped to a specific period run when the FactSet table is populated (Phase zeta expand pass).
+     */
+    fact_set_id?: string | null;
+    /**
+     * Period Start
+     *
+     * Lower bound on the fact period window (inclusive).
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     *
+     * Upper bound on the fact period window (inclusive).
+     */
+    period_end?: string | null;
 };
 
 /**
@@ -6262,42 +6252,6 @@ export type SsoTokenResponse = {
 };
 
 /**
- * ScheduleMetadataRequest
- */
-export type ScheduleMetadataRequest = {
-    /**
-     * Method
-     *
-     * Calculation method
-     */
-    method?: string;
-    /**
-     * Original Amount
-     *
-     * Cost basis in cents
-     */
-    original_amount?: number;
-    /**
-     * Residual Value
-     *
-     * Salvage value in cents
-     */
-    residual_value?: number;
-    /**
-     * Useful Life Months
-     *
-     * Useful life in months
-     */
-    useful_life_months?: number;
-    /**
-     * Asset Element Id
-     *
-     * BS asset element for net book value
-     */
-    asset_element_id?: string | null;
-};
-
-/**
  * SchemaExportResponse
  *
  * Response model for schema export.
@@ -7551,6 +7505,33 @@ export type UpdateEntityRequest = {
 };
 
 /**
+ * UpdateInformationBlockRequest
+ *
+ * Generic update request — mirrors :class:`CreateInformationBlockRequest`.
+ *
+ * Validated against the registry entry's ``update_request_model``.
+ * Block types that don't support updates (e.g. the statement family,
+ * whose Structures are library-seeded) surface ``NotImplementedError``
+ * from their dispatch handler, which the registrar maps to HTTP 501.
+ */
+export type UpdateInformationBlockRequest = {
+    /**
+     * Block Type
+     *
+     * Block type discriminator. Must match a registered entry.
+     */
+    block_type: string;
+    /**
+     * Payload
+     *
+     * Block-type-specific update payload. Typically carries the structure_id plus whichever fields are editable for this block type. Shape-validated against the registry entry's `update_request_model` at dispatch time.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * UpdateJournalEntryRequest
  *
  * Update a draft journal entry. Posted entries cannot be updated —
@@ -7739,33 +7720,6 @@ export type UpdatePublishListOperation = {
      * List Id
      */
     list_id: string;
-};
-
-/**
- * UpdateScheduleRequest
- *
- * Update mutable fields on a schedule.
- *
- * Editable: name, entry_template, schedule_metadata (all live on the
- * Structure row / its metadata_ JSONB column).
- *
- * NOT editable via this op: period_start, period_end, monthly_amount.
- * Those require fact regeneration — use truncate-schedule (end early)
- * and create-schedule (start new) instead.
- *
- * Omitted fields are left unchanged.
- */
-export type UpdateScheduleRequest = {
-    /**
-     * Structure Id
-     */
-    structure_id: string;
-    /**
-     * Name
-     */
-    name?: string | null;
-    entry_template?: EntryTemplateRequest | null;
-    schedule_metadata?: ScheduleMetadataRequest | null;
 };
 
 /**
@@ -15692,70 +15646,6 @@ export type OpReverseJournalEntryResponses = {
 
 export type OpReverseJournalEntryResponse = OpReverseJournalEntryResponses[keyof OpReverseJournalEntryResponses];
 
-export type OpCreateScheduleData = {
-    body: CreateScheduleRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-schedule';
-};
-
-export type OpCreateScheduleErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpCreateScheduleError = OpCreateScheduleErrors[keyof OpCreateScheduleErrors];
-
-export type OpCreateScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateScheduleResponse = OpCreateScheduleResponses[keyof OpCreateScheduleResponses];
-
 export type OpTruncateScheduleData = {
     body: TruncateScheduleOperation;
     headers?: {
@@ -15948,8 +15838,8 @@ export type OpCreateManualClosingEntryResponses = {
 
 export type OpCreateManualClosingEntryResponse = OpCreateManualClosingEntryResponses[keyof OpCreateManualClosingEntryResponses];
 
-export type OpUpdateScheduleData = {
-    body: UpdateScheduleRequest;
+export type OpCreateInformationBlockData = {
+    body: CreateInformationBlockRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -15963,10 +15853,10 @@ export type OpUpdateScheduleData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/update-schedule';
+    url: '/extensions/roboledger/{graph_id}/operations/create-information-block';
 };
 
-export type OpUpdateScheduleErrors = {
+export type OpCreateInformationBlockErrors = {
     /**
      * Invalid request payload
      */
@@ -16001,19 +15891,19 @@ export type OpUpdateScheduleErrors = {
     500: unknown;
 };
 
-export type OpUpdateScheduleError = OpUpdateScheduleErrors[keyof OpUpdateScheduleErrors];
+export type OpCreateInformationBlockError = OpCreateInformationBlockErrors[keyof OpCreateInformationBlockErrors];
 
-export type OpUpdateScheduleResponses = {
+export type OpCreateInformationBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpUpdateScheduleResponse = OpUpdateScheduleResponses[keyof OpUpdateScheduleResponses];
+export type OpCreateInformationBlockResponse = OpCreateInformationBlockResponses[keyof OpCreateInformationBlockResponses];
 
-export type OpDeleteScheduleData = {
-    body: DeleteScheduleRequest;
+export type OpUpdateInformationBlockData = {
+    body: UpdateInformationBlockRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -16027,10 +15917,10 @@ export type OpDeleteScheduleData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/delete-schedule';
+    url: '/extensions/roboledger/{graph_id}/operations/update-information-block';
 };
 
-export type OpDeleteScheduleErrors = {
+export type OpUpdateInformationBlockErrors = {
     /**
      * Invalid request payload
      */
@@ -16065,16 +15955,144 @@ export type OpDeleteScheduleErrors = {
     500: unknown;
 };
 
-export type OpDeleteScheduleError = OpDeleteScheduleErrors[keyof OpDeleteScheduleErrors];
+export type OpUpdateInformationBlockError = OpUpdateInformationBlockErrors[keyof OpUpdateInformationBlockErrors];
 
-export type OpDeleteScheduleResponses = {
+export type OpUpdateInformationBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpDeleteScheduleResponse = OpDeleteScheduleResponses[keyof OpDeleteScheduleResponses];
+export type OpUpdateInformationBlockResponse = OpUpdateInformationBlockResponses[keyof OpUpdateInformationBlockResponses];
+
+export type OpDeleteInformationBlockData = {
+    body: DeleteInformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/delete-information-block';
+};
+
+export type OpDeleteInformationBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpDeleteInformationBlockError = OpDeleteInformationBlockErrors[keyof OpDeleteInformationBlockErrors];
+
+export type OpDeleteInformationBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteInformationBlockResponse = OpDeleteInformationBlockResponses[keyof OpDeleteInformationBlockResponses];
+
+export type OpEvaluateRulesData = {
+    body: EvaluateRulesRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/evaluate-rules';
+};
+
+export type OpEvaluateRulesErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpEvaluateRulesError = OpEvaluateRulesErrors[keyof OpEvaluateRulesErrors];
+
+export type OpEvaluateRulesResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpEvaluateRulesResponse = OpEvaluateRulesResponses[keyof OpEvaluateRulesResponses];
 
 export type OpCreateMappingAssociationData = {
     body: CreateMappingAssociationOperation;
