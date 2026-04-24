@@ -363,9 +363,9 @@ export type InformationBlockRule = {
 }
 
 export type InformationBlockRuleTarget = {
-  /** Which atom type the rule targets — 'structure' | 'element' | 'association'. Enum closure enforced by the ``public.rules`` CHECK constraint. */
+  /** Which atom type the rule targets — 'structure' | 'element' | 'association' | 'taxonomy'. Enum closure enforced by the ``public.rules`` CHECK constraint. */
   targetKind: Scalars['String']['output']
-  /** UUID of the target atom — structure_id, element_id, or association_id depending on ``target_kind``. */
+  /** UUID of the target atom — structure_id, element_id, association_id, or taxonomy_id depending on ``target_kind``. */
   targetRefId: Scalars['String']['output']
 }
 
@@ -538,10 +538,10 @@ export type LibraryElement = {
   parentId: Maybe<Scalars['String']['output']>
   /** instant | duration */
   periodType: Scalars['String']['output']
-  /** Qualified name, e.g. 'sfac6:Assets' */
+  /** Qualified name, e.g. 'fac:Assets' */
   qname: Scalars['String']['output']
   references: Array<LibraryReference>
-  /** sfac6 | fac | us-gaap | rs-gaap | … */
+  /** fac | us-gaap | rs-gaap | … */
   source: Scalars['String']['output']
   taxonomyId: Maybe<Scalars['String']['output']>
 }
@@ -620,7 +620,7 @@ export type LibraryTaxonomy = {
   isShared: Scalars['Boolean']['output']
   name: Scalars['String']['output']
   namespaceUri: Maybe<Scalars['String']['output']>
-  /** sfac6 | fac | us-gaap | rs-gaap | ifrs */
+  /** fac | us-gaap | rs-gaap | ifrs */
   standard: Maybe<Scalars['String']['output']>
   /** chart_of_accounts | reporting | mapping | schedule */
   taxonomyType: Scalars['String']['output']
@@ -840,6 +840,8 @@ export type Query = {
   structures: Maybe<StructureList>
   summary: Maybe<LedgerSummary>
   taxonomies: Maybe<TaxonomyList>
+  taxonomyBlock: Maybe<TaxonomyBlock>
+  taxonomyBlocks: Array<TaxonomyBlock>
   transaction: Maybe<LedgerTransactionDetail>
   transactions: Maybe<LedgerTransactionList>
   trialBalance: Maybe<TrialBalance>
@@ -1044,6 +1046,18 @@ export type QueryTaxonomiesArgs = {
   taxonomyType?: InputMaybe<Scalars['String']['input']>
 }
 
+export type QueryTaxonomyBlockArgs = {
+  id: Scalars['ID']['input']
+}
+
+export type QueryTaxonomyBlocksArgs = {
+  category?: InputMaybe<Scalars['String']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+  parentTaxonomyId?: InputMaybe<Scalars['ID']['input']>
+  taxonomyType?: InputMaybe<Scalars['String']['input']>
+}
+
 export type QueryTransactionArgs = {
   transactionId: Scalars['String']['input']
 }
@@ -1162,6 +1176,73 @@ export type Taxonomy = {
   targetTaxonomyId: Maybe<Scalars['String']['output']>
   taxonomyType: Scalars['String']['output']
   version: Maybe<Scalars['String']['output']>
+}
+
+export type TaxonomyBlock = {
+  associationCount: Scalars['Int']['output']
+  associations: Array<TaxonomyBlockAssociation>
+  category: Scalars['String']['output']
+  displayName: Scalars['String']['output']
+  elementCount: Scalars['Int']['output']
+  elements: Array<TaxonomyBlockElement>
+  id: Scalars['ID']['output']
+  isLocked: Scalars['Boolean']['output']
+  name: Scalars['String']['output']
+  namespaceUri: Maybe<Scalars['String']['output']>
+  parentTaxonomyId: Maybe<Scalars['String']['output']>
+  parentTaxonomyName: Maybe<Scalars['String']['output']>
+  rules: Array<TaxonomyBlockRule>
+  standard: Maybe<Scalars['String']['output']>
+  structureCount: Scalars['Int']['output']
+  structures: Array<TaxonomyBlockStructure>
+  taxonomyType: Scalars['String']['output']
+  verificationResults: Array<Scalars['JSON']['output']>
+  version: Maybe<Scalars['String']['output']>
+}
+
+export type TaxonomyBlockAssociation = {
+  arcrole: Maybe<Scalars['String']['output']>
+  associationType: Scalars['String']['output']
+  fromElementQname: Scalars['String']['output']
+  id: Scalars['String']['output']
+  orderValue: Maybe<Scalars['Float']['output']>
+  structureId: Scalars['String']['output']
+  toElementQname: Scalars['String']['output']
+  weight: Maybe<Scalars['Float']['output']>
+}
+
+export type TaxonomyBlockElement = {
+  balanceType: Maybe<Scalars['String']['output']>
+  classification: Maybe<Scalars['String']['output']>
+  depth: Maybe<Scalars['Int']['output']>
+  elementType: Scalars['String']['output']
+  id: Scalars['String']['output']
+  isMonetary: Scalars['Boolean']['output']
+  name: Scalars['String']['output']
+  origin: Scalars['String']['output']
+  parentQname: Maybe<Scalars['String']['output']>
+  periodType: Maybe<Scalars['String']['output']>
+  qname: Maybe<Scalars['String']['output']>
+}
+
+export type TaxonomyBlockRule = {
+  id: Scalars['String']['output']
+  name: Scalars['String']['output']
+  origin: Scalars['String']['output']
+  ruleCategory: Scalars['String']['output']
+  ruleExpression: Scalars['String']['output']
+  rulePattern: Scalars['String']['output']
+  severity: Scalars['String']['output']
+  targetKind: Maybe<Scalars['String']['output']>
+  targetRef: Maybe<Scalars['String']['output']>
+}
+
+export type TaxonomyBlockStructure = {
+  description: Maybe<Scalars['String']['output']>
+  id: Scalars['String']['output']
+  name: Scalars['String']['output']
+  roleUri: Maybe<Scalars['String']['output']>
+  structureType: Scalars['String']['output']
 }
 
 export type TaxonomyList = {

@@ -1822,6 +1822,79 @@ export type CreateSubgraphRequest = {
 };
 
 /**
+ * CreateTaxonomyBlockRequest
+ *
+ * Request body for the ``create-taxonomy-block`` operation.
+ *
+ * One envelope per taxonomy instance. ``taxonomy_type`` discriminates
+ * which block-type handler the command dispatcher routes to.
+ * ``parent_taxonomy_id`` is required for ``reporting_extension`` (which
+ * extends a library taxonomy) and ignored otherwise.
+ *
+ * The library path (seeding ``reporting_standard`` rows) does NOT flow
+ * through this envelope — it uses a dedicated library writer that bypasses
+ * these caps and tenant scoping.
+ */
+export type CreateTaxonomyBlockRequest = {
+    /**
+     * Name
+     *
+     * Taxonomy display name.
+     */
+    name: string;
+    /**
+     * Taxonomy Type
+     *
+     * Block-type discriminator. ``chart_of_accounts`` and ``custom_ontology`` construct from scratch; ``reporting_extension`` extends an existing library ``reporting_standard``.
+     */
+    taxonomy_type: 'reporting_standard' | 'reporting_extension' | 'custom_ontology' | 'chart_of_accounts' | 'schedule';
+    /**
+     * Parent Taxonomy Id
+     *
+     * Required when ``taxonomy_type == 'reporting_extension'`` — the id of the library ``reporting_standard`` being extended.
+     */
+    parent_taxonomy_id?: string | null;
+    /**
+     * Version
+     */
+    version?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Standard
+     */
+    standard?: string | null;
+    /**
+     * Namespace Uri
+     */
+    namespace_uri?: string | null;
+    /**
+     * Elements
+     */
+    elements?: Array<TaxonomyBlockElementRequest>;
+    /**
+     * Structures
+     */
+    structures?: Array<TaxonomyBlockStructureRequest>;
+    /**
+     * Associations
+     */
+    associations?: Array<TaxonomyBlockAssociationRequest>;
+    /**
+     * Rules
+     */
+    rules?: Array<TaxonomyBlockRuleRequest>;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * CreateTransactionRequest
  *
  * Create a standalone business-event Transaction.
@@ -2562,6 +2635,33 @@ export type DeleteSubgraphOp = {
 };
 
 /**
+ * DeleteTaxonomyBlockRequest
+ *
+ * Request body for the ``delete-taxonomy-block`` operation.
+ *
+ * ``cascade_facts=False`` (default) fails the delete if any Fact rows
+ * reference elements in this taxonomy. ``cascade_facts=True`` deletes the
+ * referencing facts alongside the taxonomy; the response reports
+ * ``facts_deleted``.
+ */
+export type DeleteTaxonomyBlockRequest = {
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Cascade Facts
+     */
+    cascade_facts?: boolean;
+    /**
+     * Reason
+     *
+     * Human-readable justification (audit log).
+     */
+    reason: string;
+};
+
+/**
  * DetailedTransactionsResponse
  *
  * Detailed response for transaction queries.
@@ -2979,6 +3079,58 @@ export type DownloadQuota = {
      * When the monthly limit resets (UTC)
      */
     resets_at: string;
+};
+
+/**
+ * ElementUpdatePatch
+ *
+ * Partial-update patch for a single element, keyed by qname.
+ */
+export type ElementUpdatePatch = {
+    /**
+     * Qname
+     *
+     * qname identifier of the element to update.
+     */
+    qname: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Classification
+     */
+    classification?: string | null;
+    /**
+     * Balance Type
+     */
+    balance_type?: string | null;
+    /**
+     * Period Type
+     */
+    period_type?: string | null;
+    /**
+     * Is Monetary
+     */
+    is_monetary?: boolean | null;
+    /**
+     * Code
+     */
+    code?: string | null;
+    /**
+     * Parent Ref
+     */
+    parent_ref?: string | null;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -6599,6 +6751,38 @@ export type StorageSummary = {
 };
 
 /**
+ * StructureUpdatePatch
+ *
+ * Partial-update patch for a single structure, keyed by structure_id.
+ */
+export type StructureUpdatePatch = {
+    /**
+     * Structure Id
+     *
+     * Structure id to update.
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Role Uri
+     */
+    role_uri?: string | null;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
  * SubgraphQuotaResponse
  *
  * Response model for subgraph quota information.
@@ -6957,6 +7141,254 @@ export type TableQueryResponse = {
      * Query execution time
      */
     execution_time_ms: number;
+};
+
+/**
+ * TaxonomyBlockAssociationRequest
+ *
+ * Association (arc) between two elements, scoped to a structure.
+ */
+export type TaxonomyBlockAssociationRequest = {
+    /**
+     * Structure Ref
+     *
+     * Envelope-local structure name (references a structure declared in the same envelope).
+     */
+    structure_ref: string;
+    /**
+     * From Ref
+     *
+     * qname of the source element.
+     */
+    from_ref: string;
+    /**
+     * To Ref
+     *
+     * qname of the target element.
+     */
+    to_ref: string;
+    /**
+     * Association Type
+     *
+     * DB ``associations.association_type`` enum. ``presentation`` = parent-child hierarchy; ``calculation`` = summation arc.
+     */
+    association_type: 'presentation' | 'calculation' | 'mapping' | 'equivalence' | 'general-special' | 'essence-alias';
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Arcrole
+     */
+    arcrole?: string | null;
+    /**
+     * Weight
+     *
+     * Calculation-arc coefficient (+1 / -1 for summation, other values for weighted rollups). Null for non-calculation arcs.
+     */
+    weight?: number | null;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * TaxonomyBlockElementRequest
+ *
+ * Element definition inside a Taxonomy Block envelope.
+ *
+ * ``qname`` is the envelope-local identifier — must be unique within the
+ * envelope's ``elements`` list and is used by association / rule / patch
+ * payloads as the reference token. ``parent_ref`` may reference another
+ * envelope-local qname or, for ``reporting_extension`` blocks, a library
+ * element qname.
+ */
+export type TaxonomyBlockElementRequest = {
+    /**
+     * Qname
+     *
+     * Envelope-local element identifier. Must be unique within the envelope's ``elements`` list. Used as the reference token for associations, rules, and update patches.
+     */
+    qname: string;
+    /**
+     * Name
+     *
+     * Human-readable element name (e.g. 'Total Assets').
+     */
+    name: string;
+    /**
+     * Classification
+     *
+     * FASB metamodel trait for the element. Required for ``chart_of_accounts`` blocks; optional for ``custom_ontology``.
+     */
+    classification?: string | null;
+    /**
+     * Balance Type
+     *
+     * 'debit' | 'credit' | null for non-monetary concepts.
+     */
+    balance_type?: string | null;
+    /**
+     * Element Type
+     *
+     * 'concept' | 'abstract' | 'axis' | 'member' | 'hypercube'.
+     */
+    element_type?: string;
+    /**
+     * Period Type
+     *
+     * 'instant' | 'duration' | null (null = derive from classification during validation).
+     */
+    period_type?: string | null;
+    /**
+     * Is Monetary
+     *
+     * True for dollar-denominated concepts.
+     */
+    is_monetary?: boolean;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Code
+     *
+     * Optional chart-of-accounts code (e.g. '1000', '4100-02'). Only meaningful for ``chart_of_accounts`` blocks.
+     */
+    code?: string | null;
+    /**
+     * Sub Classification
+     */
+    sub_classification?: string | null;
+    /**
+     * Parent Ref
+     *
+     * qname of the parent element — either another envelope-local qname or, for ``reporting_extension`` blocks, a library element qname.
+     */
+    parent_ref?: string | null;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * TaxonomyBlockRuleRequest
+ *
+ * Rule definition inside a Taxonomy Block envelope.
+ *
+ * Exactly one of ``target_structure_ref``, ``target_element_qname``, or
+ * ``target_taxonomy_self`` must be set (or all null for a global rule).
+ * The ``model_validator`` enforces this contract at the Pydantic layer.
+ */
+export type TaxonomyBlockRuleRequest = {
+    /**
+     * Name
+     *
+     * Rule identifier, unique within envelope.
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Rule Category
+     *
+     * One of 8 cm:VerificationRule subclasses.
+     */
+    rule_category: 'AutomatedAccountingAndReportingChecks' | 'DisclosureMechanicsRule' | 'FundamentalAccountingConceptRelation' | 'PeerConsistencyRule' | 'PriorPeriodConsistencyRule' | 'ReportLevelModelStructureRule' | 'ReportingSystemSpecificRule' | 'ToDoManualTask' | 'XBRLTechnicalSyntaxRule';
+    /**
+     * Rule Pattern
+     *
+     * One of 11 cm:BusinessRulePattern mechanisms.
+     */
+    rule_pattern: 'Adjustment' | 'CoExists' | 'EqualTo' | 'Exists' | 'GreaterThan' | 'GreaterThanOrEqualToZero' | 'LessThan' | 'RollForward' | 'RollUp' | 'SumEquals' | 'Variance';
+    /**
+     * Expression
+     *
+     * XPath-flavored predicate body (the rule expression).
+     */
+    expression: string;
+    /**
+     * Variables
+     *
+     * ``$Variable`` → qname bindings. Each entry is ``{'variable_name': str, 'variable_qname': str}``.
+     */
+    variables?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Severity
+     */
+    severity?: 'info' | 'warning' | 'error';
+    /**
+     * Target Structure Ref
+     *
+     * Envelope-local structure name this rule targets (for structure-scoped rules). Mutually exclusive with the other target_* fields.
+     */
+    target_structure_ref?: string | null;
+    /**
+     * Target Element Qname
+     *
+     * qname of the element this rule targets. Mutually exclusive with the other target_* fields.
+     */
+    target_element_qname?: string | null;
+    /**
+     * Target Taxonomy Self
+     *
+     * True iff the rule targets the envelope's own taxonomy row (``target_kind='taxonomy'``). Mutually exclusive with the other target_* fields.
+     */
+    target_taxonomy_self?: boolean;
+    /**
+     * Message
+     */
+    message?: string | null;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * TaxonomyBlockStructureRequest
+ *
+ * Structure definition inside a Taxonomy Block envelope.
+ */
+export type TaxonomyBlockStructureRequest = {
+    /**
+     * Name
+     *
+     * Envelope-local structure name (unique within envelope).
+     */
+    name: string;
+    /**
+     * Structure Type
+     *
+     * DB ``structures.structure_type`` enum. CoA blocks use ``chart_of_accounts``; reporting extensions use the statement family or ``custom``; custom ontology uses ``custom``.
+     */
+    structure_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'rollforward' | 'reconciliation' | 'policy' | 'metric';
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Role Uri
+     */
+    role_uri?: string | null;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -7502,6 +7934,83 @@ export type UpdateSecurityOperation = {
      * Target security ID.
      */
     security_id: string;
+};
+
+/**
+ * UpdateTaxonomyBlockRequest
+ *
+ * Request body for the ``update-taxonomy-block`` operation.
+ *
+ * Top-level fields (name / description / version) apply to the taxonomy
+ * row itself. The delta lists mutate atoms incrementally — the validator
+ * (Phase 2.3) re-runs the seven-phase check across the projected post-
+ * update state before anything commits.
+ */
+export type UpdateTaxonomyBlockRequest = {
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Version
+     */
+    version?: string | null;
+    /**
+     * Elements To Add
+     */
+    elements_to_add?: Array<TaxonomyBlockElementRequest>;
+    /**
+     * Elements To Update
+     */
+    elements_to_update?: Array<ElementUpdatePatch>;
+    /**
+     * Elements To Remove
+     *
+     * qnames of elements to remove.
+     */
+    elements_to_remove?: Array<string>;
+    /**
+     * Structures To Add
+     */
+    structures_to_add?: Array<TaxonomyBlockStructureRequest>;
+    /**
+     * Structures To Update
+     */
+    structures_to_update?: Array<StructureUpdatePatch>;
+    /**
+     * Structures To Remove
+     *
+     * Structure ids to remove.
+     */
+    structures_to_remove?: Array<string>;
+    /**
+     * Associations To Add
+     */
+    associations_to_add?: Array<TaxonomyBlockAssociationRequest>;
+    /**
+     * Associations To Remove
+     *
+     * Association ids to remove.
+     */
+    associations_to_remove?: Array<string>;
+    /**
+     * Rules To Add
+     */
+    rules_to_add?: Array<TaxonomyBlockRuleRequest>;
+    /**
+     * Rules To Remove
+     *
+     * Rule ids to remove.
+     */
+    rules_to_remove?: Array<string>;
 };
 
 /**
@@ -13792,70 +14301,6 @@ export type HandleHttpPostExtensionsGraphIdGraphqlPostResponses = {
     200: unknown;
 };
 
-export type OpUpdateEntityData = {
-    body: UpdateEntityRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/update-entity';
-};
-
-export type OpUpdateEntityErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OpUpdateEntityError = OpUpdateEntityErrors[keyof OpUpdateEntityErrors];
-
-export type OpUpdateEntityResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpUpdateEntityResponse = OpUpdateEntityResponses[keyof OpUpdateEntityResponses];
-
 export type OpInitializeLedgerData = {
     body: InitializeLedgerRequest;
     headers?: {
@@ -13920,8 +14365,8 @@ export type OpInitializeLedgerResponses = {
 
 export type OpInitializeLedgerResponse = OpInitializeLedgerResponses[keyof OpInitializeLedgerResponses];
 
-export type OpSetCloseTargetData = {
-    body: SetCloseTargetOperation;
+export type OpUpdateEntityData = {
+    body: UpdateEntityRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -13935,10 +14380,10 @@ export type OpSetCloseTargetData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/set-close-target';
+    url: '/extensions/roboledger/{graph_id}/operations/update-entity';
 };
 
-export type OpSetCloseTargetErrors = {
+export type OpUpdateEntityErrors = {
     /**
      * Invalid request
      */
@@ -13973,19 +14418,19 @@ export type OpSetCloseTargetErrors = {
     500: ErrorResponse;
 };
 
-export type OpSetCloseTargetError = OpSetCloseTargetErrors[keyof OpSetCloseTargetErrors];
+export type OpUpdateEntityError = OpUpdateEntityErrors[keyof OpUpdateEntityErrors];
 
-export type OpSetCloseTargetResponses = {
+export type OpUpdateEntityResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpSetCloseTargetResponse = OpSetCloseTargetResponses[keyof OpSetCloseTargetResponses];
+export type OpUpdateEntityResponse = OpUpdateEntityResponses[keyof OpUpdateEntityResponses];
 
-export type OpClosePeriodData = {
-    body: ClosePeriodOperation;
+export type OpCreateTaxonomyBlockData = {
+    body: CreateTaxonomyBlockRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -13999,30 +14444,30 @@ export type OpClosePeriodData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/close-period';
+    url: '/extensions/roboledger/{graph_id}/operations/create-taxonomy-block';
 };
 
-export type OpClosePeriodErrors = {
+export type OpCreateTaxonomyBlockErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -14030,26 +14475,26 @@ export type OpClosePeriodErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
-export type OpClosePeriodError = OpClosePeriodErrors[keyof OpClosePeriodErrors];
+export type OpCreateTaxonomyBlockError = OpCreateTaxonomyBlockErrors[keyof OpCreateTaxonomyBlockErrors];
 
-export type OpClosePeriodResponses = {
+export type OpCreateTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpClosePeriodResponse = OpClosePeriodResponses[keyof OpClosePeriodResponses];
+export type OpCreateTaxonomyBlockResponse = OpCreateTaxonomyBlockResponses[keyof OpCreateTaxonomyBlockResponses];
 
-export type OpReopenPeriodData = {
-    body: ReopenPeriodOperation;
+export type OpUpdateTaxonomyBlockData = {
+    body: UpdateTaxonomyBlockRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -14063,30 +14508,30 @@ export type OpReopenPeriodData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/reopen-period';
+    url: '/extensions/roboledger/{graph_id}/operations/update-taxonomy-block';
 };
 
-export type OpReopenPeriodErrors = {
+export type OpUpdateTaxonomyBlockErrors = {
     /**
-     * Invalid request
+     * Invalid request payload
      */
-    400: ErrorResponse;
+    400: OperationError;
     /**
-     * Authentication required
+     * Unauthorized — missing or invalid credentials
      */
-    401: ErrorResponse;
+    401: unknown;
     /**
-     * Access denied
+     * Forbidden — caller cannot access this graph
      */
-    403: ErrorResponse;
+    403: unknown;
     /**
-     * Resource not found
+     * Resource not found (graph, ledger, report, etc.)
      */
-    404: ErrorResponse;
+    404: OperationError;
     /**
-     * Idempotency-Key conflict — key reused with different body
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
      */
-    409: ErrorResponse;
+    409: OperationError;
     /**
      * Validation Error
      */
@@ -14094,23 +14539,215 @@ export type OpReopenPeriodErrors = {
     /**
      * Rate limit exceeded
      */
-    429: ErrorResponse;
+    429: unknown;
     /**
-     * Internal server error
+     * Internal error
      */
-    500: ErrorResponse;
+    500: unknown;
 };
 
-export type OpReopenPeriodError = OpReopenPeriodErrors[keyof OpReopenPeriodErrors];
+export type OpUpdateTaxonomyBlockError = OpUpdateTaxonomyBlockErrors[keyof OpUpdateTaxonomyBlockErrors];
 
-export type OpReopenPeriodResponses = {
+export type OpUpdateTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpReopenPeriodResponse = OpReopenPeriodResponses[keyof OpReopenPeriodResponses];
+export type OpUpdateTaxonomyBlockResponse = OpUpdateTaxonomyBlockResponses[keyof OpUpdateTaxonomyBlockResponses];
+
+export type OpDeleteTaxonomyBlockData = {
+    body: DeleteTaxonomyBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/delete-taxonomy-block';
+};
+
+export type OpDeleteTaxonomyBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpDeleteTaxonomyBlockError = OpDeleteTaxonomyBlockErrors[keyof OpDeleteTaxonomyBlockErrors];
+
+export type OpDeleteTaxonomyBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteTaxonomyBlockResponse = OpDeleteTaxonomyBlockResponses[keyof OpDeleteTaxonomyBlockResponses];
+
+export type OpLinkEntityTaxonomyData = {
+    body: LinkEntityTaxonomyRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/link-entity-taxonomy';
+};
+
+export type OpLinkEntityTaxonomyErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpLinkEntityTaxonomyError = OpLinkEntityTaxonomyErrors[keyof OpLinkEntityTaxonomyErrors];
+
+export type OpLinkEntityTaxonomyResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpLinkEntityTaxonomyResponse = OpLinkEntityTaxonomyResponses[keyof OpLinkEntityTaxonomyResponses];
+
+export type OpCreateMappingAssociationData = {
+    body: CreateMappingAssociationOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association';
+};
+
+export type OpCreateMappingAssociationErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
+
+export type OpCreateMappingAssociationResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateMappingAssociationResponse = OpCreateMappingAssociationResponses[keyof OpCreateMappingAssociationResponses];
 
 export type OpDeleteMappingAssociationData = {
     body: DeleteMappingAssociationOperation;
@@ -14176,8 +14813,8 @@ export type OpDeleteMappingAssociationResponses = {
 
 export type OpDeleteMappingAssociationResponse = OpDeleteMappingAssociationResponses[keyof OpDeleteMappingAssociationResponses];
 
-export type OpLinkEntityTaxonomyData = {
-    body: LinkEntityTaxonomyRequest;
+export type OpAutoMapElementsData = {
+    body: AutoMapElementsOperation;
     headers?: {
         /**
          * Idempotency-Key
@@ -14191,10 +14828,74 @@ export type OpLinkEntityTaxonomyData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/link-entity-taxonomy';
+    url: '/extensions/roboledger/{graph_id}/operations/auto-map-elements';
 };
 
-export type OpLinkEntityTaxonomyErrors = {
+export type OpAutoMapElementsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpAutoMapElementsError = OpAutoMapElementsErrors[keyof OpAutoMapElementsErrors];
+
+export type OpAutoMapElementsResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type OpAutoMapElementsResponse = OpAutoMapElementsResponses[keyof OpAutoMapElementsResponses];
+
+export type OpCreateInformationBlockData = {
+    body: CreateInformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-information-block';
+};
+
+export type OpCreateInformationBlockErrors = {
     /**
      * Invalid request payload
      */
@@ -14229,16 +14930,208 @@ export type OpLinkEntityTaxonomyErrors = {
     500: unknown;
 };
 
-export type OpLinkEntityTaxonomyError = OpLinkEntityTaxonomyErrors[keyof OpLinkEntityTaxonomyErrors];
+export type OpCreateInformationBlockError = OpCreateInformationBlockErrors[keyof OpCreateInformationBlockErrors];
 
-export type OpLinkEntityTaxonomyResponses = {
+export type OpCreateInformationBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpLinkEntityTaxonomyResponse = OpLinkEntityTaxonomyResponses[keyof OpLinkEntityTaxonomyResponses];
+export type OpCreateInformationBlockResponse = OpCreateInformationBlockResponses[keyof OpCreateInformationBlockResponses];
+
+export type OpUpdateInformationBlockData = {
+    body: UpdateInformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/update-information-block';
+};
+
+export type OpUpdateInformationBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpUpdateInformationBlockError = OpUpdateInformationBlockErrors[keyof OpUpdateInformationBlockErrors];
+
+export type OpUpdateInformationBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpUpdateInformationBlockResponse = OpUpdateInformationBlockResponses[keyof OpUpdateInformationBlockResponses];
+
+export type OpDeleteInformationBlockData = {
+    body: DeleteInformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/delete-information-block';
+};
+
+export type OpDeleteInformationBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpDeleteInformationBlockError = OpDeleteInformationBlockErrors[keyof OpDeleteInformationBlockErrors];
+
+export type OpDeleteInformationBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteInformationBlockResponse = OpDeleteInformationBlockResponses[keyof OpDeleteInformationBlockResponses];
+
+export type OpEvaluateRulesData = {
+    body: EvaluateRulesRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/evaluate-rules';
+};
+
+export type OpEvaluateRulesErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpEvaluateRulesError = OpEvaluateRulesErrors[keyof OpEvaluateRulesErrors];
+
+export type OpEvaluateRulesResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpEvaluateRulesResponse = OpEvaluateRulesResponses[keyof OpEvaluateRulesResponses];
 
 export type OpCreateTransactionData = {
     body: CreateTransactionRequest;
@@ -14560,8 +15453,8 @@ export type OpReverseJournalEntryResponses = {
 
 export type OpReverseJournalEntryResponse = OpReverseJournalEntryResponses[keyof OpReverseJournalEntryResponses];
 
-export type OpTruncateScheduleData = {
-    body: TruncateScheduleOperation;
+export type OpSetCloseTargetData = {
+    body: SetCloseTargetOperation;
     headers?: {
         /**
          * Idempotency-Key
@@ -14575,30 +15468,30 @@ export type OpTruncateScheduleData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule';
+    url: '/extensions/roboledger/{graph_id}/operations/set-close-target';
 };
 
-export type OpTruncateScheduleErrors = {
+export type OpSetCloseTargetErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
      * Validation Error
      */
@@ -14606,23 +15499,23 @@ export type OpTruncateScheduleErrors = {
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
-export type OpTruncateScheduleError = OpTruncateScheduleErrors[keyof OpTruncateScheduleErrors];
+export type OpSetCloseTargetError = OpSetCloseTargetErrors[keyof OpSetCloseTargetErrors];
 
-export type OpTruncateScheduleResponses = {
+export type OpSetCloseTargetResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpTruncateScheduleResponse = OpTruncateScheduleResponses[keyof OpTruncateScheduleResponses];
+export type OpSetCloseTargetResponse = OpSetCloseTargetResponses[keyof OpSetCloseTargetResponses];
 
 export type OpCreateClosingEntryData = {
     body: CreateClosingEntryOperation;
@@ -14752,6 +15645,70 @@ export type OpCreateManualClosingEntryResponses = {
 
 export type OpCreateManualClosingEntryResponse = OpCreateManualClosingEntryResponses[keyof OpCreateManualClosingEntryResponses];
 
+export type OpTruncateScheduleData = {
+    body: TruncateScheduleOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule';
+};
+
+export type OpTruncateScheduleErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpTruncateScheduleError = OpTruncateScheduleErrors[keyof OpTruncateScheduleErrors];
+
+export type OpTruncateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpTruncateScheduleResponse = OpTruncateScheduleResponses[keyof OpTruncateScheduleResponses];
+
 export type OpDisposeScheduleData = {
     body: DisposeScheduleRequest;
     headers?: {
@@ -14816,8 +15773,8 @@ export type OpDisposeScheduleResponses = {
 
 export type OpDisposeScheduleResponse = OpDisposeScheduleResponses[keyof OpDisposeScheduleResponses];
 
-export type OpCreateInformationBlockData = {
-    body: CreateInformationBlockRequest;
+export type OpClosePeriodData = {
+    body: ClosePeriodOperation;
     headers?: {
         /**
          * Idempotency-Key
@@ -14831,330 +15788,10 @@ export type OpCreateInformationBlockData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-information-block';
+    url: '/extensions/roboledger/{graph_id}/operations/close-period';
 };
 
-export type OpCreateInformationBlockErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpCreateInformationBlockError = OpCreateInformationBlockErrors[keyof OpCreateInformationBlockErrors];
-
-export type OpCreateInformationBlockResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateInformationBlockResponse = OpCreateInformationBlockResponses[keyof OpCreateInformationBlockResponses];
-
-export type OpUpdateInformationBlockData = {
-    body: UpdateInformationBlockRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/update-information-block';
-};
-
-export type OpUpdateInformationBlockErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpUpdateInformationBlockError = OpUpdateInformationBlockErrors[keyof OpUpdateInformationBlockErrors];
-
-export type OpUpdateInformationBlockResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpUpdateInformationBlockResponse = OpUpdateInformationBlockResponses[keyof OpUpdateInformationBlockResponses];
-
-export type OpDeleteInformationBlockData = {
-    body: DeleteInformationBlockRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/delete-information-block';
-};
-
-export type OpDeleteInformationBlockErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpDeleteInformationBlockError = OpDeleteInformationBlockErrors[keyof OpDeleteInformationBlockErrors];
-
-export type OpDeleteInformationBlockResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpDeleteInformationBlockResponse = OpDeleteInformationBlockResponses[keyof OpDeleteInformationBlockResponses];
-
-export type OpEvaluateRulesData = {
-    body: EvaluateRulesRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/evaluate-rules';
-};
-
-export type OpEvaluateRulesErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpEvaluateRulesError = OpEvaluateRulesErrors[keyof OpEvaluateRulesErrors];
-
-export type OpEvaluateRulesResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpEvaluateRulesResponse = OpEvaluateRulesResponses[keyof OpEvaluateRulesResponses];
-
-export type OpCreateMappingAssociationData = {
-    body: CreateMappingAssociationOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association';
-};
-
-export type OpCreateMappingAssociationErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
-
-export type OpCreateMappingAssociationResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateMappingAssociationResponse = OpCreateMappingAssociationResponses[keyof OpCreateMappingAssociationResponses];
-
-export type OpAutoMapElementsData = {
-    body: AutoMapElementsOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/auto-map-elements';
-};
-
-export type OpAutoMapElementsErrors = {
+export type OpClosePeriodErrors = {
     /**
      * Invalid request
      */
@@ -15189,16 +15826,80 @@ export type OpAutoMapElementsErrors = {
     500: ErrorResponse;
 };
 
-export type OpAutoMapElementsError = OpAutoMapElementsErrors[keyof OpAutoMapElementsErrors];
+export type OpClosePeriodError = OpClosePeriodErrors[keyof OpClosePeriodErrors];
 
-export type OpAutoMapElementsResponses = {
+export type OpClosePeriodResponses = {
     /**
      * Successful Response
      */
-    202: OperationEnvelope;
+    200: OperationEnvelope;
 };
 
-export type OpAutoMapElementsResponse = OpAutoMapElementsResponses[keyof OpAutoMapElementsResponses];
+export type OpClosePeriodResponse = OpClosePeriodResponses[keyof OpClosePeriodResponses];
+
+export type OpReopenPeriodData = {
+    body: ReopenPeriodOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/reopen-period';
+};
+
+export type OpReopenPeriodErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpReopenPeriodError = OpReopenPeriodErrors[keyof OpReopenPeriodErrors];
+
+export type OpReopenPeriodResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpReopenPeriodResponse = OpReopenPeriodResponses[keyof OpReopenPeriodResponses];
 
 export type OpCreateReportData = {
     body: CreateReportRequest;

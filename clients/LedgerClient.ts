@@ -36,12 +36,16 @@ import {
   opCreateMappingAssociation,
   opCreatePublishList,
   opCreateReport,
+  opCreateTaxonomyBlock,
   opCreateTransaction,
   opDeleteInformationBlock,
   opDeleteJournalEntry,
   opDeleteMappingAssociation,
   opDeletePublishList,
   opDeleteReport,
+  opDeleteTaxonomyBlock,
+  opDisposeSchedule,
+  opEvaluateRules,
   opInitializeLedger,
   opLinkEntityTaxonomy,
   opRegenerateReport,
@@ -55,6 +59,7 @@ import {
   opUpdateInformationBlock,
   opUpdateJournalEntry,
   opUpdatePublishList,
+  opUpdateTaxonomyBlock,
 } from '../sdk/sdk.gen'
 import type {
   AddPublishListMembersOperation,
@@ -67,11 +72,15 @@ import type {
   CreateMappingAssociationOperation,
   CreatePublishListRequest,
   CreateReportRequest,
+  CreateTaxonomyBlockRequest,
   CreateTransactionRequest,
   CreateViewRequest,
   DeleteInformationBlockRequest,
   DeleteJournalEntryRequest,
   DeleteMappingAssociationOperation,
+  DeleteTaxonomyBlockRequest,
+  DisposeScheduleRequest,
+  EvaluateRulesRequest,
   InitializeLedgerRequest,
   JournalEntryLineItemInput,
   LinkEntityTaxonomyRequest,
@@ -84,6 +93,7 @@ import type {
   UpdateInformationBlockRequest,
   UpdateJournalEntryRequest,
   UpdatePublishListOperation,
+  UpdateTaxonomyBlockRequest,
 } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
@@ -747,6 +757,47 @@ export class LedgerClient {
     return (envelope.result ?? {}) as Record<string, unknown>
   }
 
+  /**
+   * Create a taxonomy block atomically (taxonomy + structures + elements +
+   * associations + rules in one envelope).
+   */
+  async createTaxonomyBlock(
+    graphId: string,
+    body: CreateTaxonomyBlockRequest,
+    idempotencyKey?: string
+  ): Promise<Record<string, unknown>> {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
+    const envelope = await this.callOperation(
+      'Create taxonomy block',
+      opCreateTaxonomyBlock({ path: { graph_id: graphId }, body, headers })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Update a taxonomy block — add/update/remove elements, structures, associations, or rules. */
+  async updateTaxonomyBlock(
+    graphId: string,
+    body: UpdateTaxonomyBlockRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update taxonomy block',
+      opUpdateTaxonomyBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Delete a taxonomy block. Cascades through elements, structures, and associations. */
+  async deleteTaxonomyBlock(
+    graphId: string,
+    body: DeleteTaxonomyBlockRequest
+  ): Promise<{ deleted: boolean }> {
+    const envelope = await this.callOperation(
+      'Delete taxonomy block',
+      opDeleteTaxonomyBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+  }
+
   /** List elements (CoA accounts, GAAP concepts, etc.) with filters. */
   async listElements(
     graphId: string,
@@ -1031,6 +1082,30 @@ export class LedgerClient {
       factsDeleted: raw.facts_deleted,
       reason: raw.reason,
     }
+  }
+
+  /** Dispose of a schedule asset — post a disposal entry and delete forward facts. */
+  async disposeSchedule(
+    graphId: string,
+    body: DisposeScheduleRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Dispose schedule',
+      opDisposeSchedule({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Evaluate taxonomy rules against facts in a structure. */
+  async evaluateRules(
+    graphId: string,
+    body: EvaluateRulesRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Evaluate rules',
+      opEvaluateRules({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // ── Period close ────────────────────────────────────────────────────
