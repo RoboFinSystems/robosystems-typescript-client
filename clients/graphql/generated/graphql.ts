@@ -1079,6 +1079,7 @@ export type Report = {
   periodStart: Maybe<Scalars['Date']['output']>
   periodType: Scalars['String']['output']
   periods: Maybe<Array<PeriodSpec>>
+  ruleSummary: Maybe<Scalars['JSON']['output']>
   sharedAt: Maybe<Scalars['DateTime']['output']>
   sourceGraphId: Maybe<Scalars['String']['output']>
   sourceReportId: Maybe<Scalars['String']['output']>
