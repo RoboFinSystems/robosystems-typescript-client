@@ -29,27 +29,23 @@ import {
   opAutoMapElements,
   opBuildFactGrid,
   opClosePeriod,
-  opCreateAssociations,
   opCreateClosingEntry,
-  opCreateElement,
   opCreateInformationBlock,
   opCreateJournalEntry,
   opCreateManualClosingEntry,
   opCreateMappingAssociation,
   opCreatePublishList,
   opCreateReport,
-  opCreateStructure,
-  opCreateTaxonomy,
+  opCreateTaxonomyBlock,
   opCreateTransaction,
-  opDeleteAssociation,
-  opDeleteElement,
   opDeleteInformationBlock,
   opDeleteJournalEntry,
   opDeleteMappingAssociation,
   opDeletePublishList,
   opDeleteReport,
-  opDeleteStructure,
-  opDeleteTaxonomy,
+  opDeleteTaxonomyBlock,
+  opDisposeSchedule,
+  opEvaluateRules,
   opInitializeLedger,
   opLinkEntityTaxonomy,
   opRegenerateReport,
@@ -59,40 +55,32 @@ import {
   opSetCloseTarget,
   opShareReport,
   opTruncateSchedule,
-  opUpdateAssociation,
-  opUpdateElement,
   opUpdateEntity,
   opUpdateInformationBlock,
   opUpdateJournalEntry,
   opUpdatePublishList,
-  opUpdateStructure,
-  opUpdateTaxonomy,
+  opUpdateTaxonomyBlock,
 } from '../sdk/sdk.gen'
 import type {
   AddPublishListMembersOperation,
   AutoMapElementsOperation,
-  BulkAssociationItem,
-  BulkCreateAssociationsRequest,
   ClosePeriodOperation,
   CreateClosingEntryOperation,
-  CreateElementRequest,
   CreateInformationBlockRequest,
   CreateJournalEntryRequest,
   CreateManualClosingEntryRequest,
   CreateMappingAssociationOperation,
   CreatePublishListRequest,
   CreateReportRequest,
-  CreateStructureRequest,
-  CreateTaxonomyRequest,
+  CreateTaxonomyBlockRequest,
   CreateTransactionRequest,
   CreateViewRequest,
-  DeleteAssociationRequest,
-  DeleteElementRequest,
   DeleteInformationBlockRequest,
   DeleteJournalEntryRequest,
   DeleteMappingAssociationOperation,
-  DeleteStructureRequest,
-  DeleteTaxonomyRequest,
+  DeleteTaxonomyBlockRequest,
+  DisposeScheduleRequest,
+  EvaluateRulesRequest,
   InitializeLedgerRequest,
   JournalEntryLineItemInput,
   LinkEntityTaxonomyRequest,
@@ -101,14 +89,11 @@ import type {
   ReverseJournalEntryRequest,
   SetCloseTargetOperation,
   TruncateScheduleOperation,
-  UpdateAssociationRequest,
-  UpdateElementRequest,
   UpdateEntityRequest,
   UpdateInformationBlockRequest,
   UpdateJournalEntryRequest,
   UpdatePublishListOperation,
-  UpdateStructureRequest,
-  UpdateTaxonomyRequest,
+  UpdateTaxonomyBlockRequest,
 } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
@@ -757,40 +742,6 @@ export class LedgerClient {
     return list?.taxonomies ?? []
   }
 
-  /** Create a new taxonomy (used for CoA + mapping taxonomies). */
-  async createTaxonomy(
-    graphId: string,
-    body: CreateTaxonomyRequest
-  ): Promise<Record<string, unknown>> {
-    const envelope = await this.callOperation(
-      'Create taxonomy',
-      opCreateTaxonomy({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
-  /** Update mutable fields on a taxonomy. `taxonomy_type` is immutable. */
-  async updateTaxonomy(
-    graphId: string,
-    body: UpdateTaxonomyRequest
-  ): Promise<Record<string, unknown>> {
-    const envelope = await this.callOperation(
-      'Update taxonomy',
-      opUpdateTaxonomy({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
-  /** Soft-delete a taxonomy (`is_active=false`). */
-  async deleteTaxonomy(graphId: string, taxonomyId: string): Promise<Record<string, unknown>> {
-    const body: DeleteTaxonomyRequest = { taxonomy_id: taxonomyId }
-    const envelope = await this.callOperation(
-      'Delete taxonomy',
-      opDeleteTaxonomy({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
   /**
    * Link the graph's entity to a taxonomy (ENTITY_HAS_TAXONOMY edge).
    * Idempotent — returns existing linkage if already present.
@@ -804,6 +755,47 @@ export class LedgerClient {
       opLinkEntityTaxonomy({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /**
+   * Create a taxonomy block atomically (taxonomy + structures + elements +
+   * associations + rules in one envelope).
+   */
+  async createTaxonomyBlock(
+    graphId: string,
+    body: CreateTaxonomyBlockRequest,
+    idempotencyKey?: string
+  ): Promise<Record<string, unknown>> {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
+    const envelope = await this.callOperation(
+      'Create taxonomy block',
+      opCreateTaxonomyBlock({ path: { graph_id: graphId }, body, headers })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Update a taxonomy block — add/update/remove elements, structures, associations, or rules. */
+  async updateTaxonomyBlock(
+    graphId: string,
+    body: UpdateTaxonomyBlockRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update taxonomy block',
+      opUpdateTaxonomyBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Delete a taxonomy block. Cascades through elements, structures, and associations. */
+  async deleteTaxonomyBlock(
+    graphId: string,
+    body: DeleteTaxonomyBlockRequest
+  ): Promise<{ deleted: boolean }> {
+    const envelope = await this.callOperation(
+      'Delete taxonomy block',
+      opDeleteTaxonomyBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
   /** List elements (CoA accounts, GAAP concepts, etc.) with filters. */
@@ -848,40 +840,6 @@ export class LedgerClient {
     )
   }
 
-  /** Create a new element within a taxonomy (native CoA account, etc.). */
-  async createElement(
-    graphId: string,
-    body: CreateElementRequest
-  ): Promise<Record<string, unknown>> {
-    const envelope = await this.callOperation(
-      'Create element',
-      opCreateElement({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
-  /** Update mutable fields on an element. `taxonomy_id` and `source` are immutable. */
-  async updateElement(
-    graphId: string,
-    body: UpdateElementRequest
-  ): Promise<Record<string, unknown>> {
-    const envelope = await this.callOperation(
-      'Update element',
-      opUpdateElement({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
-  /** Soft-delete an element (`is_active=false`). */
-  async deleteElement(graphId: string, elementId: string): Promise<Record<string, unknown>> {
-    const body: DeleteElementRequest = { element_id: elementId }
-    const envelope = await this.callOperation(
-      'Delete element',
-      opDeleteElement({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
   // ── Structures ──────────────────────────────────────────────────────
 
   /** List reporting structures (IS, BS, CF, schedules) with optional filters. */
@@ -900,62 +858,6 @@ export class LedgerClient {
       (data) => data.structures
     )
     return list?.structures ?? []
-  }
-
-  /**
-   * Create a new structure. Most common use is a CoA→reporting mapping
-   * structure; also used for custom statement + schedule structures.
-   */
-  async createStructure(graphId: string, body: CreateStructureRequest): Promise<LedgerMappingInfo> {
-    const envelope = await this.callOperation(
-      'Create structure',
-      opCreateStructure({ path: { graph_id: graphId }, body })
-    )
-    return envelope.result as unknown as LedgerMappingInfo
-  }
-
-  /** Convenience wrapper — create a CoA→GAAP mapping structure. */
-  async createMappingStructure(
-    graphId: string,
-    options?: {
-      name?: string
-      description?: string | null
-      taxonomyId?: string
-    }
-  ): Promise<LedgerMappingInfo> {
-    const body: CreateStructureRequest = {
-      name: options?.name ?? 'CoA to Reporting',
-      structure_type: 'coa_mapping',
-      taxonomy_id: options?.taxonomyId ?? 'tax_usgaap_reporting',
-      description: options?.description ?? 'Map Chart of Accounts to US GAAP reporting concepts',
-    }
-    const envelope = await this.callOperation(
-      'Create mapping structure',
-      opCreateStructure({ path: { graph_id: graphId }, body })
-    )
-    return envelope.result as unknown as LedgerMappingInfo
-  }
-
-  /** Update mutable fields on a structure. `structure_type` is immutable. */
-  async updateStructure(
-    graphId: string,
-    body: UpdateStructureRequest
-  ): Promise<Record<string, unknown>> {
-    const envelope = await this.callOperation(
-      'Update structure',
-      opUpdateStructure({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
-  /** Soft-delete a structure (`is_active=false`). */
-  async deleteStructure(graphId: string, structureId: string): Promise<Record<string, unknown>> {
-    const body: DeleteStructureRequest = { structure_id: structureId }
-    const envelope = await this.callOperation(
-      'Delete structure',
-      opDeleteStructure({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // ── Mappings ────────────────────────────────────────────────────────
@@ -1035,42 +937,6 @@ export class LedgerClient {
       opAutoMapElements({ path: { graph_id: graphId }, body })
     )
     return { operationId: envelope.operationId, status: envelope.status }
-  }
-
-  /** Bulk create associations within a single structure, atomically. */
-  async createAssociations(
-    graphId: string,
-    structureId: string,
-    associations: BulkAssociationItem[]
-  ): Promise<Record<string, unknown>> {
-    const body: BulkCreateAssociationsRequest = { structure_id: structureId, associations }
-    const envelope = await this.callOperation(
-      'Create associations',
-      opCreateAssociations({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
-  /** Update mutable fields on an association (order, weight, confidence). */
-  async updateAssociation(
-    graphId: string,
-    body: UpdateAssociationRequest
-  ): Promise<Record<string, unknown>> {
-    const envelope = await this.callOperation(
-      'Update association',
-      opUpdateAssociation({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
-  }
-
-  /** Hard-delete an association (any type: presentation, calculation, mapping). */
-  async deleteAssociation(graphId: string, associationId: string): Promise<{ deleted: boolean }> {
-    const body: DeleteAssociationRequest = { association_id: associationId }
-    const envelope = await this.callOperation(
-      'Delete association',
-      opDeleteAssociation({ path: { graph_id: graphId }, body })
-    )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
   // ── Information Blocks ─────────────────────────────────────────────
@@ -1216,6 +1082,30 @@ export class LedgerClient {
       factsDeleted: raw.facts_deleted,
       reason: raw.reason,
     }
+  }
+
+  /** Dispose of a schedule asset — post a disposal entry and delete forward facts. */
+  async disposeSchedule(
+    graphId: string,
+    body: DisposeScheduleRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Dispose schedule',
+      opDisposeSchedule({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /** Evaluate taxonomy rules against facts in a structure. */
+  async evaluateRules(
+    graphId: string,
+    body: EvaluateRulesRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Evaluate rules',
+      opEvaluateRules({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // ── Period close ────────────────────────────────────────────────────
