@@ -136,6 +136,21 @@ export class OperationClient {
             this.scheduleCleanup(operationId, 5000)
             resolve(result)
           })
+
+          // Handle transport-level failures after the stream was initially
+          // opened (server drop, network blip exhausting retries). Without
+          // this, max_retries_exceeded closes the SSE client but leaves the
+          // monitorOperation promise pending until options.timeout fires.
+          sseClient.on('max_retries_exceeded', (err) => {
+            if (timeoutHandle) clearTimeout(timeoutHandle)
+            result = {
+              success: false,
+              error:
+                (err && (err.message || err.error)) || 'SSE connection lost (max retries exceeded)',
+            }
+            this.scheduleCleanup(operationId, 5000)
+            resolve(result)
+          })
         })
         .catch((error) => {
           if (timeoutHandle) clearTimeout(timeoutHandle)

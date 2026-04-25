@@ -1552,7 +1552,7 @@ export type CreateEventHandlerRequest = {
     /**
      * Match Metadata Expression
      *
-     * JSONPath-style equality map, e.g. {"metadata.category": "payroll"}
+     * JSONPath-style equality map against event.metadata, e.g. {"category": "payroll"} or {"metadata.category": "payroll"}
      */
     match_metadata_expression?: {
         [key: string]: unknown;
