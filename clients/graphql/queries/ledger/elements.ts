@@ -29,7 +29,6 @@ export const LIST_ELEMENTS = gql`
         description
         qname
         namespace
-        classification
         subClassification
         balanceType
         periodType

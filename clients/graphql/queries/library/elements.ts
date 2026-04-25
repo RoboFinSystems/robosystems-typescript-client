@@ -42,7 +42,7 @@ export const LIST_LIBRARY_ELEMENTS = gql`
       qname
       namespace
       name
-      classification
+      trait
       balanceType
       periodType
       isAbstract
@@ -76,7 +76,7 @@ export const SEARCH_LIBRARY_ELEMENTS = gql`
       qname
       namespace
       name
-      classification
+      trait
       balanceType
       periodType
       isAbstract
@@ -110,7 +110,7 @@ export const GET_LIBRARY_ELEMENT = gql`
       qname
       namespace
       name
-      classification
+      trait
       balanceType
       periodType
       isAbstract

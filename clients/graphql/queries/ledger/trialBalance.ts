@@ -15,7 +15,7 @@ export const GET_TRIAL_BALANCE = gql`
         accountId
         accountCode
         accountName
-        classification
+        trait
         accountType
         totalDebits
         totalCredits

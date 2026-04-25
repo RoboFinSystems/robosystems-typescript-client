@@ -25,7 +25,6 @@ export type Scalars = {
 export type Account = {
   accountType: Maybe<Scalars['String']['output']>
   balanceType: Scalars['String']['output']
-  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   currency: Scalars['String']['output']
   depth: Scalars['Int']['output']
@@ -38,6 +37,7 @@ export type Account = {
   name: Scalars['String']['output']
   parentId: Maybe<Scalars['String']['output']>
   subClassification: Maybe<Scalars['String']['output']>
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type AccountList = {
@@ -48,11 +48,11 @@ export type AccountList = {
 export type AccountRollupGroup = {
   accounts: Array<AccountRollupRow>
   balanceType: Scalars['String']['output']
-  classification: Scalars['String']['output']
   reportingElementId: Scalars['String']['output']
   reportingName: Scalars['String']['output']
   reportingQname: Scalars['String']['output']
   total: Scalars['Float']['output']
+  trait: Scalars['String']['output']
 }
 
 export type AccountRollupRow = {
@@ -81,12 +81,12 @@ export type AccountTreeNode = {
   accountType: Maybe<Scalars['String']['output']>
   balanceType: Scalars['String']['output']
   children: Array<AccountTreeNode>
-  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   depth: Scalars['Int']['output']
   id: Scalars['ID']['output']
   isActive: Scalars['Boolean']['output']
   name: Scalars['String']['output']
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type Agent = {
@@ -188,7 +188,6 @@ export type DraftLineItem = {
 
 export type Element = {
   balanceType: Scalars['String']['output']
-  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   depth: Scalars['Int']['output']
   description: Maybe<Scalars['String']['output']>
@@ -206,6 +205,7 @@ export type Element = {
   source: Scalars['String']['output']
   subClassification: Maybe<Scalars['String']['output']>
   taxonomyId: Maybe<Scalars['String']['output']>
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type ElementList = {
@@ -214,12 +214,12 @@ export type ElementList = {
 }
 
 export type FactRow = {
-  classification: Maybe<Scalars['String']['output']>
   depth: Scalars['Int']['output']
   elementId: Scalars['String']['output']
   elementName: Scalars['String']['output']
   elementQname: Scalars['String']['output']
   isSubtotal: Scalars['Boolean']['output']
+  trait: Maybe<Scalars['String']['output']>
   values: Array<Maybe<Scalars['Float']['output']>>
 }
 
@@ -302,7 +302,7 @@ export type InformationBlock = {
 }
 
 export type InformationBlockClassification = {
-  /** One of the categories in the `public.classifications` CHECK constraint — e.g. 'concept_arrangement', 'member_arrangement', 'named_disclosure' for association-level; 'liquidity', 'activityType', etc. for element-level. */
+  /** One of the 3 association-level categories in the `public.classifications` CHECK constraint: 'concept_arrangement', 'member_arrangement', or 'named_disclosure'. */
   category: Scalars['String']['output']
   /** AI/adapter-supplied confidence (0.0-1.0). Null for deterministic library-seeded rows. */
   confidence: Maybe<Scalars['Float']['output']>
@@ -320,7 +320,7 @@ export type InformationBlockConnection = {
   arcrole: Maybe<Scalars['String']['output']>
   /** presentation | calculation | mapping | equivalence | general-special | essence-alias */
   associationType: Scalars['String']['output']
-  /** Association-level classifications (Phase epsilon) — concept_arrangement, member_arrangement, named_disclosure rows from the junction. Empty for library-seeded associations that haven't been classified yet. */
+  /** Association-level classifications — concept_arrangement, member_arrangement, named_disclosure rows from the junction. Empty for library-seeded associations that haven't been classified yet. */
   classifications: Array<InformationBlockClassification>
   fromElementId: Scalars['String']['output']
   id: Scalars['String']['output']
@@ -546,8 +546,6 @@ export type LibraryAssociation = {
 export type LibraryElement = {
   /** debit | credit */
   balanceType: Scalars['String']['output']
-  /** FASB elementsOfFinancialStatements axis: asset | contraAsset | liability | contraLiability | equity | contraEquity | temporaryEquity | revenue | expense | expenseReversal | gain | loss | comprehensiveIncome | investmentByOwners | distributionToOwners | metric (derived subtotals, not SFAC 6 primary elements). Null for structural rows. */
-  classification: Maybe<Scalars['String']['output']>
   /** concept | abstract | axis | member | hypercube */
   elementType: Scalars['String']['output']
   id: Scalars['String']['output']
@@ -565,6 +563,8 @@ export type LibraryElement = {
   /** fac | us-gaap | rs-gaap | … */
   source: Scalars['String']['output']
   taxonomyId: Maybe<Scalars['String']['output']>
+  /** FASB elementsOfFinancialStatements axis: asset | contraAsset | liability | contraLiability | equity | contraEquity | temporaryEquity | revenue | expense | expenseReversal | gain | loss | comprehensiveIncome | investmentByOwners | distributionToOwners | metric (derived subtotals, not SFAC 6 primary elements). Null for structural rows. */
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type LibraryElementArc = {
@@ -582,11 +582,11 @@ export type LibraryElementArc = {
 }
 
 export type LibraryElementClassification = {
-  /** Classification axis (e.g. elementsOfFinancialStatements) */
+  /** Trait axis (e.g. elementsOfFinancialStatements) */
   category: Scalars['String']['output']
   /** Value within the axis (e.g. expense) */
   identifier: Scalars['String']['output']
-  /** True for the element's primary EFS classification */
+  /** True for the element's primary EFS trait assignment */
   isPrimary: Scalars['Boolean']['output']
   /** Human-readable name */
   name: Maybe<Scalars['String']['output']>
@@ -655,13 +655,13 @@ export type MappedTrialBalance = {
 
 export type MappedTrialBalanceRow = {
   balanceType: Maybe<Scalars['String']['output']>
-  classification: Maybe<Scalars['String']['output']>
   netBalance: Scalars['Float']['output']
   qname: Scalars['String']['output']
   reportingElementId: Scalars['String']['output']
   reportingName: Scalars['String']['output']
   totalCredits: Scalars['Float']['output']
   totalDebits: Scalars['Float']['output']
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type MappingCoverage = {
@@ -1248,7 +1248,6 @@ export type TaxonomyBlockAssociation = {
 
 export type TaxonomyBlockElement = {
   balanceType: Maybe<Scalars['String']['output']>
-  classification: Maybe<Scalars['String']['output']>
   depth: Maybe<Scalars['Int']['output']>
   elementType: Scalars['String']['output']
   id: Scalars['String']['output']
@@ -1258,6 +1257,7 @@ export type TaxonomyBlockElement = {
   parentQname: Maybe<Scalars['String']['output']>
   periodType: Maybe<Scalars['String']['output']>
   qname: Maybe<Scalars['String']['output']>
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type TaxonomyBlockRule = {
@@ -1295,20 +1295,20 @@ export type TrialBalanceRow = {
   accountId: Scalars['String']['output']
   accountName: Scalars['String']['output']
   accountType: Maybe<Scalars['String']['output']>
-  classification: Maybe<Scalars['String']['output']>
   netBalance: Scalars['Float']['output']
   totalCredits: Scalars['Float']['output']
   totalDebits: Scalars['Float']['output']
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type UnmappedElement = {
   balanceType: Scalars['String']['output']
-  classification: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
   externalSource: Maybe<Scalars['String']['output']>
   id: Scalars['String']['output']
   name: Scalars['String']['output']
   suggestedTargets: Array<SuggestedTarget>
+  trait: Maybe<Scalars['String']['output']>
 }
 
 export type ValidationCheck = {
@@ -1516,7 +1516,7 @@ export type GetLedgerAccountRollupsQuery = {
       reportingElementId: string
       reportingName: string
       reportingQname: string
-      classification: string
+      trait: string
       balanceType: string
       total: number
       accounts: Array<{
@@ -1540,7 +1540,7 @@ export type GetLedgerAccountTreeQuery = {
       id: string
       code: string | null
       name: string
-      classification: string | null
+      trait: string | null
       accountType: string | null
       balanceType: string
       depth: number
@@ -1549,7 +1549,7 @@ export type GetLedgerAccountTreeQuery = {
         id: string
         code: string | null
         name: string
-        classification: string | null
+        trait: string | null
         accountType: string | null
         balanceType: string
         depth: number
@@ -1558,7 +1558,7 @@ export type GetLedgerAccountTreeQuery = {
           id: string
           code: string | null
           name: string
-          classification: string | null
+          trait: string | null
           accountType: string | null
           balanceType: string
           depth: number
@@ -1567,7 +1567,7 @@ export type GetLedgerAccountTreeQuery = {
             id: string
             code: string | null
             name: string
-            classification: string | null
+            trait: string | null
             accountType: string | null
             balanceType: string
             depth: number
@@ -1593,7 +1593,6 @@ export type ListLedgerAccountsQuery = {
       code: string | null
       name: string
       description: string | null
-      classification: string | null
       subClassification: string | null
       balanceType: string
       parentId: string | null
@@ -1646,7 +1645,6 @@ export type ListLedgerElementsQuery = {
       description: string | null
       qname: string | null
       namespace: string | null
-      classification: string | null
       subClassification: string | null
       balanceType: string
       periodType: string
@@ -1876,7 +1874,7 @@ export type GetLedgerMappedTrialBalanceQuery = {
       reportingElementId: string
       qname: string
       reportingName: string
-      classification: string | null
+      trait: string | null
       balanceType: string | null
       totalDebits: number
       totalCredits: number
@@ -2142,7 +2140,7 @@ export type GetLedgerStatementQuery = {
       elementId: string
       elementQname: string
       elementName: string
-      classification: string | null
+      trait: string | null
       values: Array<number | null>
       isSubtotal: boolean
       depth: number
@@ -2298,7 +2296,7 @@ export type GetLedgerTrialBalanceQuery = {
       accountId: string
       accountCode: string
       accountName: string
-      classification: string | null
+      trait: string | null
       accountType: string | null
       totalDebits: number
       totalCredits: number
@@ -2316,7 +2314,7 @@ export type ListLedgerUnmappedElementsQuery = {
     id: string
     code: string | null
     name: string
-    classification: string | null
+    trait: string | null
     balanceType: string
     externalSource: string | null
     suggestedTargets: Array<{
@@ -2369,7 +2367,7 @@ export type GetLibraryElementArcsQuery = {
     taxonomyName: string | null
     structureId: string | null
     structureName: string | null
-    peer: { id: string; qname: string; name: string; classification: string | null; source: string }
+    peer: { id: string; qname: string; name: string; trait: string | null; source: string }
   }>
 }
 
@@ -2392,18 +2390,12 @@ export type GetLibraryElementEquivalentsQueryVariables = Exact<{
 
 export type GetLibraryElementEquivalentsQuery = {
   libraryElementEquivalents: {
-    element: {
-      id: string
-      qname: string
-      name: string
-      classification: string | null
-      source: string
-    }
+    element: { id: string; qname: string; name: string; trait: string | null; source: string }
     equivalents: Array<{
       id: string
       qname: string
       name: string
-      classification: string | null
+      trait: string | null
       source: string
     }>
   } | null
@@ -2428,7 +2420,7 @@ export type ListLibraryElementsQuery = {
     qname: string
     namespace: string | null
     name: string
-    classification: string | null
+    trait: string | null
     balanceType: string
     periodType: string
     isAbstract: boolean
@@ -2454,7 +2446,7 @@ export type SearchLibraryElementsQuery = {
     qname: string
     namespace: string | null
     name: string
-    classification: string | null
+    trait: string | null
     balanceType: string
     periodType: string
     isAbstract: boolean
@@ -2479,7 +2471,7 @@ export type GetLibraryElementQuery = {
     qname: string
     namespace: string | null
     name: string
-    classification: string | null
+    trait: string | null
     balanceType: string
     periodType: string
     isAbstract: boolean
@@ -3173,7 +3165,7 @@ export const GetLedgerAccountRollupsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'reportingElementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reportingName' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reportingQname' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'total' } },
                       {
@@ -3228,7 +3220,7 @@ export const GetLedgerAccountTreeDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'code' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'accountType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
@@ -3242,7 +3234,7 @@ export const GetLedgerAccountTreeDocument = {
                             { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'code' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'accountType' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
@@ -3256,10 +3248,7 @@ export const GetLedgerAccountTreeDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'code' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                                  {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'classification' },
-                                  },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'accountType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
@@ -3273,10 +3262,7 @@ export const GetLedgerAccountTreeDocument = {
                                         { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                         { kind: 'Field', name: { kind: 'Name', value: 'code' } },
                                         { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                                        {
-                                          kind: 'Field',
-                                          name: { kind: 'Name', value: 'classification' },
-                                        },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                                         {
                                           kind: 'Field',
                                           name: { kind: 'Name', value: 'accountType' },
@@ -3388,7 +3374,6 @@ export const ListLedgerAccountsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'code' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'subClassification' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'parentId' } },
@@ -3576,7 +3561,6 @@ export const ListLedgerElementsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'subClassification' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
@@ -4109,7 +4093,7 @@ export const GetLedgerMappedTrialBalanceDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'reportingElementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reportingName' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'totalDebits' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'totalCredits' } },
@@ -4859,7 +4843,7 @@ export const GetLedgerStatementDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'elementQname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'elementName' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'values' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
@@ -5303,7 +5287,7 @@ export const GetLedgerTrialBalanceDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'accountId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'accountCode' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'accountType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'totalDebits' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'totalCredits' } },
@@ -5352,7 +5336,7 @@ export const ListLedgerUnmappedElementsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'code' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'externalSource' } },
                 {
@@ -5533,7 +5517,7 @@ export const GetLibraryElementArcsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                     ],
                   },
@@ -5636,7 +5620,7 @@ export const GetLibraryElementEquivalentsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                     ],
                   },
@@ -5650,7 +5634,7 @@ export const GetLibraryElementEquivalentsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                     ],
                   },
@@ -5806,7 +5790,7 @@ export const ListLibraryElementsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
@@ -5940,7 +5924,7 @@ export const SearchLibraryElementsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
@@ -6025,7 +6009,7 @@ export const GetLibraryElementDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'classification' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },

@@ -59,7 +59,7 @@ export const GET_LIBRARY_ELEMENT_ARCS = gql`
         id
         qname
         name
-        classification
+        trait
         source
       }
     }
@@ -92,14 +92,14 @@ export const GET_LIBRARY_ELEMENT_EQUIVALENTS = gql`
         id
         qname
         name
-        classification
+        trait
         source
       }
       equivalents {
         id
         qname
         name
-        classification
+        trait
         source
       }
     }

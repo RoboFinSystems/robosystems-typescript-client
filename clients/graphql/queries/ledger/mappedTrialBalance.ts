@@ -16,7 +16,7 @@ export const GET_MAPPED_TRIAL_BALANCE = gql`
         reportingElementId
         qname
         reportingName
-        classification
+        trait
         balanceType
         totalDebits
         totalCredits
