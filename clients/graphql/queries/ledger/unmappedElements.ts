@@ -13,7 +13,7 @@ export const LIST_UNMAPPED_ELEMENTS = gql`
       id
       code
       name
-      classification
+      trait
       balanceType
       externalSource
       suggestedTargets {

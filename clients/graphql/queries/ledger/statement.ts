@@ -25,7 +25,7 @@ export const GET_STATEMENT = gql`
         elementId
         elementQname
         elementName
-        classification
+        trait
         values
         isSubtotal
         depth

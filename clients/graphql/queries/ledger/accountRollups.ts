@@ -17,7 +17,7 @@ export const GET_ACCOUNT_ROLLUPS = gql`
         reportingElementId
         reportingName
         reportingQname
-        classification
+        trait
         balanceType
         total
         accounts {

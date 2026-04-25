@@ -20,7 +20,6 @@ export const LIST_ACCOUNTS = gql`
         code
         name
         description
-        classification
         subClassification
         balanceType
         parentId

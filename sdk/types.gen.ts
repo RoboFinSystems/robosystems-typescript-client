@@ -1430,9 +1430,15 @@ export type CreateEventBlockRequest = {
     /**
      * Event Category
      *
-     * REA economic classification. One of: sales, purchase, financing, payroll, treasury, adjustment, recognition, other.
+     * REA classification. Economic categories (sales, purchase, financing, payroll, treasury, adjustment, recognition, other) require event_class='economic'. Support categories (control, approval, reconciliation, inquiry) require event_class='support'. The DB CHECK rejects mismatched pairings.
      */
-    event_category: 'sales' | 'purchase' | 'financing' | 'payroll' | 'treasury' | 'adjustment' | 'recognition' | 'other';
+    event_category: 'sales' | 'purchase' | 'financing' | 'payroll' | 'treasury' | 'adjustment' | 'recognition' | 'other' | 'control' | 'approval' | 'reconciliation' | 'inquiry';
+    /**
+     * Event Class
+     *
+     * REA event class. 'economic' events change resources and drive GL postings; 'support' events are audit-trail / value-chain primitives (typically captured with apply_handlers=False).
+     */
+    event_class?: 'economic' | 'support';
     /**
      * Agent Id
      *
@@ -1509,6 +1515,18 @@ export type CreateEventBlockRequest = {
      * Dimension Ids
      */
     dimension_ids?: Array<string>;
+    /**
+     * Obligated By Event Id
+     *
+     * Forward-materialization link: the event that scheduled or obligated this one (e.g. depreciation entries point at the asset_acquired event).
+     */
+    obligated_by_event_id?: string | null;
+    /**
+     * Discharges Event Id
+     *
+     * Settlement link: the obligation this event discharges (e.g. cash_received pointing at the originating sale_invoiced).
+     */
+    discharges_event_id?: string | null;
     /**
      * Apply Handlers
      *
@@ -3113,9 +3131,9 @@ export type ElementUpdatePatch = {
      */
     description?: string | null;
     /**
-     * Classification
+     * Trait
      */
-    classification?: string | null;
+    trait?: string | null;
     /**
      * Balance Type
      */
@@ -3264,7 +3282,7 @@ export type ErrorResponse = {
 /**
  * EvaluateRulesRequest
  *
- * Request body for the ``evaluate-rules`` operation (Phase delta.3).
+ * Request body for the ``evaluate-rules`` operation.
  *
  * Runs every rule scoped to ``structure_id`` (plus element/association-
  * scoped rules for the structure's atoms), binds ``$Variable`` references
@@ -3283,7 +3301,7 @@ export type EvaluateRulesRequest = {
     /**
      * Fact Set Id
      *
-     * Optional FactSet id to stamp on each VerificationResult row. Allows results to be scoped to a specific period run when the FactSet table is populated (Phase zeta expand pass).
+     * Optional FactSet id to stamp on each VerificationResult row. Allows results to be scoped to a specific period run once write paths populate the FactSet table on every run.
      */
     fact_set_id?: string | null;
     /**
@@ -7174,11 +7192,11 @@ export type TaxonomyBlockElementRequest = {
      */
     name: string;
     /**
-     * Classification
+     * Trait
      *
      * FASB metamodel trait for the element. Required for ``chart_of_accounts`` blocks; optional for ``custom_ontology``.
      */
-    classification?: string | null;
+    trait?: string | null;
     /**
      * Balance Type
      *
@@ -7730,7 +7748,7 @@ export type UpdateEventBlockRequest = {
     /**
      * Transition To
      *
-     * Status transition. Valid moves depend on current status: captured → committed | voided; classified → committed | pending | fulfilled | voided; committed → pending | fulfilled | voided; pending → fulfilled | voided. Terminal states (fulfilled, voided, superseded) accept no further transitions. Note: classified and fulfilled are usually set by handlers, not by callers, but the transition is allowed for corrections.
+     * Status transition. Valid moves depend on current status: captured → committed | voided | superseded; classified → committed | pending | fulfilled | voided | superseded; committed → pending | fulfilled | voided | superseded; pending → fulfilled | voided | superseded. Terminal states (fulfilled, voided, superseded) accept no further transitions. Note: classified and fulfilled are usually set by handlers, not by callers, but the transition is allowed for corrections.
      */
     transition_to?: 'committed' | 'pending' | 'fulfilled' | 'voided' | 'superseded' | null;
     /**
@@ -7755,6 +7773,18 @@ export type UpdateEventBlockRequest = {
     metadata_patch?: {
         [key: string]: unknown;
     };
+    /**
+     * Obligated By Event Id
+     *
+     * Set/update the forward-materialization link.
+     */
+    obligated_by_event_id?: string | null;
+    /**
+     * Discharges Event Id
+     *
+     * Set/update the settlement link.
+     */
+    discharges_event_id?: string | null;
 };
 
 /**
@@ -8093,8 +8123,8 @@ export type UpdateSecurityOperation = {
  *
  * Top-level fields (name / description / version) apply to the taxonomy
  * row itself. The delta lists mutate atoms incrementally — the validator
- * (Phase 2.3) re-runs the seven-phase check across the projected post-
- * update state before anything commits.
+ * re-runs every create-time check across the projected post-update
+ * state before anything commits.
  */
 export type UpdateTaxonomyBlockRequest = {
     /**

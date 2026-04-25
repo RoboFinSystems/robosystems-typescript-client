@@ -18,7 +18,7 @@ export const GET_ACCOUNT_TREE = gql`
         id
         code
         name
-        classification
+        trait
         accountType
         balanceType
         depth
@@ -27,7 +27,7 @@ export const GET_ACCOUNT_TREE = gql`
           id
           code
           name
-          classification
+          trait
           accountType
           balanceType
           depth
@@ -36,7 +36,7 @@ export const GET_ACCOUNT_TREE = gql`
             id
             code
             name
-            classification
+            trait
             accountType
             balanceType
             depth
@@ -45,7 +45,7 @@ export const GET_ACCOUNT_TREE = gql`
               id
               code
               name
-              classification
+              trait
               accountType
               balanceType
               depth
