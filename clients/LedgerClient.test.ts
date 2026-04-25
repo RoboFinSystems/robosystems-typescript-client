@@ -978,6 +978,374 @@ describe('LedgerClient', () => {
     })
   })
 
+  // ── Event blocks (preview + status transitions) ────────────────────────
+
+  describe('previewEventBlock', () => {
+    const previewBody = {
+      event_type: 'journal_entry_recorded' as const,
+      event_category: 'adjustment' as const,
+      source: 'native',
+      occurred_at: '2026-03-31T00:00:00Z',
+      apply_handlers: true,
+      metadata: {
+        posting_date: '2026-03-31',
+        memo: 'preview test',
+        line_items: [
+          { element_id: 'elem_a', debit_amount: 100, credit_amount: 0 },
+          { element_id: 'elem_b', debit_amount: 0, credit_amount: 100 },
+        ],
+        type: 'standard',
+        status: 'draft',
+      },
+    }
+
+    it('returns the preview envelope result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-event-block', {
+          would_succeed: true,
+          planned_transactions: [],
+          validation_errors: [],
+        })
+      )
+      const result = await client.previewEventBlock('graph_1', previewBody)
+      expect(result).toMatchObject({ would_succeed: true })
+    })
+
+    it('forwards the body unchanged to the operation', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('preview-event-block', {}))
+      await client.previewEventBlock('graph_1', previewBody)
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.event_type).toBe('journal_entry_recorded')
+      expect(body.metadata.memo).toBe('preview test')
+    })
+
+    it('POSTs to the preview-event-block URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('preview-event-block', {}))
+      await client.previewEventBlock('graph_42', previewBody)
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/preview-event-block'
+      )
+    })
+
+    it('surfaces validation errors via would_succeed=false', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-event-block', {
+          would_succeed: false,
+          validation_errors: ['Line items unbalanced'],
+        })
+      )
+      const result = await client.previewEventBlock('graph_1', previewBody)
+      expect(result.would_succeed).toBe(false)
+      expect((result.validation_errors as string[])[0]).toBe('Line items unbalanced')
+    })
+  })
+
+  describe('updateEventBlock', () => {
+    it('returns the updated envelope result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-event-block', {
+          id: 'evt_1',
+          status: 'committed',
+        })
+      )
+      const result = await client.updateEventBlock('graph_1', {
+        event_id: 'evt_1',
+        transition_to: 'committed',
+      })
+      expect(result).toMatchObject({ id: 'evt_1', status: 'committed' })
+    })
+
+    it('sends event_id and transition_to in the body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-event-block', {}))
+      await client.updateEventBlock('graph_1', {
+        event_id: 'evt_abc',
+        transition_to: 'voided',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.event_id).toBe('evt_abc')
+      expect(body.transition_to).toBe('voided')
+    })
+
+    it('supports superseded transitions with a successor id', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-event-block', {}))
+      await client.updateEventBlock('graph_1', {
+        event_id: 'evt_1',
+        transition_to: 'superseded',
+        superseded_by_id: 'evt_2',
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.superseded_by_id).toBe('evt_2')
+    })
+
+    it('supports field corrections via metadata_patch', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-event-block', {}))
+      await client.updateEventBlock('graph_1', {
+        event_id: 'evt_1',
+        description: 'Updated description',
+        metadata_patch: { reason: 'duplicate' },
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.description).toBe('Updated description')
+      expect(body.metadata_patch).toEqual({ reason: 'duplicate' })
+    })
+
+    it('POSTs to the update-event-block URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-event-block', {}))
+      await client.updateEventBlock('graph_42', { event_id: 'evt_1' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-event-block'
+      )
+    })
+  })
+
+  // ── Agents ───────────────────────────────────────────────────────────
+
+  describe('createAgent', () => {
+    it('returns the created agent', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-agent', { id: 'agt_1', agent_type: 'customer' })
+      )
+      const result = await client.createAgent('graph_1', {
+        agent_type: 'customer',
+        name: 'ACME Corp',
+      })
+      expect(result).toMatchObject({ id: 'agt_1' })
+    })
+
+    it('serializes optional fields into the body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-agent', {}))
+      await client.createAgent('graph_1', {
+        agent_type: 'vendor',
+        name: 'Office Supplier',
+        legal_name: 'Office Supplier Inc.',
+        tax_id: '12-3456789',
+        email: 'ap@supplier.com',
+        is_1099_recipient: true,
+        source: 'quickbooks',
+        external_id: 'qb_vendor_42',
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.agent_type).toBe('vendor')
+      expect(body.tax_id).toBe('12-3456789')
+      expect(body.is_1099_recipient).toBe(true)
+      expect(body.external_id).toBe('qb_vendor_42')
+    })
+
+    it('forwards Idempotency-Key header when supplied', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-agent', {}))
+      await client.createAgent('graph_1', { agent_type: 'customer', name: 'X' }, 'idem-agent-1')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.headers.get('idempotency-key')).toBe('idem-agent-1')
+    })
+
+    it('POSTs to the create-agent URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-agent', {}))
+      await client.createAgent('graph_42', { agent_type: 'customer', name: 'X' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-agent'
+      )
+    })
+  })
+
+  describe('updateAgent', () => {
+    it('returns the updated agent', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-agent', { id: 'agt_1', name: 'New Name' })
+      )
+      const result = await client.updateAgent('graph_1', {
+        agent_id: 'agt_1',
+        name: 'New Name',
+      })
+      expect(result).toMatchObject({ name: 'New Name' })
+    })
+
+    it('serializes metadata_patch as an additive merge', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-agent', {}))
+      await client.updateAgent('graph_1', {
+        agent_id: 'agt_1',
+        metadata_patch: { region: 'us-west' },
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.metadata_patch).toEqual({ region: 'us-west' })
+    })
+
+    it('POSTs to the update-agent URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-agent', {}))
+      await client.updateAgent('graph_42', { agent_id: 'agt_1' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-agent'
+      )
+    })
+  })
+
+  // ── Event handlers ────────────────────────────────────────────────────
+
+  describe('createEventHandler', () => {
+    const handlerBody = {
+      name: 'Stripe charge → revenue',
+      event_type: 'invoice_paid',
+      event_category: 'sales',
+      match_source: 'stripe',
+      transaction_template: {
+        transactions: [
+          {
+            entry_template: {
+              debit: { element_id: 'elem_cash', amount: '{{ event.amount }}' },
+              credit: { element_id: 'elem_revenue', amount: '{{ event.amount }}' },
+            },
+          },
+        ],
+      },
+      priority: 100,
+    }
+
+    it('returns the created handler', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-event-handler', { id: 'eh_1', name: handlerBody.name })
+      )
+      const result = await client.createEventHandler('graph_1', handlerBody)
+      expect(result).toMatchObject({ id: 'eh_1' })
+    })
+
+    it('forwards transaction_template untouched', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-handler', {}))
+      await client.createEventHandler('graph_1', handlerBody)
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.transaction_template.transactions).toHaveLength(1)
+      expect(body.match_source).toBe('stripe')
+      expect(body.priority).toBe(100)
+    })
+
+    it('POSTs to the create-event-handler URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-handler', {}))
+      await client.createEventHandler('graph_42', handlerBody)
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-event-handler'
+      )
+    })
+  })
+
+  describe('updateEventHandler', () => {
+    it('returns the updated handler', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-event-handler', { id: 'eh_1', is_active: false })
+      )
+      const result = await client.updateEventHandler('graph_1', {
+        event_handler_id: 'eh_1',
+        is_active: false,
+      })
+      expect(result).toMatchObject({ is_active: false })
+    })
+
+    it('supports approve flag for AI-suggested handlers', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-event-handler', {}))
+      await client.updateEventHandler('graph_1', {
+        event_handler_id: 'eh_1',
+        approve: true,
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.approve).toBe(true)
+    })
+
+    it('POSTs to the update-event-handler URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-event-handler', {}))
+      await client.updateEventHandler('graph_42', { event_handler_id: 'eh_1' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/update-event-handler'
+      )
+    })
+  })
+
+  // ── Financial statements ─────────────────────────────────────────────
+
+  describe('liveFinancialStatement', () => {
+    it('returns the statement payload', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('live-financial-statement', {
+          statement_type: 'income_statement',
+          rows: [{ element: 'us-gaap:Revenues', value: 1000000 }],
+        })
+      )
+      const result = await client.liveFinancialStatement('graph_1', {
+        statement_type: 'income_statement',
+        period_start: '2026-01-01',
+        period_end: '2026-03-31',
+      })
+      expect(result).toMatchObject({ statement_type: 'income_statement' })
+    })
+
+    it('serializes window fields into the body', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('live-financial-statement', {}))
+      await client.liveFinancialStatement('graph_1', {
+        statement_type: 'balance_sheet',
+        fiscal_year: 2026,
+        limit: 50,
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.statement_type).toBe('balance_sheet')
+      expect(body.fiscal_year).toBe(2026)
+      expect(body.limit).toBe(50)
+    })
+
+    it('POSTs to the live-financial-statement URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('live-financial-statement', {}))
+      await client.liveFinancialStatement('graph_42', {
+        statement_type: 'income_statement',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/live-financial-statement'
+      )
+    })
+  })
+
+  describe('financialStatementAnalysis', () => {
+    it('returns the analysis payload', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('financial-statement-analysis', {
+          statement_type: 'income_statement',
+          analysis: { gross_margin: 0.42 },
+        })
+      )
+      const result = await client.financialStatementAnalysis('graph_1', {
+        statement_type: 'income_statement',
+        report_id: 'rep_1',
+      })
+      expect((result.analysis as Record<string, number>).gross_margin).toBe(0.42)
+    })
+
+    it('forwards ticker for shared-repo graphs', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('financial-statement-analysis', {}))
+      await client.financialStatementAnalysis('sec', {
+        statement_type: 'balance_sheet',
+        ticker: 'NVDA',
+        fiscal_year: 2025,
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.ticker).toBe('NVDA')
+      expect(body.fiscal_year).toBe(2025)
+    })
+
+    it('POSTs to the financial-statement-analysis URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('financial-statement-analysis', {}))
+      await client.financialStatementAnalysis('graph_42', {
+        statement_type: 'cash_flow_statement',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/financial-statement-analysis'
+      )
+    })
+  })
+
   describe('constructor', () => {
     it('creates with minimal config', () => {
       const c = new LedgerClient({ baseUrl: 'http://localhost:8000' })
