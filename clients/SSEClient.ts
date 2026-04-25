@@ -80,12 +80,17 @@ export class SSEClient {
         withCredentials: this.config.credentials === 'include',
       } as any)
 
+      let opened = false
+
       const connectionTimeout = setTimeout(() => {
-        reject(new Error('Connection timeout'))
-        this.close()
+        if (!opened) {
+          reject(new Error('SSE connection timed out before opening'))
+          this.close()
+        }
       }, 10000)
 
       this.eventSource.onopen = () => {
+        opened = true
         clearTimeout(connectionTimeout)
         this.reconnectAttempts = 0
         this.emit('connected', null)
@@ -93,7 +98,25 @@ export class SSEClient {
       }
 
       this.eventSource.onerror = (error) => {
-        clearTimeout(connectionTimeout)
+        if (!opened) {
+          // Failed before the stream ever opened. Browser EventSource doesn't
+          // expose the HTTP status, but a CLOSED readyState at this point
+          // means a non-retryable response (commonly 401/403/404). Reject
+          // the initial promise so callers surface a clear error instead of
+          // waiting out the 10s connectionTimeout or spinning retries that
+          // can never satisfy this promise.
+          clearTimeout(connectionTimeout)
+          const nonRetryable = this.eventSource?.readyState === EventSource.CLOSED
+          this.close()
+          reject(
+            new Error(
+              nonRetryable
+                ? 'SSE connection failed before open (likely auth/not-found; EventSource hides the HTTP status)'
+                : 'SSE connection error before open'
+            )
+          )
+          return
+        }
         if (!this.closed) {
           this.handleError(error, operationId, fromSequence)
         }
