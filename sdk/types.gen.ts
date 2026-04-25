@@ -1292,6 +1292,80 @@ export type CreateApiKeyResponse = {
 };
 
 /**
+ * CreateAgentRequest
+ */
+export type CreateAgentRequest = {
+    /**
+     * Agent Type
+     *
+     * 'customer' | 'vendor' | 'employee' | 'owner' | 'supplier' | 'government' | 'lender' | 'self' | 'other'
+     */
+    agent_type: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Legal Name
+     */
+    legal_name?: string | null;
+    /**
+     * Tax Id
+     */
+    tax_id?: string | null;
+    /**
+     * Registration Number
+     */
+    registration_number?: string | null;
+    /**
+     * Duns
+     */
+    duns?: string | null;
+    /**
+     * Lei
+     */
+    lei?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Address
+     */
+    address?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Source
+     *
+     * 'quickbooks' | 'xero' | 'plaid' | 'native'
+     */
+    source?: string;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+    /**
+     * Is 1099 Recipient
+     */
+    is_1099_recipient?: boolean;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * CreateCheckoutRequest
  *
  * Request to create a checkout session for payment collection.
@@ -1320,47 +1394,6 @@ export type CreateCheckoutRequest = {
 };
 
 /**
- * CreateClosingEntryOperation
- *
- * CQRS-shaped body for `POST /operations/create-closing-entry`.
- *
- * `structure_id` moves into the body so REST + MCP share a single body
- * type via the registrar.
- */
-export type CreateClosingEntryOperation = {
-    /**
-     * Posting Date
-     *
-     * Posting date for the entry
-     */
-    posting_date: string;
-    /**
-     * Period Start
-     *
-     * Period start
-     */
-    period_start: string;
-    /**
-     * Period End
-     *
-     * Period end
-     */
-    period_end: string;
-    /**
-     * Memo
-     *
-     * Override memo
-     */
-    memo?: string | null;
-    /**
-     * Structure Id
-     *
-     * Schedule structure the closing entry is derived from.
-     */
-    structure_id: string;
-};
-
-/**
  * CreateConnectionRequest
  *
  * Request to create a new connection.
@@ -1380,6 +1413,169 @@ export type CreateConnectionRequest = {
     entity_id?: string | null;
     sec_config?: SecConnectionConfig | null;
     quickbooks_config?: QuickBooksConnectionConfig | null;
+};
+
+/**
+ * CreateEventBlockRequest
+ *
+ * Write surface for a single business event.
+ */
+export type CreateEventBlockRequest = {
+    /**
+     * Event Type
+     *
+     * Open vocabulary: 'invoice_issued' | 'contract_signed' | 'bank_transaction' | ...
+     */
+    event_type: string;
+    /**
+     * Event Category
+     *
+     * REA economic classification. One of: sales, purchase, financing, payroll, treasury, adjustment, recognition, other.
+     */
+    event_category: 'sales' | 'purchase' | 'financing' | 'payroll' | 'treasury' | 'adjustment' | 'recognition' | 'other';
+    /**
+     * Agent Id
+     *
+     * Counterparty agent id
+     */
+    agent_id?: string | null;
+    /**
+     * Resource Type
+     *
+     * REA resource kind. One of: goods, services, money, right, obligation, information, labor.
+     */
+    resource_type?: 'goods' | 'services' | 'money' | 'right' | 'obligation' | 'information' | 'labor' | null;
+    /**
+     * Resource Element Id
+     *
+     * Specific element being exchanged, if applicable
+     */
+    resource_element_id?: string | null;
+    /**
+     * Occurred At
+     *
+     * When the event happened in the real world
+     */
+    occurred_at: string;
+    /**
+     * Effective At
+     *
+     * Accounting recognition date, if different from occurred_at
+     */
+    effective_at?: string | null;
+    /**
+     * Source
+     *
+     * 'quickbooks' | 'xero' | 'plaid' | 'native' | 'scheduled' | ...
+     */
+    source: string;
+    /**
+     * External Id
+     *
+     * Source-system dedup key. (source, external_id) is enforced unique when external_id is provided, so retries from external adapters are idempotent at the DB level.
+     */
+    external_id?: string | null;
+    /**
+     * External Url
+     *
+     * Deep link back to source-system record
+     */
+    external_url?: string | null;
+    /**
+     * Amount
+     *
+     * Cents, signed
+     */
+    amount?: number | null;
+    /**
+     * Currency
+     *
+     * ISO 4217 currency code
+     */
+    currency?: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Metadata
+     *
+     * Event-type-specific payload
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Dimension Ids
+     */
+    dimension_ids?: Array<string>;
+    /**
+     * Apply Handlers
+     *
+     * When True, resolves the event_type to a handler (Python registry first, then DSL) and fires it atomically with event creation.
+     */
+    apply_handlers?: boolean;
+};
+
+/**
+ * CreateEventHandlerRequest
+ */
+export type CreateEventHandlerRequest = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Event Type
+     */
+    event_type: string;
+    /**
+     * Event Category
+     */
+    event_category?: string | null;
+    /**
+     * Match Source
+     */
+    match_source?: string | null;
+    /**
+     * Match Agent Type
+     */
+    match_agent_type?: string | null;
+    /**
+     * Match Resource Type
+     */
+    match_resource_type?: string | null;
+    /**
+     * Match Metadata Expression
+     *
+     * JSONPath-style equality map, e.g. {"metadata.category": "payroll"}
+     */
+    match_metadata_expression?: {
+        [key: string]: unknown;
+    } | null;
+    transaction_template: TransactionTemplate;
+    /**
+     * Priority
+     */
+    priority?: number;
+    /**
+     * Is Active
+     */
+    is_active?: boolean;
+    /**
+     * Origin
+     */
+    origin?: 'hub' | 'tenant';
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -1451,77 +1647,6 @@ export type CreateInformationBlockRequest = {
     payload?: {
         [key: string]: unknown;
     };
-};
-
-/**
- * CreateJournalEntryRequest
- *
- * Create a new journal entry with balanced line items.
- *
- * Defaults to `status='draft'` for ongoing native writes (the normal
- * workflow: draft → review → post via close-period). Pass
- * `status='posted'` for historical data import where entries represent
- * already-happened business events that don't need review.
- *
- * Total debit amount must equal total credit amount or the request
- * is rejected with 422. `line_items` must contain at least two rows
- * (at least one debit, at least one credit).
- */
-export type CreateJournalEntryRequest = {
-    /**
-     * Posting Date
-     */
-    posting_date: string;
-    /**
-     * Memo
-     */
-    memo: string;
-    /**
-     * Line Items
-     */
-    line_items: Array<JournalEntryLineItemInput>;
-    /**
-     * Type
-     */
-    type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
-    /**
-     * Status
-     */
-    status?: 'draft' | 'posted';
-    /**
-     * Transaction Id
-     */
-    transaction_id?: string | null;
-};
-
-/**
- * CreateManualClosingEntryRequest
- */
-export type CreateManualClosingEntryRequest = {
-    /**
-     * Posting Date
-     *
-     * Posting date for the entry
-     */
-    posting_date: string;
-    /**
-     * Memo
-     *
-     * Memo describing the business event (e.g., 'Sale of computer to Vendor X on 3/15')
-     */
-    memo: string;
-    /**
-     * Line Items
-     *
-     * Line items; must balance (total DR = total CR)
-     */
-    line_items: Array<ManualLineItemRequest>;
-    /**
-     * Entry Type
-     *
-     * Entry type: 'closing' (default), 'adjusting', 'standard', 'reversing'
-     */
-    entry_type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
 };
 
 /**
@@ -1892,66 +2017,6 @@ export type CreateTaxonomyBlockRequest = {
     metadata?: {
         [key: string]: unknown;
     };
-};
-
-/**
- * CreateTransactionRequest
- *
- * Create a standalone business-event Transaction.
- *
- * Use this when you want to record a real-world event (invoice, payment,
- * deposit, expense) first and then attach one or more journal entries to
- * it via `create-journal-entry` with the returned `transaction_id`.
- *
- * `amount` is in minor currency units (cents). `type` is free-form but
- * common values are: invoice, payment, bill, expense, deposit, transfer,
- * journal_entry.
- */
-export type CreateTransactionRequest = {
-    /**
-     * Type
-     */
-    type: string;
-    /**
-     * Date
-     */
-    date: string;
-    /**
-     * Amount
-     */
-    amount: number;
-    /**
-     * Currency
-     */
-    currency?: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Merchant Name
-     */
-    merchant_name?: string | null;
-    /**
-     * Reference Number
-     */
-    reference_number?: string | null;
-    /**
-     * Number
-     */
-    number?: string | null;
-    /**
-     * Category
-     */
-    category?: string | null;
-    /**
-     * Due Date
-     */
-    due_date?: string | null;
-    /**
-     * Status
-     */
-    status?: 'pending' | 'posted';
 };
 
 /**
@@ -2691,60 +2756,6 @@ export type DetailedTransactionsResponse = {
     date_range: {
         [key: string]: string;
     };
-};
-
-/**
- * DisposeScheduleRequest
- *
- * Dispose a schedule early — combines truncation with a disposal closing entry.
- *
- * Computes net book value from the schedule's own facts, truncates forward
- * periods, and creates a balanced disposal entry in one atomic operation.
- * Use when an asset is sold or abandoned before the schedule runs to completion.
- */
-export type DisposeScheduleRequest = {
-    /**
-     * Structure Id
-     *
-     * Target schedule structure ID.
-     */
-    structure_id: string;
-    /**
-     * Disposal Date
-     *
-     * Last day of the final period (month-end). Forward facts past this date are deleted; the disposal entry is posted on this date.
-     */
-    disposal_date: string;
-    /**
-     * Sale Proceeds
-     *
-     * Cash received from the sale in cents. None or 0 for abandonment (no cash received). If provided, `proceeds_element_id` is required.
-     */
-    sale_proceeds?: number | null;
-    /**
-     * Proceeds Element Id
-     *
-     * Element to debit for sale proceeds (e.g., Cash or AR). Required when sale_proceeds > 0.
-     */
-    proceeds_element_id?: string | null;
-    /**
-     * Gain Loss Element Id
-     *
-     * Element for gain or loss on disposal. Required when net book value > 0 after applying sale proceeds. Optional when asset is fully depreciated (NBV = 0, no gain/loss line needed).
-     */
-    gain_loss_element_id?: string | null;
-    /**
-     * Memo
-     *
-     * Memo for the disposal closing entry.
-     */
-    memo: string;
-    /**
-     * Reason
-     *
-     * Reason for disposal (audit trail).
-     */
-    reason: string;
 };
 
 /**
@@ -4941,34 +4952,6 @@ export type McpToolsResponse = {
 };
 
 /**
- * ManualLineItemRequest
- */
-export type ManualLineItemRequest = {
-    /**
-     * Element Id
-     *
-     * Element ID (chart of accounts)
-     */
-    element_id: string;
-    /**
-     * Debit Amount
-     *
-     * Debit in cents
-     */
-    debit_amount?: number;
-    /**
-     * Credit Amount
-     *
-     * Credit in cents
-     */
-    credit_amount?: number;
-    /**
-     * Description
-     */
-    description?: string | null;
-};
-
-/**
  * MaterializeOp
  *
  * Body for the materialize operation.
@@ -6080,35 +6063,6 @@ export type RestoreBackupOp = {
      * Verify database integrity after restore
      */
     verify_after_restore?: boolean;
-};
-
-/**
- * ReverseJournalEntryRequest
- *
- * Reverse a posted journal entry.
- *
- * Creates a new entry whose line items flip the originals
- * (debits → credits, credits → debits), sets `reversal_of` on the new
- * entry to the original's id, marks the original as
- * `status='reversed'`, and posts the reversing entry immediately.
- *
- * This is how accountants correct posted entries — the original stays
- * in the audit trail, the reversal cancels its effect, and a
- * corrected entry can be created separately.
- */
-export type ReverseJournalEntryRequest = {
-    /**
-     * Entry Id
-     */
-    entry_id: string;
-    /**
-     * Posting Date
-     */
-    posting_date?: string | null;
-    /**
-     * Memo
-     */
-    memo?: string | null;
 };
 
 /**
@@ -7476,34 +7430,67 @@ export type TransactionSummaryResponse = {
 };
 
 /**
- * TruncateScheduleOperation
+ * TransactionTemplate
  *
- * CQRS-shaped body for `POST /operations/truncate-schedule`.
+ * The handler's output spec — one or more balanced entries to post.
  *
- * Bundles the target schedule's `structure_id` with the update payload so
- * the single-body signature matches the registrar/MCP contract. The REST
- * handler, GraphQL resolver, and MCP tool all resolve to the same
- * `cmd_truncate_schedule(session, body, created_by=...)`.
+ * Wire shape::
+ *
+ * {
+ * "transactions": [{
+ * "entry_template": {
+ * "debit": {"element_id": "elem_...", "amount": "{{ event.amount }}"},
+ * "credit": {"element_id": "elem_...", "amount": "{{ event.amount }}"}
+ * }
+ * }]
+ * }
  */
-export type TruncateScheduleOperation = {
+export type TransactionTemplate = {
     /**
-     * New End Date
+     * Transactions
      *
-     * New last-covered date for the schedule. Facts with period_start > this date are deleted (along with any stale draft entries they produced). Historical facts (already posted) are preserved.
+     * At least one debit/credit entry pair
      */
-    new_end_date: string;
+    transactions: Array<TransactionTemplateItem>;
+};
+
+/**
+ * TransactionTemplateEntry
+ *
+ * One balanced entry (debit + credit pair) — the inner shape of entry_template.
+ */
+export type TransactionTemplateEntry = {
+    debit: TransactionTemplateLeg;
+    credit: TransactionTemplateLeg;
+};
+
+/**
+ * TransactionTemplateItem
+ *
+ * One item in the transactions list — wraps entry_template to match the DSL shape.
+ */
+export type TransactionTemplateItem = {
+    entry_template: TransactionTemplateEntry;
+};
+
+/**
+ * TransactionTemplateLeg
+ *
+ * One side of a journal entry leg (debit or credit).
+ */
+export type TransactionTemplateLeg = {
     /**
-     * Reason
+     * Element Id
      *
-     * Required reason for the truncation (captured in audit log).
+     * Element ULID (elem_ prefixed) identifying the account to post to
      */
-    reason: string;
+    element_id: string;
     /**
-     * Structure Id
+     * Amount
      *
-     * Target schedule structure ID.
+     * Amount expression. Supports: '{{ event.amount }}' — raw event amount (cents); '{{ event.amount }} / 2' — half of event amount; '{{ event.metadata.fee_cents }}' — field from event metadata
      */
-    structure_id: string;
+    amount: string;
 };
 
 /**
@@ -7568,6 +7555,68 @@ export type UpdateApiKeyRequest = {
      * New description
      */
     description?: string | null;
+};
+
+/**
+ * UpdateAgentRequest
+ */
+export type UpdateAgentRequest = {
+    /**
+     * Agent Id
+     */
+    agent_id: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Legal Name
+     */
+    legal_name?: string | null;
+    /**
+     * Tax Id
+     */
+    tax_id?: string | null;
+    /**
+     * Registration Number
+     */
+    registration_number?: string | null;
+    /**
+     * Duns
+     */
+    duns?: string | null;
+    /**
+     * Lei
+     */
+    lei?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Address
+     */
+    address?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Is 1099 Recipient
+     */
+    is_1099_recipient?: boolean | null;
+    /**
+     * Metadata Patch
+     */
+    metadata_patch?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -7664,6 +7713,107 @@ export type UpdateEntityRequest = {
      * Address Country
      */
     address_country?: string | null;
+};
+
+/**
+ * UpdateEventBlockRequest
+ *
+ * Status transitions and field corrections for an event block.
+ *
+ * All fields except event_id are optional — only supplied fields are updated.
+ */
+export type UpdateEventBlockRequest = {
+    /**
+     * Event Id
+     */
+    event_id: string;
+    /**
+     * Transition To
+     *
+     * Status transition. Valid moves depend on current status: captured → committed | voided; classified → committed | pending | fulfilled | voided; committed → pending | fulfilled | voided; pending → fulfilled | voided. Terminal states (fulfilled, voided, superseded) accept no further transitions. Note: classified and fulfilled are usually set by handlers, not by callers, but the transition is allowed for corrections.
+     */
+    transition_to?: 'committed' | 'pending' | 'fulfilled' | 'voided' | 'superseded' | null;
+    /**
+     * Superseded By Id
+     *
+     * New event id that replaces this one. Required when transition_to='superseded'.
+     */
+    superseded_by_id?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Effective At
+     */
+    effective_at?: string | null;
+    /**
+     * Metadata Patch
+     *
+     * Key-value pairs merged into existing metadata (additive patch, not replace).
+     */
+    metadata_patch?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * UpdateEventHandlerRequest
+ */
+export type UpdateEventHandlerRequest = {
+    /**
+     * Event Handler Id
+     */
+    event_handler_id: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Event Category
+     */
+    event_category?: string | null;
+    /**
+     * Match Source
+     */
+    match_source?: string | null;
+    /**
+     * Match Agent Type
+     */
+    match_agent_type?: string | null;
+    /**
+     * Match Resource Type
+     */
+    match_resource_type?: string | null;
+    /**
+     * Match Metadata Expression
+     */
+    match_metadata_expression?: {
+        [key: string]: unknown;
+    } | null;
+    transaction_template?: TransactionTemplate | null;
+    /**
+     * Priority
+     */
+    priority?: number | null;
+    /**
+     * Is Active
+     */
+    is_active?: boolean | null;
+    /**
+     * Approve
+     */
+    approve?: boolean | null;
+    /**
+     * Metadata Patch
+     */
+    metadata_patch?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -15133,8 +15283,8 @@ export type OpEvaluateRulesResponses = {
 
 export type OpEvaluateRulesResponse = OpEvaluateRulesResponses[keyof OpEvaluateRulesResponses];
 
-export type OpCreateTransactionData = {
-    body: CreateTransactionRequest;
+export type OpCreateAgentData = {
+    body: CreateAgentRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -15148,10 +15298,10 @@ export type OpCreateTransactionData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-transaction';
+    url: '/extensions/roboledger/{graph_id}/operations/create-agent';
 };
 
-export type OpCreateTransactionErrors = {
+export type OpCreateAgentErrors = {
     /**
      * Invalid request payload
      */
@@ -15186,19 +15336,19 @@ export type OpCreateTransactionErrors = {
     500: unknown;
 };
 
-export type OpCreateTransactionError = OpCreateTransactionErrors[keyof OpCreateTransactionErrors];
+export type OpCreateAgentError = OpCreateAgentErrors[keyof OpCreateAgentErrors];
 
-export type OpCreateTransactionResponses = {
+export type OpCreateAgentResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpCreateTransactionResponse = OpCreateTransactionResponses[keyof OpCreateTransactionResponses];
+export type OpCreateAgentResponse = OpCreateAgentResponses[keyof OpCreateAgentResponses];
 
-export type OpCreateJournalEntryData = {
-    body: CreateJournalEntryRequest;
+export type OpUpdateAgentData = {
+    body: UpdateAgentRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -15212,10 +15362,10 @@ export type OpCreateJournalEntryData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-journal-entry';
+    url: '/extensions/roboledger/{graph_id}/operations/update-agent';
 };
 
-export type OpCreateJournalEntryErrors = {
+export type OpUpdateAgentErrors = {
     /**
      * Invalid request payload
      */
@@ -15250,16 +15400,336 @@ export type OpCreateJournalEntryErrors = {
     500: unknown;
 };
 
-export type OpCreateJournalEntryError = OpCreateJournalEntryErrors[keyof OpCreateJournalEntryErrors];
+export type OpUpdateAgentError = OpUpdateAgentErrors[keyof OpUpdateAgentErrors];
 
-export type OpCreateJournalEntryResponses = {
+export type OpUpdateAgentResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpCreateJournalEntryResponse = OpCreateJournalEntryResponses[keyof OpCreateJournalEntryResponses];
+export type OpUpdateAgentResponse = OpUpdateAgentResponses[keyof OpUpdateAgentResponses];
+
+export type OpCreateEventBlockData = {
+    body: CreateEventBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-event-block';
+};
+
+export type OpCreateEventBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateEventBlockError = OpCreateEventBlockErrors[keyof OpCreateEventBlockErrors];
+
+export type OpCreateEventBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateEventBlockResponse = OpCreateEventBlockResponses[keyof OpCreateEventBlockResponses];
+
+export type OpUpdateEventBlockData = {
+    body: UpdateEventBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/update-event-block';
+};
+
+export type OpUpdateEventBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpUpdateEventBlockError = OpUpdateEventBlockErrors[keyof OpUpdateEventBlockErrors];
+
+export type OpUpdateEventBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpUpdateEventBlockResponse = OpUpdateEventBlockResponses[keyof OpUpdateEventBlockResponses];
+
+export type OpCreateEventHandlerData = {
+    body: CreateEventHandlerRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-event-handler';
+};
+
+export type OpCreateEventHandlerErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpCreateEventHandlerError = OpCreateEventHandlerErrors[keyof OpCreateEventHandlerErrors];
+
+export type OpCreateEventHandlerResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateEventHandlerResponse = OpCreateEventHandlerResponses[keyof OpCreateEventHandlerResponses];
+
+export type OpUpdateEventHandlerData = {
+    body: UpdateEventHandlerRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/update-event-handler';
+};
+
+export type OpUpdateEventHandlerErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpUpdateEventHandlerError = OpUpdateEventHandlerErrors[keyof OpUpdateEventHandlerErrors];
+
+export type OpUpdateEventHandlerResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpUpdateEventHandlerResponse = OpUpdateEventHandlerResponses[keyof OpUpdateEventHandlerResponses];
+
+export type OpPreviewEventBlockData = {
+    body: CreateEventBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/preview-event-block';
+};
+
+export type OpPreviewEventBlockErrors = {
+    /**
+     * Invalid request payload
+     */
+    400: OperationError;
+    /**
+     * Unauthorized — missing or invalid credentials
+     */
+    401: unknown;
+    /**
+     * Forbidden — caller cannot access this graph
+     */
+    403: unknown;
+    /**
+     * Resource not found (graph, ledger, report, etc.)
+     */
+    404: OperationError;
+    /**
+     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     */
+    409: OperationError;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: unknown;
+    /**
+     * Internal error
+     */
+    500: unknown;
+};
+
+export type OpPreviewEventBlockError = OpPreviewEventBlockErrors[keyof OpPreviewEventBlockErrors];
+
+export type OpPreviewEventBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpPreviewEventBlockResponse = OpPreviewEventBlockResponses[keyof OpPreviewEventBlockResponses];
 
 export type OpUpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;
@@ -15389,70 +15859,6 @@ export type OpDeleteJournalEntryResponses = {
 
 export type OpDeleteJournalEntryResponse = OpDeleteJournalEntryResponses[keyof OpDeleteJournalEntryResponses];
 
-export type OpReverseJournalEntryData = {
-    body: ReverseJournalEntryRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/reverse-journal-entry';
-};
-
-export type OpReverseJournalEntryErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpReverseJournalEntryError = OpReverseJournalEntryErrors[keyof OpReverseJournalEntryErrors];
-
-export type OpReverseJournalEntryResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpReverseJournalEntryResponse = OpReverseJournalEntryResponses[keyof OpReverseJournalEntryResponses];
-
 export type OpSetCloseTargetData = {
     body: SetCloseTargetOperation;
     headers?: {
@@ -15516,262 +15922,6 @@ export type OpSetCloseTargetResponses = {
 };
 
 export type OpSetCloseTargetResponse = OpSetCloseTargetResponses[keyof OpSetCloseTargetResponses];
-
-export type OpCreateClosingEntryData = {
-    body: CreateClosingEntryOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-closing-entry';
-};
-
-export type OpCreateClosingEntryErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpCreateClosingEntryError = OpCreateClosingEntryErrors[keyof OpCreateClosingEntryErrors];
-
-export type OpCreateClosingEntryResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateClosingEntryResponse = OpCreateClosingEntryResponses[keyof OpCreateClosingEntryResponses];
-
-export type OpCreateManualClosingEntryData = {
-    body: CreateManualClosingEntryRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/create-manual-closing-entry';
-};
-
-export type OpCreateManualClosingEntryErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpCreateManualClosingEntryError = OpCreateManualClosingEntryErrors[keyof OpCreateManualClosingEntryErrors];
-
-export type OpCreateManualClosingEntryResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreateManualClosingEntryResponse = OpCreateManualClosingEntryResponses[keyof OpCreateManualClosingEntryResponses];
-
-export type OpTruncateScheduleData = {
-    body: TruncateScheduleOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule';
-};
-
-export type OpTruncateScheduleErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpTruncateScheduleError = OpTruncateScheduleErrors[keyof OpTruncateScheduleErrors];
-
-export type OpTruncateScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpTruncateScheduleResponse = OpTruncateScheduleResponses[keyof OpTruncateScheduleResponses];
-
-export type OpDisposeScheduleData = {
-    body: DisposeScheduleRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/dispose-schedule';
-};
-
-export type OpDisposeScheduleErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpDisposeScheduleError = OpDisposeScheduleErrors[keyof OpDisposeScheduleErrors];
-
-export type OpDisposeScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpDisposeScheduleResponse = OpDisposeScheduleResponses[keyof OpDisposeScheduleResponses];
 
 export type OpClosePeriodData = {
     body: ClosePeriodOperation;

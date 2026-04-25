@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigErrors, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyErrors, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysErrors, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsErrors, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserErrors, LogoutUserResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpChangeTierData, OpChangeTierErrors, OpChangeTierResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateBackupData, OpCreateBackupErrors, OpCreateBackupResponses, OpCreateClosingEntryData, OpCreateClosingEntryErrors, OpCreateClosingEntryResponses, OpCreateInformationBlockData, OpCreateInformationBlockErrors, OpCreateInformationBlockResponses, OpCreateJournalEntryData, OpCreateJournalEntryErrors, OpCreateJournalEntryResponses, OpCreateManualClosingEntryData, OpCreateManualClosingEntryErrors, OpCreateManualClosingEntryResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioData, OpCreatePortfolioErrors, OpCreatePortfolioResponses, OpCreatePositionData, OpCreatePositionErrors, OpCreatePositionResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateSubgraphData, OpCreateSubgraphErrors, OpCreateSubgraphResponses, OpCreateTaxonomyBlockData, OpCreateTaxonomyBlockErrors, OpCreateTaxonomyBlockResponses, OpCreateTransactionData, OpCreateTransactionErrors, OpCreateTransactionResponses, OpDeleteInformationBlockData, OpDeleteInformationBlockErrors, OpDeleteInformationBlockResponses, OpDeleteJournalEntryData, OpDeleteJournalEntryErrors, OpDeleteJournalEntryResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioData, OpDeletePortfolioErrors, OpDeletePortfolioResponses, OpDeletePositionData, OpDeletePositionErrors, OpDeletePositionResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpDeleteSubgraphData, OpDeleteSubgraphErrors, OpDeleteSubgraphResponses, OpDeleteTaxonomyBlockData, OpDeleteTaxonomyBlockErrors, OpDeleteTaxonomyBlockResponses, OpDisposeScheduleData, OpDisposeScheduleErrors, OpDisposeScheduleResponses, OpEvaluateRulesData, OpEvaluateRulesErrors, OpEvaluateRulesResponses, OpFinancialStatementAnalysisData, OpFinancialStatementAnalysisErrors, OpFinancialStatementAnalysisResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpLinkEntityTaxonomyData, OpLinkEntityTaxonomyErrors, OpLinkEntityTaxonomyResponses, OpLiveFinancialStatementData, OpLiveFinancialStatementErrors, OpLiveFinancialStatementResponses, OpMaterializeData, OpMaterializeErrors, OpMaterializeResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpRestoreBackupData, OpRestoreBackupErrors, OpRestoreBackupResponses, OpReverseJournalEntryData, OpReverseJournalEntryErrors, OpReverseJournalEntryResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpTruncateScheduleData, OpTruncateScheduleErrors, OpTruncateScheduleResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdateInformationBlockData, OpUpdateInformationBlockErrors, OpUpdateInformationBlockResponses, OpUpdateJournalEntryData, OpUpdateJournalEntryErrors, OpUpdateJournalEntryResponses, OpUpdatePortfolioData, OpUpdatePortfolioErrors, OpUpdatePortfolioResponses, OpUpdatePositionData, OpUpdatePositionErrors, OpUpdatePositionResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, OpUpdateTaxonomyBlockData, OpUpdateTaxonomyBlockErrors, OpUpdateTaxonomyBlockResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
+import type { AutoSelectAgentData, AutoSelectAgentErrors, AutoSelectAgentResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, ExecuteCypherQueryData, ExecuteCypherQueryErrors, ExecuteCypherQueryResponses, ExecuteSpecificAgentData, ExecuteSpecificAgentErrors, ExecuteSpecificAgentResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAgentMetadataData, GetAgentMetadataErrors, GetAgentMetadataResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigErrors, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyErrors, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysErrors, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsErrors, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserErrors, LogoutUserResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpChangeTierData, OpChangeTierErrors, OpChangeTierResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateAgentData, OpCreateAgentErrors, OpCreateAgentResponses, OpCreateBackupData, OpCreateBackupErrors, OpCreateBackupResponses, OpCreateEventBlockData, OpCreateEventBlockErrors, OpCreateEventBlockResponses, OpCreateEventHandlerData, OpCreateEventHandlerErrors, OpCreateEventHandlerResponses, OpCreateInformationBlockData, OpCreateInformationBlockErrors, OpCreateInformationBlockResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioData, OpCreatePortfolioErrors, OpCreatePortfolioResponses, OpCreatePositionData, OpCreatePositionErrors, OpCreatePositionResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateSubgraphData, OpCreateSubgraphErrors, OpCreateSubgraphResponses, OpCreateTaxonomyBlockData, OpCreateTaxonomyBlockErrors, OpCreateTaxonomyBlockResponses, OpDeleteInformationBlockData, OpDeleteInformationBlockErrors, OpDeleteInformationBlockResponses, OpDeleteJournalEntryData, OpDeleteJournalEntryErrors, OpDeleteJournalEntryResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioData, OpDeletePortfolioErrors, OpDeletePortfolioResponses, OpDeletePositionData, OpDeletePositionErrors, OpDeletePositionResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpDeleteSubgraphData, OpDeleteSubgraphErrors, OpDeleteSubgraphResponses, OpDeleteTaxonomyBlockData, OpDeleteTaxonomyBlockErrors, OpDeleteTaxonomyBlockResponses, OpEvaluateRulesData, OpEvaluateRulesErrors, OpEvaluateRulesResponses, OpFinancialStatementAnalysisData, OpFinancialStatementAnalysisErrors, OpFinancialStatementAnalysisResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpLinkEntityTaxonomyData, OpLinkEntityTaxonomyErrors, OpLinkEntityTaxonomyResponses, OpLiveFinancialStatementData, OpLiveFinancialStatementErrors, OpLiveFinancialStatementResponses, OpMaterializeData, OpMaterializeErrors, OpMaterializeResponses, OpPreviewEventBlockData, OpPreviewEventBlockErrors, OpPreviewEventBlockResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpRestoreBackupData, OpRestoreBackupErrors, OpRestoreBackupResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpUpdateAgentData, OpUpdateAgentErrors, OpUpdateAgentResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdateEventBlockData, OpUpdateEventBlockErrors, OpUpdateEventBlockResponses, OpUpdateEventHandlerData, OpUpdateEventHandlerErrors, OpUpdateEventHandlerResponses, OpUpdateInformationBlockData, OpUpdateInformationBlockErrors, OpUpdateInformationBlockResponses, OpUpdateJournalEntryData, OpUpdateJournalEntryErrors, OpUpdateJournalEntryResponses, OpUpdatePortfolioData, OpUpdatePortfolioErrors, OpUpdatePortfolioResponses, OpUpdatePositionData, OpUpdatePositionErrors, OpUpdatePositionResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, OpUpdateTaxonomyBlockData, OpUpdateTaxonomyBlockErrors, OpUpdateTaxonomyBlockResponses, QueryTablesData, QueryTablesErrors, QueryTablesResponses, RecommendAgentData, RecommendAgentErrors, RecommendAgentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateFileData, UpdateFileErrors, UpdateFileResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, UploadDocumentData, UploadDocumentErrors, UploadDocumentResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -1531,15 +1531,15 @@ export const opEvaluateRules = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * Create Transaction
+ * Create Agent
  *
- * Create a standalone business-event Transaction without entries. Returns a transaction_id that can be passed to create-journal-entry to attach one or more journal entries to this event. Use this when a single event (invoice, payment, deposit) produces multiple entries over its lifecycle.
+ * Create a counterparty record (customer, vendor, employee, etc.). The (source, external_id) pair is a dedup key — a second insert with the same pair returns 409. Use update-agent to patch fields.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateTransaction = <ThrowOnError extends boolean = false>(options: Options<OpCreateTransactionData, ThrowOnError>) => (options.client ?? client).post<OpCreateTransactionResponses, OpCreateTransactionErrors, ThrowOnError>({
+export const opCreateAgent = <ThrowOnError extends boolean = false>(options: Options<OpCreateAgentData, ThrowOnError>) => (options.client ?? client).post<OpCreateAgentResponses, OpCreateAgentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/create-transaction',
+    url: '/extensions/roboledger/{graph_id}/operations/create-agent',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1548,15 +1548,100 @@ export const opCreateTransaction = <ThrowOnError extends boolean = false>(option
 });
 
 /**
- * Create Journal Entry
+ * Update Agent
  *
- * Create a new draft journal entry with balanced line items. Enforces DR=CR at the validation layer. Entries are always created as drafts; posting happens via close-period or a future per-entry post op.
+ * Patch counterparty fields. Only supplied fields are updated. Set is_active=false to deactivate (agents are never deleted — they are reference data referenced by events and transactions).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateJournalEntry = <ThrowOnError extends boolean = false>(options: Options<OpCreateJournalEntryData, ThrowOnError>) => (options.client ?? client).post<OpCreateJournalEntryResponses, OpCreateJournalEntryErrors, ThrowOnError>({
+export const opUpdateAgent = <ThrowOnError extends boolean = false>(options: Options<OpUpdateAgentData, ThrowOnError>) => (options.client ?? client).post<OpUpdateAgentResponses, OpUpdateAgentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/create-journal-entry',
+    url: '/extensions/roboledger/{graph_id}/operations/update-agent',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Event Block
+ *
+ * Persist a real-world business event. apply_handlers=False (default): capture-only, status='captured'. apply_handlers=True: resolves an event_handler, fires the template, creates GL entries atomically, status='classified'. Use preview-event-block to dry-run before committing.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opCreateEventBlock = <ThrowOnError extends boolean = false>(options: Options<OpCreateEventBlockData, ThrowOnError>) => (options.client ?? client).post<OpCreateEventBlockResponses, OpCreateEventBlockErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/create-event-block',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update Event Block
+ *
+ * Apply a status transition (captured → committed | voided) and/or field corrections (description, effective_at, metadata_patch) to an existing event block. Only supplied fields are updated.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opUpdateEventBlock = <ThrowOnError extends boolean = false>(options: Options<OpUpdateEventBlockData, ThrowOnError>) => (options.client ?? client).post<OpUpdateEventBlockResponses, OpUpdateEventBlockErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/update-event-block',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create Event Handler
+ *
+ * Define a rule that fires GL transactions when a matching event block is created with apply_handlers=True. Match criteria (event_type, event_category, match_source, match_agent_type, etc.) act as AND-joined filters — null fields match anything. The highest-priority matching handler wins. AI-suggested handlers (suggested_by='ai') require approval before they are eligible for matching.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opCreateEventHandler = <ThrowOnError extends boolean = false>(options: Options<OpCreateEventHandlerData, ThrowOnError>) => (options.client ?? client).post<OpCreateEventHandlerResponses, OpCreateEventHandlerErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/create-event-handler',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update Event Handler
+ *
+ * Patch an event handler's match criteria, template, priority, or active state. Pass approve=true to approve an AI-suggested handler; approve=false to revoke approval. Only supplied fields are updated.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opUpdateEventHandler = <ThrowOnError extends boolean = false>(options: Options<OpUpdateEventHandlerData, ThrowOnError>) => (options.client ?? client).post<OpUpdateEventHandlerResponses, OpUpdateEventHandlerErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/update-event-handler',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Preview Event Block
+ *
+ * Dry-run: resolve the matching handler and evaluate the transaction template without writing any rows. Returns the matched handler + planned debit/credit lines + any validation errors. Use this before create-event-block(apply_handlers=True) to confirm the GL plan.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const opPreviewEventBlock = <ThrowOnError extends boolean = false>(options: Options<OpPreviewEventBlockData, ThrowOnError>) => (options.client ?? client).post<OpPreviewEventBlockResponses, OpPreviewEventBlockErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/preview-event-block',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1567,7 +1652,7 @@ export const opCreateJournalEntry = <ThrowOnError extends boolean = false>(optio
 /**
  * Update Journal Entry
  *
- * Update a draft journal entry. Posted entries are immutable and must be corrected via reverse-journal-entry. If line_items is provided, existing line items are replaced atomically and the new set must balance.
+ * Update a draft journal entry. Posted entries are immutable and must be corrected via `create-event-block(event_type='journal_entry_reversed')`. If line_items is provided, existing line items are replaced atomically and the new set must balance.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1599,23 +1684,6 @@ export const opDeleteJournalEntry = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
- * Reverse Journal Entry
- *
- * Reverse a posted journal entry by creating a new offsetting entry (debits ↔ credits) and marking the original as status='reversed'. Both entries stay in the ledger — the audit trail shows original + reversal side by side.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const opReverseJournalEntry = <ThrowOnError extends boolean = false>(options: Options<OpReverseJournalEntryData, ThrowOnError>) => (options.client ?? client).post<OpReverseJournalEntryResponses, OpReverseJournalEntryErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/reverse-journal-entry',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Set Close Target
  *
  * Period format: YYYY-MM. The close target is the user-controlled goal date, distinct from `closed_through` (what's actually closed).
@@ -1625,74 +1693,6 @@ export const opReverseJournalEntry = <ThrowOnError extends boolean = false>(opti
 export const opSetCloseTarget = <ThrowOnError extends boolean = false>(options: Options<OpSetCloseTargetData, ThrowOnError>) => (options.client ?? client).post<OpSetCloseTargetResponses, OpSetCloseTargetErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/set-close-target',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Create Closing Entry
- *
- * Create a draft closing entry pre-populated from a schedule's facts for the given period. Idempotent — safe to call repeatedly; the `outcome` field describes what happened (`created`, `unchanged`, `regenerated`, `removed`, `skipped`).
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const opCreateClosingEntry = <ThrowOnError extends boolean = false>(options: Options<OpCreateClosingEntryData, ThrowOnError>) => (options.client ?? client).post<OpCreateClosingEntryResponses, OpCreateClosingEntryErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/create-closing-entry',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Create Manual Closing Entry
- *
- * Create a draft closing entry with manually specified line items — not tied to a schedule. Use for one-off business events (asset disposal, correcting entry, impairment). Total debits must equal total credits.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const opCreateManualClosingEntry = <ThrowOnError extends boolean = false>(options: Options<OpCreateManualClosingEntryData, ThrowOnError>) => (options.client ?? client).post<OpCreateManualClosingEntryResponses, OpCreateManualClosingEntryErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/create-manual-closing-entry',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Truncate Schedule (End Early)
- *
- * End a schedule early by deleting forward facts and any stale draft closing entries past the cutoff. Historical facts and posted entries are preserved. Use this when a business event (asset disposal, contract cancellation) shortens the schedule's lifespan.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const opTruncateSchedule = <ThrowOnError extends boolean = false>(options: Options<OpTruncateScheduleData, ThrowOnError>) => (options.client ?? client).post<OpTruncateScheduleResponses, OpTruncateScheduleErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/truncate-schedule',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Dispose Schedule (Sale or Abandonment)
- *
- * Atomically truncate a schedule past the disposal date and create a balanced disposal closing entry. Computes accumulated depreciation from the schedule's own facts, derives net book value and gain/loss, removes forward facts, and books the disposal entry in one call. Use when an asset is sold or abandoned before the schedule runs to completion. For abandonment with no proceeds, omit `sale_proceeds` and `proceeds_element_id`.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const opDisposeSchedule = <ThrowOnError extends boolean = false>(options: Options<OpDisposeScheduleData, ThrowOnError>) => (options.client ?? client).post<OpDisposeScheduleResponses, OpDisposeScheduleErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/dispose-schedule',
     ...options,
     headers: {
         'Content-Type': 'application/json',

@@ -89,6 +89,27 @@ export type AccountTreeNode = {
   name: Scalars['String']['output']
 }
 
+export type Agent = {
+  address: Maybe<Scalars['JSON']['output']>
+  agentType: Scalars['String']['output']
+  createdAt: Maybe<Scalars['DateTime']['output']>
+  createdBy: Maybe<Scalars['String']['output']>
+  duns: Maybe<Scalars['String']['output']>
+  email: Maybe<Scalars['String']['output']>
+  externalId: Maybe<Scalars['String']['output']>
+  id: Scalars['String']['output']
+  is1099Recipient: Scalars['Boolean']['output']
+  isActive: Scalars['Boolean']['output']
+  legalName: Maybe<Scalars['String']['output']>
+  lei: Maybe<Scalars['String']['output']>
+  name: Scalars['String']['output']
+  phone: Maybe<Scalars['String']['output']>
+  registrationNumber: Maybe<Scalars['String']['output']>
+  source: Scalars['String']['output']
+  taxId: Maybe<Scalars['String']['output']>
+  updatedAt: Maybe<Scalars['DateTime']['output']>
+}
+
 export type Artifact = {
   mechanics: Scalars['JSON']['output']
   parentheticalNote: Maybe<Scalars['String']['output']>
@@ -797,6 +818,8 @@ export type Query = {
   accountRollups: Maybe<AccountRollups>
   accountTree: Maybe<AccountTree>
   accounts: Maybe<AccountList>
+  agent: Maybe<Agent>
+  agents: Array<Agent>
   closingBookStructures: Maybe<ClosingBookStructures>
   elements: Maybe<ElementList>
   entities: Array<LedgerEntity>
@@ -859,6 +882,18 @@ export type QueryAccountsArgs = {
   isActive?: InputMaybe<Scalars['Boolean']['input']>
   limit?: Scalars['Int']['input']
   offset?: Scalars['Int']['input']
+}
+
+export type QueryAgentArgs = {
+  id: Scalars['String']['input']
+}
+
+export type QueryAgentsArgs = {
+  agentType?: InputMaybe<Scalars['String']['input']>
+  isActive?: InputMaybe<Scalars['Boolean']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+  source?: InputMaybe<Scalars['String']['input']>
 }
 
 export type QueryElementsArgs = {
