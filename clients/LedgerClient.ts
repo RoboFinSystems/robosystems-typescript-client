@@ -29,32 +29,26 @@ import {
   opAutoMapElements,
   opBuildFactGrid,
   opClosePeriod,
-  opCreateClosingEntry,
+  opCreateEventBlock,
   opCreateInformationBlock,
-  opCreateJournalEntry,
-  opCreateManualClosingEntry,
   opCreateMappingAssociation,
   opCreatePublishList,
   opCreateReport,
   opCreateTaxonomyBlock,
-  opCreateTransaction,
   opDeleteInformationBlock,
   opDeleteJournalEntry,
   opDeleteMappingAssociation,
   opDeletePublishList,
   opDeleteReport,
   opDeleteTaxonomyBlock,
-  opDisposeSchedule,
   opEvaluateRules,
   opInitializeLedger,
   opLinkEntityTaxonomy,
   opRegenerateReport,
   opRemovePublishListMember,
   opReopenPeriod,
-  opReverseJournalEntry,
   opSetCloseTarget,
   opShareReport,
-  opTruncateSchedule,
   opUpdateEntity,
   opUpdateInformationBlock,
   opUpdateJournalEntry,
@@ -65,30 +59,23 @@ import type {
   AddPublishListMembersOperation,
   AutoMapElementsOperation,
   ClosePeriodOperation,
-  CreateClosingEntryOperation,
+  CreateEventBlockRequest,
   CreateInformationBlockRequest,
-  CreateJournalEntryRequest,
-  CreateManualClosingEntryRequest,
   CreateMappingAssociationOperation,
   CreatePublishListRequest,
   CreateReportRequest,
   CreateTaxonomyBlockRequest,
-  CreateTransactionRequest,
   CreateViewRequest,
   DeleteInformationBlockRequest,
   DeleteJournalEntryRequest,
   DeleteMappingAssociationOperation,
   DeleteTaxonomyBlockRequest,
-  DisposeScheduleRequest,
   EvaluateRulesRequest,
   InitializeLedgerRequest,
-  JournalEntryLineItemInput,
   LinkEntityTaxonomyRequest,
   OperationEnvelope,
   ReopenPeriodOperation,
-  ReverseJournalEntryRequest,
   SetCloseTargetOperation,
-  TruncateScheduleOperation,
   UpdateEntityRequest,
   UpdateInformationBlockRequest,
   UpdateJournalEntryRequest,
@@ -300,31 +287,12 @@ interface RawClosePeriodResult {
   fiscal_calendar: RawFiscalCalendar
 }
 
-interface RawClosingEntryResult {
-  outcome: ClosingEntryOutcome
-  entry_id: string | null
-  status: string | null
-  posting_date: string | null
-  memo: string | null
-  debit_element_id: string | null
-  credit_element_id: string | null
-  amount: number | null
-  reason: string | null
-}
-
 interface RawScheduleCreatedResult {
   structure_id: string
   name: string
   taxonomy_id: string
   total_periods: number
   total_facts: number
-}
-
-interface RawTruncateScheduleResult {
-  structure_id: string
-  new_end_date: string
-  facts_deleted: number
-  reason: string
 }
 
 export interface InitializeLedgerResult {
@@ -340,33 +308,12 @@ export interface ClosePeriodResult {
   fiscalCalendar: LedgerFiscalCalendar
 }
 
-export type ClosingEntryOutcome = 'created' | 'unchanged' | 'regenerated' | 'removed' | 'skipped'
-
-export interface ClosingEntry {
-  outcome: ClosingEntryOutcome
-  entryId: string | null
-  status: string | null
-  postingDate: string | null
-  memo: string | null
-  debitElementId: string | null
-  creditElementId: string | null
-  amount: number | null
-  reason: string | null
-}
-
 export interface ScheduleCreated {
   structureId: string
   name: string
   taxonomyId: string
   totalPeriods: number
   totalFacts: number
-}
-
-export interface TruncateScheduleResult {
-  structureId: string
-  newEndDate: string
-  factsDeleted: number
-  reason: string
 }
 
 export type LedgerEntryType = 'standard' | 'adjusting' | 'closing' | 'reversing'
@@ -384,25 +331,6 @@ export interface InitializeLedgerOptions {
 export interface ClosePeriodOptions {
   note?: string | null
   allowStaleSync?: boolean
-}
-
-export interface ManualClosingLineItem {
-  elementId: string
-  debitAmount?: number
-  creditAmount?: number
-  description?: string | null
-}
-
-export interface CreateManualClosingEntryOptions {
-  postingDate: string
-  memo: string
-  lineItems: ManualClosingLineItem[]
-  entryType?: LedgerEntryType
-}
-
-export interface TruncateScheduleOptions {
-  newEndDate: string
-  reason: string
 }
 
 export interface CreateScheduleOptions {
@@ -624,56 +552,6 @@ export class LedgerClient {
       'Get transaction',
       (data) => data.transaction
     )
-  }
-
-  /**
-   * Create a standalone business-event Transaction without entries.
-   *
-   * Returns a `transaction_id` that can be passed to `createJournalEntry`
-   * to attach entries to this event. Use when a single event (invoice,
-   * payment, deposit) produces multiple entries over its lifecycle.
-   *
-   * `amount` is in minor currency units (cents).
-   * `type` is free-form: invoice, payment, bill, expense, deposit, etc.
-   */
-  async createTransaction(
-    graphId: string,
-    options: {
-      type: string
-      date: string
-      amount: number
-      currency?: string
-      description?: string
-      merchantName?: string
-      referenceNumber?: string
-      number?: string
-      category?: string
-      dueDate?: string
-      status?: 'pending' | 'posted'
-      idempotencyKey?: string
-    }
-  ): Promise<Record<string, unknown>> {
-    const body: CreateTransactionRequest = {
-      type: options.type,
-      date: options.date,
-      amount: options.amount,
-      currency: options.currency ?? 'USD',
-      status: options.status ?? 'pending',
-      description: options.description ?? null,
-      merchant_name: options.merchantName ?? null,
-      reference_number: options.referenceNumber ?? null,
-      number: options.number ?? null,
-      category: options.category ?? null,
-      due_date: options.dueDate ?? null,
-    }
-    const headers = options.idempotencyKey
-      ? { 'Idempotency-Key': options.idempotencyKey }
-      : undefined
-    const envelope = await this.callOperation(
-      'Create transaction',
-      opCreateTransaction({ path: { graph_id: graphId }, body, headers })
-    )
-    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // ── Trial Balance ──────────────────────────────────────────────────
@@ -1060,38 +938,43 @@ export class LedgerClient {
     return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
-  /** Truncate a schedule — end it early at `newEndDate`. */
-  async truncateSchedule(
-    graphId: string,
-    structureId: string,
-    options: TruncateScheduleOptions
-  ): Promise<TruncateScheduleResult> {
-    const body: TruncateScheduleOperation = {
-      structure_id: structureId,
-      new_end_date: options.newEndDate,
-      reason: options.reason,
-    }
-    const envelope = await this.callOperation(
-      'Truncate schedule',
-      opTruncateSchedule({ path: { graph_id: graphId }, body })
-    )
-    const raw = envelope.result as unknown as RawTruncateScheduleResult
-    return {
-      structureId: raw.structure_id,
-      newEndDate: raw.new_end_date,
-      factsDeleted: raw.facts_deleted,
-      reason: raw.reason,
-    }
-  }
-
-  /** Dispose of a schedule asset — post a disposal entry and delete forward facts. */
+  /**
+   * Dispose of a schedule asset — atomically truncates forward facts,
+   * deletes the SumEquals rule, and posts a balanced disposal entry.
+   *
+   * Routes through `create-event-block` with `event_type='asset_disposed'`.
+   * `occurred_at` is required and represents the disposal date.
+   */
   async disposeSchedule(
     graphId: string,
-    body: DisposeScheduleRequest
+    options: {
+      scheduleId: string
+      occurredAt: string
+      proceeds?: number
+      proceedsElementId?: string | null
+      gainLossElementId?: string | null
+      memo?: string | null
+      reason?: string
+    }
   ): Promise<Record<string, unknown>> {
+    const body: CreateEventBlockRequest = {
+      event_type: 'asset_disposed',
+      event_category: 'adjustment',
+      source: 'native',
+      occurred_at: options.occurredAt,
+      apply_handlers: true,
+      metadata: {
+        schedule_id: options.scheduleId,
+        proceeds: options.proceeds ?? 0,
+        proceeds_element_id: options.proceedsElementId ?? null,
+        gain_loss_element_id: options.gainLossElementId ?? null,
+        memo: options.memo ?? null,
+        reason: options.reason ?? 'asset_disposed_event',
+      },
+    }
     const envelope = await this.callOperation(
       'Dispose schedule',
-      opDisposeSchedule({ path: { graph_id: graphId }, body })
+      opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? {}) as Record<string, unknown>
   }
@@ -1138,7 +1021,12 @@ export class LedgerClient {
 
   /**
    * Idempotently create (or refresh) a draft closing entry from a
-   * schedule for a period. See `ClosingEntryOutcome` for semantics.
+   * schedule for a period.
+   *
+   * Routes through `create-event-block` with
+   * `event_type='schedule_entry_due'`. Returns the EventBlockEnvelope —
+   * the underlying handler is idempotent and dispatches to one of
+   * created / unchanged / regenerated / removed / skipped internally.
    */
   async createClosingEntry(
     graphId: string,
@@ -1147,45 +1035,26 @@ export class LedgerClient {
     periodStart: string,
     periodEnd: string,
     memo?: string
-  ): Promise<ClosingEntry> {
-    const body: CreateClosingEntryOperation = {
-      structure_id: structureId,
-      posting_date: postingDate,
-      period_start: periodStart,
-      period_end: periodEnd,
-      memo: memo ?? undefined,
+  ): Promise<Record<string, unknown>> {
+    const body: CreateEventBlockRequest = {
+      event_type: 'schedule_entry_due',
+      event_category: 'recognition',
+      source: 'scheduled',
+      occurred_at: `${postingDate}T00:00:00Z`,
+      apply_handlers: true,
+      metadata: {
+        schedule_id: structureId,
+        posting_date: postingDate,
+        period_start: periodStart,
+        period_end: periodEnd,
+        memo: memo ?? null,
+      },
     }
     const envelope = await this.callOperation(
       'Create closing entry',
-      opCreateClosingEntry({ path: { graph_id: graphId }, body })
+      opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return rawToClosingEntry(envelope.result as unknown as RawClosingEntryResult)
-  }
-
-  /**
-   * Create a manual balanced closing entry (not tied to a schedule).
-   * Used for disposals, adjustments, and one-off closing events.
-   */
-  async createManualClosingEntry(
-    graphId: string,
-    options: CreateManualClosingEntryOptions
-  ): Promise<ClosingEntry> {
-    const body: CreateManualClosingEntryRequest = {
-      posting_date: options.postingDate,
-      memo: options.memo,
-      entry_type: options.entryType,
-      line_items: options.lineItems.map((li) => ({
-        element_id: li.elementId,
-        debit_amount: li.debitAmount ?? 0,
-        credit_amount: li.creditAmount ?? 0,
-        description: li.description ?? null,
-      })),
-    }
-    const envelope = await this.callOperation(
-      'Create manual closing entry',
-      opCreateManualClosingEntry({ path: { graph_id: graphId }, body })
-    )
-    return rawToClosingEntry(envelope.result as unknown as RawClosingEntryResult)
+    return (envelope.result ?? {}) as Record<string, unknown>
   }
 
   // ── Closing book ───────────────────────────────────────────────────
@@ -1300,35 +1169,48 @@ export class LedgerClient {
   /**
    * Create a journal entry with balanced line items (DR=CR enforced).
    *
-   * Defaults to `status='draft'`. Pass `status='posted'` for historical
-   * data import where entries represent already-happened business events.
+   * Routes through `create-event-block` with
+   * `event_type='journal_entry_recorded'` — the Python handler forwards
+   * to the internal journal-entry command. Defaults to `status='draft'`;
+   * pass `status='posted'` for historical data imports.
    *
    * Supply `idempotencyKey` to make the call safe to retry — replays
    * within 24 hours return the same envelope. Reusing the key with a
    * different body returns HTTP 409.
+   *
+   * Returns the EventBlockEnvelope (event row fields); query the ledger
+   * separately if you need the resulting entry_id.
    */
   async createJournalEntry(
     graphId: string,
     options: CreateJournalEntryOptions
   ): Promise<Record<string, unknown>> {
-    const body: CreateJournalEntryRequest = {
-      posting_date: options.postingDate,
-      memo: options.memo,
-      line_items: options.lineItems.map(
-        (li): JournalEntryLineItemInput => ({
+    const body: CreateEventBlockRequest = {
+      event_type: 'journal_entry_recorded',
+      event_category: 'adjustment',
+      source: 'native',
+      occurred_at: `${options.postingDate}T00:00:00Z`,
+      apply_handlers: true,
+      metadata: {
+        posting_date: options.postingDate,
+        memo: options.memo,
+        line_items: options.lineItems.map((li) => ({
           element_id: li.elementId,
           debit_amount: li.debitAmount,
           credit_amount: li.creditAmount,
           description: li.description ?? null,
-        })
-      ),
-      type: options.type,
-      status: options.status,
-      transaction_id: options.transactionId ?? null,
+        })),
+        type: options.type ?? 'standard',
+        status: options.status ?? 'draft',
+        transaction_id: options.transactionId ?? null,
+      },
     }
+    const headers = options.idempotencyKey
+      ? { 'Idempotency-Key': options.idempotencyKey }
+      : undefined
     const envelope = await this.callOperation(
       'Create journal entry',
-      opCreateJournalEntry({ path: { graph_id: graphId }, body })
+      opCreateEventBlock({ path: { graph_id: graphId }, body, headers })
     )
     return (envelope.result ?? {}) as Record<string, unknown>
   }
@@ -1358,20 +1240,36 @@ export class LedgerClient {
   /**
    * Reverse a posted journal entry — creates an offsetting entry and marks
    * the original as reversed.
+   *
+   * Routes through `create-event-block` with
+   * `event_type='journal_entry_reversed'`.
    */
   async reverseJournalEntry(
     graphId: string,
     entryId: string,
-    options?: { postingDate?: string | null; memo?: string | null }
+    options?: {
+      postingDate?: string | null
+      memo?: string | null
+      reason?: string | null
+    }
   ): Promise<Record<string, unknown>> {
-    const body: ReverseJournalEntryRequest = {
-      entry_id: entryId,
-      posting_date: options?.postingDate ?? null,
-      memo: options?.memo ?? null,
+    const occurredDate = options?.postingDate ?? new Date().toISOString().slice(0, 10)
+    const body: CreateEventBlockRequest = {
+      event_type: 'journal_entry_reversed',
+      event_category: 'adjustment',
+      source: 'native',
+      occurred_at: `${occurredDate}T00:00:00Z`,
+      apply_handlers: true,
+      metadata: {
+        entry_id: entryId,
+        posting_date: options?.postingDate ?? null,
+        memo: options?.memo ?? null,
+        reason: options?.reason ?? null,
+      },
     }
     const envelope = await this.callOperation(
       'Reverse journal entry',
-      opReverseJournalEntry({ path: { graph_id: graphId }, body })
+      opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? {}) as Record<string, unknown>
   }
@@ -1703,20 +1601,6 @@ export class LedgerClient {
 }
 
 // ── Module-private conversion helpers ─────────────────────────────────
-
-function rawToClosingEntry(data: RawClosingEntryResult): ClosingEntry {
-  return {
-    outcome: data.outcome,
-    entryId: data.entry_id ?? null,
-    status: data.status ?? null,
-    postingDate: data.posting_date ?? null,
-    memo: data.memo ?? null,
-    debitElementId: data.debit_element_id ?? null,
-    creditElementId: data.credit_element_id ?? null,
-    amount: data.amount ?? null,
-    reason: data.reason ?? null,
-  }
-}
 
 function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar {
   return {

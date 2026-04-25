@@ -633,56 +633,42 @@ describe('LedgerClient', () => {
   })
 
   describe('createClosingEntry', () => {
-    it('maps snake_case envelope result to a ClosingEntry', async () => {
+    it('routes through create-event-block with schedule_entry_due metadata', async () => {
       mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-closing-entry', {
-          outcome: 'created',
-          entry_id: 'entry_1',
-          status: 'draft',
-          posting_date: '2026-03-31',
-          memo: 'Depreciation',
-          debit_element_id: 'elem_depr_exp',
-          credit_element_id: 'elem_accum_depr',
-          amount: 100000,
-          reason: null,
+        envelopeResponse('create-event-block', {
+          id: 'evt_1',
+          event_type: 'schedule_entry_due',
+          status: 'classified',
         })
       )
-      const entry = await client.createClosingEntry(
+      const result = await client.createClosingEntry(
         'graph_1',
         'str_1',
         '2026-03-31',
         '2026-03-01',
-        '2026-03-31'
+        '2026-03-31',
+        'Depreciation'
       )
-      expect(entry.outcome).toBe('created')
-      expect(entry.entryId).toBe('entry_1')
-      expect(entry.amount).toBe(100000)
+      expect(result).toMatchObject({ id: 'evt_1', event_type: 'schedule_entry_due' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.event_type).toBe('schedule_entry_due')
+      expect(body.event_category).toBe('recognition')
+      expect(body.apply_handlers).toBe(true)
+      expect(body.metadata.schedule_id).toBe('str_1')
+      expect(body.metadata.period_start).toBe('2026-03-01')
+      expect(body.metadata.period_end).toBe('2026-03-31')
+      expect(body.metadata.posting_date).toBe('2026-03-31')
+      expect(body.metadata.memo).toBe('Depreciation')
     })
 
-    it('surfaces a skipped outcome with null fields', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-closing-entry', {
-          outcome: 'skipped',
-          entry_id: null,
-          status: null,
-          posting_date: null,
-          memo: null,
-          debit_element_id: null,
-          credit_element_id: null,
-          amount: null,
-          reason: 'no-in-scope-fact',
-        })
+    it('POSTs to the create-event-block URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
+      await client.createClosingEntry('graph_42', 'str_1', '2026-03-31', '2026-03-01', '2026-03-31')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-event-block'
       )
-      const entry = await client.createClosingEntry(
-        'graph_1',
-        'str_1',
-        '2026-03-31',
-        '2026-03-01',
-        '2026-03-31'
-      )
-      expect(entry.outcome).toBe('skipped')
-      expect(entry.entryId).toBeNull()
-      expect(entry.reason).toBe('no-in-scope-fact')
     })
   })
 
@@ -692,25 +678,6 @@ describe('LedgerClient', () => {
       const ack = await client.autoMapElements('graph_1', { mapping_id: 'map_1' })
       expect(ack.status).toBe('pending')
       expect(ack.operationId).toMatch(/^op_/)
-    })
-  })
-
-  describe('truncateSchedule', () => {
-    it('returns a truncate result', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('truncate-schedule', {
-          structure_id: 'str_1',
-          new_end_date: '2026-06-30',
-          facts_deleted: 6,
-          reason: 'asset disposed',
-        })
-      )
-      const result = await client.truncateSchedule('graph_1', 'str_1', {
-        newEndDate: '2026-06-30',
-        reason: 'asset disposed',
-      })
-      expect(result.factsDeleted).toBe(6)
-      expect(result.newEndDate).toBe('2026-06-30')
     })
   })
 
@@ -800,20 +767,24 @@ describe('LedgerClient', () => {
       { elementId: 'elem_revenue', debitAmount: 0, creditAmount: 1000 },
     ]
 
-    it('returns the created entry result', async () => {
+    it('returns the event-block envelope result', async () => {
       mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-journal-entry', { entry_id: 'je_1', status: 'draft' })
+        envelopeResponse('create-event-block', {
+          id: 'evt_1',
+          event_type: 'journal_entry_recorded',
+          status: 'classified',
+        })
       )
       const result = await client.createJournalEntry('graph_1', {
         postingDate: '2026-03-31',
         memo: 'Revenue recognition',
         lineItems,
       })
-      expect(result).toMatchObject({ entry_id: 'je_1', status: 'draft' })
+      expect(result).toMatchObject({ id: 'evt_1', event_type: 'journal_entry_recorded' })
     })
 
-    it('serializes options into snake_case body', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('create-journal-entry', {}))
+    it('wraps options in journal_entry_recorded metadata', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.createJournalEntry('graph_1', {
         postingDate: '2026-03-31',
         memo: 'Test',
@@ -824,18 +795,23 @@ describe('LedgerClient', () => {
       })
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
-      expect(body.posting_date).toBe('2026-03-31')
-      expect(body.memo).toBe('Test')
-      expect(body.type).toBe('standard')
-      expect(body.status).toBe('posted')
-      expect(body.transaction_id).toBe('txn_1')
-      expect(body.line_items).toHaveLength(2)
-      expect(body.line_items[0].element_id).toBe('elem_cash')
-      expect(body.line_items[0].debit_amount).toBe(1000)
+      expect(body.event_type).toBe('journal_entry_recorded')
+      expect(body.event_category).toBe('adjustment')
+      expect(body.source).toBe('native')
+      expect(body.occurred_at).toBe('2026-03-31T00:00:00Z')
+      expect(body.apply_handlers).toBe(true)
+      expect(body.metadata.posting_date).toBe('2026-03-31')
+      expect(body.metadata.memo).toBe('Test')
+      expect(body.metadata.type).toBe('standard')
+      expect(body.metadata.status).toBe('posted')
+      expect(body.metadata.transaction_id).toBe('txn_1')
+      expect(body.metadata.line_items).toHaveLength(2)
+      expect(body.metadata.line_items[0].element_id).toBe('elem_cash')
+      expect(body.metadata.line_items[0].debit_amount).toBe(1000)
     })
 
-    it('POSTs to the create-journal-entry URL', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('create-journal-entry', {}))
+    it('POSTs to the create-event-block URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.createJournalEntry('graph_42', {
         postingDate: '2026-03-31',
         memo: 'Test',
@@ -843,7 +819,7 @@ describe('LedgerClient', () => {
       })
       const req = mockFetch.mock.calls[0][0] as Request
       expect(req.url).toBe(
-        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-journal-entry'
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-event-block'
       )
     })
 
@@ -852,6 +828,18 @@ describe('LedgerClient', () => {
       await expect(
         client.createJournalEntry('graph_1', { postingDate: '2026-03-31', memo: 'X', lineItems })
       ).rejects.toThrow(/Create journal entry failed/)
+    })
+
+    it('sends Idempotency-Key header when provided', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
+      await client.createJournalEntry('graph_1', {
+        postingDate: '2026-03-31',
+        memo: 'Test',
+        lineItems,
+        idempotencyKey: 'idem-123',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.headers.get('idempotency-key')).toBe('idem-123')
     })
   })
 
@@ -900,48 +888,57 @@ describe('LedgerClient', () => {
   })
 
   describe('reverseJournalEntry', () => {
-    it('returns the reversal result', async () => {
+    it('returns the event-block envelope result', async () => {
       mockFetch.mockResolvedValueOnce(
-        envelopeResponse('reverse-journal-entry', {
-          original_entry_id: 'je_1',
-          reversal_entry_id: 'je_2',
+        envelopeResponse('create-event-block', {
+          id: 'evt_1',
+          event_type: 'journal_entry_reversed',
+          status: 'fulfilled',
         })
       )
       const result = await client.reverseJournalEntry('graph_1', 'je_1', {
         postingDate: '2026-04-01',
         memo: 'Reversal of March entry',
       })
-      expect(result).toMatchObject({ original_entry_id: 'je_1', reversal_entry_id: 'je_2' })
+      expect(result).toMatchObject({ id: 'evt_1', event_type: 'journal_entry_reversed' })
     })
 
-    it('sends entry_id and optional fields in the body', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('reverse-journal-entry', {}))
+    it('wraps entry_id and optional fields in journal_entry_reversed metadata', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.reverseJournalEntry('graph_1', 'je_abc', {
         postingDate: '2026-04-01',
         memo: 'Reversal',
+        reason: 'duplicate',
       })
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
-      expect(body.entry_id).toBe('je_abc')
-      expect(body.posting_date).toBe('2026-04-01')
-      expect(body.memo).toBe('Reversal')
+      expect(body.event_type).toBe('journal_entry_reversed')
+      expect(body.event_category).toBe('adjustment')
+      expect(body.apply_handlers).toBe(true)
+      expect(body.occurred_at).toBe('2026-04-01T00:00:00Z')
+      expect(body.metadata.entry_id).toBe('je_abc')
+      expect(body.metadata.posting_date).toBe('2026-04-01')
+      expect(body.metadata.memo).toBe('Reversal')
+      expect(body.metadata.reason).toBe('duplicate')
     })
 
     it('sends null for omitted optional fields', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('reverse-journal-entry', {}))
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.reverseJournalEntry('graph_1', 'je_1')
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
-      expect(body.posting_date).toBeNull()
-      expect(body.memo).toBeNull()
+      expect(body.metadata.entry_id).toBe('je_1')
+      expect(body.metadata.posting_date).toBeNull()
+      expect(body.metadata.memo).toBeNull()
+      expect(body.metadata.reason).toBeNull()
     })
 
-    it('POSTs to the reverse-journal-entry URL', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('reverse-journal-entry', {}))
+    it('POSTs to the create-event-block URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.reverseJournalEntry('graph_42', 'je_1')
       const req = mockFetch.mock.calls[0][0] as Request
       expect(req.url).toBe(
-        'http://localhost:8000/extensions/roboledger/graph_42/operations/reverse-journal-entry'
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-event-block'
       )
     })
   })
