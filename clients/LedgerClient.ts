@@ -29,7 +29,9 @@ import {
   opAutoMapElements,
   opBuildFactGrid,
   opClosePeriod,
+  opCreateAgent,
   opCreateEventBlock,
+  opCreateEventHandler,
   opCreateInformationBlock,
   opCreateMappingAssociation,
   opCreatePublishList,
@@ -42,14 +44,20 @@ import {
   opDeleteReport,
   opDeleteTaxonomyBlock,
   opEvaluateRules,
+  opFinancialStatementAnalysis,
   opInitializeLedger,
   opLinkEntityTaxonomy,
+  opLiveFinancialStatement,
+  opPreviewEventBlock,
   opRegenerateReport,
   opRemovePublishListMember,
   opReopenPeriod,
   opSetCloseTarget,
   opShareReport,
+  opUpdateAgent,
   opUpdateEntity,
+  opUpdateEventBlock,
+  opUpdateEventHandler,
   opUpdateInformationBlock,
   opUpdateJournalEntry,
   opUpdatePublishList,
@@ -59,7 +67,9 @@ import type {
   AddPublishListMembersOperation,
   AutoMapElementsOperation,
   ClosePeriodOperation,
+  CreateAgentRequest,
   CreateEventBlockRequest,
+  CreateEventHandlerRequest,
   CreateInformationBlockRequest,
   CreateMappingAssociationOperation,
   CreatePublishListRequest,
@@ -71,12 +81,17 @@ import type {
   DeleteMappingAssociationOperation,
   DeleteTaxonomyBlockRequest,
   EvaluateRulesRequest,
+  FinancialStatementAnalysisRequest,
   InitializeLedgerRequest,
   LinkEntityTaxonomyRequest,
+  LiveFinancialStatementRequest,
   OperationEnvelope,
   ReopenPeriodOperation,
   SetCloseTargetOperation,
+  UpdateAgentRequest,
   UpdateEntityRequest,
+  UpdateEventBlockRequest,
+  UpdateEventHandlerRequest,
   UpdateInformationBlockRequest,
   UpdateJournalEntryRequest,
   UpdatePublishListOperation,
@@ -1270,6 +1285,147 @@ export class LedgerClient {
     const envelope = await this.callOperation(
       'Reverse journal entry',
       opCreateEventBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  // ── Event blocks (generic preview + status transitions) ──────────────
+
+  /**
+   * Dry-run an event block — resolve the handler, evaluate metadata, and
+   * return the planned GL rows without writing anything. Companion to
+   * `createJournalEntry` / `reverseJournalEntry` / `createClosingEntry` /
+   * `disposeSchedule`: pass the same body you'd send to those methods
+   * (the underlying `CreateEventBlockRequest`) and inspect what the
+   * handler would do.
+   */
+  async previewEventBlock(
+    graphId: string,
+    body: CreateEventBlockRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Preview event block',
+      opPreviewEventBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /**
+   * Apply a status transition and/or field corrections to an existing
+   * event block. Use for posting drafts (`classified` → `committed` →
+   * `fulfilled`), voiding, superseding (correction chains), or patching
+   * `description` / `effective_at` / `metadata`.
+   */
+  async updateEventBlock(
+    graphId: string,
+    body: UpdateEventBlockRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update event block',
+      opUpdateEventBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  // ── Agents (REA counterparties) ───────────────────────────────────────
+
+  /**
+   * Create an agent — REA counterparty (customer, vendor, employee, etc.)
+   * referenced by event blocks via `agent_id`. `(source, external_id)` is
+   * unique when `external_id` is provided, so external-source ingestion is
+   * idempotent at the DB level.
+   */
+  async createAgent(
+    graphId: string,
+    body: CreateAgentRequest,
+    idempotencyKey?: string
+  ): Promise<Record<string, unknown>> {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
+    const envelope = await this.callOperation(
+      'Create agent',
+      opCreateAgent({ path: { graph_id: graphId }, body, headers })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /**
+   * Update an agent. `metadata_patch` is a partial merge into the existing
+   * metadata object; all other fields replace.
+   */
+  async updateAgent(graphId: string, body: UpdateAgentRequest): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update agent',
+      opUpdateAgent({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  // ── Event handlers (DSL handler registry) ────────────────────────────
+
+  /**
+   * Register a tenant-configurable event handler — DSL row in the
+   * `event_handlers` table that drives `create-event-block` for event
+   * types not covered by a Python handler. Match selectors plus a
+   * `transaction_template` describing the GL rows to produce.
+   */
+  async createEventHandler(
+    graphId: string,
+    body: CreateEventHandlerRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Create event handler',
+      opCreateEventHandler({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /**
+   * Update a registered event handler. Pass `approve: true` to flip an
+   * AI-suggested handler from unapproved to active.
+   */
+  async updateEventHandler(
+    graphId: string,
+    body: UpdateEventHandlerRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Update event handler',
+      opUpdateEventHandler({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  // ── Financial statements (graph-backed) ──────────────────────────────
+
+  /**
+   * Live financial statement — pulls facts directly from the graph for
+   * an explicit period window (or fiscal year) and returns the statement
+   * shape without a persisted Report row. Useful for ad-hoc previews and
+   * dashboards.
+   */
+  async liveFinancialStatement(
+    graphId: string,
+    body: LiveFinancialStatementRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Live financial statement',
+      opLiveFinancialStatement({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? {}) as Record<string, unknown>
+  }
+
+  /**
+   * Run a financial statement analysis against an existing report.
+   * On shared-repo graphs (e.g. SEC), `ticker` is required; on tenant
+   * graphs it's ignored. Either pass an explicit `report_id` or let the
+   * server auto-resolve via `fiscal_year` + `period_type`.
+   */
+  async financialStatementAnalysis(
+    graphId: string,
+    body: FinancialStatementAnalysisRequest
+  ): Promise<Record<string, unknown>> {
+    const envelope = await this.callOperation(
+      'Financial statement analysis',
+      opFinancialStatementAnalysis({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? {}) as Record<string, unknown>
   }
