@@ -299,6 +299,7 @@ export type InformationBlock = {
   taxonomyId: Maybe<Scalars['String']['output']>
   taxonomyName: Maybe<Scalars['String']['output']>
   verificationResults: Array<InformationBlockVerificationResult>
+  view: InformationBlockViewProjections
 }
 
 export type InformationBlockClassification = {
@@ -367,6 +368,31 @@ export type InformationBlockFactSet = {
   structureId: Maybe<Scalars['String']['output']>
 }
 
+export type InformationBlockRendering = {
+  periods: Array<InformationBlockRenderingPeriod>
+  rows: Array<InformationBlockRenderingRow>
+  unmappedCount: Scalars['Int']['output']
+  validation: Maybe<InformationBlockValidation>
+}
+
+export type InformationBlockRenderingPeriod = {
+  end: Scalars['Date']['output']
+  label: Maybe<Scalars['String']['output']>
+  start: Scalars['Date']['output']
+}
+
+export type InformationBlockRenderingRow = {
+  balanceType: Maybe<Scalars['String']['output']>
+  /** FASB elementsOfFinancialStatements trait identifier — 'asset', 'liability', 'equity', 'revenue', 'expense'. Surfaced so the viewer can color-code or group rows without a follow-up trait lookup. */
+  classification: Maybe<Scalars['String']['output']>
+  depth: Scalars['Int']['output']
+  elementId: Scalars['String']['output']
+  elementName: Scalars['String']['output']
+  elementQname: Maybe<Scalars['String']['output']>
+  isSubtotal: Scalars['Boolean']['output']
+  values: Array<Maybe<Scalars['Float']['output']>>
+}
+
 export type InformationBlockRule = {
   id: Scalars['String']['output']
   /** One of 8 cm:VerificationRule subclasses — AutomatedAccountingAndReportingChecks, FundamentalAccountingConceptRelation, PeerConsistencyRule, PriorPeriodConsistencyRule, ReportLevelModelStructureRule, ReportingSystemSpecificRule, ToDoManualTask, XBRLTechnicalSyntaxRule. */
@@ -397,6 +423,13 @@ export type InformationBlockRuleVariable = {
   variableQname: Scalars['String']['output']
 }
 
+export type InformationBlockValidation = {
+  checks: Array<Scalars['String']['output']>
+  failures: Array<Scalars['String']['output']>
+  passed: Scalars['Boolean']['output']
+  warnings: Array<Scalars['String']['output']>
+}
+
 export type InformationBlockVerificationResult = {
   evaluatedAt: Maybe<Scalars['DateTime']['output']>
   factSetId: Maybe<Scalars['String']['output']>
@@ -408,6 +441,10 @@ export type InformationBlockVerificationResult = {
   /** 'pass' | 'fail' | 'error' | 'skipped'. Enum closure enforced by the ``public.verification_results`` CHECK constraint. */
   status: Scalars['String']['output']
   structureId: Maybe<Scalars['String']['output']>
+}
+
+export type InformationBlockViewProjections = {
+  rendering: Maybe<InformationBlockRendering>
 }
 
 export type InformationModel = {
@@ -1801,6 +1838,57 @@ export type GetInformationBlockQuery = {
       factScope: string
       factSetId: string | null
     }>
+    rules: Array<{
+      id: string
+      ruleCategory: string
+      rulePattern: string
+      ruleExpression: string
+      ruleMessage: string | null
+      ruleSeverity: string
+      ruleOrigin: string
+    }>
+    factSet: {
+      id: string
+      structureId: string | null
+      periodStart: any | null
+      periodEnd: any
+      factsetType: string
+      entityId: string
+      reportId: string | null
+    } | null
+    verificationResults: Array<{
+      id: string
+      ruleId: string
+      structureId: string | null
+      factSetId: string | null
+      status: string
+      message: string | null
+      periodStart: any | null
+      periodEnd: any | null
+      evaluatedAt: any | null
+    }>
+    view: {
+      rendering: {
+        unmappedCount: number
+        rows: Array<{
+          elementId: string
+          elementQname: string | null
+          elementName: string
+          classification: string | null
+          balanceType: string | null
+          values: Array<number | null>
+          isSubtotal: boolean
+          depth: number
+        }>
+        periods: Array<{ start: any; end: any; label: string | null }>
+        validation: {
+          passed: boolean
+          checks: Array<string>
+          failures: Array<string>
+          warnings: Array<string>
+        } | null
+      } | null
+    }
   } | null
 }
 
@@ -1858,6 +1946,57 @@ export type ListInformationBlocksQuery = {
       factScope: string
       factSetId: string | null
     }>
+    rules: Array<{
+      id: string
+      ruleCategory: string
+      rulePattern: string
+      ruleExpression: string
+      ruleMessage: string | null
+      ruleSeverity: string
+      ruleOrigin: string
+    }>
+    factSet: {
+      id: string
+      structureId: string | null
+      periodStart: any | null
+      periodEnd: any
+      factsetType: string
+      entityId: string
+      reportId: string | null
+    } | null
+    verificationResults: Array<{
+      id: string
+      ruleId: string
+      structureId: string | null
+      factSetId: string | null
+      status: string
+      message: string | null
+      periodStart: any | null
+      periodEnd: any | null
+      evaluatedAt: any | null
+    }>
+    view: {
+      rendering: {
+        unmappedCount: number
+        rows: Array<{
+          elementId: string
+          elementQname: string | null
+          elementName: string
+          classification: string | null
+          balanceType: string | null
+          values: Array<number | null>
+          isSubtotal: boolean
+          depth: number
+        }>
+        periods: Array<{ start: any; end: any; label: string | null }>
+        validation: {
+          passed: boolean
+          checks: Array<string>
+          failures: Array<string>
+          warnings: Array<string>
+        } | null
+      } | null
+    }
   }>
 }
 
@@ -3871,6 +4010,120 @@ export const GetInformationBlockDocument = {
                     ],
                   },
                 },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'rules' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleCategory' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'rulePattern' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleExpression' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleOrigin' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'factSet' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'verificationResults' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'message' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'evaluatedAt' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'view' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rendering' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'rows' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementQname' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementName' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'classification' },
+                                  },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'values' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'periods' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'start' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'end' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'validation' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'checks' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'failures' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'warnings' } },
+                                ],
+                              },
+                            },
+                            { kind: 'Field', name: { kind: 'Name', value: 'unmappedCount' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
               ],
             },
           },
@@ -4019,6 +4272,120 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'rules' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleCategory' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'rulePattern' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleExpression' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleOrigin' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'factSet' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'verificationResults' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'message' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'evaluatedAt' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'view' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rendering' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'rows' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementQname' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementName' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'classification' },
+                                  },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'values' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'periods' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'start' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'end' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'validation' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'checks' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'failures' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'warnings' } },
+                                ],
+                              },
+                            },
+                            { kind: 'Field', name: { kind: 'Name', value: 'unmappedCount' } },
+                          ],
+                        },
+                      },
                     ],
                   },
                 },
