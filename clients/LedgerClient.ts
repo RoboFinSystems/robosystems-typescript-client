@@ -44,6 +44,7 @@ import {
   opDeleteReport,
   opDeleteTaxonomyBlock,
   opEvaluateRules,
+  opFileReport,
   opFinancialStatementAnalysis,
   opInitializeLedger,
   opLinkEntityTaxonomy,
@@ -54,6 +55,7 @@ import {
   opReopenPeriod,
   opSetCloseTarget,
   opShareReport,
+  opTransitionFilingStatus,
   opUpdateAgent,
   opUpdateEntity,
   opUpdateEventBlock,
@@ -81,6 +83,7 @@ import type {
   DeleteMappingAssociationOperation,
   DeleteTaxonomyBlockRequest,
   EvaluateRulesRequest,
+  FileReportRequest,
   FinancialStatementAnalysisRequest,
   InitializeLedgerRequest,
   LinkEntityTaxonomyRequest,
@@ -88,6 +91,7 @@ import type {
   OperationEnvelope,
   ReopenPeriodOperation,
   SetCloseTargetOperation,
+  TransitionFilingStatusRequest,
   UpdateAgentRequest,
   UpdateEntityRequest,
   UpdateEventBlockRequest,
@@ -114,6 +118,7 @@ import {
   GetLedgerPublishListDocument,
   GetLedgerReportDocument,
   GetLedgerReportingTaxonomyDocument,
+  GetLedgerReportPackageDocument,
   GetLedgerStatementDocument,
   GetLedgerSummaryDocument,
   GetLedgerTransactionDocument,
@@ -142,6 +147,7 @@ import {
   type GetLedgerPeriodDraftsQuery,
   type GetLedgerPublishListQuery,
   type GetLedgerReportingTaxonomyQuery,
+  type GetLedgerReportPackageQuery,
   type GetLedgerReportQuery,
   type GetLedgerStatementQuery,
   type GetLedgerSummaryQuery,
@@ -227,6 +233,8 @@ export type LedgerFiscalPeriod = LedgerFiscalCalendar['periods'][number]
 
 // Reports + publish lists + statements
 export type Report = NonNullable<GetLedgerReportQuery['report']>
+export type ReportPackage = NonNullable<GetLedgerReportPackageQuery['reportPackage']>
+export type ReportPackageItem = ReportPackage['items'][number]
 export type ReportListItem = NonNullable<ListLedgerReportsQuery['reports']>['reports'][number]
 export type StatementData = NonNullable<GetLedgerStatementQuery['statement']>
 export type StatementPeriod = StatementData['periods'][number]
@@ -1533,6 +1541,22 @@ export class LedgerClient {
   }
 
   /**
+   * Rehydrate a Report as a package — Report metadata + N
+   * `InformationBlock` envelopes (one per attached FactSet). Drives the
+   * package viewer; returns everything needed to render BS + IS (and any
+   * other statements the Report generated) without per-section fetches.
+   */
+  async getReportPackage(graphId: string, reportId: string): Promise<ReportPackage | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerReportPackageDocument,
+      { reportId },
+      'Get report package',
+      (data) => data.reportPackage
+    )
+  }
+
+  /**
    * Render a financial statement — facts viewed through a structure.
    *
    * @param structureType - income_statement, balance_sheet, cash_flow_statement
@@ -1608,6 +1632,49 @@ export class LedgerClient {
           publish_list_id: publishListId,
         } as Parameters<typeof opShareReport>[0]['body'],
       })
+    )
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
+  }
+
+  /**
+   * Transition a Report's filing_status to 'filed' — locks the package.
+   * Allowed from 'draft' or 'under_review'. Stamps filed_at + filed_by
+   * from the auth context + server clock.
+   */
+  async fileReport(graphId: string, reportId: string): Promise<ReportOperationAck> {
+    const body: FileReportRequest = { report_id: reportId }
+    const envelope = await this.callOperation(
+      'File report',
+      opFileReport({ path: { graph_id: graphId }, body })
+    )
+    return {
+      operationId: envelope.operationId,
+      status: envelope.status,
+      result: (envelope.result as Record<string, unknown> | null) ?? null,
+    }
+  }
+
+  /**
+   * Move a Report along the non-file legs of the filing lifecycle
+   * (draft ↔ under_review, filed → archived). Use ``fileReport`` to
+   * reach 'filed' so the audit fields land cleanly.
+   */
+  async transitionFilingStatus(
+    graphId: string,
+    reportId: string,
+    targetStatus: string
+  ): Promise<ReportOperationAck> {
+    const body: TransitionFilingStatusRequest = {
+      report_id: reportId,
+      target_status: targetStatus,
+    }
+    const envelope = await this.callOperation(
+      'Transition filing status',
+      opTransitionFilingStatus({ path: { graph_id: graphId }, body })
     )
     return {
       operationId: envelope.operationId,

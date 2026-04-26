@@ -58,6 +58,61 @@ export const GET_INFORMATION_BLOCK = gql`
         factScope
         factSetId
       }
+      rules {
+        id
+        ruleCategory
+        rulePattern
+        ruleExpression
+        ruleMessage
+        ruleSeverity
+        ruleOrigin
+      }
+      factSet {
+        id
+        structureId
+        periodStart
+        periodEnd
+        factsetType
+        entityId
+        reportId
+      }
+      verificationResults {
+        id
+        ruleId
+        structureId
+        factSetId
+        status
+        message
+        periodStart
+        periodEnd
+        evaluatedAt
+      }
+      view {
+        rendering {
+          rows {
+            elementId
+            elementQname
+            elementName
+            classification
+            balanceType
+            values
+            isSubtotal
+            depth
+          }
+          periods {
+            start
+            end
+            label
+          }
+          validation {
+            passed
+            checks
+            failures
+            warnings
+          }
+          unmappedCount
+        }
+      }
     }
   }
 `
@@ -118,6 +173,61 @@ export const LIST_INFORMATION_BLOCKS = gql`
         unit
         factScope
         factSetId
+      }
+      rules {
+        id
+        ruleCategory
+        rulePattern
+        ruleExpression
+        ruleMessage
+        ruleSeverity
+        ruleOrigin
+      }
+      factSet {
+        id
+        structureId
+        periodStart
+        periodEnd
+        factsetType
+        entityId
+        reportId
+      }
+      verificationResults {
+        id
+        ruleId
+        structureId
+        factSetId
+        status
+        message
+        periodStart
+        periodEnd
+        evaluatedAt
+      }
+      view {
+        rendering {
+          rows {
+            elementId
+            elementQname
+            elementName
+            classification
+            balanceType
+            values
+            isSubtotal
+            depth
+          }
+          periods {
+            start
+            end
+            label
+          }
+          validation {
+            passed
+            checks
+            failures
+            warnings
+          }
+          unmappedCount
+        }
       }
     }
   }
