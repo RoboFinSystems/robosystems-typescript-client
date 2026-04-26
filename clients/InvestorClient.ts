@@ -3,13 +3,19 @@
 /**
  * Investor Client for RoboSystems API
  *
- * High-level facade for the RoboInvestor domain: portfolios, securities,
- * positions, and portfolio holdings aggregation. Follows the same
- * hybrid transport pattern as `LedgerClient`:
+ * High-level facade for the RoboInvestor domain: portfolios (via the
+ * Portfolio Block molecule), securities (Master Data CRUD), positions
+ * (folded into Portfolio Block writes), and portfolio holdings
+ * aggregation. Same hybrid transport pattern as `LedgerClient`:
  *
  * - **Reads** go through GraphQL at `/extensions/{graph_id}/graphql`.
  * - **Writes** go through named operations at
  *   `/extensions/roboinvestor/{graph_id}/operations/{operation_name}`.
+ *
+ * Portfolio + position writes flow through the **Portfolio Block**
+ * envelope ops (`create-portfolio-block`, `update-portfolio-block`,
+ * `delete-portfolio-block`); atom-level CRUD on portfolios/positions
+ * has been retired. Securities remain Master Data CRUD.
  *
  * Every write returns an `OperationEnvelope`; this facade unwraps
  * `envelope.result` and returns a typed shape derived from the GraphQL
@@ -19,37 +25,35 @@
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
 import { ClientError } from 'graphql-request'
 import {
-  opCreatePortfolio,
-  opCreatePosition,
+  opCreatePortfolioBlock,
   opCreateSecurity,
-  opDeletePortfolio,
-  opDeletePosition,
+  opDeletePortfolioBlock,
   opDeleteSecurity,
-  opUpdatePortfolio,
-  opUpdatePosition,
+  opUpdatePortfolioBlock,
   opUpdateSecurity,
 } from '../sdk/sdk.gen'
 import type {
-  CreatePortfolioRequest,
-  CreatePositionRequest,
+  CreatePortfolioBlockRequest,
   CreateSecurityRequest,
+  DeletePortfolioBlockOperation,
   OperationEnvelope,
-  UpdatePortfolioOperation,
-  UpdatePositionOperation,
+  PortfolioBlockPortfolioPatch,
+  PortfolioBlockPositions,
+  UpdatePortfolioBlockOperation,
   UpdateSecurityOperation,
 } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
 import {
   GetInvestorHoldingsDocument,
-  GetInvestorPortfolioDocument,
+  GetInvestorPortfolioBlockDocument,
   GetInvestorPositionDocument,
   GetInvestorSecurityDocument,
   ListInvestorPortfoliosDocument,
   ListInvestorPositionsDocument,
   ListInvestorSecuritiesDocument,
   type GetInvestorHoldingsQuery,
-  type GetInvestorPortfolioQuery,
+  type GetInvestorPortfolioBlockQuery,
   type GetInvestorPositionQuery,
   type GetInvestorSecurityQuery,
   type ListInvestorPortfoliosQuery,
@@ -61,7 +65,11 @@ import {
 
 export type InvestorPortfolioList = NonNullable<ListInvestorPortfoliosQuery['portfolios']>
 export type InvestorPortfolioSummary = InvestorPortfolioList['portfolios'][number]
-export type InvestorPortfolio = NonNullable<GetInvestorPortfolioQuery['portfolio']>
+
+export type InvestorPortfolioBlock = NonNullable<GetInvestorPortfolioBlockQuery['portfolioBlock']>
+export type InvestorPositionBlock = InvestorPortfolioBlock['positions'][number]
+export type InvestorSecurityLite = InvestorPositionBlock['security']
+export type InvestorEntityLite = InvestorPortfolioBlock['owner']
 
 export type InvestorSecurityList = NonNullable<ListInvestorSecuritiesQuery['securities']>
 export type InvestorSecuritySummary = InvestorSecurityList['securities'][number]
@@ -99,7 +107,7 @@ export class InvestorClient {
     this.gql = new GraphQLClientCache(config)
   }
 
-  // ── Portfolios ──────────────────────────────────────────────────────
+  // ── Portfolios (reads) ──────────────────────────────────────────────
 
   /** List portfolios with pagination. */
   async listPortfolios(
@@ -118,56 +126,85 @@ export class InvestorClient {
     )
   }
 
-  /** Get a single portfolio by id. Returns null if it doesn't exist. */
-  async getPortfolio(graphId: string, portfolioId: string): Promise<InvestorPortfolio | null> {
+  /**
+   * Get the Portfolio Block — molecule envelope with portfolio,
+   * positions, securities, and entity references in a single read.
+   * Returns null if the portfolio doesn't exist.
+   */
+  async getPortfolioBlock(
+    graphId: string,
+    portfolioId: string
+  ): Promise<InvestorPortfolioBlock | null> {
     return this.gqlQuery(
       graphId,
-      GetInvestorPortfolioDocument,
+      GetInvestorPortfolioBlockDocument,
       { portfolioId },
-      'Get portfolio',
-      (data) => data.portfolio
+      'Get portfolio block',
+      (data) => data.portfolioBlock
     )
   }
 
-  /** Create a new portfolio. Returns the created portfolio. */
-  async createPortfolio(graphId: string, body: CreatePortfolioRequest): Promise<InvestorPortfolio> {
-    const envelope = await this.callOperation(
-      'Create portfolio',
-      opCreatePortfolio({ path: { graph_id: graphId }, body })
-    )
-    return rawToInvestorPortfolio(envelope.result as unknown as RawPortfolioResponse)
-  }
+  // ── Portfolio Block (writes) ────────────────────────────────────────
 
-  /** Update a portfolio's metadata. Only provided fields are applied. */
-  async updatePortfolio(
+  /**
+   * Create a portfolio (with optional initial positions) atomically.
+   * Each position references an existing security; this op never mints
+   * securities — use `createSecurity` first.
+   */
+  async createPortfolioBlock(
     graphId: string,
-    portfolioId: string,
-    updates: Omit<UpdatePortfolioOperation, 'portfolio_id'>
-  ): Promise<InvestorPortfolio> {
+    body: CreatePortfolioBlockRequest
+  ): Promise<InvestorPortfolioBlock> {
     const envelope = await this.callOperation(
-      'Update portfolio',
-      opUpdatePortfolio({
-        path: { graph_id: graphId },
-        body: {
-          ...updates,
-          portfolio_id: portfolioId,
-        } as UpdatePortfolioOperation,
-      })
+      'Create portfolio block',
+      opCreatePortfolioBlock({ path: { graph_id: graphId }, body })
     )
-    return rawToInvestorPortfolio(envelope.result as unknown as RawPortfolioResponse)
+    return rawToPortfolioBlock(envelope.result as unknown as RawPortfolioBlockResponse)
   }
 
   /**
-   * Delete a portfolio. Fails with 409 if the portfolio still has active
-   * positions — dispose those first.
+   * Patch portfolio fields and apply position deltas (`add`, `update`,
+   * `dispose`) atomically. All deltas roll back together on failure.
+   * Pass only the fields/deltas you want changed — anything omitted
+   * is left untouched.
    */
-  async deletePortfolio(graphId: string, portfolioId: string): Promise<{ deleted: boolean }> {
+  async updatePortfolioBlock(
+    graphId: string,
+    portfolioId: string,
+    updates: {
+      portfolio?: PortfolioBlockPortfolioPatch
+      positions?: PortfolioBlockPositions
+    }
+  ): Promise<InvestorPortfolioBlock> {
+    const body: UpdatePortfolioBlockOperation = {
+      portfolio_id: portfolioId,
+      ...updates,
+    }
     const envelope = await this.callOperation(
-      'Delete portfolio',
-      opDeletePortfolio({
-        path: { graph_id: graphId },
-        body: { portfolio_id: portfolioId },
-      })
+      'Update portfolio block',
+      opUpdatePortfolioBlock({ path: { graph_id: graphId }, body })
+    )
+    return rawToPortfolioBlock(envelope.result as unknown as RawPortfolioBlockResponse)
+  }
+
+  /**
+   * Cascade-delete the portfolio plus all of its positions. When the
+   * portfolio still has active positions, the request must include
+   * `confirmActivePositions: true` — safety belt to prevent accidental
+   * cascade. Disposed-only portfolios delete without the flag.
+   */
+  async deletePortfolioBlock(
+    graphId: string,
+    portfolioId: string,
+    options?: { confirmActivePositions?: boolean }
+  ): Promise<{ deleted: boolean }> {
+    const body: DeletePortfolioBlockOperation = {
+      portfolio_id: portfolioId,
+      confirm_active_positions: options?.confirmActivePositions ?? false,
+    }
+    const envelope = await this.callOperation(
+      'Delete portfolio block',
+      opDeletePortfolioBlock({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
@@ -254,7 +291,7 @@ export class InvestorClient {
     return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
-  // ── Positions ───────────────────────────────────────────────────────
+  // ── Positions (reads only — writes folded into Portfolio Block) ─────
 
   /** List positions with pagination and filters. */
   async listPositions(
@@ -291,46 +328,6 @@ export class InvestorClient {
       'Get position',
       (data) => data.position
     )
-  }
-
-  /** Create a new position. */
-  async createPosition(graphId: string, body: CreatePositionRequest): Promise<InvestorPosition> {
-    const envelope = await this.callOperation(
-      'Create position',
-      opCreatePosition({ path: { graph_id: graphId }, body })
-    )
-    return rawToInvestorPosition(envelope.result as unknown as RawPositionResponse)
-  }
-
-  /** Update a position. Only provided fields are applied. */
-  async updatePosition(
-    graphId: string,
-    positionId: string,
-    updates: Omit<UpdatePositionOperation, 'position_id'>
-  ): Promise<InvestorPosition> {
-    const envelope = await this.callOperation(
-      'Update position',
-      opUpdatePosition({
-        path: { graph_id: graphId },
-        body: {
-          ...updates,
-          position_id: positionId,
-        } as UpdatePositionOperation,
-      })
-    )
-    return rawToInvestorPosition(envelope.result as unknown as RawPositionResponse)
-  }
-
-  /** Delete (dispose) a position. */
-  async deletePosition(graphId: string, positionId: string): Promise<{ deleted: boolean }> {
-    const envelope = await this.callOperation(
-      'Delete position',
-      opDeletePosition({
-        path: { graph_id: graphId },
-        body: { position_id: positionId },
-      })
-    )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
   // ── Holdings (aggregation) ─────────────────────────────────────────
@@ -390,27 +387,13 @@ export class InvestorClient {
 
 // ── Module-private conversion helpers ─────────────────────────────────
 //
-// The RoboInvestor write operations (create/update portfolio, security,
-// position) return Pydantic-serialized envelopes where `result` is in
-// snake_case. The GraphQL-derived `InvestorPortfolio` / `InvestorSecurity`
-// / `InvestorPosition` types are in camelCase (matching the read path).
-//
-// These helpers are the single place where we bridge the two naming
-// conventions on the write path, mirroring the `rawFiscalCalendarToCamel`
-// / `rawToClosingEntry` pattern in `LedgerClient`. Keeping the unsafe
-// `as unknown as` cast localized to these helpers means a backend schema
-// drift surfaces here rather than silently at every call site.
-
-interface RawPortfolioResponse {
-  id: string
-  name: string
-  description: string | null
-  strategy: string | null
-  inception_date: string | null
-  base_currency: string
-  created_at: string
-  updated_at: string
-}
+// The RoboInvestor write operations return Pydantic-serialized envelopes
+// where `result` is in snake_case. The GraphQL-derived `Investor*` types
+// are in camelCase (matching the read path). These helpers are the single
+// place where we bridge the two naming conventions on the write path,
+// mirroring the equivalent helpers in `LedgerClient`. Keeping the unsafe
+// `as unknown as` cast localized here means a backend schema drift surfaces
+// in one place rather than silently at every call site.
 
 interface RawSecurityResponse {
   id: string
@@ -428,40 +411,50 @@ interface RawSecurityResponse {
   updated_at: string
 }
 
-interface RawPositionResponse {
+interface RawEntityLite {
   id: string
-  portfolio_id: string
-  security_id: string
-  security_name: string | null
-  entity_name: string | null
+  name: string
+  source_graph_id: string | null
+}
+
+interface RawSecurityLite {
+  id: string
+  name: string
+  security_type: string
+  security_subtype: string | null
+  is_active: boolean
+  issuer: RawEntityLite | null
+  source_graph_id: string | null
+}
+
+interface RawPositionBlock {
+  id: string
   quantity: number
   quantity_type: string
-  cost_basis: number
   cost_basis_dollars: number
-  currency: string
-  current_value: number | null
   current_value_dollars: number | null
   valuation_date: string | null
   valuation_source: string | null
   acquisition_date: string | null
-  disposition_date: string | null
   status: string
   notes: string | null
-  created_at: string
-  updated_at: string
+  security: RawSecurityLite
 }
 
-function rawToInvestorPortfolio(raw: RawPortfolioResponse): InvestorPortfolio {
-  return {
-    id: raw.id,
-    name: raw.name,
-    description: raw.description,
-    strategy: raw.strategy,
-    inceptionDate: raw.inception_date,
-    baseCurrency: raw.base_currency,
-    createdAt: raw.created_at,
-    updatedAt: raw.updated_at,
-  }
+interface RawPortfolioBlockResponse {
+  id: string
+  name: string
+  description: string | null
+  strategy: string | null
+  inception_date: string | null
+  base_currency: string
+  owner: RawEntityLite | null
+  positions: RawPositionBlock[]
+  total_cost_basis_dollars: number
+  total_current_value_dollars: number | null
+  active_position_count: number
+  created_at: string
+  updated_at: string
 }
 
 function rawToInvestorSecurity(raw: RawSecurityResponse): InvestorSecurity {
@@ -482,26 +475,56 @@ function rawToInvestorSecurity(raw: RawSecurityResponse): InvestorSecurity {
   }
 }
 
-function rawToInvestorPosition(raw: RawPositionResponse): InvestorPosition {
+function rawToEntityLite(raw: RawEntityLite | null): InvestorEntityLite {
+  if (raw === null) return null
   return {
     id: raw.id,
-    portfolioId: raw.portfolio_id,
-    securityId: raw.security_id,
-    securityName: raw.security_name,
-    entityName: raw.entity_name,
+    name: raw.name,
+    sourceGraphId: raw.source_graph_id,
+  }
+}
+
+function rawToSecurityLite(raw: RawSecurityLite): InvestorSecurityLite {
+  return {
+    id: raw.id,
+    name: raw.name,
+    securityType: raw.security_type,
+    securitySubtype: raw.security_subtype,
+    isActive: raw.is_active,
+    issuer: rawToEntityLite(raw.issuer),
+    sourceGraphId: raw.source_graph_id,
+  }
+}
+
+function rawToPositionBlock(raw: RawPositionBlock): InvestorPositionBlock {
+  return {
+    id: raw.id,
     quantity: raw.quantity,
     quantityType: raw.quantity_type,
-    costBasis: raw.cost_basis,
     costBasisDollars: raw.cost_basis_dollars,
-    currency: raw.currency,
-    currentValue: raw.current_value,
     currentValueDollars: raw.current_value_dollars,
     valuationDate: raw.valuation_date,
     valuationSource: raw.valuation_source,
     acquisitionDate: raw.acquisition_date,
-    dispositionDate: raw.disposition_date,
     status: raw.status,
     notes: raw.notes,
+    security: rawToSecurityLite(raw.security),
+  }
+}
+
+function rawToPortfolioBlock(raw: RawPortfolioBlockResponse): InvestorPortfolioBlock {
+  return {
+    id: raw.id,
+    name: raw.name,
+    description: raw.description,
+    strategy: raw.strategy,
+    inceptionDate: raw.inception_date,
+    baseCurrency: raw.base_currency,
+    owner: rawToEntityLite(raw.owner),
+    positions: raw.positions.map(rawToPositionBlock),
+    totalCostBasisDollars: raw.total_cost_basis_dollars,
+    totalCurrentValueDollars: raw.total_current_value_dollars,
+    activePositionCount: raw.active_position_count,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   }

@@ -1713,79 +1713,20 @@ export type CreateMappingAssociationOperation = {
 };
 
 /**
- * CreatePortfolioRequest
+ * CreatePortfolioBlockRequest
+ *
+ * CQRS body for `POST /operations/create-portfolio-block`.
+ *
+ * Whole envelope validated before any DB write; the portfolio + initial
+ * positions land in one transaction. Each `position` references an
+ * existing `security_id` — the operation does not mint securities.
  */
-export type CreatePortfolioRequest = {
+export type CreatePortfolioBlockRequest = {
+    portfolio: PortfolioBlockPortfolioFields;
     /**
-     * Name
+     * Positions
      */
-    name: string;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Strategy
-     */
-    strategy?: string | null;
-    /**
-     * Inception Date
-     */
-    inception_date?: string | null;
-    /**
-     * Base Currency
-     */
-    base_currency?: string;
-};
-
-/**
- * CreatePositionRequest
- */
-export type CreatePositionRequest = {
-    /**
-     * Portfolio Id
-     */
-    portfolio_id: string;
-    /**
-     * Security Id
-     */
-    security_id: string;
-    /**
-     * Quantity
-     */
-    quantity: number;
-    /**
-     * Quantity Type
-     */
-    quantity_type?: string;
-    /**
-     * Cost Basis
-     */
-    cost_basis?: number;
-    /**
-     * Currency
-     */
-    currency?: string;
-    /**
-     * Current Value
-     */
-    current_value?: number | null;
-    /**
-     * Valuation Date
-     */
-    valuation_date?: string | null;
-    /**
-     * Valuation Source
-     */
-    valuation_source?: string | null;
-    /**
-     * Acquisition Date
-     */
-    acquisition_date?: string | null;
-    /**
-     * Notes
-     */
-    notes?: string | null;
+    positions?: Array<PortfolioBlockPositionAdd>;
 };
 
 /**
@@ -2630,31 +2571,26 @@ export type DeleteMappingAssociationOperation = {
 };
 
 /**
- * DeletePortfolioOperation
+ * DeletePortfolioBlockOperation
  *
- * CQRS body for `POST /operations/delete-portfolio`.
+ * CQRS body for `POST /operations/delete-portfolio-block`.
+ *
+ * Cascade-deletes the portfolio plus all of its positions. When the
+ * portfolio still has active positions, the operation is rejected
+ * unless `confirm_active_positions=true` is set — safety belt to
+ * prevent accidental cascade.
  */
-export type DeletePortfolioOperation = {
+export type DeletePortfolioBlockOperation = {
     /**
      * Portfolio Id
      *
      * Target portfolio ID.
      */
     portfolio_id: string;
-};
-
-/**
- * DeletePositionOperation
- *
- * CQRS body for `POST /operations/delete-position` (soft delete).
- */
-export type DeletePositionOperation = {
     /**
-     * Position Id
-     *
-     * Target position ID.
+     * Confirm Active Positions
      */
-    position_id: string;
+    confirm_active_positions?: boolean;
 };
 
 /**
@@ -5777,6 +5713,207 @@ export type PortalSessionResponse = {
 };
 
 /**
+ * PortfolioBlockPortfolioFields
+ *
+ * Fields settable on the portfolio core when creating a block.
+ */
+export type PortfolioBlockPortfolioFields = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Strategy
+     */
+    strategy?: string | null;
+    /**
+     * Inception Date
+     */
+    inception_date?: string | null;
+    /**
+     * Base Currency
+     */
+    base_currency?: string;
+    /**
+     * Entity Id
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * PortfolioBlockPortfolioPatch
+ *
+ * Patchable portfolio fields on `update-portfolio-block`. Unset fields ignored.
+ */
+export type PortfolioBlockPortfolioPatch = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Strategy
+     */
+    strategy?: string | null;
+    /**
+     * Inception Date
+     */
+    inception_date?: string | null;
+    /**
+     * Base Currency
+     */
+    base_currency?: string | null;
+    /**
+     * Entity Id
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * PortfolioBlockPositionAdd
+ *
+ * A single new position to mint inside a portfolio-block create/update.
+ *
+ * References an existing security; this surface never creates securities
+ * (Master Data CRUD owns that lifecycle).
+ */
+export type PortfolioBlockPositionAdd = {
+    /**
+     * Security Id
+     */
+    security_id: string;
+    /**
+     * Quantity
+     */
+    quantity: number;
+    /**
+     * Quantity Type
+     */
+    quantity_type?: string;
+    /**
+     * Cost Basis
+     */
+    cost_basis?: number;
+    /**
+     * Currency
+     */
+    currency?: string;
+    /**
+     * Current Value
+     */
+    current_value?: number | null;
+    /**
+     * Valuation Date
+     */
+    valuation_date?: string | null;
+    /**
+     * Valuation Source
+     */
+    valuation_source?: string | null;
+    /**
+     * Acquisition Date
+     */
+    acquisition_date?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+};
+
+/**
+ * PortfolioBlockPositionDispose
+ *
+ * Dispose-by-id for an existing position in `update-portfolio-block`.
+ *
+ * Soft-delete: status flips to `disposed` and `disposition_date` is
+ * stamped. `disposition_reason`, when supplied, is recorded under
+ * `metadata.disposition_reason`.
+ */
+export type PortfolioBlockPositionDispose = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Disposition Reason
+     */
+    disposition_reason?: string | null;
+};
+
+/**
+ * PortfolioBlockPositionUpdate
+ *
+ * Patch-by-id for an existing position in `update-portfolio-block`.
+ *
+ * Unset fields are ignored; `id` is the only required field.
+ */
+export type PortfolioBlockPositionUpdate = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Quantity
+     */
+    quantity?: number | null;
+    /**
+     * Quantity Type
+     */
+    quantity_type?: string | null;
+    /**
+     * Cost Basis
+     */
+    cost_basis?: number | null;
+    /**
+     * Current Value
+     */
+    current_value?: number | null;
+    /**
+     * Valuation Date
+     */
+    valuation_date?: string | null;
+    /**
+     * Valuation Source
+     */
+    valuation_source?: string | null;
+    /**
+     * Acquisition Date
+     */
+    acquisition_date?: string | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+};
+
+/**
+ * PortfolioBlockPositions
+ *
+ * Position deltas applied atomically inside `update-portfolio-block`.
+ */
+export type PortfolioBlockPositions = {
+    /**
+     * Add
+     */
+    add?: Array<PortfolioBlockPositionAdd>;
+    /**
+     * Update
+     */
+    update?: Array<PortfolioBlockPositionUpdate>;
+    /**
+     * Dispose
+     */
+    dispose?: Array<PortfolioBlockPositionDispose>;
+};
+
+/**
  * QueryLimits
  *
  * Query operation limits.
@@ -7998,94 +8135,23 @@ export type UpdatePasswordRequest = {
 };
 
 /**
- * UpdatePortfolioOperation
+ * UpdatePortfolioBlockOperation
  *
- * CQRS body for `POST /operations/update-portfolio`.
+ * CQRS body for `POST /operations/update-portfolio-block`.
  *
- * Folds `portfolio_id` into the payload so REST + MCP share one body
- * type via the registrar. Unset fields are ignored (partial update).
+ * Carries an optional patch to portfolio fields and three position
+ * delta lists (`add` / `update` / `dispose`). All apply atomically
+ * with the portfolio patch — partial failures roll back.
  */
-export type UpdatePortfolioOperation = {
-    /**
-     * Name
-     */
-    name?: string | null;
-    /**
-     * Description
-     */
-    description?: string | null;
-    /**
-     * Strategy
-     */
-    strategy?: string | null;
-    /**
-     * Inception Date
-     */
-    inception_date?: string | null;
-    /**
-     * Base Currency
-     */
-    base_currency?: string | null;
+export type UpdatePortfolioBlockOperation = {
     /**
      * Portfolio Id
      *
      * Target portfolio ID.
      */
     portfolio_id: string;
-};
-
-/**
- * UpdatePositionOperation
- *
- * CQRS body for `POST /operations/update-position`.
- */
-export type UpdatePositionOperation = {
-    /**
-     * Quantity
-     */
-    quantity?: number | null;
-    /**
-     * Quantity Type
-     */
-    quantity_type?: string | null;
-    /**
-     * Cost Basis
-     */
-    cost_basis?: number | null;
-    /**
-     * Current Value
-     */
-    current_value?: number | null;
-    /**
-     * Valuation Date
-     */
-    valuation_date?: string | null;
-    /**
-     * Valuation Source
-     */
-    valuation_source?: string | null;
-    /**
-     * Acquisition Date
-     */
-    acquisition_date?: string | null;
-    /**
-     * Disposition Date
-     */
-    disposition_date?: string | null;
-    /**
-     * Status
-     */
-    status?: string | null;
-    /**
-     * Notes
-     */
-    notes?: string | null;
-    /**
-     * Position Id
-     *
-     * Target position ID.
-     */
-    position_id: string;
+    portfolio?: PortfolioBlockPortfolioPatch;
+    positions?: PortfolioBlockPositions;
 };
 
 /**
@@ -17019,8 +17085,8 @@ export type OpFinancialStatementAnalysisResponses = {
 
 export type OpFinancialStatementAnalysisResponse = OpFinancialStatementAnalysisResponses[keyof OpFinancialStatementAnalysisResponses];
 
-export type OpCreatePortfolioData = {
-    body: CreatePortfolioRequest;
+export type OpCreatePortfolioBlockData = {
+    body: CreatePortfolioBlockRequest;
     headers?: {
         /**
          * Idempotency-Key
@@ -17034,10 +17100,10 @@ export type OpCreatePortfolioData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio';
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio-block';
 };
 
-export type OpCreatePortfolioErrors = {
+export type OpCreatePortfolioBlockErrors = {
     /**
      * Invalid request payload
      */
@@ -17072,19 +17138,19 @@ export type OpCreatePortfolioErrors = {
     500: unknown;
 };
 
-export type OpCreatePortfolioError = OpCreatePortfolioErrors[keyof OpCreatePortfolioErrors];
+export type OpCreatePortfolioBlockError = OpCreatePortfolioBlockErrors[keyof OpCreatePortfolioBlockErrors];
 
-export type OpCreatePortfolioResponses = {
+export type OpCreatePortfolioBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpCreatePortfolioResponse = OpCreatePortfolioResponses[keyof OpCreatePortfolioResponses];
+export type OpCreatePortfolioBlockResponse = OpCreatePortfolioBlockResponses[keyof OpCreatePortfolioBlockResponses];
 
-export type OpUpdatePortfolioData = {
-    body: UpdatePortfolioOperation;
+export type OpUpdatePortfolioBlockData = {
+    body: UpdatePortfolioBlockOperation;
     headers?: {
         /**
          * Idempotency-Key
@@ -17098,10 +17164,10 @@ export type OpUpdatePortfolioData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboinvestor/{graph_id}/operations/update-portfolio';
+    url: '/extensions/roboinvestor/{graph_id}/operations/update-portfolio-block';
 };
 
-export type OpUpdatePortfolioErrors = {
+export type OpUpdatePortfolioBlockErrors = {
     /**
      * Invalid request payload
      */
@@ -17136,19 +17202,19 @@ export type OpUpdatePortfolioErrors = {
     500: unknown;
 };
 
-export type OpUpdatePortfolioError = OpUpdatePortfolioErrors[keyof OpUpdatePortfolioErrors];
+export type OpUpdatePortfolioBlockError = OpUpdatePortfolioBlockErrors[keyof OpUpdatePortfolioBlockErrors];
 
-export type OpUpdatePortfolioResponses = {
+export type OpUpdatePortfolioBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpUpdatePortfolioResponse = OpUpdatePortfolioResponses[keyof OpUpdatePortfolioResponses];
+export type OpUpdatePortfolioBlockResponse = OpUpdatePortfolioBlockResponses[keyof OpUpdatePortfolioBlockResponses];
 
-export type OpDeletePortfolioData = {
-    body: DeletePortfolioOperation;
+export type OpDeletePortfolioBlockData = {
+    body: DeletePortfolioBlockOperation;
     headers?: {
         /**
          * Idempotency-Key
@@ -17162,10 +17228,10 @@ export type OpDeletePortfolioData = {
         graph_id: string;
     };
     query?: never;
-    url: '/extensions/roboinvestor/{graph_id}/operations/delete-portfolio';
+    url: '/extensions/roboinvestor/{graph_id}/operations/delete-portfolio-block';
 };
 
-export type OpDeletePortfolioErrors = {
+export type OpDeletePortfolioBlockErrors = {
     /**
      * Invalid request payload
      */
@@ -17200,16 +17266,16 @@ export type OpDeletePortfolioErrors = {
     500: unknown;
 };
 
-export type OpDeletePortfolioError = OpDeletePortfolioErrors[keyof OpDeletePortfolioErrors];
+export type OpDeletePortfolioBlockError = OpDeletePortfolioBlockErrors[keyof OpDeletePortfolioBlockErrors];
 
-export type OpDeletePortfolioResponses = {
+export type OpDeletePortfolioBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpDeletePortfolioResponse = OpDeletePortfolioResponses[keyof OpDeletePortfolioResponses];
+export type OpDeletePortfolioBlockResponse = OpDeletePortfolioBlockResponses[keyof OpDeletePortfolioBlockResponses];
 
 export type OpCreateSecurityData = {
     body: CreateSecurityRequest;
@@ -17402,195 +17468,3 @@ export type OpDeleteSecurityResponses = {
 };
 
 export type OpDeleteSecurityResponse = OpDeleteSecurityResponses[keyof OpDeleteSecurityResponses];
-
-export type OpCreatePositionData = {
-    body: CreatePositionRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboinvestor/{graph_id}/operations/create-position';
-};
-
-export type OpCreatePositionErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpCreatePositionError = OpCreatePositionErrors[keyof OpCreatePositionErrors];
-
-export type OpCreatePositionResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpCreatePositionResponse = OpCreatePositionResponses[keyof OpCreatePositionResponses];
-
-export type OpUpdatePositionData = {
-    body: UpdatePositionOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboinvestor/{graph_id}/operations/update-position';
-};
-
-export type OpUpdatePositionErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpUpdatePositionError = OpUpdatePositionErrors[keyof OpUpdatePositionErrors];
-
-export type OpUpdatePositionResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpUpdatePositionResponse = OpUpdatePositionResponses[keyof OpUpdatePositionResponses];
-
-export type OpDeletePositionData = {
-    body: DeletePositionOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboinvestor/{graph_id}/operations/delete-position';
-};
-
-export type OpDeletePositionErrors = {
-    /**
-     * Invalid request payload
-     */
-    400: OperationError;
-    /**
-     * Unauthorized — missing or invalid credentials
-     */
-    401: unknown;
-    /**
-     * Forbidden — caller cannot access this graph
-     */
-    403: unknown;
-    /**
-     * Resource not found (graph, ledger, report, etc.)
-     */
-    404: OperationError;
-    /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
-     */
-    409: OperationError;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: unknown;
-    /**
-     * Internal error
-     */
-    500: unknown;
-};
-
-export type OpDeletePositionError = OpDeletePositionErrors[keyof OpDeletePositionErrors];
-
-export type OpDeletePositionResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpDeletePositionResponse = OpDeletePositionResponses[keyof OpDeletePositionResponses];

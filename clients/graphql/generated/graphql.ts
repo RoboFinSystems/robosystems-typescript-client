@@ -213,6 +213,12 @@ export type ElementList = {
   pagination: PaginationInfo
 }
 
+export type EntityLite = {
+  id: Scalars['String']['output']
+  name: Scalars['String']['output']
+  sourceGraphId: Maybe<Scalars['String']['output']>
+}
+
 export type FactRow = {
   depth: Scalars['Int']['output']
   elementId: Scalars['String']['output']
@@ -783,6 +789,22 @@ export type Portfolio = {
   updatedAt: Scalars['DateTime']['output']
 }
 
+export type PortfolioBlock = {
+  activePositionCount: Scalars['Int']['output']
+  baseCurrency: Scalars['String']['output']
+  createdAt: Scalars['DateTime']['output']
+  description: Maybe<Scalars['String']['output']>
+  id: Scalars['String']['output']
+  inceptionDate: Maybe<Scalars['Date']['output']>
+  name: Scalars['String']['output']
+  owner: Maybe<EntityLite>
+  positions: Array<PositionBlock>
+  strategy: Maybe<Scalars['String']['output']>
+  totalCostBasisDollars: Scalars['Float']['output']
+  totalCurrentValueDollars: Maybe<Scalars['Float']['output']>
+  updatedAt: Scalars['DateTime']['output']
+}
+
 export type PortfolioList = {
   pagination: PaginationInfo
   portfolios: Array<Portfolio>
@@ -807,6 +829,20 @@ export type Position = {
   securityName: Maybe<Scalars['String']['output']>
   status: Scalars['String']['output']
   updatedAt: Scalars['DateTime']['output']
+  valuationDate: Maybe<Scalars['Date']['output']>
+  valuationSource: Maybe<Scalars['String']['output']>
+}
+
+export type PositionBlock = {
+  acquisitionDate: Maybe<Scalars['Date']['output']>
+  costBasisDollars: Scalars['Float']['output']
+  currentValueDollars: Maybe<Scalars['Float']['output']>
+  id: Scalars['String']['output']
+  notes: Maybe<Scalars['String']['output']>
+  quantity: Scalars['Float']['output']
+  quantityType: Scalars['String']['output']
+  security: SecurityLite
+  status: Scalars['String']['output']
   valuationDate: Maybe<Scalars['Date']['output']>
   valuationSource: Maybe<Scalars['String']['output']>
 }
@@ -884,7 +920,7 @@ export type Query = {
   mappings: Maybe<StructureList>
   periodCloseStatus: Maybe<PeriodCloseStatus>
   periodDrafts: Maybe<PeriodDrafts>
-  portfolio: Maybe<Portfolio>
+  portfolioBlock: Maybe<PortfolioBlock>
   portfolios: Maybe<PortfolioList>
   position: Maybe<Position>
   positions: Maybe<PositionList>
@@ -1053,7 +1089,7 @@ export type QueryPeriodDraftsArgs = {
   period: Scalars['String']['input']
 }
 
-export type QueryPortfolioArgs = {
+export type QueryPortfolioBlockArgs = {
   portfolioId: Scalars['String']['input']
 }
 
@@ -1189,22 +1225,22 @@ export type ReportList = {
 
 export type ReportPackage = {
   aiGenerated: Scalars['Boolean']['output']
-  createdAt: Scalars['String']['output']
+  createdAt: Scalars['DateTime']['output']
   createdBy: Scalars['String']['output']
   description: Maybe<Scalars['String']['output']>
   entityName: Maybe<Scalars['String']['output']>
-  filedAt: Maybe<Scalars['String']['output']>
+  filedAt: Maybe<Scalars['DateTime']['output']>
   filedBy: Maybe<Scalars['String']['output']>
   filingStatus: Scalars['String']['output']
   generationStatus: Scalars['String']['output']
   id: Scalars['ID']['output']
   items: Array<ReportPackageItem>
-  lastGenerated: Maybe<Scalars['String']['output']>
+  lastGenerated: Maybe<Scalars['DateTime']['output']>
   name: Scalars['String']['output']
-  periodEnd: Maybe<Scalars['String']['output']>
-  periodStart: Maybe<Scalars['String']['output']>
+  periodEnd: Maybe<Scalars['Date']['output']>
+  periodStart: Maybe<Scalars['Date']['output']>
   periodType: Scalars['String']['output']
-  sharedAt: Maybe<Scalars['String']['output']>
+  sharedAt: Maybe<Scalars['DateTime']['output']>
   sourceGraphId: Maybe<Scalars['String']['output']>
   sourceReportId: Maybe<Scalars['String']['output']>
   supersededById: Maybe<Scalars['String']['output']>
@@ -1238,6 +1274,16 @@ export type Security = {
 export type SecurityList = {
   pagination: PaginationInfo
   securities: Array<Security>
+}
+
+export type SecurityLite = {
+  id: Scalars['String']['output']
+  isActive: Scalars['Boolean']['output']
+  issuer: Maybe<EntityLite>
+  name: Scalars['String']['output']
+  securitySubtype: Maybe<Scalars['String']['output']>
+  securityType: Scalars['String']['output']
+  sourceGraphId: Maybe<Scalars['String']['output']>
 }
 
 export type Statement = {
@@ -1425,20 +1471,45 @@ export type GetInvestorHoldingsQuery = {
   } | null
 }
 
-export type GetInvestorPortfolioQueryVariables = Exact<{
+export type GetInvestorPortfolioBlockQueryVariables = Exact<{
   portfolioId: Scalars['String']['input']
 }>
 
-export type GetInvestorPortfolioQuery = {
-  portfolio: {
+export type GetInvestorPortfolioBlockQuery = {
+  portfolioBlock: {
     id: string
     name: string
     description: string | null
     strategy: string | null
     inceptionDate: any | null
     baseCurrency: string
+    totalCostBasisDollars: number
+    totalCurrentValueDollars: number | null
+    activePositionCount: number
     createdAt: any
     updatedAt: any
+    owner: { id: string; name: string; sourceGraphId: string | null } | null
+    positions: Array<{
+      id: string
+      quantity: number
+      quantityType: string
+      costBasisDollars: number
+      currentValueDollars: number | null
+      valuationDate: any | null
+      valuationSource: string | null
+      acquisitionDate: any | null
+      status: string
+      notes: string | null
+      security: {
+        id: string
+        name: string
+        securityType: string
+        securitySubtype: string | null
+        isActive: boolean
+        sourceGraphId: string | null
+        issuer: { id: string; name: string; sourceGraphId: string | null } | null
+      }
+    }>
   } | null
 }
 
@@ -2269,21 +2340,21 @@ export type GetLedgerReportPackageQuery = {
     description: string | null
     taxonomyId: string
     periodType: string
-    periodStart: string | null
-    periodEnd: string | null
+    periodStart: any | null
+    periodEnd: any | null
     generationStatus: string
-    lastGenerated: string | null
+    lastGenerated: any | null
     filingStatus: string
-    filedAt: string | null
+    filedAt: any | null
     filedBy: string | null
     supersedesId: string | null
     supersededById: string | null
     sourceGraphId: string | null
     sourceReportId: string | null
-    sharedAt: string | null
+    sharedAt: any | null
     entityName: string | null
     aiGenerated: boolean
-    createdAt: string
+    createdAt: any
     createdBy: string
     items: Array<{
       factSetId: string
@@ -2917,13 +2988,13 @@ export const GetInvestorHoldingsDocument = {
     },
   ],
 } as unknown as DocumentNode<GetInvestorHoldingsQuery, GetInvestorHoldingsQueryVariables>
-export const GetInvestorPortfolioDocument = {
+export const GetInvestorPortfolioBlockDocument = {
   kind: 'Document',
   definitions: [
     {
       kind: 'OperationDefinition',
       operation: 'query',
-      name: { kind: 'Name', value: 'GetInvestorPortfolio' },
+      name: { kind: 'Name', value: 'GetInvestorPortfolioBlock' },
       variableDefinitions: [
         {
           kind: 'VariableDefinition',
@@ -2939,7 +3010,7 @@ export const GetInvestorPortfolioDocument = {
         selections: [
           {
             kind: 'Field',
-            name: { kind: 'Name', value: 'portfolio' },
+            name: { kind: 'Name', value: 'portfolioBlock' },
             arguments: [
               {
                 kind: 'Argument',
@@ -2956,6 +3027,67 @@ export const GetInvestorPortfolioDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'strategy' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'inceptionDate' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'baseCurrency' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'owner' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'positions' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'quantity' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'quantityType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'costBasisDollars' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'currentValueDollars' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'valuationDate' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'valuationSource' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'acquisitionDate' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'security' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'securityType' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'securitySubtype' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'issuer' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'totalCostBasisDollars' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'totalCurrentValueDollars' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'activePositionCount' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
               ],
@@ -2965,7 +3097,10 @@ export const GetInvestorPortfolioDocument = {
       },
     },
   ],
-} as unknown as DocumentNode<GetInvestorPortfolioQuery, GetInvestorPortfolioQueryVariables>
+} as unknown as DocumentNode<
+  GetInvestorPortfolioBlockQuery,
+  GetInvestorPortfolioBlockQueryVariables
+>
 export const ListInvestorPortfoliosDocument = {
   kind: 'Document',
   definitions: [
