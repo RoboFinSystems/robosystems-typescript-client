@@ -3415,6 +3415,25 @@ export type FileLayerStatus = {
 };
 
 /**
+ * FileReportRequest
+ *
+ * Transition a Report to ``filed`` — locks the package.
+ *
+ * Acceptable from ``draft`` or ``under_review``. ``filed_by`` and
+ * ``filed_at`` are stamped from the auth context + server clock; the
+ * request itself carries no fields today (kept as a model for OpenAPI
+ * shape consistency and to avoid breaking changes if we add fields).
+ */
+export type FileReportRequest = {
+    /**
+     * Report Id
+     *
+     * The Report to file.
+     */
+    report_id: string;
+};
+
+/**
  * FileStatusUpdate
  */
 export type FileStatusUpdate = {
@@ -7509,6 +7528,29 @@ export type TransactionTemplateLeg = {
      * Amount expression. Supports: '{{ event.amount }}' — raw event amount (cents); '{{ event.amount }} / 2' — half of event amount; '{{ event.metadata.fee_cents }}' — field from event metadata
      */
     amount: string;
+};
+
+/**
+ * TransitionFilingStatusRequest
+ *
+ * Generic filing-status transition — escape hatch for non-file moves.
+ *
+ * Used for ``draft → under_review`` (submit for review) and
+ * ``filed → archived`` (supersede / retire). Filing the package goes
+ * through :class:`FileReportRequest` so ``filed_at`` / ``filed_by``
+ * audit fields land cleanly.
+ */
+export type TransitionFilingStatusRequest = {
+    /**
+     * Report Id
+     */
+    report_id: string;
+    /**
+     * Target Status
+     *
+     * under_review | archived
+     */
+    target_status: string;
 };
 
 /**
@@ -16336,6 +16378,134 @@ export type OpShareReportResponses = {
 };
 
 export type OpShareReportResponse = OpShareReportResponses[keyof OpShareReportResponses];
+
+export type OpFileReportData = {
+    body: FileReportRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/file-report';
+};
+
+export type OpFileReportErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpFileReportError = OpFileReportErrors[keyof OpFileReportErrors];
+
+export type OpFileReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpFileReportResponse = OpFileReportResponses[keyof OpFileReportResponses];
+
+export type OpTransitionFilingStatusData = {
+    body: TransitionFilingStatusRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/transition-filing-status';
+};
+
+export type OpTransitionFilingStatusErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpTransitionFilingStatusError = OpTransitionFilingStatusErrors[keyof OpTransitionFilingStatusErrors];
+
+export type OpTransitionFilingStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpTransitionFilingStatusResponse = OpTransitionFilingStatusResponses[keyof OpTransitionFilingStatusResponses];
 
 export type OpCreatePublishListData = {
     body: CreatePublishListRequest;
