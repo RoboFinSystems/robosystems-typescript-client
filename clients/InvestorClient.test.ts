@@ -32,6 +32,52 @@ function envelopeResponse<T>(
   })
 }
 
+const sampleBlockResult = {
+  id: 'port_new',
+  name: 'New Fund',
+  description: null,
+  strategy: 'growth',
+  inception_date: '2026-01-01',
+  base_currency: 'USD',
+  owner: {
+    id: 'ent_owner',
+    name: 'Family Office',
+    source_graph_id: null,
+  },
+  positions: [
+    {
+      id: 'pos_new',
+      quantity: 100,
+      quantity_type: 'shares',
+      cost_basis_dollars: 1000,
+      current_value_dollars: null,
+      valuation_date: null,
+      valuation_source: null,
+      acquisition_date: '2026-01-01',
+      status: 'active',
+      notes: null,
+      security: {
+        id: 'sec_1',
+        name: 'Series A Preferred',
+        security_type: 'common_stock',
+        security_subtype: null,
+        is_active: true,
+        issuer: {
+          id: 'ent_issuer',
+          name: 'ACME',
+          source_graph_id: 'kg_acme',
+        },
+        source_graph_id: 'kg_acme',
+      },
+    },
+  ],
+  total_cost_basis_dollars: 1000,
+  total_current_value_dollars: null,
+  active_position_count: 1,
+  created_at: '2026-04-14T00:00:00Z',
+  updated_at: '2026-04-14T00:00:00Z',
+}
+
 describe('InvestorClient', () => {
   let client: InvestorClient
   let mockFetch: ReturnType<typeof vi.fn>
@@ -50,7 +96,7 @@ describe('InvestorClient', () => {
     vi.restoreAllMocks()
   })
 
-  // ── Portfolios ──────────────────────────────────────────────────────
+  // ── Portfolios (list / block read) ──────────────────────────────────
 
   describe('listPortfolios', () => {
     it('returns the paginated portfolio list', async () => {
@@ -79,87 +125,108 @@ describe('InvestorClient', () => {
     })
   })
 
-  describe('getPortfolio', () => {
+  describe('getPortfolioBlock', () => {
     it('returns null when not found', async () => {
-      mockFetch.mockResolvedValueOnce(gqlResponse({ portfolio: null }))
-      expect(await client.getPortfolio('graph_1', 'port_x')).toBeNull()
+      mockFetch.mockResolvedValueOnce(gqlResponse({ portfolioBlock: null }))
+      expect(await client.getPortfolioBlock('graph_1', 'port_x')).toBeNull()
+    })
+
+    it('returns the molecule envelope when found', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          portfolioBlock: {
+            id: 'port_1',
+            name: 'Seed Fund I',
+            description: null,
+            strategy: 'early-stage',
+            inceptionDate: '2024-01-01',
+            baseCurrency: 'USD',
+            owner: { id: 'ent_owner', name: 'FO', sourceGraphId: null },
+            positions: [],
+            totalCostBasisDollars: 0,
+            totalCurrentValueDollars: null,
+            activePositionCount: 0,
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+          },
+        })
+      )
+      const block = await client.getPortfolioBlock('graph_1', 'port_1')
+      expect(block?.id).toBe('port_1')
+      expect(block?.owner?.name).toBe('FO')
+      expect(block?.positions).toEqual([])
     })
   })
 
-  describe('createPortfolio', () => {
-    it('converts the snake_case envelope result into a camelCase portfolio', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-portfolio', {
-          id: 'port_new',
-          name: 'New Fund',
-          description: null,
-          strategy: null,
-          inception_date: '2026-01-01',
-          base_currency: 'USD',
-          created_at: '2026-04-14T00:00:00Z',
-          updated_at: '2026-04-14T00:00:00Z',
-        })
-      )
-      const portfolio = await client.createPortfolio('graph_1', { name: 'New Fund' })
-      expect(portfolio.id).toBe('port_new')
-      expect(portfolio.name).toBe('New Fund')
-      expect(portfolio.inceptionDate).toBe('2026-01-01')
-      expect(portfolio.baseCurrency).toBe('USD')
-      expect(portfolio.createdAt).toBe('2026-04-14T00:00:00Z')
+  // ── Portfolio Block writes ──────────────────────────────────────────
+
+  describe('createPortfolioBlock', () => {
+    it('converts the snake_case envelope result into a camelCase block', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-portfolio-block', sampleBlockResult))
+      const block = await client.createPortfolioBlock('graph_1', {
+        portfolio: { name: 'New Fund', strategy: 'growth' },
+        positions: [{ security_id: 'sec_1', quantity: 100, cost_basis: 100000 }],
+      })
+      expect(block.id).toBe('port_new')
+      expect(block.baseCurrency).toBe('USD')
+      expect(block.owner?.name).toBe('Family Office')
+      expect(block.positions).toHaveLength(1)
+      expect(block.positions[0].quantityType).toBe('shares')
+      expect(block.positions[0].security.issuer?.sourceGraphId).toBe('kg_acme')
+      expect(block.activePositionCount).toBe(1)
     })
 
-    it('POSTs to the roboinvestor operations URL', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-portfolio', {
-          id: 'port_new',
-          name: 'New Fund',
-          description: null,
-          strategy: null,
-          inception_date: null,
-          base_currency: 'USD',
-          created_at: '2026-04-14T00:00:00Z',
-          updated_at: '2026-04-14T00:00:00Z',
-        })
-      )
-      await client.createPortfolio('graph_42', { name: 'New Fund' })
+    it('POSTs to the create-portfolio-block operation URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-portfolio-block', sampleBlockResult))
+      await client.createPortfolioBlock('graph_42', {
+        portfolio: { name: 'New Fund' },
+      })
       const req = mockFetch.mock.calls[0][0] as Request
       expect(req.url).toBe(
-        'http://localhost:8000/extensions/roboinvestor/graph_42/operations/create-portfolio'
+        'http://localhost:8000/extensions/roboinvestor/graph_42/operations/create-portfolio-block'
       )
       expect(req.method).toBe('POST')
     })
   })
 
-  describe('updatePortfolio', () => {
+  describe('updatePortfolioBlock', () => {
     it('merges the portfolioId into the body and converts the result', async () => {
       mockFetch.mockResolvedValueOnce(
-        envelopeResponse('update-portfolio', {
-          id: 'port_1',
-          name: 'Renamed',
-          description: null,
-          strategy: null,
-          inception_date: null,
-          base_currency: 'USD',
-          created_at: '2024-01-01T00:00:00Z',
-          updated_at: '2026-04-14T00:00:00Z',
+        envelopeResponse('update-portfolio-block', {
+          ...sampleBlockResult,
+          name: 'Renamed Fund',
         })
       )
-      const result = await client.updatePortfolio('graph_1', 'port_1', { name: 'Renamed' })
-      expect(result.name).toBe('Renamed')
-      expect(result.baseCurrency).toBe('USD')
-      expect(result.updatedAt).toBe('2026-04-14T00:00:00Z')
+      const block = await client.updatePortfolioBlock('graph_1', 'port_1', {
+        portfolio: { name: 'Renamed Fund' },
+        positions: { dispose: [{ id: 'pos_old' }] },
+      })
+      expect(block.name).toBe('Renamed Fund')
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
       expect(body.portfolio_id).toBe('port_1')
-      expect(body.name).toBe('Renamed')
+      expect(body.portfolio.name).toBe('Renamed Fund')
+      expect(body.positions.dispose[0].id).toBe('pos_old')
     })
   })
 
-  describe('deletePortfolio', () => {
-    it('returns deleted: true', async () => {
-      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-portfolio', { deleted: true }))
-      const result = await client.deletePortfolio('graph_1', 'port_1')
+  describe('deletePortfolioBlock', () => {
+    it('returns deleted: true and does not send confirm flag by default', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-portfolio-block', { deleted: true }))
+      const result = await client.deletePortfolioBlock('graph_1', 'port_1')
       expect(result.deleted).toBe(true)
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.portfolio_id).toBe('port_1')
+      expect(body.confirm_active_positions).toBe(false)
+    })
+
+    it('forwards confirmActivePositions when set', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('delete-portfolio-block', { deleted: true }))
+      await client.deletePortfolioBlock('graph_1', 'port_1', { confirmActivePositions: true })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.confirm_active_positions).toBe(true)
     })
   })
 
@@ -218,7 +285,7 @@ describe('InvestorClient', () => {
     })
   })
 
-  // ── Positions ───────────────────────────────────────────────────────
+  // ── Positions (read-only) ───────────────────────────────────────────
 
   describe('listPositions', () => {
     it('returns positions with pagination', async () => {
@@ -255,51 +322,6 @@ describe('InvestorClient', () => {
       )
       const list = await client.listPositions('graph_1')
       expect(list?.positions).toHaveLength(1)
-    })
-  })
-
-  describe('createPosition', () => {
-    it('converts the snake_case envelope result into a camelCase position', async () => {
-      mockFetch.mockResolvedValueOnce(
-        envelopeResponse('create-position', {
-          id: 'pos_new',
-          portfolio_id: 'port_1',
-          security_id: 'sec_1',
-          security_name: 'Series A Preferred',
-          entity_name: 'ACME',
-          quantity: 100,
-          quantity_type: 'shares',
-          cost_basis: 100000,
-          cost_basis_dollars: 1000,
-          currency: 'USD',
-          current_value: null,
-          current_value_dollars: null,
-          valuation_date: null,
-          valuation_source: null,
-          acquisition_date: '2026-01-01',
-          disposition_date: null,
-          status: 'active',
-          notes: null,
-          created_at: '2026-04-14T00:00:00Z',
-          updated_at: '2026-04-14T00:00:00Z',
-        })
-      )
-      const position = await client.createPosition('graph_1', {
-        portfolio_id: 'port_1',
-        security_id: 'sec_1',
-        quantity: 100,
-      })
-      expect(position.id).toBe('pos_new')
-      expect(position.portfolioId).toBe('port_1')
-      expect(position.securityId).toBe('sec_1')
-      expect(position.securityName).toBe('Series A Preferred')
-      expect(position.entityName).toBe('ACME')
-      expect(position.quantityType).toBe('shares')
-      expect(position.costBasis).toBe(100000)
-      expect(position.costBasisDollars).toBe(1000)
-      expect(position.acquisitionDate).toBe('2026-01-01')
-      expect(position.currentValue).toBeNull()
-      expect(position.status).toBe('active')
     })
   })
 
