@@ -1801,6 +1801,64 @@ export type ListLedgerAccountsQuery = {
   } | null
 }
 
+export type GetLedgerAgentQueryVariables = Exact<{
+  id: Scalars['String']['input']
+}>
+
+export type GetLedgerAgentQuery = {
+  agent: {
+    id: string
+    agentType: string
+    name: string
+    legalName: string | null
+    taxId: string | null
+    registrationNumber: string | null
+    duns: string | null
+    lei: string | null
+    email: string | null
+    phone: string | null
+    address: any | null
+    source: string
+    externalId: string | null
+    isActive: boolean
+    is1099Recipient: boolean
+    createdAt: any | null
+    updatedAt: any | null
+    createdBy: string | null
+  } | null
+}
+
+export type ListLedgerAgentsQueryVariables = Exact<{
+  agentType: InputMaybe<Scalars['String']['input']>
+  source: InputMaybe<Scalars['String']['input']>
+  isActive?: InputMaybe<Scalars['Boolean']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+}>
+
+export type ListLedgerAgentsQuery = {
+  agents: Array<{
+    id: string
+    agentType: string
+    name: string
+    legalName: string | null
+    taxId: string | null
+    registrationNumber: string | null
+    duns: string | null
+    lei: string | null
+    email: string | null
+    phone: string | null
+    address: any | null
+    source: string
+    externalId: string | null
+    isActive: boolean
+    is1099Recipient: boolean
+    createdAt: any | null
+    updatedAt: any | null
+    createdBy: string | null
+  }>
+}
+
 export type GetLedgerClosingBookStructuresQueryVariables = Exact<{ [key: string]: never }>
 
 export type GetLedgerClosingBookStructuresQuery = {
@@ -1916,6 +1974,78 @@ export type GetLedgerEntityQuery = {
     createdAt: string | null
     updatedAt: string | null
   } | null
+}
+
+export type GetLedgerEventBlockQueryVariables = Exact<{
+  id: Scalars['String']['input']
+}>
+
+export type GetLedgerEventBlockQuery = {
+  eventBlock: {
+    id: string
+    eventType: string
+    eventCategory: string
+    eventClass: string
+    status: string
+    occurredAt: any
+    effectiveAt: any | null
+    source: string
+    externalId: string | null
+    externalUrl: string | null
+    amount: number | null
+    currency: string
+    description: string | null
+    metadata: any
+    dimensionIds: Array<string>
+    agentId: string | null
+    resourceType: string | null
+    resourceElementId: string | null
+    replacedByEventId: string | null
+    replacesEventId: string | null
+    obligatedByEventId: string | null
+    dischargesEventId: string | null
+    createdAt: any
+    createdBy: string
+  } | null
+}
+
+export type ListLedgerEventBlocksQueryVariables = Exact<{
+  eventType: InputMaybe<Scalars['String']['input']>
+  eventCategory: InputMaybe<Scalars['String']['input']>
+  status: InputMaybe<Scalars['String']['input']>
+  agentId: InputMaybe<Scalars['String']['input']>
+  source: InputMaybe<Scalars['String']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+}>
+
+export type ListLedgerEventBlocksQuery = {
+  eventBlocks: Array<{
+    id: string
+    eventType: string
+    eventCategory: string
+    eventClass: string
+    status: string
+    occurredAt: any
+    effectiveAt: any | null
+    source: string
+    externalId: string | null
+    externalUrl: string | null
+    amount: number | null
+    currency: string
+    description: string | null
+    metadata: any
+    dimensionIds: Array<string>
+    agentId: string | null
+    resourceType: string | null
+    resourceElementId: string | null
+    replacedByEventId: string | null
+    replacesEventId: string | null
+    obligatedByEventId: string | null
+    dischargesEventId: string | null
+    createdAt: any
+    createdBy: string
+  }>
 }
 
 export type GetLedgerFiscalCalendarQueryVariables = Exact<{ [key: string]: never }>
@@ -3900,6 +4030,170 @@ export const ListLedgerAccountsDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerAccountsQuery, ListLedgerAccountsQueryVariables>
+export const GetLedgerAgentDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLedgerAgent' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'agent' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agentType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'legalName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'registrationNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'duns' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lei' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'phone' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'address' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'is1099Recipient' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLedgerAgentQuery, GetLedgerAgentQueryVariables>
+export const ListLedgerAgentsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerAgents' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'agentType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'isActive' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          defaultValue: { kind: 'BooleanValue', value: true },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '50' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'agents' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'agentType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'agentType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'source' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'isActive' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'isActive' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agentType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'legalName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'registrationNumber' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'duns' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lei' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'phone' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'address' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'is1099Recipient' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLedgerAgentsQuery, ListLedgerAgentsQueryVariables>
 export const GetLedgerClosingBookStructuresDocument = {
   kind: 'Document',
   definitions: [
@@ -4198,6 +4492,201 @@ export const GetLedgerEntityDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLedgerEntityQuery, GetLedgerEntityQueryVariables>
+export const GetLedgerEventBlockDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLedgerEventBlock' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'eventBlock' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'eventType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'eventCategory' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'eventClass' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'occurredAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'effectiveAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'externalUrl' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'metadata' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dimensionIds' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'resourceType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'resourceElementId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'replacedByEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'replacesEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'obligatedByEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dischargesEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLedgerEventBlockQuery, GetLedgerEventBlockQueryVariables>
+export const ListLedgerEventBlocksDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerEventBlocks' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'eventType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'eventCategory' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'agentId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '50' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'eventBlocks' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'eventType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'eventType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'eventCategory' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'eventCategory' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'status' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'agentId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'agentId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'source' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'eventType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'eventCategory' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'eventClass' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'occurredAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'effectiveAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'externalUrl' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'metadata' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dimensionIds' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'resourceType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'resourceElementId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'replacedByEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'replacesEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'obligatedByEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dischargesEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLedgerEventBlocksQuery, ListLedgerEventBlocksQueryVariables>
 export const GetLedgerFiscalCalendarDocument = {
   kind: 'Document',
   definitions: [

@@ -107,8 +107,10 @@ import {
   GetInformationBlockDocument,
   GetLedgerAccountRollupsDocument,
   GetLedgerAccountTreeDocument,
+  GetLedgerAgentDocument,
   GetLedgerClosingBookStructuresDocument,
   GetLedgerEntityDocument,
+  GetLedgerEventBlockDocument,
   GetLedgerFiscalCalendarDocument,
   GetLedgerMappedTrialBalanceDocument,
   GetLedgerMappingCoverageDocument,
@@ -125,8 +127,10 @@ import {
   GetLedgerTrialBalanceDocument,
   ListInformationBlocksDocument,
   ListLedgerAccountsDocument,
+  ListLedgerAgentsDocument,
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
+  ListLedgerEventBlocksDocument,
   ListLedgerMappingsDocument,
   ListLedgerPublishListsDocument,
   ListLedgerReportsDocument,
@@ -137,8 +141,10 @@ import {
   type GetInformationBlockQuery,
   type GetLedgerAccountRollupsQuery,
   type GetLedgerAccountTreeQuery,
+  type GetLedgerAgentQuery,
   type GetLedgerClosingBookStructuresQuery,
   type GetLedgerEntityQuery,
+  type GetLedgerEventBlockQuery,
   type GetLedgerFiscalCalendarQuery,
   type GetLedgerMappedTrialBalanceQuery,
   type GetLedgerMappingCoverageQuery,
@@ -155,8 +161,10 @@ import {
   type GetLedgerTrialBalanceQuery,
   type ListInformationBlocksQuery,
   type ListLedgerAccountsQuery,
+  type ListLedgerAgentsQuery,
   type ListLedgerElementsQuery,
   type ListLedgerEntitiesQuery,
+  type ListLedgerEventBlocksQuery,
   type ListLedgerMappingsQuery,
   type ListLedgerPublishListsQuery,
   type ListLedgerReportsQuery,
@@ -191,6 +199,12 @@ export type LedgerMappedTrialBalance = NonNullable<
 export type LedgerTransactionList = NonNullable<ListLedgerTransactionsQuery['transactions']>
 export type LedgerTransactionListItem = LedgerTransactionList['transactions'][number]
 export type LedgerTransaction = NonNullable<GetLedgerTransactionQuery['transaction']>
+
+export type LedgerEventBlock = ListLedgerEventBlocksQuery['eventBlocks'][number]
+export type LedgerEventBlockDetail = NonNullable<GetLedgerEventBlockQuery['eventBlock']>
+
+export type LedgerAgent = ListLedgerAgentsQuery['agents'][number]
+export type LedgerAgentDetail = NonNullable<GetLedgerAgentQuery['agent']>
 
 export type LedgerReportingTaxonomy = NonNullable<
   GetLedgerReportingTaxonomyQuery['reportingTaxonomy']
@@ -574,6 +588,98 @@ export class LedgerClient {
       { transactionId },
       'Get transaction',
       (data) => data.transaction
+    )
+  }
+
+  // ── Event Blocks (Inbox) ────────────────────────────────────────────
+
+  /**
+   * List captured event blocks for the inbox surface.
+   *
+   * Pass `status: 'captured'` for the default un-reviewed view. Use
+   * `eventType` filters like `'invoice_issued'` / `'bill_received'` to
+   * narrow by source class. Approve/reject via `updateEventBlock`.
+   */
+  async listEventBlocks(
+    graphId: string,
+    options?: {
+      eventType?: string
+      eventCategory?: string
+      status?: string
+      agentId?: string
+      source?: string
+      limit?: number
+      offset?: number
+    }
+  ): Promise<LedgerEventBlock[]> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerEventBlocksDocument,
+      {
+        eventType: options?.eventType ?? null,
+        eventCategory: options?.eventCategory ?? null,
+        status: options?.status ?? null,
+        agentId: options?.agentId ?? null,
+        source: options?.source ?? null,
+        limit: options?.limit ?? 50,
+        offset: options?.offset ?? 0,
+      },
+      'List event blocks',
+      (data) => data.eventBlocks
+    )
+  }
+
+  /** Get event block detail (carries the metadata blob with nested entries). */
+  async getEventBlock(graphId: string, eventId: string): Promise<LedgerEventBlockDetail | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerEventBlockDocument,
+      { id: eventId },
+      'Get event block',
+      (data) => data.eventBlock
+    )
+  }
+
+  // ── Agents (REA counterparties) ─────────────────────────────────────
+
+  /**
+   * List agents — REA-aligned counterparties (customers, vendors,
+   * employees). Defaults to active agents only; pass `isActive: null`
+   * to include deactivated ones.
+   */
+  async listAgents(
+    graphId: string,
+    options?: {
+      agentType?: string
+      source?: string
+      isActive?: boolean | null
+      limit?: number
+      offset?: number
+    }
+  ): Promise<LedgerAgent[]> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerAgentsDocument,
+      {
+        agentType: options?.agentType ?? null,
+        source: options?.source ?? null,
+        isActive: options?.isActive === undefined ? true : options.isActive,
+        limit: options?.limit ?? 50,
+        offset: options?.offset ?? 0,
+      },
+      'List agents',
+      (data) => data.agents
+    )
+  }
+
+  /** Get agent detail by id. */
+  async getAgent(graphId: string, agentId: string): Promise<LedgerAgentDetail | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerAgentDocument,
+      { id: agentId },
+      'Get agent',
+      (data) => data.agent
     )
   }
 
