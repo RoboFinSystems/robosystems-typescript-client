@@ -441,6 +441,221 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listEventBlocks', () => {
+    it('returns the eventBlocks array', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          eventBlocks: [
+            {
+              id: 'evt_1',
+              eventType: 'invoice_issued',
+              eventCategory: 'sales',
+              eventClass: 'Receivable',
+              status: 'captured',
+              occurredAt: '2026-04-15T00:00:00Z',
+              effectiveAt: null,
+              source: 'quickbooks',
+              externalId: 'qb_inv_1',
+              externalUrl: null,
+              amount: 50000,
+              currency: 'USD',
+              description: 'Invoice #1001',
+              metadata: { entries: [] },
+              dimensionIds: [],
+              agentId: 'agt_1',
+              resourceType: null,
+              resourceElementId: null,
+              replacedByEventId: null,
+              replacesEventId: null,
+              obligatedByEventId: null,
+              dischargesEventId: null,
+              createdAt: '2026-04-15T01:00:00Z',
+              createdBy: 'sync',
+            },
+          ],
+        })
+      )
+      const events = await client.listEventBlocks('graph_1', { status: 'captured' })
+      expect(events).toHaveLength(1)
+      expect(events[0].eventType).toBe('invoice_issued')
+      expect(events[0].agentId).toBe('agt_1')
+    })
+
+    it('forwards filter args as GraphQL variables', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ eventBlocks: [] }))
+      await client.listEventBlocks('graph_1', {
+        eventType: 'bill_received',
+        eventCategory: 'purchase',
+        status: 'captured',
+        agentId: 'agt_2',
+        source: 'quickbooks',
+        limit: 25,
+        offset: 50,
+      })
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toMatchObject({
+        eventType: 'bill_received',
+        eventCategory: 'purchase',
+        status: 'captured',
+        agentId: 'agt_2',
+        source: 'quickbooks',
+        limit: 25,
+        offset: 50,
+      })
+    })
+
+    it('defaults isActive-equivalent filters to nulls and pagination to 50/0', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ eventBlocks: [] }))
+      await client.listEventBlocks('graph_1')
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toMatchObject({
+        eventType: null,
+        status: null,
+        limit: 50,
+        offset: 0,
+      })
+    })
+  })
+
+  describe('getEventBlock', () => {
+    it('returns the event block detail', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          eventBlock: {
+            id: 'evt_1',
+            eventType: 'invoice_issued',
+            eventCategory: 'sales',
+            eventClass: 'Receivable',
+            status: 'captured',
+            occurredAt: '2026-04-15T00:00:00Z',
+            effectiveAt: null,
+            source: 'quickbooks',
+            externalId: 'qb_inv_1',
+            externalUrl: null,
+            amount: 50000,
+            currency: 'USD',
+            description: 'Invoice #1001',
+            metadata: {
+              entries: [
+                {
+                  memo: 'Sale to Acme',
+                  posting_date: '2026-04-15',
+                  line_items: [
+                    { element_external_id: '11000', debit_amount: 500, credit_amount: 0 },
+                    { element_external_id: '40000', debit_amount: 0, credit_amount: 500 },
+                  ],
+                },
+              ],
+            },
+            dimensionIds: [],
+            agentId: 'agt_1',
+            resourceType: null,
+            resourceElementId: null,
+            replacedByEventId: null,
+            replacesEventId: null,
+            obligatedByEventId: null,
+            dischargesEventId: null,
+            createdAt: '2026-04-15T01:00:00Z',
+            createdBy: 'sync',
+          },
+        })
+      )
+      const evt = await client.getEventBlock('graph_1', 'evt_1')
+      expect(evt?.id).toBe('evt_1')
+      const meta = evt?.metadata as { entries: Array<{ line_items: unknown[] }> }
+      expect(meta.entries).toHaveLength(1)
+      expect(meta.entries[0].line_items).toHaveLength(2)
+    })
+
+    it('returns null when event block is missing', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ eventBlock: null }))
+      expect(await client.getEventBlock('graph_1', 'evt_missing')).toBeNull()
+    })
+  })
+
+  describe('listAgents', () => {
+    it('returns the agents array', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          agents: [
+            {
+              id: 'agt_1',
+              agentType: 'customer',
+              name: 'Acme Corp',
+              legalName: 'Acme Corporation Inc.',
+              taxId: '12-3456789',
+              registrationNumber: null,
+              duns: null,
+              lei: null,
+              email: 'billing@acme.test',
+              phone: '+1 555 0100',
+              address: { Line1: '1 Main St' },
+              source: 'quickbooks',
+              externalId: 'qb_cust_1',
+              isActive: true,
+              is1099Recipient: false,
+              createdAt: '2026-04-01T00:00:00Z',
+              updatedAt: '2026-04-01T00:00:00Z',
+              createdBy: 'sync',
+            },
+          ],
+        })
+      )
+      const agents = await client.listAgents('graph_1', { agentType: 'customer' })
+      expect(agents).toHaveLength(1)
+      expect(agents[0].name).toBe('Acme Corp')
+    })
+
+    it('defaults isActive to true and forwards explicit overrides', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ agents: [] }))
+      await client.listAgents('graph_1')
+      let body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables.isActive).toBe(true)
+
+      mockFetch.mockResolvedValueOnce(gqlResponse({ agents: [] }))
+      await client.listAgents('graph_1', { isActive: null })
+      body = JSON.parse((mockFetch.mock.calls[1][1] as RequestInit).body as string)
+      expect(body.variables.isActive).toBeNull()
+    })
+  })
+
+  describe('getAgent', () => {
+    it('returns the agent detail', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          agent: {
+            id: 'agt_1',
+            agentType: 'vendor',
+            name: 'Office Supplies Co',
+            legalName: null,
+            taxId: null,
+            registrationNumber: null,
+            duns: null,
+            lei: null,
+            email: null,
+            phone: null,
+            address: null,
+            source: 'quickbooks',
+            externalId: 'qb_vend_1',
+            isActive: true,
+            is1099Recipient: false,
+            createdAt: '2026-04-01T00:00:00Z',
+            updatedAt: '2026-04-01T00:00:00Z',
+            createdBy: 'sync',
+          },
+        })
+      )
+      const agt = await client.getAgent('graph_1', 'agt_1')
+      expect(agt?.agentType).toBe('vendor')
+      expect(agt?.name).toBe('Office Supplies Co')
+    })
+
+    it('returns null when agent is missing', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ agent: null }))
+      expect(await client.getAgent('graph_1', 'agt_missing')).toBeNull()
+    })
+  })
+
   describe('getFiscalCalendar', () => {
     it('returns the calendar state', async () => {
       mockFetch.mockResolvedValueOnce(
