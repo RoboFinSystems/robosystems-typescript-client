@@ -214,9 +214,36 @@ export type ElementList = {
 }
 
 export type EntityLite = {
-  id: Scalars['String']['output']
+  id: Scalars['ID']['output']
   name: Scalars['String']['output']
   sourceGraphId: Maybe<Scalars['String']['output']>
+}
+
+export type EventBlock = {
+  agentId: Maybe<Scalars['String']['output']>
+  amount: Maybe<Scalars['Int']['output']>
+  createdAt: Scalars['DateTime']['output']
+  createdBy: Scalars['String']['output']
+  currency: Scalars['String']['output']
+  description: Maybe<Scalars['String']['output']>
+  dimensionIds: Array<Scalars['String']['output']>
+  dischargesEventId: Maybe<Scalars['String']['output']>
+  effectiveAt: Maybe<Scalars['DateTime']['output']>
+  eventCategory: Scalars['String']['output']
+  eventClass: Scalars['String']['output']
+  eventType: Scalars['String']['output']
+  externalId: Maybe<Scalars['String']['output']>
+  externalUrl: Maybe<Scalars['String']['output']>
+  id: Scalars['String']['output']
+  metadata: Scalars['JSON']['output']
+  obligatedByEventId: Maybe<Scalars['String']['output']>
+  occurredAt: Scalars['DateTime']['output']
+  replacedByEventId: Maybe<Scalars['String']['output']>
+  replacesEventId: Maybe<Scalars['String']['output']>
+  resourceElementId: Maybe<Scalars['String']['output']>
+  resourceType: Maybe<Scalars['String']['output']>
+  source: Scalars['String']['output']
+  status: Scalars['String']['output']
 }
 
 export type FactRow = {
@@ -794,7 +821,7 @@ export type PortfolioBlock = {
   baseCurrency: Scalars['String']['output']
   createdAt: Scalars['DateTime']['output']
   description: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
+  id: Scalars['ID']['output']
   inceptionDate: Maybe<Scalars['Date']['output']>
   name: Scalars['String']['output']
   owner: Maybe<EntityLite>
@@ -837,7 +864,7 @@ export type PositionBlock = {
   acquisitionDate: Maybe<Scalars['Date']['output']>
   costBasisDollars: Scalars['Float']['output']
   currentValueDollars: Maybe<Scalars['Float']['output']>
-  id: Scalars['String']['output']
+  id: Scalars['ID']['output']
   notes: Maybe<Scalars['String']['output']>
   quantity: Scalars['Float']['output']
   quantityType: Scalars['String']['output']
@@ -897,6 +924,8 @@ export type Query = {
   elements: Maybe<ElementList>
   entities: Array<LedgerEntity>
   entity: Maybe<LedgerEntity>
+  eventBlock: Maybe<EventBlock>
+  eventBlocks: Array<EventBlock>
   fiscalCalendar: Maybe<FiscalCalendar>
   hello: Scalars['String']['output']
   holdings: Maybe<HoldingsList>
@@ -981,6 +1010,20 @@ export type QueryElementsArgs = {
 
 export type QueryEntitiesArgs = {
   source?: InputMaybe<Scalars['String']['input']>
+}
+
+export type QueryEventBlockArgs = {
+  id: Scalars['String']['input']
+}
+
+export type QueryEventBlocksArgs = {
+  agentId?: InputMaybe<Scalars['String']['input']>
+  eventCategory?: InputMaybe<Scalars['String']['input']>
+  eventType?: InputMaybe<Scalars['String']['input']>
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+  source?: InputMaybe<Scalars['String']['input']>
+  status?: InputMaybe<Scalars['String']['input']>
 }
 
 export type QueryHoldingsArgs = {
@@ -1277,7 +1320,7 @@ export type SecurityList = {
 }
 
 export type SecurityLite = {
-  id: Scalars['String']['output']
+  id: Scalars['ID']['output']
   isActive: Scalars['Boolean']['output']
   issuer: Maybe<EntityLite>
   name: Scalars['String']['output']

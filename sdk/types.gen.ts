@@ -7154,15 +7154,21 @@ export type SuccessResponse = {
  */
 export type SyncConnectionRequest = {
     /**
-     * Full Sync
+     * Full Rebuild
      *
-     * Perform full sync vs incremental
+     * Pull complete history from the provider, ignoring lookback window. Takes precedence over since_date.
      */
-    full_sync?: boolean;
+    full_rebuild?: boolean;
+    /**
+     * Since Date
+     *
+     * Sync data from this date forward (ISO 8601). Ignored if full_rebuild=True. If neither set, provider default applies (e.g., QuickBooks: 60 days).
+     */
+    since_date?: string | null;
     /**
      * Sync Options
      *
-     * Provider-specific sync options
+     * Provider-specific sync options (escape hatch for fields not exposed at the top level).
      */
     sync_options?: {
         [key: string]: unknown;
