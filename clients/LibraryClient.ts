@@ -35,8 +35,10 @@ import {
   GetLibraryElementClassificationsDocument,
   GetLibraryElementDocument,
   GetLibraryElementEquivalentsDocument,
+  GetLibraryStructureDocument,
   GetLibraryTaxonomyDocument,
   ListLibraryElementsDocument,
+  ListLibraryStructuresDocument,
   ListLibraryTaxonomiesDocument,
   ListLibraryTaxonomyArcsDocument,
   SearchLibraryElementsDocument,
@@ -44,8 +46,10 @@ import {
   type GetLibraryElementClassificationsQuery,
   type GetLibraryElementEquivalentsQuery,
   type GetLibraryElementQuery,
+  type GetLibraryStructureQuery,
   type GetLibraryTaxonomyQuery,
   type ListLibraryElementsQuery,
+  type ListLibraryStructuresQuery,
   type ListLibraryTaxonomiesQuery,
   type ListLibraryTaxonomyArcsQuery,
   type SearchLibraryElementsQuery,
@@ -58,6 +62,9 @@ import {
 
 export type LibraryTaxonomy = ListLibraryTaxonomiesQuery['libraryTaxonomies'][number]
 export type LibraryTaxonomyDetail = NonNullable<GetLibraryTaxonomyQuery['libraryTaxonomy']>
+
+export type LibraryStructure = ListLibraryStructuresQuery['libraryStructures'][number]
+export type LibraryStructureDetail = NonNullable<GetLibraryStructureQuery['libraryStructure']>
 
 export type LibraryElement = ListLibraryElementsQuery['libraryElements'][number]
 export type LibraryElementDetail = NonNullable<GetLibraryElementQuery['libraryElement']>
@@ -97,8 +104,16 @@ export interface SearchLibraryElementsOptions {
   limit?: number
 }
 
+export interface ListLibraryStructuresOptions {
+  taxonomyId?: string
+  /** Hierarchy kind: presentation | calculation | definition | dimension. */
+  structureType?: string
+}
+
 export interface ListLibraryTaxonomyArcsOptions {
   associationType?: string
+  /** Scope to one structure (one presentation/calculation hierarchy). */
+  structureId?: string
   limit?: number
   offset?: number
 }
@@ -189,6 +204,42 @@ export class LibraryClient {
     )
   }
 
+  // ── Structures ──────────────────────────────────────────────────────
+
+  /**
+   * List the structures (presentation/calculation/definition/dimension
+   * hierarchies) contributed by a taxonomy. Each structure groups arcs
+   * by ``arcRoleUri`` — for FAC presentation that's BS-classified,
+   * IS-multistep, CashFlow, etc. Pair with ``listLibraryTaxonomyArcs``
+   * + ``structureId`` to load the arcs of one structure at a time.
+   */
+  async listLibraryStructures(
+    graphId: string,
+    options?: ListLibraryStructuresOptions
+  ): Promise<LibraryStructure[]> {
+    return this.gqlQuery(
+      graphId,
+      ListLibraryStructuresDocument,
+      {
+        taxonomyId: options?.taxonomyId ?? null,
+        structureType: options?.structureType ?? null,
+      },
+      'List library structures',
+      (data) => data.libraryStructures
+    )
+  }
+
+  /** Fetch one structure's metadata by id. Returns null when not found. */
+  async getLibraryStructure(graphId: string, id: string): Promise<LibraryStructureDetail | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLibraryStructureDocument,
+      { id },
+      'Get library structure',
+      (data) => data.libraryStructure
+    )
+  }
+
   // ── Elements ────────────────────────────────────────────────────────
 
   /** List library elements with filters + pagination. */
@@ -276,6 +327,7 @@ export class LibraryClient {
       {
         taxonomyId,
         associationType: options?.associationType ?? null,
+        structureId: options?.structureId ?? null,
         limit: options?.limit ?? 200,
         offset: options?.offset ?? 0,
       },

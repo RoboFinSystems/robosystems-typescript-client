@@ -108,6 +108,67 @@ describe('LibraryClient', () => {
     })
   })
 
+  // ── Structures ──────────────────────────────────────────────────────
+
+  describe('listLibraryStructures', () => {
+    const sampleStructure = {
+      id: 'str_bs_classified',
+      name: 'FAC — Balance Sheet — Classified',
+      structureType: 'presentation',
+      taxonomyId: 'tax_fac_presentation_v1',
+      roleUri: 'http://.../BS-classified',
+      isActive: true,
+    }
+
+    it('returns the structure list scoped to a taxonomy', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ libraryStructures: [sampleStructure] }))
+      const structures = await client.listLibraryStructures(LIBRARY_GRAPH_ID, {
+        taxonomyId: 'tax_fac_presentation_v1',
+      })
+      expect(structures).toHaveLength(1)
+      expect(structures[0].name).toBe('FAC — Balance Sheet — Classified')
+
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.taxonomyId).toBe('tax_fac_presentation_v1')
+      expect(body.variables.structureType).toBeNull()
+    })
+
+    it('forwards structureType filter', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ libraryStructures: [] }))
+      await client.listLibraryStructures(LIBRARY_GRAPH_ID, {
+        structureType: 'calculation',
+      })
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.structureType).toBe('calculation')
+    })
+  })
+
+  describe('getLibraryStructure', () => {
+    it('returns the structure when found', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          libraryStructure: {
+            id: 'str_bs_classified',
+            name: 'FAC — Balance Sheet — Classified',
+            structureType: 'presentation',
+            taxonomyId: 'tax_fac_presentation_v1',
+            roleUri: 'http://.../BS-classified',
+            isActive: true,
+          },
+        })
+      )
+      const structure = await client.getLibraryStructure(LIBRARY_GRAPH_ID, 'str_bs_classified')
+      expect(structure?.name).toBe('FAC — Balance Sheet — Classified')
+    })
+
+    it('returns null when not found', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ libraryStructure: null }))
+      expect(await client.getLibraryStructure(LIBRARY_GRAPH_ID, 'str_missing')).toBeNull()
+    })
+  })
+
   // ── Elements ────────────────────────────────────────────────────────
 
   describe('listLibraryElements', () => {
@@ -184,6 +245,22 @@ describe('LibraryClient', () => {
       expect(result.count).toBe(1)
       expect(result.arcs).toHaveLength(1)
       expect(result.arcs[0].fromElementQname).toBe('fac:CostOfRevenue')
+    })
+
+    it('forwards structureId to scope arcs to one hierarchy', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          libraryTaxonomyArcCount: 0,
+          libraryTaxonomyArcs: [],
+        })
+      )
+      await client.listLibraryTaxonomyArcs(LIBRARY_GRAPH_ID, 'tax_fac_presentation_v1', {
+        structureId: 'str_bs_classified',
+      })
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.structureId).toBe('str_bs_classified')
+      expect(body.variables.taxonomyId).toBe('tax_fac_presentation_v1')
     })
   })
 

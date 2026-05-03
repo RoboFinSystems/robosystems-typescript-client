@@ -1099,6 +1099,8 @@ export type QueryLibraryTaxonomyArgs = {
 }
 
 export type QueryLibraryTaxonomyArcCountArgs = {
+  associationType?: InputMaybe<Scalars['String']['input']>
+  structureId?: InputMaybe<Scalars['ID']['input']>
   taxonomyId: Scalars['ID']['input']
 }
 
@@ -1106,6 +1108,7 @@ export type QueryLibraryTaxonomyArcsArgs = {
   associationType?: InputMaybe<Scalars['String']['input']>
   limit?: Scalars['Int']['input']
   offset?: Scalars['Int']['input']
+  structureId?: InputMaybe<Scalars['ID']['input']>
   taxonomyId: Scalars['ID']['input']
 }
 
@@ -2887,6 +2890,7 @@ export type ListLedgerUnmappedElementsQuery = {
 export type ListLibraryTaxonomyArcsQueryVariables = Exact<{
   taxonomyId: Scalars['ID']['input']
   associationType: InputMaybe<Scalars['String']['input']>
+  structureId: InputMaybe<Scalars['ID']['input']>
   limit?: Scalars['Int']['input']
   offset?: Scalars['Int']['input']
 }>
@@ -3040,6 +3044,37 @@ export type GetLibraryElementQuery = {
     parentId: string | null
     labels: Array<{ role: string; language: string; text: string }>
     references: Array<{ refType: string | null; citation: string; uri: string | null }>
+  } | null
+}
+
+export type ListLibraryStructuresQueryVariables = Exact<{
+  taxonomyId: InputMaybe<Scalars['ID']['input']>
+  structureType: InputMaybe<Scalars['String']['input']>
+}>
+
+export type ListLibraryStructuresQuery = {
+  libraryStructures: Array<{
+    id: string
+    name: string
+    structureType: string
+    taxonomyId: string
+    roleUri: string | null
+    isActive: boolean
+  }>
+}
+
+export type GetLibraryStructureQueryVariables = Exact<{
+  id: Scalars['ID']['input']
+}>
+
+export type GetLibraryStructureQuery = {
+  libraryStructure: {
+    id: string
+    name: string
+    structureType: string
+    taxonomyId: string
+    roleUri: string | null
+    isActive: boolean
   } | null
 }
 
@@ -6935,6 +6970,11 @@ export const ListLibraryTaxonomyArcsDocument = {
         },
         {
           kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'structureId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+        },
+        {
+          kind: 'VariableDefinition',
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
           type: {
             kind: 'NonNullType',
@@ -6964,6 +7004,16 @@ export const ListLibraryTaxonomyArcsDocument = {
                 name: { kind: 'Name', value: 'taxonomyId' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'associationType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'associationType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'structureId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'structureId' } },
+              },
             ],
           },
           {
@@ -6979,6 +7029,11 @@ export const ListLibraryTaxonomyArcsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'associationType' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'associationType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'structureId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'structureId' } },
               },
               {
                 kind: 'Argument',
@@ -7599,6 +7654,107 @@ export const GetLibraryElementDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLibraryElementQuery, GetLibraryElementQueryVariables>
+export const ListLibraryStructuresDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLibraryStructures' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'structureType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryStructures' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'taxonomyId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'taxonomyId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'structureType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'structureType' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'roleUri' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLibraryStructuresQuery, ListLibraryStructuresQueryVariables>
+export const GetLibraryStructureDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLibraryStructure' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'libraryStructure' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'roleUri' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLibraryStructureQuery, GetLibraryStructureQueryVariables>
 export const ListLibraryTaxonomiesDocument = {
   kind: 'Document',
   definitions: [
