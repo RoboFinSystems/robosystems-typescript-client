@@ -2548,10 +2548,18 @@ export type DeleteFileResponse = {
  *
  * Body for the delete-graph operation.
  *
- * Permanently destroys the graph: cancels its subscription immediately, then
- * triggers fast-path deprovisioning (LadybugDB database removed, DynamoDB slot
- * freed, PG records cleaned). Requires `confirm` to equal the URL `graph_id`
- * as a guard against accidental destructive calls.
+ * Permanently destroys the graph and cancels its subscription. Two modes:
+ *
+ * - **Immediate** (default): subscription canceled now (`ends_at = now`) and
+ * fast-path deprovisioning fires within ~10 minutes. Use when you want
+ * the data gone and the slot freed right away.
+ * - **At period end** (`at_period_end=true`): subscription canceled but
+ * `ends_at = current_period_end` so the graph stays usable through the
+ * paid period. The existing suspend → deprovision sensor pipeline tears
+ * it down after the retention window once the period closes.
+ *
+ * Requires `confirm` to equal the URL `graph_id` as a guard against
+ * accidental destructive calls.
  */
 export type DeleteGraphOp = {
     /**
@@ -2560,6 +2568,12 @@ export type DeleteGraphOp = {
      * Must equal the graph_id in the URL — confirms the caller intends to destroy this specific graph.
      */
     confirm: string;
+    /**
+     * At Period End
+     *
+     * If true, defer cancellation and teardown to the end of the current billing period (graph stays usable until then). If false (default), cancel and tear down immediately.
+     */
+    at_period_end?: boolean;
 };
 
 /**
@@ -12310,6 +12324,62 @@ export type CreateRepositorySubscriptionResponses = {
 };
 
 export type CreateRepositorySubscriptionResponse = CreateRepositorySubscriptionResponses[keyof CreateRepositorySubscriptionResponses];
+
+export type CancelRepositorySubscriptionData = {
+    body: CancelSubscriptionRequest;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Repository name (e.g., 'sec', 'industry')
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/subscriptions/cancel';
+};
+
+export type CancelRepositorySubscriptionErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type CancelRepositorySubscriptionError = CancelRepositorySubscriptionErrors[keyof CancelRepositorySubscriptionErrors];
+
+export type CancelRepositorySubscriptionResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type CancelRepositorySubscriptionResponse = CancelRepositorySubscriptionResponses[keyof CancelRepositorySubscriptionResponses];
 
 export type ListTablesData = {
     body?: never;
