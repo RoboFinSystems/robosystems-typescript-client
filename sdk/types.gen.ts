@@ -908,6 +908,31 @@ export type BillingCustomer = {
 };
 
 /**
+ * CancelSubscriptionRequest
+ *
+ * Request to cancel a subscription.
+ *
+ * Default behavior cancels at period end (soft cancel). Pass `immediate=True`
+ * to terminate the subscription right away — this requires `confirm` to equal
+ * the subscription's `resource_id` (e.g. the graph_id) as a guard against
+ * accidental destructive calls.
+ */
+export type CancelSubscriptionRequest = {
+    /**
+     * Immediate
+     *
+     * If true, cancel immediately and trigger fast-path deprovisioning of the underlying resource (within ~10 minutes). If false (default), cancel at the end of the current billing period.
+     */
+    immediate?: boolean;
+    /**
+     * Confirm
+     *
+     * Required when immediate=True. Must equal the subscription's resource_id (e.g. graph_id) to confirm intent.
+     */
+    confirm?: string | null;
+};
+
+/**
  * ChangeTierOp
  *
  * Body for the change-tier operation (supports upgrades and downgrades).
@@ -2516,6 +2541,25 @@ export type DeleteFileResponse = {
      * Whether graph was marked as stale
      */
     graph_marked_stale?: boolean;
+};
+
+/**
+ * DeleteGraphOp
+ *
+ * Body for the delete-graph operation.
+ *
+ * Permanently destroys the graph: cancels its subscription immediately, then
+ * triggers fast-path deprovisioning (LadybugDB database removed, DynamoDB slot
+ * freed, PG records cleaned). Requires `confirm` to equal the URL `graph_id`
+ * as a guard against accidental destructive calls.
+ */
+export type DeleteGraphOp = {
+    /**
+     * Confirm
+     *
+     * Must equal the graph_id in the URL — confirms the caller intends to destroy this specific graph.
+     */
+    confirm: string;
 };
 
 /**
@@ -12917,6 +12961,70 @@ export type OpDeleteSubgraphResponses = {
 
 export type OpDeleteSubgraphResponse = OpDeleteSubgraphResponses[keyof OpDeleteSubgraphResponses];
 
+export type OpDeleteGraphData = {
+    body: DeleteGraphOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/delete-graph';
+};
+
+export type OpDeleteGraphErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpDeleteGraphError = OpDeleteGraphErrors[keyof OpDeleteGraphErrors];
+
+export type OpDeleteGraphResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type OpDeleteGraphResponse = OpDeleteGraphResponses[keyof OpDeleteGraphResponses];
+
 export type OpCreateBackupData = {
     body: BackupCreateRequest;
     headers?: {
@@ -14234,7 +14342,7 @@ export type GetOrgSubscriptionResponses = {
 export type GetOrgSubscriptionResponse = GetOrgSubscriptionResponses[keyof GetOrgSubscriptionResponses];
 
 export type CancelOrgSubscriptionData = {
-    body?: never;
+    body?: CancelSubscriptionRequest;
     path: {
         /**
          * Org Id
