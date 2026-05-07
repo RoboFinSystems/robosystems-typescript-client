@@ -1012,7 +1012,7 @@ describe('LedgerClient', () => {
       const body = JSON.parse(await req.text())
       expect(body.event_type).toBe('journal_entry_recorded')
       expect(body.event_category).toBe('adjustment')
-      expect(body.source).toBe('native')
+      expect(body.source).toBe('manual')
       expect(body.occurred_at).toBe('2026-03-31T00:00:00Z')
       expect(body.apply_handlers).toBe(true)
       expect(body.metadata.posting_date).toBe('2026-03-31')

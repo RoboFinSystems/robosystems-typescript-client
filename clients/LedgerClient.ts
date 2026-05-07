@@ -430,6 +430,13 @@ export interface CreateJournalEntryOptions {
   type?: LedgerEntryType
   status?: 'draft' | 'posted'
   transactionId?: string | null
+  /**
+   * Who fired the event. Defaults to `'manual'` (user-initiated journal
+   * entry). Sync adapters (QuickBooks, Plaid, etc.) override with their
+   * adapter name. Must match the server's CHECK constraint set:
+   * `manual | schedule | system | quickbooks | xero | plaid`.
+   */
+  source?: string
   idempotencyKey?: string | null
 }
 
@@ -1100,6 +1107,8 @@ export class LedgerClient {
    *
    * Routes through `create-event-block` with `event_type='asset_disposed'`.
    * `occurred_at` is required and represents the disposal date.
+   * `source` defaults to `'manual'` (user-initiated disposal); sync
+   * adapters override.
    */
   async disposeSchedule(
     graphId: string,
@@ -1111,12 +1120,13 @@ export class LedgerClient {
       gainLossElementId?: string | null
       memo?: string | null
       reason?: string
+      source?: string
     }
   ): Promise<EventBlockEnvelope> {
     const body: CreateEventBlockRequest = {
       event_type: 'asset_disposed',
       event_category: 'adjustment',
-      source: 'native',
+      source: options.source ?? 'manual',
       occurred_at: options.occurredAt,
       apply_handlers: true,
       metadata: {
@@ -1192,7 +1202,8 @@ export class LedgerClient {
     const body: CreateEventBlockRequest = {
       event_type: 'schedule_entry_due',
       event_category: 'recognition',
-      source: 'scheduled',
+      // Always 'schedule' — this op is schedule-driven by definition.
+      source: 'schedule',
       occurred_at: `${postingDate}T00:00:00Z`,
       apply_handlers: true,
       metadata: {
@@ -1341,7 +1352,7 @@ export class LedgerClient {
     const body: CreateEventBlockRequest = {
       event_type: 'journal_entry_recorded',
       event_category: 'adjustment',
-      source: 'native',
+      source: options.source ?? 'manual',
       occurred_at: `${options.postingDate}T00:00:00Z`,
       apply_handlers: true,
       metadata: {
@@ -1395,7 +1406,8 @@ export class LedgerClient {
    * the original as reversed.
    *
    * Routes through `create-event-block` with
-   * `event_type='journal_entry_reversed'`.
+   * `event_type='journal_entry_reversed'`. `source` defaults to `'manual'`
+   * — sync adapters override.
    */
   async reverseJournalEntry(
     graphId: string,
@@ -1404,13 +1416,14 @@ export class LedgerClient {
       postingDate?: string | null
       memo?: string | null
       reason?: string | null
+      source?: string
     }
   ): Promise<EventBlockEnvelope> {
     const occurredDate = options?.postingDate ?? new Date().toISOString().slice(0, 10)
     const body: CreateEventBlockRequest = {
       event_type: 'journal_entry_reversed',
       event_category: 'adjustment',
-      source: 'native',
+      source: options?.source ?? 'manual',
       occurred_at: `${occurredDate}T00:00:00Z`,
       apply_handlers: true,
       metadata: {
