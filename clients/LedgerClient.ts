@@ -1051,7 +1051,7 @@ export class LedgerClient {
       'Update schedule',
       opUpdateInformationBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return envelope.result ?? {}
   }
 
   /** Permanently delete a schedule (cascades through facts + associations). */
@@ -1064,6 +1064,9 @@ export class LedgerClient {
       'Delete schedule',
       opDeleteInformationBlock({ path: { graph_id: graphId }, body })
     )
+    // DeleteInformationBlockResponse.deleted is `Literal[True] = True` on
+    // the backend, which becomes `deleted?: true` (optional) in the SDK.
+    // The cast bridges that to the public `{ deleted: boolean }` shape.
     return (envelope.result ?? { deleted: true }) as { deleted: boolean }
   }
 
@@ -1105,7 +1108,7 @@ export class LedgerClient {
       'Dispose schedule',
       opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return envelope.result ?? {}
   }
 
   /** Evaluate taxonomy rules against facts in a structure. */
@@ -1183,7 +1186,7 @@ export class LedgerClient {
       'Create closing entry',
       opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return envelope.result ?? {}
   }
 
   // ── Closing book ───────────────────────────────────────────────────
@@ -1341,7 +1344,7 @@ export class LedgerClient {
       'Create journal entry',
       opCreateEventBlock({ path: { graph_id: graphId }, body, headers })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return envelope.result ?? {}
   }
 
   /** Update a draft journal entry. Posted entries are immutable. */
@@ -1400,7 +1403,7 @@ export class LedgerClient {
       'Reverse journal entry',
       opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return envelope.result ?? {}
   }
 
   // ── Event blocks (generic preview + status transitions) ──────────────
@@ -1438,7 +1441,7 @@ export class LedgerClient {
       'Update event block',
       opUpdateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return envelope.result ?? {}
   }
 
   // ── Agents (REA counterparties) ───────────────────────────────────────
@@ -1912,12 +1915,18 @@ export class LedgerClient {
 
   /**
    * Await an SDK-generated `opXxx(...)` call, throw a readable error on
-   * non-2xx, and return the `OperationEnvelope` on success.
+   * non-2xx, and return the parsed envelope on success.
+   *
+   * Generic over the SDK call's response shape so typed ops (e.g.
+   * `opCreateEventBlock`, which returns
+   * `OperationEnvelopeEventBlockEnvelope`) flow through with a typed
+   * `envelope.result` instead of being widened to `unknown`. Untyped
+   * ops continue to land as `OperationEnvelope` automatically.
    */
-  private async callOperation(
+  private async callOperation<T>(
     label: string,
-    call: Promise<{ data?: OperationEnvelope; error?: unknown }>
-  ): Promise<OperationEnvelope> {
+    call: Promise<{ data?: T; error?: unknown }>
+  ): Promise<T> {
     const response = await call
     if (response.error !== undefined) {
       throw new Error(`${label} failed: ${JSON.stringify(response.error)}`)
