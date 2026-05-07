@@ -965,7 +965,7 @@ export const opDeleteSubgraph = <ThrowOnError extends boolean = false>(options: 
 /**
  * Delete Graph
  *
- * Permanently destroys a user graph and cancels its subscription. Two modes via the `at_period_end` body flag: omit it (or pass `false`) to tear down immediately (~10 min); pass `true` to keep the graph usable through the current billing period and tear it down at the period boundary via the existing suspend → deprovision pipeline. Requires `confirm` to equal the URL `graph_id`. Caller must be admin on the graph. Not allowed on shared repositories.
+ * Permanently destroys a user graph and cancels its subscription. Two modes via the `at_period_end` body flag: omit it (or pass `false`) to tear down immediately (~10 min); pass `true` to keep the graph usable through the current billing period and tear it down at the period boundary via the existing suspend → deprovision pipeline. Requires `confirm` to equal the URL `graph_id`. Caller must be both org owner (billing authority) and admin on the graph (operational authority). Not allowed on shared repositories.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

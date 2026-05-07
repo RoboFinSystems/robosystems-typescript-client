@@ -214,8 +214,11 @@ export type ElementList = {
 }
 
 export type EntityLite = {
+  /** Entity ID (`ent_*` ULID). */
   id: Scalars['ID']['output']
+  /** Display name of the entity. */
   name: Scalars['String']['output']
+  /** Tenant graph this entity is anchored to, when known. `null` for entities not yet linked to a graph. */
   sourceGraphId: Maybe<Scalars['String']['output']>
 }
 
@@ -290,28 +293,45 @@ export type FiscalPeriodSummary = {
 }
 
 export type Holding = {
+  /** Issuing entity ID. */
   entityId: Scalars['String']['output']
+  /** Display name of the entity. */
   entityName: Scalars['String']['output']
+  /** Number of distinct active positions backing these holdings. */
   positionCount: Scalars['Int']['output']
+  /** One row per security held in this entity. */
   securities: Array<HoldingSecuritySummary>
+  /** Pre-association tenant graph, when set on the securities. */
   sourceGraphId: Maybe<Scalars['String']['output']>
+  /** Sum of cost basis across all securities, in dollars. */
   totalCostBasisDollars: Scalars['Float']['output']
+  /** Sum of current value across all securities, in dollars. `null` if any security lacks a mark. */
   totalCurrentValueDollars: Maybe<Scalars['Float']['output']>
 }
 
 export type HoldingSecuritySummary = {
+  /** Aggregate cost basis in dollars, summed across all positions. */
   costBasisDollars: Scalars['Float']['output']
+  /** Aggregate current value in dollars, or `null` if any underlying position lacks a mark. */
   currentValueDollars: Maybe<Scalars['Float']['output']>
+  /** Total quantity held in `quantity_type` units. */
   quantity: Scalars['Float']['output']
+  /** Unit basis (`shares`, `units`, `principal`). */
   quantityType: Scalars['String']['output']
+  /** Security ID. */
   securityId: Scalars['String']['output']
+  /** Display name of the security. */
   securityName: Scalars['String']['output']
+  /** Instrument family (e.g. `common_stock`, `warrant`). */
   securityType: Scalars['String']['output']
 }
 
 export type HoldingsList = {
+  /** One row per issuing entity. */
   holdings: Array<Holding>
+  /** Count of entities represented. */
   totalEntities: Scalars['Int']['output']
+  /** Total active positions backing these holdings. */
   totalPositions: Scalars['Int']['output']
 }
 
@@ -806,76 +826,132 @@ export type PeriodSpec = {
 }
 
 export type Portfolio = {
+  /** ISO 4217 currency code used for portfolio-level aggregates. */
   baseCurrency: Scalars['String']['output']
+  /** Row creation timestamp (UTC). */
   createdAt: Scalars['DateTime']['output']
+  /** Free-text description. */
   description: Maybe<Scalars['String']['output']>
+  /** Portfolio ID (`port_*` ULID). */
   id: Scalars['String']['output']
+  /** Date the portfolio was established (YYYY-MM-DD). */
   inceptionDate: Maybe<Scalars['Date']['output']>
+  /** Display name. */
   name: Scalars['String']['output']
+  /** Free-text strategy classification (e.g. `value`, `growth`, `income`). Open vocabulary. */
   strategy: Maybe<Scalars['String']['output']>
+  /** Last-modified timestamp (UTC). */
   updatedAt: Scalars['DateTime']['output']
 }
 
 export type PortfolioBlock = {
+  /** Count of positions with `status='active'`. */
   activePositionCount: Scalars['Int']['output']
+  /** ISO 4217 currency code for portfolio aggregates. */
   baseCurrency: Scalars['String']['output']
+  /** Row creation timestamp (UTC). */
   createdAt: Scalars['DateTime']['output']
+  /** Free-text description. */
   description: Maybe<Scalars['String']['output']>
+  /** Portfolio ID (`port_*` ULID). */
   id: Scalars['ID']['output']
+  /** Date the portfolio was established. */
   inceptionDate: Maybe<Scalars['Date']['output']>
+  /** Display name. */
   name: Scalars['String']['output']
+  /** Embedded owning entity, when set. `null` for unattributed portfolios. */
   owner: Maybe<EntityLite>
+  /** All positions in this portfolio, including disposed ones (filter by `status` for active-only display). */
   positions: Array<PositionBlock>
+  /** Free-text strategy classification. */
   strategy: Maybe<Scalars['String']['output']>
+  /** Sum of `cost_basis_dollars` across every position. */
   totalCostBasisDollars: Scalars['Float']['output']
+  /** Sum of `current_value_dollars` across every position. `null` when any active position lacks a mark. */
   totalCurrentValueDollars: Maybe<Scalars['Float']['output']>
+  /** Last-modified timestamp (UTC). */
   updatedAt: Scalars['DateTime']['output']
 }
 
 export type PortfolioList = {
+  /** Pagination cursor and totals. */
   pagination: PaginationInfo
+  /** Portfolios on this page. */
   portfolios: Array<Portfolio>
 }
 
 export type Position = {
+  /** Date the position was acquired (YYYY-MM-DD). */
   acquisitionDate: Maybe<Scalars['Date']['output']>
+  /** Cost basis in **cents** of `currency`. Authoritative. */
   costBasis: Scalars['Int']['output']
+  /** Cost basis pre-converted to dollars (`cost_basis / 100`). Convenience for display; `cost_basis` is the source of truth. */
   costBasisDollars: Scalars['Float']['output']
+  /** Row creation timestamp (UTC). */
   createdAt: Scalars['DateTime']['output']
+  /** ISO 4217 currency code for `cost_basis` and `current_value`. */
   currency: Scalars['String']['output']
+  /** Latest mark-to-market value in **cents**, or `null` if unmarked. */
   currentValue: Maybe<Scalars['Int']['output']>
+  /** Current value in dollars (`current_value / 100`). `null` when `current_value` is null. */
   currentValueDollars: Maybe<Scalars['Float']['output']>
+  /** Date the position was disposed, if `status='disposed'`. `null` for active positions. */
   dispositionDate: Maybe<Scalars['Date']['output']>
+  /** Cached display name of the security's issuing entity. */
   entityName: Maybe<Scalars['String']['output']>
+  /** Position ID (`pos_*` ULID). */
   id: Scalars['String']['output']
+  /** Free-text notes attached to the position. */
   notes: Maybe<Scalars['String']['output']>
+  /** Owning portfolio ID. */
   portfolioId: Scalars['String']['output']
+  /** Quantity held in units defined by `quantity_type`. */
   quantity: Scalars['Float']['output']
+  /** Unit basis (`shares`, `units`, `principal`). */
   quantityType: Scalars['String']['output']
+  /** Held security ID. */
   securityId: Scalars['String']['output']
+  /** Cached display name of the held security, denormalized for list rendering. May lag the security row's current name briefly. */
   securityName: Maybe<Scalars['String']['output']>
+  /** Lifecycle state. One of: `active` (currently held), `disposed` (soft-deleted via `update-portfolio-block` dispose), `archived` (historical record only). */
   status: Scalars['String']['output']
+  /** Last-modified timestamp (UTC). */
   updatedAt: Scalars['DateTime']['output']
+  /** Date `current_value` was sourced (YYYY-MM-DD). */
   valuationDate: Maybe<Scalars['Date']['output']>
+  /** Free-text source attribution for the current valuation. */
   valuationSource: Maybe<Scalars['String']['output']>
 }
 
 export type PositionBlock = {
+  /** Date the position was acquired. */
   acquisitionDate: Maybe<Scalars['Date']['output']>
+  /** Cost basis in dollars (pre-converted from cents). */
   costBasisDollars: Scalars['Float']['output']
+  /** Latest mark-to-market value in dollars. `null` when the position has not been marked. */
   currentValueDollars: Maybe<Scalars['Float']['output']>
+  /** Position ID (`pos_*` ULID). */
   id: Scalars['ID']['output']
+  /** Free-text notes attached to the position. */
   notes: Maybe<Scalars['String']['output']>
+  /** Quantity held in `quantity_type` units. */
   quantity: Scalars['Float']['output']
+  /** Unit basis (`shares`, `units`, `principal`). */
   quantityType: Scalars['String']['output']
+  /** Embedded security details — name, type, issuer. */
   security: SecurityLite
+  /** Lifecycle state (`active`, `disposed`, `archived`). See `PositionResponse.status` for the full vocabulary. */
   status: Scalars['String']['output']
+  /** Date the current value was sourced. */
   valuationDate: Maybe<Scalars['Date']['output']>
+  /** Free-text source attribution for the valuation. */
   valuationSource: Maybe<Scalars['String']['output']>
 }
 
 export type PositionList = {
+  /** Pagination cursor and totals. */
   pagination: PaginationInfo
+  /** Positions on this page. */
   positions: Array<Position>
 }
 
@@ -1320,12 +1396,19 @@ export type SecurityList = {
 }
 
 export type SecurityLite = {
+  /** Security ID (`sec_*` ULID). */
   id: Scalars['ID']['output']
+  /** `true` when the security is in active status. */
   isActive: Scalars['Boolean']['output']
+  /** Embedded issuer entity, when one is linked. `null` for pre-issuer securities. */
   issuer: Maybe<EntityLite>
+  /** Display name of the security. */
   name: Scalars['String']['output']
+  /** Optional subtype refinement (e.g. `class_a`). */
   securitySubtype: Maybe<Scalars['String']['output']>
+  /** Instrument family (e.g. `common_stock`, `preferred_stock`, `warrant`). */
   securityType: Scalars['String']['output']
+  /** Tenant graph the security is pre-associated to, if any. */
   sourceGraphId: Maybe<Scalars['String']['output']>
 }
 
