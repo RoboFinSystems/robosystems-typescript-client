@@ -36,7 +36,6 @@ import type {
   CreatePortfolioBlockRequest,
   CreateSecurityRequest,
   DeletePortfolioBlockOperation,
-  OperationEnvelope,
   PortfolioBlockPortfolioPatch,
   PortfolioBlockPositions,
   UpdatePortfolioBlockOperation,
@@ -206,7 +205,7 @@ export class InvestorClient {
       'Delete portfolio block',
       opDeletePortfolioBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+    return envelope.result ?? { deleted: true }
   }
 
   // ── Securities ──────────────────────────────────────────────────────
@@ -288,7 +287,7 @@ export class InvestorClient {
         body: { security_id: securityId },
       })
     )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+    return envelope.result ?? { deleted: true }
   }
 
   // ── Positions (reads only — writes folded into Portfolio Block) ─────
@@ -370,10 +369,15 @@ export class InvestorClient {
     }
   }
 
-  private async callOperation(
+  // Generic over the SDK call's response shape so typed ops (e.g.
+  // `opCreatePortfolioBlock`, which returns
+  // `OperationEnvelopePortfolioBlockEnvelope`) flow through with a typed
+  // `envelope.result` instead of being widened to `unknown`. Untyped ops
+  // continue to land as `OperationEnvelope` automatically.
+  private async callOperation<T>(
     label: string,
-    call: Promise<{ data?: OperationEnvelope; error?: unknown }>
-  ): Promise<OperationEnvelope> {
+    call: Promise<{ data?: T; error?: unknown }>
+  ): Promise<T> {
     const response = await call
     if (response.error !== undefined) {
       throw new Error(`${label} failed: ${JSON.stringify(response.error)}`)

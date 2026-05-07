@@ -102,16 +102,20 @@ export type AccountInfo = {
 
 /**
  * AddPublishListMembersOperation
+ *
+ * Add recipient graphs to a publish list.
  */
 export type AddPublishListMembersOperation = {
     /**
      * Target Graph Ids
      *
-     * Graph IDs to add to this list
+     * Graph IDs to add. Each must exist and have the same extension (roboledger / roboinvestor) enabled. Self-graph rejected.
      */
     target_graph_ids: Array<string>;
     /**
      * List Id
+     *
+     * The publish list to add members to.
      */
     list_id: string;
 };
@@ -448,6 +452,115 @@ export type AgentResponse = {
 };
 
 /**
+ * ArtifactResponse
+ *
+ * The block's producible-artifact envelope — topic, template, mechanics.
+ */
+export type ArtifactResponse = {
+    /**
+     * Topic
+     *
+     * Structure.description — the block's human-readable topic.
+     */
+    topic?: string | null;
+    /**
+     * Parenthetical Note
+     *
+     * e.g. 'in thousands', 'except per share'.
+     */
+    parenthetical_note?: string | null;
+    /**
+     * Template
+     *
+     * Reusable layout (ordering, subtotals, styling) when attached. First-class templates are not yet implemented; this field is always null on currently-shipped block types.
+     */
+    template?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Mechanics
+     */
+    mechanics: ({
+        kind: 'closing_entry_generator';
+    } & ScheduleMechanics) | ({
+        kind: 'statement_renderer';
+    } & StatementMechanics) | ({
+        kind: 'metric';
+    } & MetricMechanics);
+};
+
+/**
+ * AssociationResponse
+ *
+ * One edge between two elements within a structure (parent/child
+ * presentation, calculation rollup, mapping, equivalence).
+ *
+ * ``association_type`` discriminates the edge semantics. Mapping edges
+ * are the user-facing path (CoA → reporting concept); presentation /
+ * calculation edges express structure layout and roll-ups.
+ * ``confidence`` is set on AI-suggested mappings (≥0.90 auto-approved,
+ * 0.70-0.89 flagged for review).
+ */
+export type AssociationResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * From Element Id
+     */
+    from_element_id: string;
+    /**
+     * From Element Name
+     */
+    from_element_name?: string | null;
+    /**
+     * From Element Qname
+     */
+    from_element_qname?: string | null;
+    /**
+     * To Element Id
+     */
+    to_element_id: string;
+    /**
+     * To Element Name
+     */
+    to_element_name?: string | null;
+    /**
+     * To Element Qname
+     */
+    to_element_qname?: string | null;
+    /**
+     * Association Type
+     */
+    association_type: string;
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Weight
+     */
+    weight?: number | null;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+    /**
+     * Suggested By
+     */
+    suggested_by?: string | null;
+    /**
+     * Approved By
+     */
+    approved_by?: string | null;
+};
+
+/**
  * AuthResponse
  *
  * Authentication response model.
@@ -498,11 +611,20 @@ export type AuthResponse = {
 /**
  * AutoMapElementsOperation
  *
- * Request body for the auto-map-elements async operation.
+ * Run the MappingAgent over a mapping structure (async).
+ *
+ * The MappingAgent walks every unmapped CoA element and proposes
+ * associations to reporting concepts. Confidence thresholds: ≥0.90
+ * auto-approved (association created), 0.70-0.89 flagged for review
+ * (created with `confidence` set; surface it in your UI), <0.70 skipped.
+ * Returns a `pending` envelope immediately; subscribe to the SSE stream
+ * for progress.
  */
 export type AutoMapElementsOperation = {
     /**
      * Mapping Id
+     *
+     * The mapping structure to populate.
      */
     mapping_id: string;
 };
@@ -1023,7 +1145,65 @@ export type CheckoutStatusResponse = {
 };
 
 /**
+ * ClassificationLite
+ *
+ * Classification projection — one row per `association_classifications`
+ * junction entry.
+ *
+ * Association-side only: concept_arrangement, member_arrangement,
+ * named_disclosure. Element-side FASB metamodel traits (asset, current,
+ * operating, …) live in `TraitLite` via `element_traits`.
+ *
+ * Carries enough for the envelope caller to render / filter by category +
+ * identifier without a follow-up lookup. The full `public.classifications`
+ * vocabulary catalog (name / description / metadata) is available via the
+ * library GraphQL surface when callers need the details.
+ */
+export type ClassificationLite = {
+    /**
+     * Id
+     *
+     * Classification vocabulary row id.
+     */
+    id: string;
+    /**
+     * Category
+     *
+     * One of the 3 association-level categories in the `public.classifications` CHECK constraint: 'concept_arrangement', 'member_arrangement', or 'named_disclosure'.
+     */
+    category: string;
+    /**
+     * Identifier
+     *
+     * Vocabulary identifier within the category — e.g. 'RollUp', 'aggregation', 'AssetsRollUp'.
+     */
+    identifier: string;
+    /**
+     * Is Primary
+     *
+     * Whether this is the canonical classification for the (association|element, category) pair. Non-primary rows capture alternates / AI suggestions alongside the chosen primary.
+     */
+    is_primary?: boolean;
+    /**
+     * Confidence
+     *
+     * AI/adapter-supplied confidence (0.0-1.0). Null for deterministic library-seeded rows.
+     */
+    confidence?: number | null;
+    /**
+     * Source
+     *
+     * Provenance — 'arcrole_analysis', 'disclosure_mechanics', 'us-gaap-metamodel', adapter name, etc.
+     */
+    source?: string | null;
+};
+
+/**
  * ClosePeriodOperation
+ *
+ * Close a single fiscal period. Carries the YYYY-MM `period` in the
+ * request body alongside the close-time options inherited from
+ * :class:`ClosePeriodRequest`.
  */
 export type ClosePeriodOperation = {
     /**
@@ -1040,8 +1220,82 @@ export type ClosePeriodOperation = {
     allow_stale_sync?: boolean;
     /**
      * Period
+     *
+     * Period to close, in YYYY-MM. Must be exactly `closed_through + 1` — close runs sequentially.
      */
     period: string;
+};
+
+/**
+ * ClosePeriodResponse
+ *
+ * Response from a single-period close operation.
+ */
+export type ClosePeriodResponse = {
+    fiscal_calendar: FiscalCalendarResponse;
+    /**
+     * Period
+     */
+    period: string;
+    /**
+     * Entries Posted
+     *
+     * Number of draft entries transitioned to posted
+     */
+    entries_posted?: number;
+    /**
+     * Target Auto Advanced
+     *
+     * Whether close_target was auto-advanced because it was reached
+     */
+    target_auto_advanced?: boolean;
+};
+
+/**
+ * ConnectionLite
+ *
+ * Connection (= Association) projection.
+ *
+ * Renamed at the API boundary to match Charlie's ontology vocabulary.
+ * The underlying storage table is still ``associations``.
+ */
+export type ConnectionLite = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * From Element Id
+     */
+    from_element_id: string;
+    /**
+     * To Element Id
+     */
+    to_element_id: string;
+    /**
+     * Association Type
+     *
+     * presentation | calculation | mapping | equivalence | general-special | essence-alias
+     */
+    association_type: string;
+    /**
+     * Arcrole
+     */
+    arcrole?: string | null;
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Weight
+     */
+    weight?: number | null;
+    /**
+     * Classifications
+     *
+     * Association-level classifications — concept_arrangement, member_arrangement, named_disclosure rows from the junction. Empty for library-seeded associations that haven't been classified yet.
+     */
+    classifications?: Array<ClassificationLite>;
 };
 
 /**
@@ -1318,36 +1572,57 @@ export type CreateApiKeyResponse = {
 
 /**
  * CreateAgentRequest
+ *
+ * Create a new economic counterparty.
+ *
+ * ``agent_type`` is the relationship category (customer, vendor,
+ * employee, etc.) — the same legal entity may have multiple Agent rows
+ * if they play multiple roles (e.g. a vendor who also became a
+ * customer). ``source`` distinguishes integration-imported rows from
+ * native-created ones; ``external_id`` carries the source-system's
+ * primary key for sync.
  */
 export type CreateAgentRequest = {
     /**
      * Agent Type
      *
-     * 'customer' | 'vendor' | 'employee' | 'owner' | 'supplier' | 'government' | 'lender' | 'self' | 'other'
+     * Relationship category: 'customer' | 'vendor' | 'employee' | 'owner' | 'supplier' | 'government' | 'lender' | 'self' | 'other'.
      */
     agent_type: string;
     /**
      * Name
+     *
+     * Display name shown in lists and on transactions.
      */
     name: string;
     /**
      * Legal Name
+     *
+     * Full registered legal name (when different from `name`).
      */
     legal_name?: string | null;
     /**
      * Tax Id
+     *
+     * Tax ID (EIN / SSN / VAT). Used for 1099 / withholding reporting.
      */
     tax_id?: string | null;
     /**
      * Registration Number
+     *
+     * Registry-issued company number (e.g. state corp file number).
      */
     registration_number?: string | null;
     /**
      * Duns
+     *
+     * Dun & Bradstreet DUNS number.
      */
     duns?: string | null;
     /**
      * Lei
+     *
+     * Legal Entity Identifier (ISO 17442).
      */
     lei?: string | null;
     /**
@@ -1360,6 +1635,8 @@ export type CreateAgentRequest = {
     phone?: string | null;
     /**
      * Address
+     *
+     * Free-form address object (e.g. {"line1": "...", "city": "...", "state": "...", "postal_code": "..."}).
      */
     address?: {
         [key: string]: unknown;
@@ -1367,19 +1644,25 @@ export type CreateAgentRequest = {
     /**
      * Source
      *
-     * 'quickbooks' | 'xero' | 'plaid' | 'native'
+     * Provenance: 'native' (created in-app), 'quickbooks' / 'xero' / 'plaid' (synced from integration). Drives reconciliation behavior.
      */
     source?: string;
     /**
      * External Id
+     *
+     * Source system primary key — used to match on subsequent syncs.
      */
     external_id?: string | null;
     /**
      * Is Active
+     *
+     * Inactive agents stay in history but can't be picked for new txns.
      */
     is_active?: boolean;
     /**
      * Is 1099 Recipient
+     *
+     * Marks a vendor as 1099-eligible. Drives year-end 1099 reporting.
      */
     is_1099_recipient?: boolean;
     /**
@@ -1467,19 +1750,19 @@ export type CreateEventBlockRequest = {
     /**
      * Agent Id
      *
-     * Counterparty agent id
+     * ID of the counterparty agent (customer, vendor, employee, lender) involved in the event. `null` for internal-only events.
      */
     agent_id?: string | null;
     /**
      * Resource Type
      *
-     * REA resource kind. One of: goods, services, money, right, obligation, information, labor.
+     * REA resource kind being exchanged. One of: `goods`, `services`, `money`, `right`, `obligation`, `information`, `labor`.
      */
     resource_type?: 'goods' | 'services' | 'money' | 'right' | 'obligation' | 'information' | 'labor' | null;
     /**
      * Resource Element Id
      *
-     * Specific element being exchanged, if applicable
+     * ID of the specific element being exchanged, when known (e.g. the cash account for a treasury movement, the inventory item for a sale).
      */
     resource_element_id?: string | null;
     /**
@@ -1515,29 +1798,33 @@ export type CreateEventBlockRequest = {
     /**
      * Amount
      *
-     * Cents, signed
+     * Economic value of the event in **cents** of `currency`, signed. Sign convention follows the perspective of the entity that owns the graph: inflows positive, outflows negative. `null` for non-economic events (e.g. `event_class='support'`).
      */
     amount?: number | null;
     /**
      * Currency
      *
-     * ISO 4217 currency code
+     * ISO 4217 currency code for `amount`.
      */
     currency?: string;
     /**
      * Description
+     *
+     * Free-text human-readable summary of the event.
      */
     description?: string | null;
     /**
      * Metadata
      *
-     * Event-type-specific payload
+     * Free-form payload, opaque to the event surface. When `apply_handlers=True`, the matched handler's metadata schema validates this dict — required keys depend on the handler registered for `event_type`. Use `preview-event-block` to discover the expected shape without writing.
      */
     metadata?: {
         [key: string]: unknown;
     };
     /**
      * Dimension Ids
+     *
+     * IDs of dimension members tagging this event (e.g. department, fund, project). Propagate to the GL entries produced by the handler.
      */
     dimension_ids?: Array<string>;
     /**
@@ -1562,34 +1849,62 @@ export type CreateEventBlockRequest = {
 
 /**
  * CreateEventHandlerRequest
+ *
+ * Register a new event-type → transaction-template rule.
+ *
+ * When ``create-event-block`` runs with ``apply_handlers=True``, the
+ * registry resolves the *highest-priority active* handler whose match
+ * criteria all match the event, then evaluates the
+ * ``transaction_template`` to produce GL rows. Match precedence: among
+ * active handlers for the same ``event_type``, the one with the most
+ * specific match (more match fields satisfied) wins; ties broken by
+ * ``priority`` desc, then ``created_at`` asc.
+ *
+ * All match fields except ``event_type`` are optional — leaving them
+ * unset matches anything. Use ``match_metadata_expression`` for
+ * fine-grained discrimination (e.g. only payroll categories).
  */
 export type CreateEventHandlerRequest = {
     /**
      * Name
+     *
+     * Human-readable handler name (unique per graph).
      */
     name: string;
     /**
      * Description
+     *
+     * Free-form description shown in admin UIs.
      */
     description?: string | null;
     /**
      * Event Type
+     *
+     * Event type to match. Matches the `event_type` field on incoming events from `create-event-block`.
      */
     event_type: string;
     /**
      * Event Category
+     *
+     * Optional category filter (e.g. 'expense', 'revenue').
      */
     event_category?: string | null;
     /**
      * Match Source
+     *
+     * Match the event's `source` field (e.g. 'quickbooks', 'plaid'). Useful when the same event_type comes from multiple integrations.
      */
     match_source?: string | null;
     /**
      * Match Agent Type
+     *
+     * Match agent-emitted events by agent_type.
      */
     match_agent_type?: string | null;
     /**
      * Match Resource Type
+     *
+     * Match resource-bound events by resource_type.
      */
     match_resource_type?: string | null;
     /**
@@ -1600,21 +1915,32 @@ export type CreateEventHandlerRequest = {
     match_metadata_expression?: {
         [key: string]: unknown;
     } | null;
+    /**
+     * The DSL spec for the GL rows this handler produces. See `TransactionTemplate` for the shape.
+     */
     transaction_template: TransactionTemplate;
     /**
      * Priority
+     *
+     * Tiebreaker when multiple equally-specific handlers match. Higher = wins.
      */
     priority?: number;
     /**
      * Is Active
+     *
+     * Inactive handlers are ignored at match time.
      */
     is_active?: boolean;
     /**
      * Origin
+     *
+     * Provenance of the handler. `tenant` = author by graph owner; `hub` = platform-shipped template (immutable for tenants).
      */
     origin?: 'hub' | 'tenant';
     /**
      * Metadata
+     *
+     * Free-form metadata stored alongside the handler.
      */
     metadata?: {
         [key: string]: unknown;
@@ -1666,67 +1992,70 @@ export type CreateGraphRequest = {
 /**
  * CreateInformationBlockRequest
  *
- * Generic create request — discriminator + typed-at-dispatch payload.
- *
- * ``block_type`` selects the registry entry. ``payload`` is validated
- * against ``BlockTypeRegistryEntry.create_request_model`` (e.g.
- * :class:`CreateScheduleRequest` for ``block_type='schedule'``) by the
- * command dispatcher. Chosen over a Pydantic discriminated union on the
- * top-level request so adding a block type is one registry line, not a
- * union-arm edit at the request-model layer.
+ * Create an Information Block. The body is a discriminated union on
+ * `block_type`: pick the arm matching the block type you want to
+ * create. The schedule arm carries a fully typed payload; statement
+ * and metric arms accept an untyped payload but currently return HTTP
+ * 501 (statements are constructed via `create-report`; metric
+ * construction is pending).
  */
-export type CreateInformationBlockRequest = {
-    /**
-     * Block Type
-     *
-     * Block type discriminator. Must match a registered entry in robosystems.operations.information_block.registry.REGISTRY.
-     */
-    block_type: string;
-    /**
-     * Payload
-     *
-     * Block-type-specific creation payload. Shape-validated against the registry entry's `create_request_model` at dispatch time; the validation error surfaces as a 422 at the API boundary.
-     */
-    payload?: {
-        [key: string]: unknown;
-    };
-};
+export type CreateInformationBlockRequest = ({
+    block_type: 'schedule';
+} & CreateScheduleArm) | ({
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'income_statement' | 'metric';
+} & CreateLegacyArm);
 
 /**
  * CreateMappingAssociationOperation
  *
- * CQRS-shaped body for `POST /operations/create-mapping-association`.
+ * Create one CoA → reporting-concept mapping edge.
  *
- * Bundles the target mapping structure's `mapping_id` with the association
- * payload so REST + MCP share a single body type via the registrar.
+ * This is the iterative, AI-assisted craft path. Each call adds a single
+ * association to the target mapping structure. Use `auto-map-elements`
+ * to create many at once via the MappingAgent. Reject duplicates: if
+ * the (from, to, type) tuple already exists, the call returns 409.
  */
 export type CreateMappingAssociationOperation = {
     /**
      * From Element Id
+     *
+     * Source element (typically a CoA element).
      */
     from_element_id: string;
     /**
      * To Element Id
+     *
+     * Target element (typically a US GAAP reporting concept).
      */
     to_element_id: string;
     /**
      * Association Type
+     *
+     * Edge semantics. `mapping` rolls up CoA elements into reporting concepts; `presentation` orders concepts in a structure; `calculation` carries debit/credit weights; `equivalence` is a synonym link.
      */
     association_type?: 'presentation' | 'calculation' | 'mapping' | 'equivalence';
     /**
      * Order Value
+     *
+     * Display order within the structure (lower = earlier).
      */
     order_value?: number | null;
     /**
      * Weight
+     *
+     * Calculation weight (typically +1.0 or -1.0). Used by calculation linkbases to express signed roll-ups.
      */
     weight?: number | null;
     /**
      * Confidence
+     *
+     * Confidence score (0–1). For AI-suggested mappings: ≥0.90 auto-approved, 0.70–0.89 flagged for review, <0.70 skipped.
      */
     confidence?: number | null;
     /**
      * Suggested By
+     *
+     * Source of the suggestion (e.g., 'mapping_agent', 'user'). Captured for audit; not used by the runtime.
      */
     suggested_by?: string | null;
     /**
@@ -1747,81 +2076,104 @@ export type CreateMappingAssociationOperation = {
  * existing `security_id` — the operation does not mint securities.
  */
 export type CreatePortfolioBlockRequest = {
+    /**
+     * Core portfolio fields — name, currency, owning entity, etc.
+     */
     portfolio: PortfolioBlockPortfolioFields;
     /**
      * Positions
+     *
+     * Initial positions to mint inside the new portfolio. Each references an existing security; pass `[]` to create an empty portfolio.
      */
     positions?: Array<PortfolioBlockPositionAdd>;
 };
 
 /**
  * CreatePublishListRequest
+ *
+ * Create a new publish list. Members are added separately via
+ * `add-publish-list-members`.
  */
 export type CreatePublishListRequest = {
     /**
      * Name
      *
-     * List name
+     * Human-readable list name (must be unique per graph).
      */
     name: string;
     /**
      * Description
      *
-     * Optional description
+     * Free-form description shown to list owners.
      */
     description?: string | null;
 };
 
 /**
  * CreateReportRequest
+ *
+ * Generate report facts from the ledger and publish a Report definition.
+ *
+ * The report is materialized synchronously: we resolve the taxonomy +
+ * CoA mapping, roll up GL facts into reportable concepts, attach them
+ * to a fresh ``Report`` row, evaluate any reporting-rule structures
+ * (cell-level checks), and stamp ``generation_status='published'``.
+ * Subsequent ``regenerate-report`` calls re-run the same pipeline against
+ * the latest ledger state without creating a new Report row.
+ *
+ * ``period_start``/``period_end``/``comparative`` is the simple path
+ * (auto-derives current + prior period). For multi-column reports
+ * (YTD-by-quarter, multi-year) supply ``periods`` explicitly — when
+ * set, ``period_start``/``period_end``/``comparative`` are ignored as
+ * inputs to period generation.
  */
 export type CreateReportRequest = {
     /**
      * Name
      *
-     * Report name
+     * Human-readable report name shown in lists and headers.
      */
     name: string;
     /**
      * Taxonomy Id
      *
-     * Taxonomy ID — determines which structures are available
+     * Taxonomy that defines the structures (BS / IS / CF / Equity / Schedules) this report can render. Defaults to the platform US GAAP reporting taxonomy.
      */
     taxonomy_id?: string;
     /**
      * Mapping Id
      *
-     * Mapping structure ID for CoA→GAAP rollup
+     * Mapping structure that rolls up the tenant's chart of accounts to the taxonomy's reporting concepts. Created via `create-mapping-association` / `auto-map-elements`.
      */
     mapping_id: string;
     /**
      * Period Start
      *
-     * Period start date (inclusive)
+     * Current-period start (inclusive). Ignored when `periods` is supplied.
      */
     period_start: string;
     /**
      * Period End
      *
-     * Period end date (inclusive)
+     * Current-period end (inclusive). Must be >= `period_start`. Ignored when `periods` is supplied.
      */
     period_end: string;
     /**
      * Period Type
      *
-     * Period type: monthly, quarterly, annual
+     * Period cadence: `monthly`, `quarterly`, or `annual`.
      */
     period_type?: string;
     /**
      * Comparative
      *
-     * Include prior period comparison
+     * When true, automatically generates a prior-period column (same length as the current period). Ignored when `periods` is supplied.
      */
     comparative?: boolean;
     /**
      * Periods
      *
-     * Multi-period columns. Overrides period_start/period_end/comparative when set.
+     * Explicit period columns. When set, overrides `period_start`/`period_end`/`comparative`. Use for multi-period layouts (YTD-by-quarter, multi-year, custom rolling windows).
      */
     periods?: Array<PeriodSpec> | null;
 };
@@ -1841,41 +2193,120 @@ export type CreateRepositorySubscriptionRequest = {
 };
 
 /**
+ * CreateScheduleRequest
+ */
+export type CreateScheduleRequest = {
+    /**
+     * Name
+     *
+     * Schedule name
+     */
+    name: string;
+    /**
+     * Taxonomy Id
+     *
+     * Taxonomy ID (auto-creates if omitted)
+     */
+    taxonomy_id?: string | null;
+    /**
+     * Element Ids
+     *
+     * Element IDs to include
+     */
+    element_ids: Array<string>;
+    /**
+     * Period Start
+     *
+     * First period start
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * Last period end
+     */
+    period_end: string;
+    /**
+     * Monthly Amount
+     *
+     * Monthly amount in cents
+     */
+    monthly_amount: number;
+    entry_template: EntryTemplateRequest;
+    schedule_metadata?: ScheduleMetadataRequest | null;
+    /**
+     * Closed Through
+     *
+     * If provided, facts with period_end ≤ this date are flagged as 'historical' (already reflected in opening balances, ignored by the close workflow). Used during initial ledger setup to create schedules whose early facts have already been captured elsewhere.
+     */
+    closed_through?: string | null;
+    /**
+     * Source Transaction Id
+     *
+     * Free-form reference to the originating GL transaction (e.g. an import ID, ledger entry ID, or external system key). Stored in artifact_mechanics for audit; no FK constraint.
+     */
+    source_transaction_id?: string | null;
+};
+
+/**
  * CreateSecurityRequest
+ *
+ * CQRS body for `POST /operations/create-security`.
+ *
+ * Mints a new security as Master Data — referenced by positions, never
+ * created inline by portfolio operations. The `terms` blob carries
+ * instrument-specific shape (liquidation preference, strike price,
+ * vesting) used by future waterfall-distribution modeling.
  */
 export type CreateSecurityRequest = {
     /**
      * Entity Id
+     *
+     * ID of the issuing entity. Optional only if `source_graph_id` is set (pre-association before the entity is finalized).
      */
     entity_id?: string | null;
     /**
      * Source Graph Id
+     *
+     * Optional pre-association to a tenant company graph. Lets you mint securities for an entity that hasn't been promoted to a real `entity_id` yet.
      */
     source_graph_id?: string | null;
     /**
      * Name
+     *
+     * Display name for the security (e.g. `Common Stock Class A`, `Series A Preferred`). 1-200 characters.
      */
     name: string;
     /**
      * Security Type
+     *
+     * Instrument family. Open vocabulary — common values: `common_stock`, `preferred_stock`, `warrant`, `convertible_note`, `safe`, `option`, `llc_unit`, `lp_interest`, `restricted_stock_unit`.
      */
     security_type: string;
     /**
      * Security Subtype
+     *
+     * Free-text refinement of `security_type` (e.g. `class_a`, `series_a`, `series_seed`). No vocabulary enforcement.
      */
     security_subtype?: string | null;
     /**
      * Terms
+     *
+     * Instrument-specific terms blob (JSONB). Shape depends on `security_type` — common keys include `liquidation_preference`, `strike_price_cents`, `discount_pct`, `valuation_cap_cents`, `maturity_date`, `vesting`. Used by future waterfall-distribution modeling; treat as authoritative storage for instrument mechanics.
      */
     terms?: {
         [key: string]: unknown;
     };
     /**
      * Authorized Shares
+     *
+     * Total shares the issuer is authorized to issue for this class. `null` for instruments where shares aren't a meaningful unit (e.g. convertible notes pre-conversion).
      */
     authorized_shares?: number | null;
     /**
      * Outstanding Shares
+     *
+     * Shares currently issued and outstanding. Should be ≤ `authorized_shares` when both are set.
      */
     outstanding_shares?: number | null;
 };
@@ -2579,26 +3010,43 @@ export type DeleteGraphOp = {
 /**
  * DeleteInformationBlockRequest
  *
- * Generic delete request — mirrors :class:`CreateInformationBlockRequest`.
- *
- * Validated against the registry entry's ``delete_request_model``.
- * Block types that don't support deletion raise ``NotImplementedError``.
+ * Delete an Information Block. The body is a discriminated union on
+ * `block_type` mirroring `CreateInformationBlockRequest`. The schedule
+ * arm carries a fully typed delete payload; statement and metric arms
+ * return HTTP 501.
  */
-export type DeleteInformationBlockRequest = {
+export type DeleteInformationBlockRequest = ({
+    block_type: 'schedule';
+} & DeleteScheduleArm) | ({
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'income_statement' | 'metric';
+} & DeleteLegacyArm);
+
+/**
+ * DeleteInformationBlockResponse
+ *
+ * Response for ``delete-information-block``.
+ *
+ * The envelope is gone once the block is deleted, so the response is a
+ * thin confirmation instead — structure_id + block_type + name for
+ * caller bookkeeping.
+ */
+export type DeleteInformationBlockResponse = {
+    /**
+     * Deleted
+     */
+    deleted?: true;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
     /**
      * Block Type
-     *
-     * Block type discriminator. Must match a registered entry.
      */
     block_type: string;
     /**
-     * Payload
-     *
-     * Block-type-specific delete payload. Typically carries just the structure_id. Shape-validated against the registry entry's `delete_request_model` at dispatch time.
+     * Name
      */
-    payload?: {
-        [key: string]: unknown;
-    };
+    name: string;
 };
 
 /**
@@ -2610,20 +3058,28 @@ export type DeleteInformationBlockRequest = {
 export type DeleteJournalEntryRequest = {
     /**
      * Entry Id
+     *
+     * The draft entry to delete.
      */
     entry_id: string;
 };
 
 /**
  * DeleteMappingAssociationOperation
+ *
+ * Delete a single CoA → reporting-concept mapping edge.
  */
 export type DeleteMappingAssociationOperation = {
     /**
      * Mapping Id
+     *
+     * The mapping structure containing the association.
      */
     mapping_id: string;
     /**
      * Association Id
+     *
+     * The association edge to delete.
      */
     association_id: string;
 };
@@ -2647,28 +3103,108 @@ export type DeletePortfolioBlockOperation = {
     portfolio_id: string;
     /**
      * Confirm Active Positions
+     *
+     * Required acknowledgement when the portfolio has active positions. Set `true` to consent to cascade-deleting them; leave `false` and the operation returns 409 if any active positions exist.
      */
     confirm_active_positions?: boolean;
 };
 
 /**
+ * DeletePortfolioBlockResponse
+ *
+ * Result envelope for `delete-portfolio-block`. `positions_deleted`
+ * carries the count of position rows removed alongside the portfolio.
+ */
+export type DeletePortfolioBlockResponse = {
+    /**
+     * Deleted
+     *
+     * `true` when the portfolio row was removed.
+     */
+    deleted: boolean;
+    /**
+     * Portfolio Id
+     *
+     * ID of the portfolio that was deleted.
+     */
+    portfolio_id: string;
+    /**
+     * Positions Deleted
+     *
+     * Count of position rows cascade-deleted with the portfolio.
+     */
+    positions_deleted: number;
+};
+
+/**
  * DeletePublishListOperation
+ *
+ * Delete a publish list. All membership rows are removed; reports
+ * previously shared via this list are not affected (each share is an
+ * independent copy in the recipient's graph).
  */
 export type DeletePublishListOperation = {
     /**
      * List Id
+     *
+     * The publish list to delete.
      */
     list_id: string;
 };
 
 /**
  * DeleteReportOperation
+ *
+ * Delete a Report definition and all its facts.
  */
 export type DeleteReportOperation = {
     /**
      * Report Id
+     *
+     * The Report to delete.
      */
     report_id: string;
+};
+
+/**
+ * DeleteResult
+ *
+ * Shared response shape for delete / soft-delete operations.
+ *
+ * ``deleted=True`` means the operation succeeded (a row was deleted or
+ * flipped). The handler returns 404 instead when the row didn't exist
+ * to begin with — the response shape is never used to communicate "not
+ * found".
+ *
+ * Defined once here to avoid OpenAPI components key collisions
+ * between roboledger and roboinvestor (both surfaces produced
+ * separate ``DeleteResult`` classes before consolidation).
+ */
+export type DeleteResult = {
+    /**
+     * Deleted
+     *
+     * `true` when the row was deleted in this call. Always `true` today — 404 covers the not-found case at the HTTP layer rather than via this field.
+     */
+    deleted: boolean;
+};
+
+/**
+ * DeleteScheduleRequest
+ *
+ * Delete a schedule — cascades through facts and associations.
+ *
+ * Hard deletes the Structure, all Facts tied to it, and all
+ * Associations tied to it. This is a permanent, irreversible
+ * operation. For ending a schedule early without removing history,
+ * fire `create-event-block(event_type='asset_disposed')` instead — the
+ * handler truncates the schedule + posts the disposal entry atomically.
+ */
+export type DeleteScheduleRequest = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
 };
 
 /**
@@ -2724,10 +3260,14 @@ export type DeleteSubgraphOp = {
 export type DeleteTaxonomyBlockRequest = {
     /**
      * Taxonomy Id
+     *
+     * The taxonomy to delete.
      */
     taxonomy_id: string;
     /**
      * Cascade Facts
+     *
+     * When true, also deletes any Fact rows referencing elements in this taxonomy. When false (default), the operation fails with 422 if such rows exist.
      */
     cascade_facts?: boolean;
     /**
@@ -2736,6 +3276,34 @@ export type DeleteTaxonomyBlockRequest = {
      * Human-readable justification (audit log).
      */
     reason: string;
+};
+
+/**
+ * DeleteTaxonomyBlockResponse
+ *
+ * Response for ``delete-taxonomy-block``.
+ */
+export type DeleteTaxonomyBlockResponse = {
+    /**
+     * Deleted
+     */
+    deleted?: true;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Facts Deleted
+     */
+    facts_deleted?: number;
+    /**
+     * Cascade Applied
+     */
+    cascade_applied?: boolean;
 };
 
 /**
@@ -3105,6 +3673,57 @@ export type DownloadQuota = {
 };
 
 /**
+ * ElementLite
+ *
+ * Element projection for bundling inside an Information Block envelope.
+ *
+ * Narrower than :class:`LibraryElementResponse` — excludes the heavy fields
+ * (labels, references, classifications) that library browsing needs but
+ * block consumers don't. Agents + frontends ask for those on demand via
+ * the full library GraphQL fields when they need them.
+ */
+export type ElementLite = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Qname
+     */
+    qname?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Code
+     */
+    code?: string | null;
+    /**
+     * Element Type
+     *
+     * concept | abstract | axis | member | hypercube
+     */
+    element_type: string;
+    /**
+     * Is Abstract
+     */
+    is_abstract?: boolean;
+    /**
+     * Is Monetary
+     */
+    is_monetary?: boolean;
+    /**
+     * Balance Type
+     */
+    balance_type?: string | null;
+    /**
+     * Period Type
+     */
+    period_type?: string | null;
+};
+
+/**
  * ElementUpdatePatch
  *
  * Partial-update patch for a single element, keyed by qname.
@@ -3239,6 +3858,108 @@ export type EnhancedFileStatusLayers = {
 };
 
 /**
+ * EntityLite
+ *
+ * Lightweight entity projection for embedding in portfolio-block /
+ * position envelopes. Carries identity-only fields; full entity data
+ * lives behind the Master Data entity APIs.
+ */
+export type EntityLite = {
+    /**
+     * Id
+     *
+     * Entity ID (`ent_*` ULID).
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Display name of the entity.
+     */
+    name: string;
+    /**
+     * Source Graph Id
+     *
+     * Tenant graph this entity is anchored to, when known. `null` for entities not yet linked to a graph.
+     */
+    source_graph_id?: string | null;
+};
+
+/**
+ * EntityTaxonomyResponse
+ *
+ * Result of `link-entity-taxonomy` — the ENTITY_HAS_TAXONOMY edge.
+ */
+export type EntityTaxonomyResponse = {
+    /**
+     * Entity Id
+     *
+     * The entity that was linked.
+     */
+    entity_id: string;
+    /**
+     * Taxonomy Id
+     *
+     * The taxonomy that was linked.
+     */
+    taxonomy_id: string;
+    /**
+     * Basis
+     *
+     * Linkage role (see request).
+     */
+    basis: string;
+    /**
+     * Is Primary
+     *
+     * Whether this is the primary linkage.
+     */
+    is_primary: boolean;
+    /**
+     * Adoption Context
+     *
+     * Adoption context recorded at link time.
+     */
+    adoption_context?: string | null;
+};
+
+/**
+ * EntryTemplateRequest
+ */
+export type EntryTemplateRequest = {
+    /**
+     * Debit Element Id
+     *
+     * Element to debit (e.g., Depreciation Expense)
+     */
+    debit_element_id: string;
+    /**
+     * Credit Element Id
+     *
+     * Element to credit (e.g., Accumulated Depreciation)
+     */
+    credit_element_id: string;
+    /**
+     * Entry Type
+     *
+     * Entry type for generated entries
+     */
+    entry_type?: 'standard' | 'adjusting' | 'closing' | 'reversing';
+    /**
+     * Memo Template
+     *
+     * Memo template ({structure_name} is replaced)
+     */
+    memo_template?: string;
+    /**
+     * Auto Reverse
+     *
+     * Auto-generate a reversing entry on the first day of the next period
+     */
+    auto_reverse?: boolean;
+};
+
+/**
  * ErrorResponse
  *
  * Standard error response format used across all API endpoints.
@@ -3290,6 +4011,8 @@ export type ErrorResponse = {
 export type EvaluateRulesRequest = {
     /**
      * Structure Id
+     *
+     * Structure to evaluate rules for. Resolves all rules scoped to this structure plus rules attached to its elements and associations.
      */
     structure_id: string;
     /**
@@ -3310,6 +4033,374 @@ export type EvaluateRulesRequest = {
      * Upper bound on the fact period window (inclusive).
      */
     period_end?: string | null;
+};
+
+/**
+ * EvaluateRulesResponse
+ *
+ * Response for the ``evaluate-rules`` operation.
+ *
+ * ``results`` is the full list of :class:`VerificationResultLite` rows
+ * written by this evaluation run. ``summary`` gives counts keyed by
+ * status for quick display without iterating the list.
+ */
+export type EvaluateRulesResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Results
+     */
+    results: Array<VerificationResultLite>;
+    /**
+     * Summary
+     *
+     * Status counts keyed by outcome string: ``{'pass': N, 'fail': N, 'error': N, 'skipped': N}``.
+     */
+    summary?: {
+        [key: string]: number;
+    };
+};
+
+/**
+ * EventBlockEnvelope
+ *
+ * Read projection for a single event block.
+ *
+ * Returned by `create-event-block`, `update-event-block`,
+ * `preview-event-block`, and the read-side `get-event-block`. Mirrors
+ * the request shape plus server-assigned fields (id, status, audit
+ * timestamps) and the four nullable correction/duality links.
+ */
+export type EventBlockEnvelope = {
+    /**
+     * Id
+     *
+     * Event ID (`evt_*` ULID).
+     */
+    id: string;
+    /**
+     * Event Type
+     *
+     * Open-vocabulary event type (e.g. `invoice_issued`, `bank_transaction`, `control_executed`).
+     */
+    event_type: string;
+    /**
+     * Event Category
+     *
+     * REA category — economic (`sales`, `purchase`, `financing`, `payroll`, `treasury`, `adjustment`, `recognition`, `other`) or support (`control`, `approval`, `reconciliation`, `inquiry`).
+     */
+    event_category: string;
+    /**
+     * Status
+     *
+     * Lifecycle state. One of: `captured` (raw, pre-classification), `classified` (handler ran, GL pending), `committed` (GL entries posted), `pending` (committed but awaiting fulfillment of an obligation), `fulfilled` (obligation discharged), `voided` (canceled — terminal), `superseded` (replaced by a corrected event — terminal). See `UpdateEventBlockRequest.transition_to` for the valid transition graph.
+     */
+    status: string;
+    /**
+     * Occurred At
+     *
+     * When the event happened in the real world (UTC).
+     */
+    occurred_at: string;
+    /**
+     * Effective At
+     *
+     * Accounting recognition date, when different from `occurred_at`.
+     */
+    effective_at?: string | null;
+    /**
+     * Source
+     *
+     * Capture source (`quickbooks`, `xero`, `plaid`, `native`, `scheduled`, …). Used for adapter routing.
+     */
+    source: string;
+    /**
+     * External Id
+     *
+     * Source-system dedup key. Unique with `source` when set, so adapter retries are idempotent.
+     */
+    external_id?: string | null;
+    /**
+     * External Url
+     *
+     * Deep link back to the source-system record.
+     */
+    external_url?: string | null;
+    /**
+     * Amount
+     *
+     * Economic value in **cents** of `currency`, signed (inflows positive, outflows negative). `null` for non-economic events.
+     */
+    amount?: number | null;
+    /**
+     * Currency
+     *
+     * ISO 4217 currency code for `amount`.
+     */
+    currency: string;
+    /**
+     * Description
+     *
+     * Free-text human-readable summary.
+     */
+    description?: string | null;
+    /**
+     * Metadata
+     *
+     * Free-form payload — handler-specific keys when the event ran through a handler, otherwise whatever the adapter captured.
+     */
+    metadata: {
+        [key: string]: unknown;
+    };
+    /**
+     * Dimension Ids
+     *
+     * Dimension-member IDs tagging this event (department, fund, project). Propagate to GL entries produced by the handler.
+     */
+    dimension_ids: Array<string>;
+    /**
+     * Event Class
+     *
+     * REA event class — `economic` (drives GL postings) or `support` (audit-trail / value-chain primitive, no GL impact).
+     */
+    event_class: string;
+    /**
+     * Agent Id
+     *
+     * Counterparty agent ID, when the event involves one.
+     */
+    agent_id?: string | null;
+    /**
+     * Resource Type
+     *
+     * REA resource kind being exchanged (`goods`, `services`, `money`, `right`, `obligation`, `information`, `labor`).
+     */
+    resource_type?: string | null;
+    /**
+     * Resource Element Id
+     *
+     * Specific element ID being exchanged, when known.
+     */
+    resource_element_id?: string | null;
+    /**
+     * Replaced By Event Id
+     *
+     * ID of the event that replaces this one. Set when this event was superseded (`status='superseded'`); points forward in the correction chain.
+     */
+    replaced_by_event_id?: string | null;
+    /**
+     * Replaces Event Id
+     *
+     * ID of the event this one replaces, when applicable. Points backward in the correction chain. Mirror of `replaced_by_event_id` on the predecessor.
+     */
+    replaces_event_id?: string | null;
+    /**
+     * Obligated By Event Id
+     *
+     * Forward-materialization link — the event that scheduled or obligated this one (e.g. depreciation entries point at the originating `asset_acquired` event).
+     */
+    obligated_by_event_id?: string | null;
+    /**
+     * Discharges Event Id
+     *
+     * Settlement link — the obligation this event discharges (e.g. `cash_received` pointing at the originating `sale_invoiced`).
+     */
+    discharges_event_id?: string | null;
+    /**
+     * Created At
+     *
+     * Row creation timestamp (UTC).
+     */
+    created_at: string;
+    /**
+     * Created By
+     *
+     * ID of the user who captured the event. For adapter-sourced events, the system actor associated with the adapter.
+     */
+    created_by: string;
+};
+
+/**
+ * EventHandlerResponse
+ */
+export type EventHandlerResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Event Type
+     */
+    event_type: string;
+    /**
+     * Event Category
+     */
+    event_category?: string | null;
+    /**
+     * Match Source
+     */
+    match_source?: string | null;
+    /**
+     * Match Agent Type
+     */
+    match_agent_type?: string | null;
+    /**
+     * Match Resource Type
+     */
+    match_resource_type?: string | null;
+    /**
+     * Match Metadata Expression
+     */
+    match_metadata_expression?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Transaction Template
+     */
+    transaction_template: {
+        [key: string]: unknown;
+    };
+    /**
+     * Priority
+     */
+    priority: number;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Origin
+     */
+    origin: string;
+    /**
+     * Suggested By
+     */
+    suggested_by?: string | null;
+    /**
+     * Confidence
+     */
+    confidence?: number | null;
+    /**
+     * Approved By
+     */
+    approved_by?: string | null;
+    /**
+     * Approved At
+     */
+    approved_at?: string | null;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
+    /**
+     * Created By
+     */
+    created_by?: string | null;
+};
+
+/**
+ * FactLite
+ *
+ * Fact projection — just the values the envelope caller cares about.
+ */
+export type FactLite = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Value
+     */
+    value: number;
+    /**
+     * Period Start
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Period Type
+     */
+    period_type: string;
+    /**
+     * Unit
+     */
+    unit?: string;
+    /**
+     * Fact Scope
+     *
+     * historical | in_scope
+     */
+    fact_scope: string;
+    /**
+     * Fact Set Id
+     */
+    fact_set_id?: string | null;
+};
+
+/**
+ * FactSetLite
+ *
+ * FactSet projection — period-specific instantiation of the Structure.
+ *
+ * The envelope carries one ``FactSetLite`` per block when a FactSet row
+ * exists for the requested period; legacy writes that pre-date FactSet
+ * stamping leave ``fact_set`` null until the expand pass starts
+ * populating those rows.
+ */
+export type FactSetLite = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Structure Id
+     */
+    structure_id?: string | null;
+    /**
+     * Period Start
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Factset Type
+     *
+     * 'report' | 'schedule' | 'custom'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint.
+     */
+    factset_type: string;
+    /**
+     * Entity Id
+     */
+    entity_id: string;
+    /**
+     * Report Id
+     *
+     * Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands.
+     */
+    report_id?: string | null;
 };
 
 /**
@@ -3417,6 +4508,8 @@ export type FileLayerStatus = {
  * ``filed_at`` are stamped from the auth context + server clock; the
  * request itself carries no fields today (kept as a model for OpenAPI
  * shape consistency and to avoid breaking changes if we add fields).
+ * Use ``transition-filing-status`` for the non-file legs of the
+ * lifecycle (`draft ↔ under_review`, `filed → archived`).
  */
 export type FileReportRequest = {
     /**
@@ -3539,6 +4632,114 @@ export type FinancialStatementAnalysisRequest = {
      * Limit
      */
     limit?: number;
+};
+
+/**
+ * FiscalCalendarResponse
+ *
+ * Current fiscal calendar state for a graph.
+ */
+export type FiscalCalendarResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Fiscal Year Start Month
+     */
+    fiscal_year_start_month: number;
+    /**
+     * Closed Through
+     *
+     * Latest closed period (YYYY-MM), or null if nothing closed
+     */
+    closed_through?: string | null;
+    /**
+     * Close Target
+     *
+     * Target period the user wants closed through (YYYY-MM)
+     */
+    close_target?: string | null;
+    /**
+     * Gap Periods
+     *
+     * Number of periods between closed_through and close_target (inclusive of close_target). 0 means caught up.
+     */
+    gap_periods?: number;
+    /**
+     * Catch Up Sequence
+     *
+     * Ordered list of periods that a close run would process
+     */
+    catch_up_sequence?: Array<string>;
+    /**
+     * Closeable Now
+     *
+     * Whether the next period in the catch-up sequence passes all closeable gates
+     */
+    closeable_now?: boolean;
+    /**
+     * Blockers
+     *
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed'
+     */
+    blockers?: Array<string>;
+    /**
+     * Last Close At
+     */
+    last_close_at?: string | null;
+    /**
+     * Initialized At
+     */
+    initialized_at?: string | null;
+    /**
+     * Last Sync At
+     *
+     * Most recent QB sync timestamp (if connected)
+     */
+    last_sync_at?: string | null;
+    /**
+     * Periods
+     *
+     * Fiscal period rows for this graph
+     */
+    periods?: Array<FiscalPeriodSummary>;
+};
+
+/**
+ * FiscalPeriodSummary
+ *
+ * One fiscal period row — header view used in calendar listings.
+ *
+ * Status lifecycle: ``open`` → ``closing`` → ``closed``. ``closing``
+ * is the transient state during a close run; ``closed_at`` stamps when
+ * the lock landed.
+ */
+export type FiscalPeriodSummary = {
+    /**
+     * Name
+     *
+     * Period name (YYYY-MM)
+     */
+    name: string;
+    /**
+     * Start Date
+     */
+    start_date: string;
+    /**
+     * End Date
+     */
+    end_date: string;
+    /**
+     * Status
+     *
+     * 'open' | 'closing' | 'closed'
+     */
+    status: string;
+    /**
+     * Closed At
+     */
+    closed_at?: string | null;
 };
 
 /**
@@ -4417,6 +5618,115 @@ export type HealthStatus = {
 };
 
 /**
+ * InformationBlockEnvelope
+ *
+ * The Information Block exchange format.
+ *
+ * One envelope per block instance. Carries the block's identity + type,
+ * Information-Model attributes, the Artifact branch (mechanics +
+ * topic/template), and bundled atoms (elements, connections, facts).
+ * Rules / dimensions / FactSet / verification_results are present-but-
+ * empty for blocks where the upstream content (rule engine, FactSet
+ * expand, dimension catalog) has not yet been implemented.
+ */
+export type InformationBlockEnvelope = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Block Type
+     *
+     * Discriminator — 'schedule', …
+     */
+    block_type: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Display Name
+     *
+     * Registry-sourced display label (e.g., 'Schedule').
+     */
+    display_name: string;
+    /**
+     * Category
+     *
+     * Registry-sourced sidebar grouping ('Close', 'Reporting', …).
+     */
+    category: string;
+    /**
+     * Taxonomy Id
+     *
+     * Source taxonomy the Structure was seeded from. Always present for currently-registered block types (the Structure → Taxonomy FK is non-null); declared optional to keep the shape forward-compatible with future synthetic blocks that don't originate from a taxonomy.
+     */
+    taxonomy_id?: string | null;
+    /**
+     * Taxonomy Name
+     *
+     * Display name of the source taxonomy.
+     */
+    taxonomy_name?: string | null;
+    information_model: InformationModelResponse;
+    artifact: ArtifactResponse;
+    /**
+     * Elements
+     */
+    elements?: Array<ElementLite>;
+    /**
+     * Connections
+     */
+    connections?: Array<ConnectionLite>;
+    /**
+     * Facts
+     */
+    facts?: Array<FactLite>;
+    /**
+     * Rules
+     */
+    rules?: Array<RuleLite>;
+    /**
+     * Dimensions
+     */
+    dimensions?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * The period-specific FactSet this envelope instantiates. Null when the underlying block has no FactSet row yet — typically library-seeded statement Structures with no tenant-generated facts, or Schedule rows written before the create-side FactSet stamping was added.
+     */
+    fact_set?: FactSetLite | null;
+    /**
+     * Verification Results
+     */
+    verification_results?: Array<VerificationResultLite>;
+    /**
+     * Server-computed view projections (Charlie's six type-of View arms). ``view.rendering`` carries pre-computed rows + periods + validation for blocks where rendering is deterministic (the statement family today). Other projections come online as their backend support lands — see :class:`ViewProjections`.
+     */
+    view?: ViewProjections;
+};
+
+/**
+ * InformationModelResponse
+ *
+ * The block's intrinsic shape — concept + member arrangement patterns.
+ */
+export type InformationModelResponse = {
+    /**
+     * Concept Arrangement
+     *
+     * roll_up | roll_forward | variance | adjustment | set | arithmetic | textblock. Null for block types where the concept arrangement is implicit in their mechanics.
+     */
+    concept_arrangement?: string | null;
+    /**
+     * Member Arrangement
+     *
+     * aggregation | nonaggregation, or null if non-hypercube.
+     */
+    member_arrangement?: string | null;
+};
+
+/**
  * InitialEntityData
  *
  * Initial entity data for entity-focused graph creation.
@@ -4489,6 +5799,21 @@ export type InitialEntityData = {
 
 /**
  * InitializeLedgerRequest
+ *
+ * One-time setup for a graph's fiscal calendar.
+ *
+ * Creates the `FiscalCalendar` row, seeds `FiscalPeriod` rows from
+ * ``earliest_data_period`` (or 24 months ago) through the current month,
+ * and stamps periods on or before ``closed_through`` as already closed.
+ * Subsequent calls return 409 — there's no re-initialize.
+ *
+ * The two pointers it sets up:
+ *
+ * - ``closed_through`` (system-maintained): the latest period whose
+ * books are locked. Set on init for businesses with prior close
+ * history; null for a fresh start.
+ * - ``close_target`` (user-controlled): the goal date the user is
+ * closing toward. Set independently via `set-close-target`.
  */
 export type InitializeLedgerRequest = {
     /**
@@ -4521,6 +5846,25 @@ export type InitializeLedgerRequest = {
      * Free-form note attached to the audit event
      */
     note?: string | null;
+};
+
+/**
+ * InitializeLedgerResponse
+ */
+export type InitializeLedgerResponse = {
+    fiscal_calendar: FiscalCalendarResponse;
+    /**
+     * Periods Created
+     *
+     * Number of FiscalPeriod rows created by initialization
+     */
+    periods_created?: number;
+    /**
+     * Warnings
+     *
+     * Non-fatal warnings (e.g., auto_seed_schedules not implemented)
+     */
+    warnings?: Array<string>;
 };
 
 /**
@@ -4744,20 +6088,384 @@ export type InvoicesResponse = {
 export type JournalEntryLineItemInput = {
     /**
      * Element Id
+     *
+     * Element ULID identifying the account to post to.
+     */
+    element_id: string;
+    /**
+     * Debit Amount
+     *
+     * Debit amount in cents. Must be 0 if `credit_amount` > 0.
+     */
+    debit_amount?: number;
+    /**
+     * Credit Amount
+     *
+     * Credit amount in cents. Must be 0 if `debit_amount` > 0.
+     */
+    credit_amount?: number;
+    /**
+     * Description
+     *
+     * Per-line memo (overrides the entry-level memo on this line).
+     */
+    description?: string | null;
+};
+
+/**
+ * JournalEntryLineItemResponse
+ *
+ * One line in a journal entry response.
+ */
+export type JournalEntryLineItemResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Element Id
      */
     element_id: string;
     /**
      * Debit Amount
      */
-    debit_amount?: number;
+    debit_amount: number;
     /**
      * Credit Amount
      */
-    credit_amount?: number;
+    credit_amount: number;
     /**
      * Description
      */
     description?: string | null;
+    /**
+     * Line Order
+     */
+    line_order: number;
+};
+
+/**
+ * JournalEntryResponse
+ *
+ * The common response shape for journal entry write operations.
+ */
+export type JournalEntryResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Transaction Id
+     */
+    transaction_id?: string | null;
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Posting Date
+     */
+    posting_date: string;
+    /**
+     * Memo
+     */
+    memo?: string | null;
+    /**
+     * Provenance
+     */
+    provenance?: string | null;
+    /**
+     * Reversal Of
+     */
+    reversal_of?: string | null;
+    /**
+     * Posted At
+     */
+    posted_at?: string | null;
+    /**
+     * Line Items
+     */
+    line_items: Array<JournalEntryLineItemResponse>;
+    /**
+     * Total Debit
+     */
+    total_debit: number;
+    /**
+     * Total Credit
+     */
+    total_credit: number;
+};
+
+/**
+ * LedgerAgentResponse
+ */
+export type LedgerAgentResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Agent Type
+     */
+    agent_type: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Legal Name
+     */
+    legal_name?: string | null;
+    /**
+     * Tax Id
+     */
+    tax_id?: string | null;
+    /**
+     * Registration Number
+     */
+    registration_number?: string | null;
+    /**
+     * Duns
+     */
+    duns?: string | null;
+    /**
+     * Lei
+     */
+    lei?: string | null;
+    /**
+     * Email
+     */
+    email?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Address
+     */
+    address?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * Is Active
+     */
+    is_active: boolean;
+    /**
+     * Is 1099 Recipient
+     */
+    is_1099_recipient: boolean;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
+    /**
+     * Created By
+     */
+    created_by?: string | null;
+};
+
+/**
+ * LedgerEntityResponse
+ *
+ * Entity details from the extensions OLTP database.
+ *
+ * Returned by entity reads and `update-entity`. Identifiers
+ * (CIK / ticker / SIC / LEI / tax_id) are present when sourced from
+ * SEC or registry data; many are null for private companies. The
+ * address fields are flattened (no nested object) to make them easy
+ * to project into reporting forms.
+ */
+export type LedgerEntityResponse = {
+    /**
+     * Id
+     *
+     * Entity identifier (ULID).
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Display name shown in UI.
+     */
+    name: string;
+    /**
+     * Legal Name
+     *
+     * Full registered legal name (when different from `name`).
+     */
+    legal_name?: string | null;
+    /**
+     * Uri
+     *
+     * Canonical URL / external identifier.
+     */
+    uri?: string | null;
+    /**
+     * Cik
+     *
+     * SEC CIK (Central Index Key).
+     */
+    cik?: string | null;
+    /**
+     * Ticker
+     *
+     * Stock ticker symbol.
+     */
+    ticker?: string | null;
+    /**
+     * Exchange
+     *
+     * Listing exchange (e.g. 'NASDAQ', 'NYSE').
+     */
+    exchange?: string | null;
+    /**
+     * Sic
+     *
+     * SIC industry code.
+     */
+    sic?: string | null;
+    /**
+     * Sic Description
+     *
+     * SIC code description.
+     */
+    sic_description?: string | null;
+    /**
+     * Category
+     *
+     * Filer category (e.g. 'Large Accelerated Filer').
+     */
+    category?: string | null;
+    /**
+     * State Of Incorporation
+     *
+     * US state or country of incorporation.
+     */
+    state_of_incorporation?: string | null;
+    /**
+     * Fiscal Year End
+     *
+     * Fiscal year-end as MM-DD (e.g. '12-31', '06-30').
+     */
+    fiscal_year_end?: string | null;
+    /**
+     * Tax Id
+     *
+     * Tax ID (EIN / SSN).
+     */
+    tax_id?: string | null;
+    /**
+     * Lei
+     *
+     * Legal Entity Identifier (ISO 17442).
+     */
+    lei?: string | null;
+    /**
+     * Industry
+     *
+     * Free-form industry label.
+     */
+    industry?: string | null;
+    /**
+     * Entity Type
+     *
+     * Legal form (e.g. 'corporation', 'llc', 'lp').
+     */
+    entity_type?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Website
+     */
+    website?: string | null;
+    /**
+     * Status
+     *
+     * Operational status: 'active' | 'inactive' | 'dissolved'.
+     */
+    status?: string;
+    /**
+     * Is Parent
+     *
+     * True for top-level entities; False for subsidiaries.
+     */
+    is_parent?: boolean;
+    /**
+     * Parent Entity Id
+     *
+     * Parent entity ID for subsidiaries; null for top-level.
+     */
+    parent_entity_id?: string | null;
+    /**
+     * Source
+     *
+     * Provenance: 'native' | 'sec' | 'quickbooks' | 'xero' | 'plaid'.
+     */
+    source?: string;
+    /**
+     * Source Id
+     *
+     * Source-system primary key for sync reconciliation.
+     */
+    source_id?: string | null;
+    /**
+     * Source Graph Id
+     *
+     * Origin graph for received entities (cross-graph linking, e.g. RoboInvestor portfolio holdings).
+     */
+    source_graph_id?: string | null;
+    /**
+     * Connection Id
+     *
+     * Source connection that ingested this row.
+     */
+    connection_id?: string | null;
+    /**
+     * Address Line1
+     */
+    address_line1?: string | null;
+    /**
+     * Address City
+     */
+    address_city?: string | null;
+    /**
+     * Address State
+     */
+    address_state?: string | null;
+    /**
+     * Address Postal Code
+     */
+    address_postal_code?: string | null;
+    /**
+     * Address Country
+     */
+    address_country?: string | null;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
 };
 
 /**
@@ -4766,24 +6474,37 @@ export type JournalEntryLineItemInput = {
  * Link an entity to a taxonomy (creates the ENTITY_HAS_TAXONOMY edge).
  *
  * This is how a graph declares "this entity reports under this taxonomy."
- * For chart_of_accounts taxonomies, this tells the platform which CoA the
- * entity uses. For reporting taxonomies, which standard (us-gaap, ifrs).
+ * For ``chart_of_accounts`` taxonomies, this tells the platform which CoA
+ * the entity uses. For reporting taxonomies, which standard (us-gaap,
+ * ifrs). Idempotent — re-linking returns the existing edge unchanged.
+ *
+ * CoA blocks auto-link at create time; use this to switch the primary
+ * CoA, link a reporting extension, or attach a custom ontology
+ * explicitly.
  */
 export type LinkEntityTaxonomyRequest = {
     /**
      * Taxonomy Id
+     *
+     * The taxonomy to link to.
      */
     taxonomy_id: string;
     /**
      * Basis
+     *
+     * Linkage role: `chart_of_accounts` (the entity's CoA), `reporting` (reporting standard like us-gaap), `mapping` (CoA→reporting rollup), `schedule` (schedule structure).
      */
     basis?: 'reporting' | 'chart_of_accounts' | 'mapping' | 'schedule';
     /**
      * Is Primary
+     *
+     * Mark this as the primary linkage for the basis. False allows secondary attachments (e.g. parallel reporting standards).
      */
     is_primary?: boolean;
     /**
      * Adoption Context
+     *
+     * Why the entity is reporting under this taxonomy (e.g. 'voluntary', 'regulatory', 'lender_requirement').
      */
     adoption_context?: string | null;
 };
@@ -5027,6 +6748,55 @@ export type MaterializeOp = {
 };
 
 /**
+ * MetricMechanics
+ *
+ * Derivative mechanics for ``block_type='metric'``.
+ *
+ * A metric block composes its facts from one or more source blocks at
+ * read time — covenant tests, ratios, KPI trend computations. The typed
+ * arm ships today so the discriminated union covers all three
+ * construction modes (declarative / compositional / derivative); the
+ * derivation evaluator that actually computes facts from source-block
+ * FactSets is not yet implemented.
+ *
+ * ``source_block_ids`` is the ordered list of Structure ids this metric
+ * derives from; ``derivation_type`` names the kind of computation
+ * (``ratio``, ``trailing_twelve_month``, ``covenant_test``, …), and
+ * ``expression`` carries the agent-authored derivation string that the
+ * evaluator will consume at envelope build time.
+ */
+export type MetricMechanics = {
+    /**
+     * Kind
+     */
+    kind?: 'metric';
+    /**
+     * Source Block Ids
+     *
+     * Ordered list of Structure ids this metric sources from. Must be non-empty at evaluation time; empty lists are accepted so library scaffolding can register metric templates before source linkage is wired.
+     */
+    source_block_ids?: Array<string>;
+    /**
+     * Derivation Type
+     *
+     * Free-form label for the derivation kind — 'ratio', 'trailing_twelve_month', 'covenant_test', etc. The evaluator dispatches on this tag; the set may be locked with a CHECK constraint once the derivation catalog stabilizes.
+     */
+    derivation_type?: string | null;
+    /**
+     * Expression
+     *
+     * Derivation expression in the metric DSL — evaluated at envelope read time to produce the derivative fact value. Opaque string today; the metric-side parser / evaluator is not yet implemented.
+     */
+    expression?: string | null;
+    /**
+     * Unit
+     *
+     * Output unit of the derived value — 'ratio', 'percent', 'USD', 'count', etc. Used by the renderer to format the metric badge.
+     */
+    unit?: string;
+};
+
+/**
  * OAuthCallbackRequest
  *
  * OAuth callback parameters.
@@ -5228,6 +6998,11 @@ export type OperationCosts = {
  * ``operation_id`` so the audit log and any partial SSE events stay
  * correlatable.
  *
+ * ``TResult`` parameterizes the ``result`` field so per-op response shapes
+ * surface in OpenAPI. Operations that pin ``OperationSpec.result_type`` get
+ * ``OperationEnvelope[YourEnvelope]`` as their response model; ops that
+ * don't keep the default ``Any`` shape (`result: any | null` on the wire).
+ *
  * Fields:
  * - ``operation``: kebab-case command name (e.g. ``close-period``)
  * - ``operation_id``: ``op_``-prefixed ULID; always present, usable for
@@ -5267,9 +7042,1113 @@ export type OperationEnvelope = {
      *
      * Command-specific result payload
      */
-    result?: {
-        [key: string]: unknown;
-    } | Array<unknown> | null;
+    result?: unknown | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[AssociationResponse]
+ */
+export type OperationEnvelopeAssociationResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: AssociationResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ClosePeriodResponse]
+ */
+export type OperationEnvelopeClosePeriodResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ClosePeriodResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[DeleteInformationBlockResponse]
+ */
+export type OperationEnvelopeDeleteInformationBlockResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DeleteInformationBlockResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[DeletePortfolioBlockResponse]
+ */
+export type OperationEnvelopeDeletePortfolioBlockResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DeletePortfolioBlockResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[DeleteResult]
+ */
+export type OperationEnvelopeDeleteResult = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DeleteResult | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[DeleteTaxonomyBlockResponse]
+ */
+export type OperationEnvelopeDeleteTaxonomyBlockResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DeleteTaxonomyBlockResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[EntityTaxonomyResponse]
+ */
+export type OperationEnvelopeEntityTaxonomyResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: EntityTaxonomyResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[EvaluateRulesResponse]
+ */
+export type OperationEnvelopeEvaluateRulesResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: EvaluateRulesResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[EventBlockEnvelope]
+ */
+export type OperationEnvelopeEventBlockEnvelope = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: EventBlockEnvelope | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[EventHandlerResponse]
+ */
+export type OperationEnvelopeEventHandlerResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: EventHandlerResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[FiscalCalendarResponse]
+ */
+export type OperationEnvelopeFiscalCalendarResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: FiscalCalendarResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[InformationBlockEnvelope]
+ */
+export type OperationEnvelopeInformationBlockEnvelope = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: InformationBlockEnvelope | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[InitializeLedgerResponse]
+ */
+export type OperationEnvelopeInitializeLedgerResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: InitializeLedgerResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[JournalEntryResponse]
+ */
+export type OperationEnvelopeJournalEntryResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: JournalEntryResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[LedgerAgentResponse]
+ */
+export type OperationEnvelopeLedgerAgentResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: LedgerAgentResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[LedgerEntityResponse]
+ */
+export type OperationEnvelopeLedgerEntityResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: LedgerEntityResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[PortfolioBlockEnvelope]
+ */
+export type OperationEnvelopePortfolioBlockEnvelope = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: PortfolioBlockEnvelope | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[PreviewEventBlockResponse]
+ */
+export type OperationEnvelopePreviewEventBlockResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: PreviewEventBlockResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[PublishListResponse]
+ */
+export type OperationEnvelopePublishListResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: PublishListResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ReportResponse]
+ */
+export type OperationEnvelopeReportResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ReportResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[SecurityResponse]
+ */
+export type OperationEnvelopeSecurityResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: SecurityResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ShareReportResponse]
+ */
+export type OperationEnvelopeShareReportResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ShareReportResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[TaxonomyBlockEnvelope]
+ */
+export type OperationEnvelopeTaxonomyBlockEnvelope = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: TaxonomyBlockEnvelope | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[list[PublishListMemberResponse]]
+ */
+export type OperationEnvelopeListPublishListMemberResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Result
+     *
+     * Command-specific result payload
+     */
+    result?: Array<PublishListMemberResponse> | null;
     /**
      * At
      *
@@ -5739,19 +8618,31 @@ export type PerformanceInsights = {
 /**
  * PeriodSpec
  *
- * A reporting period column.
+ * A single reporting period column.
+ *
+ * Reports render facts in N period columns side-by-side. Each
+ * ``PeriodSpec`` is one column — its ``start``/``end`` define the
+ * window the report's facts roll up into; ``label`` is what the renderer
+ * prints in the column header. For year-over-year statements, supply two
+ * PeriodSpecs (current + comparative); for YTD by quarter, supply four.
  */
 export type PeriodSpec = {
     /**
      * Start
+     *
+     * Period start date (inclusive). Window the column rolls up.
      */
     start: string;
     /**
      * End
+     *
+     * Period end date (inclusive). Window the column rolls up.
      */
     end: string;
     /**
      * Label
+     *
+     * Column header label (e.g. 'FY2025 Q3', '2024', 'YTD').
      */
     label: string;
 };
@@ -5771,6 +8662,96 @@ export type PortalSessionResponse = {
 };
 
 /**
+ * PortfolioBlockEnvelope
+ *
+ * Molecular response shape for portfolio-block operations.
+ *
+ * Bundles the portfolio core, its embedded positions, and pre-computed
+ * totals into a single payload — the contract for `create-portfolio-block`,
+ * `update-portfolio-block`, and the read-side `get-portfolio-block`.
+ * Cents-precision values aren't surfaced here; use `PositionResponse`
+ * / `PortfolioResponse` for those.
+ */
+export type PortfolioBlockEnvelope = {
+    /**
+     * Id
+     *
+     * Portfolio ID (`port_*` ULID).
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Display name.
+     */
+    name: string;
+    /**
+     * Description
+     *
+     * Free-text description.
+     */
+    description?: string | null;
+    /**
+     * Strategy
+     *
+     * Free-text strategy classification.
+     */
+    strategy?: string | null;
+    /**
+     * Inception Date
+     *
+     * Date the portfolio was established.
+     */
+    inception_date?: string | null;
+    /**
+     * Base Currency
+     *
+     * ISO 4217 currency code for portfolio aggregates.
+     */
+    base_currency: string;
+    /**
+     * Embedded owning entity, when set. `null` for unattributed portfolios.
+     */
+    owner?: EntityLite | null;
+    /**
+     * Positions
+     *
+     * All positions in this portfolio, including disposed ones (filter by `status` for active-only display).
+     */
+    positions: Array<PositionBlock>;
+    /**
+     * Total Cost Basis Dollars
+     *
+     * Sum of `cost_basis_dollars` across every position.
+     */
+    total_cost_basis_dollars: number;
+    /**
+     * Total Current Value Dollars
+     *
+     * Sum of `current_value_dollars` across every position. `null` when any active position lacks a mark.
+     */
+    total_current_value_dollars?: number | null;
+    /**
+     * Active Position Count
+     *
+     * Count of positions with `status='active'`.
+     */
+    active_position_count: number;
+    /**
+     * Created At
+     *
+     * Row creation timestamp (UTC).
+     */
+    created_at: string;
+    /**
+     * Updated At
+     *
+     * Last-modified timestamp (UTC).
+     */
+    updated_at: string;
+};
+
+/**
  * PortfolioBlockPortfolioFields
  *
  * Fields settable on the portfolio core when creating a block.
@@ -5778,26 +8759,38 @@ export type PortalSessionResponse = {
 export type PortfolioBlockPortfolioFields = {
     /**
      * Name
+     *
+     * Display name for the portfolio. 1-200 characters.
      */
     name: string;
     /**
      * Description
+     *
+     * Free-text description of the portfolio.
      */
     description?: string | null;
     /**
      * Strategy
+     *
+     * Free-text strategy classification (e.g. `value`, `growth`, `income`). Open vocabulary.
      */
     strategy?: string | null;
     /**
      * Inception Date
+     *
+     * Date the portfolio was established (YYYY-MM-DD).
      */
     inception_date?: string | null;
     /**
      * Base Currency
+     *
+     * ISO 4217 currency code used for portfolio-level aggregates (e.g. `total_cost_basis_dollars`).
      */
     base_currency?: string;
     /**
      * Entity Id
+     *
+     * ID of the owning entity (e.g. fund, trust, or person). Optional — leave unset for unattributed portfolios.
      */
     entity_id?: string | null;
 };
@@ -5810,26 +8803,38 @@ export type PortfolioBlockPortfolioFields = {
 export type PortfolioBlockPortfolioPatch = {
     /**
      * Name
+     *
+     * New display name. Unset = unchanged.
      */
     name?: string | null;
     /**
      * Description
+     *
+     * New description. Unset = unchanged.
      */
     description?: string | null;
     /**
      * Strategy
+     *
+     * New strategy classification. Unset = unchanged.
      */
     strategy?: string | null;
     /**
      * Inception Date
+     *
+     * New inception date (YYYY-MM-DD). Unset = unchanged.
      */
     inception_date?: string | null;
     /**
      * Base Currency
+     *
+     * New ISO 4217 base currency code. Unset = unchanged. Note: changing base currency does not retroactively reprice historical positions.
      */
     base_currency?: string | null;
     /**
      * Entity Id
+     *
+     * New owning-entity ID. Unset = unchanged.
      */
     entity_id?: string | null;
 };
@@ -5845,42 +8850,62 @@ export type PortfolioBlockPortfolioPatch = {
 export type PortfolioBlockPositionAdd = {
     /**
      * Security Id
+     *
+     * ID of the existing security this position holds. Securities are minted via `create-security`; the operation returns 404 if the ID is unknown.
      */
     security_id: string;
     /**
      * Quantity
+     *
+     * Quantity held, in units defined by `quantity_type` (e.g. share count for `shares`, face value for `principal`).
      */
     quantity: number;
     /**
      * Quantity Type
+     *
+     * Unit basis for `quantity`. Common values: `shares` (equity units), `units` (generic), `principal` (debt face value).
      */
     quantity_type?: string;
     /**
      * Cost Basis
+     *
+     * Total cost basis for this lot, in **cents** of `currency`. Stored as integer cents to avoid float precision drift; $1,250.00 USD is `125000`.
      */
     cost_basis?: number;
     /**
      * Currency
+     *
+     * ISO 4217 currency code for `cost_basis` and `current_value`.
      */
     currency?: string;
     /**
      * Current Value
+     *
+     * Latest mark-to-market value in **cents** of `currency`, or `null` if unmarked. Pair with `valuation_date` and `valuation_source` when set.
      */
     current_value?: number | null;
     /**
      * Valuation Date
+     *
+     * Date `current_value` was sourced (YYYY-MM-DD).
      */
     valuation_date?: string | null;
     /**
      * Valuation Source
+     *
+     * Free-text source attribution for `current_value` (e.g. `manual`, `broker_statement`, vendor name).
      */
     valuation_source?: string | null;
     /**
      * Acquisition Date
+     *
+     * Date the position was originally acquired (YYYY-MM-DD).
      */
     acquisition_date?: string | null;
     /**
      * Notes
+     *
+     * Free-text notes attached to the position.
      */
     notes?: string | null;
 };
@@ -5897,10 +8922,14 @@ export type PortfolioBlockPositionAdd = {
 export type PortfolioBlockPositionDispose = {
     /**
      * Id
+     *
+     * Target position ID to dispose. Must belong to the portfolio identified by `portfolio_id` on the parent operation.
      */
     id: string;
     /**
      * Disposition Reason
+     *
+     * Optional free-text reason recorded under `metadata.disposition_reason` on the disposed position.
      */
     disposition_reason?: string | null;
 };
@@ -5915,38 +8944,56 @@ export type PortfolioBlockPositionDispose = {
 export type PortfolioBlockPositionUpdate = {
     /**
      * Id
+     *
+     * Target position ID. Must belong to the portfolio identified by `portfolio_id` on the parent operation.
      */
     id: string;
     /**
      * Quantity
+     *
+     * New quantity in units of `quantity_type`. Unset = unchanged.
      */
     quantity?: number | null;
     /**
      * Quantity Type
+     *
+     * New unit basis (`shares` | `units` | `principal`). Unset = unchanged.
      */
     quantity_type?: string | null;
     /**
      * Cost Basis
+     *
+     * New cost basis in **cents** of the position's currency. Unset = unchanged.
      */
     cost_basis?: number | null;
     /**
      * Current Value
+     *
+     * New mark-to-market value in **cents**. Unset = unchanged. Set alongside `valuation_date` / `valuation_source` to record a fresh valuation event.
      */
     current_value?: number | null;
     /**
      * Valuation Date
+     *
+     * New valuation date (YYYY-MM-DD). Unset = unchanged.
      */
     valuation_date?: string | null;
     /**
      * Valuation Source
+     *
+     * New valuation source attribution. Unset = unchanged.
      */
     valuation_source?: string | null;
     /**
      * Acquisition Date
+     *
+     * New acquisition date (YYYY-MM-DD). Unset = unchanged.
      */
     acquisition_date?: string | null;
     /**
      * Notes
+     *
+     * New notes. Unset = unchanged.
      */
     notes?: string | null;
 };
@@ -5959,16 +9006,222 @@ export type PortfolioBlockPositionUpdate = {
 export type PortfolioBlockPositions = {
     /**
      * Add
+     *
+     * New positions to mint inside this portfolio. Each references an existing `security_id`.
      */
     add?: Array<PortfolioBlockPositionAdd>;
     /**
      * Update
+     *
+     * Patches to existing positions, addressed by position `id`. Unset fields on each entry are left unchanged.
      */
     update?: Array<PortfolioBlockPositionUpdate>;
     /**
      * Dispose
+     *
+     * Positions to soft-dispose, addressed by position `id`. Status flips to `disposed` and `disposition_date` is stamped.
      */
     dispose?: Array<PortfolioBlockPositionDispose>;
+};
+
+/**
+ * PositionBlock
+ *
+ * Position projection embedded inside a `PortfolioBlockEnvelope`.
+ *
+ * Pre-converts cents fields to dollars (`cost_basis_dollars`,
+ * `current_value_dollars`) for display; the cents-precision fields
+ * live on the standalone `PositionResponse`. Embeds a `SecurityLite`
+ * so callers can render the security name without a follow-up fetch.
+ */
+export type PositionBlock = {
+    /**
+     * Id
+     *
+     * Position ID (`pos_*` ULID).
+     */
+    id: string;
+    /**
+     * Quantity
+     *
+     * Quantity held in `quantity_type` units.
+     */
+    quantity: number;
+    /**
+     * Quantity Type
+     *
+     * Unit basis (`shares`, `units`, `principal`).
+     */
+    quantity_type: string;
+    /**
+     * Cost Basis Dollars
+     *
+     * Cost basis in dollars (pre-converted from cents).
+     */
+    cost_basis_dollars: number;
+    /**
+     * Current Value Dollars
+     *
+     * Latest mark-to-market value in dollars. `null` when the position has not been marked.
+     */
+    current_value_dollars?: number | null;
+    /**
+     * Valuation Date
+     *
+     * Date the current value was sourced.
+     */
+    valuation_date?: string | null;
+    /**
+     * Valuation Source
+     *
+     * Free-text source attribution for the valuation.
+     */
+    valuation_source?: string | null;
+    /**
+     * Acquisition Date
+     *
+     * Date the position was acquired.
+     */
+    acquisition_date?: string | null;
+    /**
+     * Status
+     *
+     * Lifecycle state (`active`, `disposed`, `archived`). See `PositionResponse.status` for the full vocabulary.
+     */
+    status: string;
+    /**
+     * Notes
+     *
+     * Free-text notes attached to the position.
+     */
+    notes?: string | null;
+    /**
+     * Embedded security details — name, type, issuer.
+     */
+    security: SecurityLite;
+};
+
+/**
+ * PreviewEventBlockResponse
+ *
+ * Dry-run result — what would happen if this event block were created.
+ */
+export type PreviewEventBlockResponse = {
+    matched_handler?: EventHandlerResponse | null;
+    /**
+     * Planned Transactions
+     */
+    planned_transactions?: Array<TransactionPreview>;
+    /**
+     * Validation Errors
+     */
+    validation_errors?: Array<string>;
+    /**
+     * Would Succeed
+     */
+    would_succeed: boolean;
+    /**
+     * Handler Metadata
+     *
+     * Handler-specific compute output. For Python handlers like 'asset_disposed', includes NBV, gain/loss, accumulated depreciation. Empty for DSL-handler previews.
+     */
+    handler_metadata?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * PublishListMemberResponse
+ *
+ * One recipient graph in a publish list.
+ */
+export type PublishListMemberResponse = {
+    /**
+     * Id
+     *
+     * Membership row identifier (ULID).
+     */
+    id: string;
+    /**
+     * Target Graph Id
+     *
+     * Recipient graph ID.
+     */
+    target_graph_id: string;
+    /**
+     * Target Graph Name
+     *
+     * Display name of the recipient graph (if known).
+     */
+    target_graph_name?: string | null;
+    /**
+     * Target Org Name
+     *
+     * Display name of the org that owns the recipient graph.
+     */
+    target_org_name?: string | null;
+    /**
+     * Added By
+     *
+     * User ID that added this member.
+     */
+    added_by: string;
+    /**
+     * Added At
+     *
+     * When the member was added.
+     */
+    added_at: string;
+};
+
+/**
+ * PublishListResponse
+ *
+ * Publish list summary — header metadata, no members.
+ */
+export type PublishListResponse = {
+    /**
+     * Id
+     *
+     * List identifier (ULID).
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Human-readable list name.
+     */
+    name: string;
+    /**
+     * Description
+     *
+     * Free-form description.
+     */
+    description?: string | null;
+    /**
+     * Member Count
+     *
+     * Number of recipient graphs currently on the list.
+     */
+    member_count?: number;
+    /**
+     * Created By
+     *
+     * User ID that created the list.
+     */
+    created_by: string;
+    /**
+     * Created At
+     *
+     * When the list was created.
+     */
+    created_at: string;
+    /**
+     * Updated At
+     *
+     * Last metadata update (name/description).
+     */
+    updated_at: string;
 };
 
 /**
@@ -6051,28 +9304,34 @@ export type RateLimits = {
 
 /**
  * RegenerateReportOperation
+ *
+ * Regenerate facts for an existing Report. Carries `report_id` from
+ * the path-style RPC body; period overrides are inherited from
+ * :class:`RegenerateReportRequest`.
  */
 export type RegenerateReportOperation = {
     /**
      * Period Start
      *
-     * New period start date
+     * New current-period start. Optional — omit to keep the existing window.
      */
     period_start?: string | null;
     /**
      * Period End
      *
-     * New period end date
+     * New current-period end. Optional — omit to keep the existing window.
      */
     period_end?: string | null;
     /**
      * Periods
      *
-     * New period columns. Overrides period_start/period_end.
+     * New explicit period columns. Overrides `period_start`/`period_end` when supplied.
      */
     periods?: Array<PeriodSpec> | null;
     /**
      * Report Id
+     *
+     * The Report to regenerate.
      */
     report_id: string;
 };
@@ -6111,20 +9370,123 @@ export type RegisterRequest = {
 
 /**
  * RemovePublishListMemberOperation
+ *
+ * Remove a single recipient from a publish list.
  */
 export type RemovePublishListMemberOperation = {
     /**
      * List Id
+     *
+     * The publish list.
      */
     list_id: string;
     /**
      * Member Id
+     *
+     * The membership row to remove.
      */
     member_id: string;
 };
 
 /**
+ * RenderingLite
+ *
+ * Pre-computed rendering projection of an Information Block.
+ *
+ * Computed server-side at envelope-build time for blocks where rendering
+ * is deterministic (the statement family today; future block types add
+ * their own rendering builders). The frontend's ``BlockView``
+ * ``Rendering`` projection consumes this directly — no client-side
+ * rollup, depth computation, or calculation walk needed.
+ */
+export type RenderingLite = {
+    /**
+     * Rows
+     */
+    rows?: Array<RenderingRowLite>;
+    /**
+     * Periods
+     */
+    periods?: Array<RenderingPeriodLite>;
+    validation?: ValidationLite | null;
+    /**
+     * Unmapped Count
+     */
+    unmapped_count?: number;
+};
+
+/**
+ * RenderingPeriodLite
+ *
+ * One period column in a rendered statement.
+ */
+export type RenderingPeriodLite = {
+    /**
+     * Start
+     */
+    start: string;
+    /**
+     * End
+     */
+    end: string;
+    /**
+     * Label
+     */
+    label?: string | null;
+};
+
+/**
+ * RenderingRowLite
+ *
+ * One row of a server-side rendered statement.
+ *
+ * Mirrors :class:`FactRow` from the legacy
+ * :mod:`robosystems.operations.roboledger.reports.fact_grid` but lives at
+ * the API boundary so envelope consumers don't depend on the
+ * fact-grid module. ``values`` is one entry per period column in
+ * :class:`RenderingLite.periods`.
+ */
+export type RenderingRowLite = {
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Element Qname
+     */
+    element_qname?: string | null;
+    /**
+     * Element Name
+     */
+    element_name: string;
+    /**
+     * Classification
+     *
+     * FASB elementsOfFinancialStatements trait identifier — 'asset', 'liability', 'equity', 'revenue', 'expense'. Surfaced so the viewer can color-code or group rows without a follow-up trait lookup.
+     */
+    classification?: string | null;
+    /**
+     * Balance Type
+     */
+    balance_type?: string | null;
+    /**
+     * Values
+     */
+    values?: Array<number | null>;
+    /**
+     * Is Subtotal
+     */
+    is_subtotal?: boolean;
+    /**
+     * Depth
+     */
+    depth?: number;
+};
+
+/**
  * ReopenPeriodOperation
+ *
+ * Reopen the most recently closed fiscal period.
  */
 export type ReopenPeriodOperation = {
     /**
@@ -6141,8 +9503,169 @@ export type ReopenPeriodOperation = {
     note?: string | null;
     /**
      * Period
+     *
+     * Period to reopen, in YYYY-MM. Must equal current `closed_through` — only the most recent close can be undone.
      */
     period: string;
+};
+
+/**
+ * ReportResponse
+ *
+ * Report definition summary — header metadata, no facts.
+ *
+ * Returned by ``create-report``, ``regenerate-report``,
+ * ``file-report``, and ``transition-filing-status``. Use the package
+ * read endpoint to retrieve a Report rehydrated with its rendered
+ * ``InformationBlockEnvelope`` items.
+ */
+export type ReportResponse = {
+    /**
+     * Id
+     *
+     * Report identifier (ULID).
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Human-readable report name.
+     */
+    name: string;
+    /**
+     * Taxonomy Id
+     *
+     * Taxonomy this report renders against.
+     */
+    taxonomy_id: string;
+    /**
+     * Generation Status
+     *
+     * Computation lifecycle: `generating`, `published`, `failed`. Orthogonal to `filing_status`.
+     */
+    generation_status: string;
+    /**
+     * Period Type
+     *
+     * Period cadence: `monthly`, `quarterly`, `annual`.
+     */
+    period_type: string;
+    /**
+     * Period Start
+     *
+     * Current-period start.
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     *
+     * Current-period end.
+     */
+    period_end?: string | null;
+    /**
+     * Comparative
+     *
+     * True when an auto-generated prior-period column is included.
+     */
+    comparative: boolean;
+    /**
+     * Periods
+     *
+     * Explicit period columns when the report was created with a multi-period layout.
+     */
+    periods?: Array<PeriodSpec> | null;
+    /**
+     * Mapping Id
+     *
+     * CoA → taxonomy mapping the facts were rolled up through.
+     */
+    mapping_id?: string | null;
+    /**
+     * Ai Generated
+     *
+     * True when the report was created by an AI agent rather than a user.
+     */
+    ai_generated?: boolean;
+    /**
+     * Created At
+     *
+     * When the report row was created.
+     */
+    created_at: string;
+    /**
+     * Last Generated
+     *
+     * When the facts were last (re)generated.
+     */
+    last_generated?: string | null;
+    /**
+     * Structures
+     *
+     * Structures available for this report's taxonomy — renderable sections (BS / IS / CF / Equity / Schedules).
+     */
+    structures?: Array<StructureSummary>;
+    /**
+     * Entity Name
+     *
+     * Display name of the primary entity the report is tagged to.
+     */
+    entity_name?: string | null;
+    /**
+     * Filing Status
+     *
+     * Filing lifecycle (orthogonal to `generation_status`): `draft`, `under_review`, `filed`, `archived`.
+     */
+    filing_status?: string;
+    /**
+     * Filed At
+     *
+     * When the report was transitioned to `filed`.
+     */
+    filed_at?: string | null;
+    /**
+     * Filed By
+     *
+     * User ID that transitioned the report to `filed`.
+     */
+    filed_by?: string | null;
+    /**
+     * Supersedes Id
+     *
+     * When this report restates an earlier filing, the predecessor's report ID.
+     */
+    supersedes_id?: string | null;
+    /**
+     * Superseded By Id
+     *
+     * When this report has been restated, the successor's report ID.
+     */
+    superseded_by_id?: string | null;
+    /**
+     * Source Graph Id
+     *
+     * Origin graph for received (shared) reports — populated only on the recipient's copy.
+     */
+    source_graph_id?: string | null;
+    /**
+     * Source Report Id
+     *
+     * Origin report ID for received (shared) reports — populated only on the recipient's copy.
+     */
+    source_report_id?: string | null;
+    /**
+     * Shared At
+     *
+     * When the report was shared into this graph (recipient side).
+     */
+    shared_at?: string | null;
+    /**
+     * Rule Summary
+     *
+     * Counts by rule outcome (e.g. `{'passed': 12, 'failed': 1}`) from the most recent evaluation. Null until rules run.
+     */
+    rule_summary?: {
+        [key: string]: number;
+    } | null;
 };
 
 /**
@@ -6298,6 +9821,101 @@ export type RestoreBackupOp = {
 };
 
 /**
+ * RuleLite
+ *
+ * Rule projection for the Information Block envelope.
+ *
+ * One row per ``public.rules`` entry scoped to this block. The rule
+ * engine consumes ``rule_expression`` + ``rule_variables`` to evaluate
+ * against the in-scope fact set; the envelope surfaces the rules so
+ * the UI can render them as a checklist alongside any persisted
+ * verification results.
+ */
+export type RuleLite = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Rule Category
+     *
+     * One of 8 cm:VerificationRule subclasses — AutomatedAccountingAndReportingChecks, FundamentalAccountingConceptRelation, PeerConsistencyRule, PriorPeriodConsistencyRule, ReportLevelModelStructureRule, ReportingSystemSpecificRule, ToDoManualTask, XBRLTechnicalSyntaxRule.
+     */
+    rule_category: string;
+    /**
+     * Rule Pattern
+     *
+     * One of 10 cm:BusinessRulePattern mechanisms — Adjustment, CoExists, EqualTo, Exists, GreaterThan, GreaterThanOrEqualToZero, LessThan, RollForward, RollUp, Variance.
+     */
+    rule_pattern: string;
+    /**
+     * Rule Expression
+     */
+    rule_expression: string;
+    rule_target?: RuleTargetLite | null;
+    /**
+     * Rule Variables
+     */
+    rule_variables?: Array<RuleVariableLite>;
+    /**
+     * Rule Message
+     */
+    rule_message?: string | null;
+    /**
+     * Rule Severity
+     *
+     * Failure severity — 'info' | 'warning' | 'error'. Enum closure enforced by the ``public.rules`` CHECK constraint.
+     */
+    rule_severity?: string;
+    /**
+     * Rule Origin
+     *
+     * Provenance — 'forked' (from an upstream artifact, e.g. Seattle Method) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the ``public.rules`` CHECK constraint.
+     */
+    rule_origin?: string;
+};
+
+/**
+ * RuleTargetLite
+ *
+ * Polymorphic rule target — points at the atom the rule is scoped to.
+ */
+export type RuleTargetLite = {
+    /**
+     * Target Kind
+     *
+     * Which atom type the rule targets — 'structure' | 'element' | 'association' | 'taxonomy'. Enum closure enforced by the ``public.rules`` CHECK constraint.
+     */
+    target_kind: string;
+    /**
+     * Target Ref Id
+     *
+     * UUID of the target atom — structure_id, element_id, association_id, or taxonomy_id depending on ``target_kind``.
+     */
+    target_ref_id: string;
+};
+
+/**
+ * RuleVariableLite
+ *
+ * `$Variable` → concept qname binding for a rule expression.
+ */
+export type RuleVariableLite = {
+    /**
+     * Variable Name
+     *
+     * Local name in the rule expression, e.g. 'Assets'.
+     */
+    variable_name: string;
+    /**
+     * Variable Qname
+     *
+     * Concept qname the variable resolves to, e.g. 'fac:Assets'.
+     */
+    variable_qname: string;
+};
+
+/**
  * SECConnectionConfig
  *
  * SEC-specific connection configuration.
@@ -6401,6 +10019,81 @@ export type SsoTokenResponse = {
      * Available apps for this user
      */
     apps: Array<string>;
+};
+
+/**
+ * ScheduleMechanics
+ *
+ * Closing-entry generator mechanics for ``block_type='schedule'``.
+ *
+ * Reads directly from the typed ``structures.artifact_mechanics`` JSONB
+ * column. ``entry_template`` and ``schedule_metadata`` are typed
+ * sub-models (reusing the wire-level request shapes so OpenAPI emits one
+ * canonical type per concept); the envelope builder falls back to
+ * ``structures.metadata_`` for legacy Schedule rows that the tenant
+ * backfill hasn't yet migrated to the typed column.
+ */
+export type ScheduleMechanics = {
+    /**
+     * Kind
+     */
+    kind?: 'closing_entry_generator';
+    /**
+     * Debit/credit elements + memo template + auto_reverse flag that drive fact→entry generation for each in-scope period.
+     */
+    entry_template: EntryTemplateRequest;
+    /**
+     * Method (straight_line / declining_balance / units_of_production), original_amount, residual_value, useful_life_months, optional asset_element_id for net-book-value cross-reference.
+     */
+    schedule_metadata?: ScheduleMetadataRequest | null;
+    /**
+     * Periods With Entries
+     *
+     * Number of in-scope periods that have at least one closing entry posted. Runtime state derived at envelope-build time from the Entry table.
+     */
+    periods_with_entries?: number;
+};
+
+/**
+ * ScheduleMetadataRequest
+ */
+export type ScheduleMetadataRequest = {
+    /**
+     * Method
+     *
+     * Calculation method. 'straight_line' (default) distributes `monthly_amount` evenly across periods with the final period absorbing rounding. 'custom' requires `periodic_amounts` — the generator uses those values verbatim instead of computing. Other strings are labels only; fact values still come from `monthly_amount` or `periodic_amounts`.
+     */
+    method?: string;
+    /**
+     * Original Amount
+     *
+     * Cost basis in cents
+     */
+    original_amount?: number;
+    /**
+     * Residual Value
+     *
+     * Salvage value in cents
+     */
+    residual_value?: number;
+    /**
+     * Useful Life Months
+     *
+     * Useful life in months
+     */
+    useful_life_months?: number;
+    /**
+     * Asset Element Id
+     *
+     * BS asset element for net book value
+     */
+    asset_element_id?: string | null;
+    /**
+     * Periodic Amounts
+     *
+     * Explicit per-period amounts in cents. When set, the generator uses these values instead of `monthly_amount` — enabling non-straight-line schedules (effective-interest bond discount amortization, day-count interest accrual, variable lease payments, pre-computed effective-yield curves, etc.). Length must match the number of monthly periods between `period_start` and `period_end`; sum must equal `original_amount` exactly. The auto-generated SumEquals rule proves Σ = original regardless of the curve shape.
+     */
+    periodic_amounts?: Array<number> | null;
 };
 
 /**
@@ -6735,6 +10428,144 @@ export type SearchResponse = {
 };
 
 /**
+ * SecurityLite
+ *
+ * Lightweight security projection for embedding in position
+ * envelopes. Skips `terms`, `outstanding_shares`, etc. — fetch the
+ * full `SecurityResponse` when those are needed.
+ */
+export type SecurityLite = {
+    /**
+     * Id
+     *
+     * Security ID (`sec_*` ULID).
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Display name of the security.
+     */
+    name: string;
+    /**
+     * Security Type
+     *
+     * Instrument family (e.g. `common_stock`, `preferred_stock`, `warrant`).
+     */
+    security_type: string;
+    /**
+     * Security Subtype
+     *
+     * Optional subtype refinement (e.g. `class_a`).
+     */
+    security_subtype?: string | null;
+    /**
+     * Is Active
+     *
+     * `true` when the security is in active status.
+     */
+    is_active: boolean;
+    /**
+     * Embedded issuer entity, when one is linked. `null` for pre-issuer securities.
+     */
+    issuer?: EntityLite | null;
+    /**
+     * Source Graph Id
+     *
+     * Tenant graph the security is pre-associated to, if any.
+     */
+    source_graph_id?: string | null;
+};
+
+/**
+ * SecurityResponse
+ *
+ * Read projection for a single security.
+ */
+export type SecurityResponse = {
+    /**
+     * Id
+     *
+     * Security ID (`sec_*` ULID).
+     */
+    id: string;
+    /**
+     * Entity Id
+     *
+     * ID of the issuing entity, when set.
+     */
+    entity_id?: string | null;
+    /**
+     * Entity Name
+     *
+     * Cached display name of the issuing entity, denormalized for list rendering. May lag the entity row's current name briefly.
+     */
+    entity_name?: string | null;
+    /**
+     * Source Graph Id
+     *
+     * Tenant graph this security is pre-associated to, when the issuer entity hasn't been promoted yet.
+     */
+    source_graph_id?: string | null;
+    /**
+     * Name
+     *
+     * Display name of the security.
+     */
+    name: string;
+    /**
+     * Security Type
+     *
+     * Instrument family (e.g. `common_stock`, `preferred_stock`, `warrant`, `convertible_note`).
+     */
+    security_type: string;
+    /**
+     * Security Subtype
+     *
+     * Optional subtype refinement (e.g. `class_a`, `series_a`).
+     */
+    security_subtype?: string | null;
+    /**
+     * Terms
+     *
+     * Instrument-specific terms blob. Shape depends on `security_type` — see `CreateSecurityRequest.terms` for common keys.
+     */
+    terms: {
+        [key: string]: unknown;
+    };
+    /**
+     * Is Active
+     *
+     * `true` when the security is in active status; `false` after a soft-delete or deactivation.
+     */
+    is_active: boolean;
+    /**
+     * Authorized Shares
+     *
+     * Total shares authorized for this class, when set.
+     */
+    authorized_shares?: number | null;
+    /**
+     * Outstanding Shares
+     *
+     * Shares currently issued and outstanding.
+     */
+    outstanding_shares?: number | null;
+    /**
+     * Created At
+     *
+     * Row creation timestamp (UTC).
+     */
+    created_at: string;
+    /**
+     * Updated At
+     *
+     * Last-modified timestamp (UTC).
+     */
+    updated_at: string;
+};
+
+/**
  * SelectionCriteria
  *
  * Criteria for agent selection.
@@ -6839,7 +10670,7 @@ export type SetCloseTargetOperation = {
     /**
      * Period
      *
-     * Target period in YYYY-MM format
+     * Target period in YYYY-MM format. Must be > current `closed_through`.
      */
     period: string;
     /**
@@ -6852,18 +10683,111 @@ export type SetCloseTargetOperation = {
 
 /**
  * ShareReportOperation
+ *
+ * Share a published Report to every member of a publish list.
  */
 export type ShareReportOperation = {
     /**
      * Publish List Id
      *
-     * Publish list to share the report to
+     * Publish list whose members will receive the report. Created via `create-publish-list`.
      */
     publish_list_id: string;
     /**
      * Report Id
+     *
+     * The published Report to share.
      */
     report_id: string;
+};
+
+/**
+ * ShareReportResponse
+ *
+ * Result of sharing a report to a publish list — one row per target.
+ */
+export type ShareReportResponse = {
+    /**
+     * Report Id
+     *
+     * The report that was shared.
+     */
+    report_id: string;
+    /**
+     * Results
+     *
+     * Per-recipient outcomes. Inspect to find partial failures — the share operation does not fail-fast across targets.
+     */
+    results: Array<ShareResultItem>;
+};
+
+/**
+ * ShareResultItem
+ *
+ * Per-target outcome of a `share-report` call.
+ */
+export type ShareResultItem = {
+    /**
+     * Target Graph Id
+     *
+     * Recipient graph ID (a publish-list member).
+     */
+    target_graph_id: string;
+    /**
+     * Status
+     *
+     * `shared` when the copy succeeded; `error` when this target failed (other targets may still have succeeded).
+     */
+    status: string;
+    /**
+     * Error
+     *
+     * Error message when `status='error'`, else null.
+     */
+    error?: string | null;
+    /**
+     * Fact Count
+     *
+     * Number of facts copied into the target on success.
+     */
+    fact_count?: number;
+};
+
+/**
+ * StatementMechanics
+ *
+ * Renderer mechanics for the statement family of block types.
+ *
+ * Covers ``balance_sheet``, ``income_statement``, ``cash_flow_statement``,
+ * and ``equity_statement``. All fields are optional so library-seeded
+ * rows that haven't been enriched yet still validate against an empty
+ * tagged body. The existing ``statement(...)`` GraphQL field continues
+ * to serve rendered output; this mechanics model is the source of truth
+ * for future renderer configuration.
+ */
+export type StatementMechanics = {
+    /**
+     * Kind
+     */
+    kind?: 'statement_renderer';
+    /**
+     * Template Id
+     *
+     * Pinned template id — when set, the renderer uses that template's layout instead of the block's default. The templates table is not yet implemented; the column is reserved so tenant writes can stamp it without another migration round-trip when it lands.
+     */
+    template_id?: string | null;
+    /**
+     * Rollup Root Element Ids
+     *
+     * Element ids that anchor the statement's roll-up roots (e.g. the Assets and LiabilitiesAndEquity totals on a Balance Sheet). Empty on library-seeded rows until tenant adoption.
+     */
+    rollup_root_element_ids?: Array<string>;
+    /**
+     * Period Comparisons
+     *
+     * Number of period columns to render in comparative mode: 1 = single-period, 2 = prior-period comparison, 3-4 = multi-year trailing view. Defaults to single-period; overridden by the template when one is attached.
+     */
+    period_comparisons?: number;
 };
 
 /**
@@ -6934,6 +10858,36 @@ export type StorageSummary = {
      * Number of measurements taken
      */
     measurement_count: number;
+};
+
+/**
+ * StructureSummary
+ *
+ * A structure available within this report's taxonomy.
+ *
+ * Each structure is a renderable section (Balance Sheet, Income
+ * Statement, Cash Flow Statement, Equity, or a Schedule). The Report
+ * row owns the facts; structures are the lenses that project them.
+ */
+export type StructureSummary = {
+    /**
+     * Id
+     *
+     * Structure identifier.
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * Human-readable structure name.
+     */
+    name: string;
+    /**
+     * Structure Type
+     *
+     * Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`.
+     */
+    structure_type: string;
 };
 
 /**
@@ -7336,6 +11290,46 @@ export type TableQueryResponse = {
 };
 
 /**
+ * TaxonomyBlockAssociation
+ *
+ * Association projection for the Taxonomy Block envelope.
+ */
+export type TaxonomyBlockAssociation = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * From Element Qname
+     */
+    from_element_qname: string;
+    /**
+     * To Element Qname
+     */
+    to_element_qname: string;
+    /**
+     * Association Type
+     */
+    association_type: string;
+    /**
+     * Order Value
+     */
+    order_value?: number | null;
+    /**
+     * Arcrole
+     */
+    arcrole?: string | null;
+    /**
+     * Weight
+     */
+    weight?: number | null;
+};
+
+/**
  * TaxonomyBlockAssociationRequest
  *
  * Association (arc) between two elements, scoped to a structure.
@@ -7385,6 +11379,60 @@ export type TaxonomyBlockAssociationRequest = {
     metadata?: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * TaxonomyBlockElement
+ *
+ * Element projection for the Taxonomy Block envelope.
+ */
+export type TaxonomyBlockElement = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Qname
+     */
+    qname?: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Trait
+     */
+    trait?: string | null;
+    /**
+     * Balance Type
+     */
+    balance_type?: string | null;
+    /**
+     * Period Type
+     */
+    period_type?: string | null;
+    /**
+     * Element Type
+     */
+    element_type?: string;
+    /**
+     * Is Monetary
+     */
+    is_monetary?: boolean;
+    /**
+     * Parent Qname
+     */
+    parent_qname?: string | null;
+    /**
+     * Depth
+     */
+    depth?: number | null;
+    /**
+     * Origin
+     *
+     * Provenance — 'library' if the element's taxonomy is locked (``is_locked=true``), else 'tenant'.
+     */
+    origin: 'library' | 'tenant';
 };
 
 /**
@@ -7470,6 +11518,153 @@ export type TaxonomyBlockElementRequest = {
 };
 
 /**
+ * TaxonomyBlockEnvelope
+ *
+ * The Taxonomy Block exchange format.
+ *
+ * One envelope per taxonomy instance. Carries identity + type,
+ * registry-sourced display metadata, the parent taxonomy pointer (for
+ * ``reporting_extension`` blocks), and bundled atoms (elements,
+ * structures, associations, rules, verification results).
+ */
+export type TaxonomyBlockEnvelope = {
+    /**
+     * Id
+     *
+     * Taxonomy row id.
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Taxonomy Type
+     *
+     * Block-type discriminator — 'reporting_standard' | 'reporting_extension' | 'chart_of_accounts' | 'custom_ontology'.
+     */
+    taxonomy_type: string;
+    /**
+     * Display Name
+     *
+     * Registry-sourced display label.
+     */
+    display_name: string;
+    /**
+     * Category
+     *
+     * Registry-sourced sidebar grouping.
+     */
+    category: string;
+    /**
+     * Parent Taxonomy Id
+     */
+    parent_taxonomy_id?: string | null;
+    /**
+     * Parent Taxonomy Name
+     */
+    parent_taxonomy_name?: string | null;
+    /**
+     * Version
+     */
+    version?: string | null;
+    /**
+     * Standard
+     */
+    standard?: string | null;
+    /**
+     * Namespace Uri
+     */
+    namespace_uri?: string | null;
+    /**
+     * Is Locked
+     */
+    is_locked?: boolean;
+    /**
+     * Elements
+     */
+    elements?: Array<TaxonomyBlockElement>;
+    /**
+     * Structures
+     */
+    structures?: Array<TaxonomyBlockStructure>;
+    /**
+     * Associations
+     */
+    associations?: Array<TaxonomyBlockAssociation>;
+    /**
+     * Rules
+     */
+    rules?: Array<TaxonomyBlockRule>;
+    /**
+     * Verification Results
+     */
+    verification_results?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Element Count
+     */
+    element_count?: number;
+    /**
+     * Structure Count
+     */
+    structure_count?: number;
+    /**
+     * Association Count
+     */
+    association_count?: number;
+};
+
+/**
+ * TaxonomyBlockRule
+ *
+ * Rule projection for the Taxonomy Block envelope.
+ */
+export type TaxonomyBlockRule = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Rule Category
+     */
+    rule_category: string;
+    /**
+     * Rule Pattern
+     */
+    rule_pattern: string;
+    /**
+     * Rule Expression
+     */
+    rule_expression: string;
+    /**
+     * Severity
+     */
+    severity?: string;
+    /**
+     * Origin
+     *
+     * 'forked' | 'native' | 'auto' — matches DB CHECK.
+     */
+    origin?: string;
+    /**
+     * Target Kind
+     */
+    target_kind?: string | null;
+    /**
+     * Target Ref
+     *
+     * Polymorphic display string — structure_id, element qname, association_id, or taxonomy_id depending on ``target_kind``.
+     */
+    target_ref?: string | null;
+};
+
+/**
  * TaxonomyBlockRuleRequest
  *
  * Rule definition inside a Taxonomy Block envelope.
@@ -7547,6 +11742,34 @@ export type TaxonomyBlockRuleRequest = {
     metadata?: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * TaxonomyBlockStructure
+ *
+ * Structure projection for the Taxonomy Block envelope.
+ */
+export type TaxonomyBlockStructure = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Structure Type
+     */
+    structure_type: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Role Uri
+     */
+    role_uri?: string | null;
 };
 
 /**
@@ -7633,6 +11856,38 @@ export type TokenPricing = {
      * Credits per 1K output tokens
      */
     output_per_1k_tokens: number;
+};
+
+/**
+ * TransactionPreview
+ *
+ * A planned GL entry line from preview-event-block (no rows written).
+ */
+export type TransactionPreview = {
+    /**
+     * Entry Index
+     */
+    entry_index: number;
+    /**
+     * Debit Element Id
+     */
+    debit_element_id: string;
+    /**
+     * Credit Element Id
+     */
+    credit_element_id: string;
+    /**
+     * Amount Cents
+     */
+    amount_cents: number;
+    /**
+     * Interpolated Debit Amount
+     */
+    interpolated_debit_amount: string;
+    /**
+     * Interpolated Credit Amount
+     */
+    interpolated_credit_amount: string;
 };
 
 /**
@@ -7744,12 +11999,14 @@ export type TransactionTemplateLeg = {
 export type TransitionFilingStatusRequest = {
     /**
      * Report Id
+     *
+     * The Report to transition.
      */
     report_id: string;
     /**
      * Target Status
      *
-     * under_review | archived
+     * Target lifecycle state: `under_review` (submit a draft for review) or `archived` (supersede / retire a filed report). Reaching `filed` goes through `file-report` so audit fields land cleanly.
      */
     target_status: string;
 };
@@ -7820,10 +12077,16 @@ export type UpdateApiKeyRequest = {
 
 /**
  * UpdateAgentRequest
+ *
+ * Patch an agent. All fields except ``agent_id`` are optional —
+ * pass only what changes. ``metadata_patch`` is deep-merged into the
+ * existing metadata dict.
  */
 export type UpdateAgentRequest = {
     /**
      * Agent Id
+     *
+     * The agent to update.
      */
     agent_id: string;
     /**
@@ -7866,6 +12129,8 @@ export type UpdateAgentRequest = {
     } | null;
     /**
      * Is Active
+     *
+     * Toggle activation. Inactive agents are hidden from new-transaction pickers.
      */
     is_active?: boolean | null;
     /**
@@ -7874,6 +12139,8 @@ export type UpdateAgentRequest = {
     is_1099_recipient?: boolean | null;
     /**
      * Metadata Patch
+     *
+     * Deep-merged into agent.metadata. Pass `{}` to leave unchanged.
      */
     metadata_patch?: {
         [key: string]: unknown;
@@ -7883,7 +12150,13 @@ export type UpdateAgentRequest = {
 /**
  * UpdateEntityRequest
  *
- * Request to update entity details. Only provided fields are updated.
+ * Update the graph's primary entity. All fields are optional —
+ * pass only what changes. Identifiers (CIK, LEI, tax_id) are typically
+ * set once at onboarding; address fields are flattened to make them
+ * easy to project into reporting forms (1099, state filings).
+ *
+ * The graph is implicit (URL path) — there's no `entity_id` field
+ * because the operation always targets the graph's primary entity.
  */
 export type UpdateEntityRequest = {
     /**
@@ -7928,6 +12201,8 @@ export type UpdateEntityRequest = {
     state_of_incorporation?: string | null;
     /**
      * Fiscal Year End
+     *
+     * Fiscal year-end as MM-DD (e.g. '12-31', '06-30').
      */
     fiscal_year_end?: string | null;
     /**
@@ -7986,6 +12261,8 @@ export type UpdateEntityRequest = {
 export type UpdateEventBlockRequest = {
     /**
      * Event Id
+     *
+     * Target event ID.
      */
     event_id: string;
     /**
@@ -8002,10 +12279,14 @@ export type UpdateEventBlockRequest = {
     superseded_by_id?: string | null;
     /**
      * Description
+     *
+     * Replacement free-text summary. Unset = unchanged; pass an empty string to clear.
      */
     description?: string | null;
     /**
      * Effective At
+     *
+     * New accounting recognition date. Unset = unchanged. Useful when an event was captured against the wrong period.
      */
     effective_at?: string | null;
     /**
@@ -8032,18 +12313,32 @@ export type UpdateEventBlockRequest = {
 
 /**
  * UpdateEventHandlerRequest
+ *
+ * Update an existing event handler. All fields except
+ * ``event_handler_id`` are optional — pass only what changes.
+ *
+ * ``transaction_template`` is **fully replaced** when supplied (no
+ * partial template patches). ``metadata_patch`` does deep-merge into
+ * the existing metadata. ``approve=true`` sets ``approved_by`` and
+ * ``approved_at``; ``approve=false`` clears them.
  */
 export type UpdateEventHandlerRequest = {
     /**
      * Event Handler Id
+     *
+     * The handler to update.
      */
     event_handler_id: string;
     /**
      * Name
+     *
+     * New name. Omit to leave unchanged.
      */
     name?: string | null;
     /**
      * Description
+     *
+     * New description.
      */
     description?: string | null;
     /**
@@ -8068,6 +12363,9 @@ export type UpdateEventHandlerRequest = {
     match_metadata_expression?: {
         [key: string]: unknown;
     } | null;
+    /**
+     * Replacement template. Whole-template replace — no partial patch. Omit to leave unchanged.
+     */
     transaction_template?: TransactionTemplate | null;
     /**
      * Priority
@@ -8075,14 +12373,20 @@ export type UpdateEventHandlerRequest = {
     priority?: number | null;
     /**
      * Is Active
+     *
+     * Toggle activation. False removes the handler from match-time consideration without deleting it.
      */
     is_active?: boolean | null;
     /**
      * Approve
+     *
+     * Approval shortcut: True stamps approved_by/approved_at to the current user; False clears both.
      */
     approve?: boolean | null;
     /**
      * Metadata Patch
+     *
+     * Deep-merged into the existing handler.metadata. Pass `{}` to leave metadata unchanged.
      */
     metadata_patch?: {
         [key: string]: unknown;
@@ -8092,29 +12396,17 @@ export type UpdateEventHandlerRequest = {
 /**
  * UpdateInformationBlockRequest
  *
- * Generic update request — mirrors :class:`CreateInformationBlockRequest`.
- *
- * Validated against the registry entry's ``update_request_model``.
- * Block types that don't support updates (e.g. the statement family,
- * whose Structures are library-seeded) surface ``NotImplementedError``
- * from their dispatch handler, which the registrar maps to HTTP 501.
+ * Update an Information Block. The body is a discriminated union on
+ * `block_type` mirroring `CreateInformationBlockRequest`. The schedule
+ * arm carries a fully typed update payload; statement and metric arms
+ * return HTTP 501 (statements are library-seeded; metric updates are
+ * pending).
  */
-export type UpdateInformationBlockRequest = {
-    /**
-     * Block Type
-     *
-     * Block type discriminator. Must match a registered entry.
-     */
-    block_type: string;
-    /**
-     * Payload
-     *
-     * Block-type-specific update payload. Typically carries the structure_id plus whichever fields are editable for this block type. Shape-validated against the registry entry's `update_request_model` at dispatch time.
-     */
-    payload?: {
-        [key: string]: unknown;
-    };
-};
+export type UpdateInformationBlockRequest = ({
+    block_type: 'schedule';
+} & UpdateScheduleArm) | ({
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'income_statement' | 'metric';
+} & UpdateLegacyArm);
 
 /**
  * UpdateJournalEntryRequest
@@ -8130,22 +12422,32 @@ export type UpdateInformationBlockRequest = {
 export type UpdateJournalEntryRequest = {
     /**
      * Entry Id
+     *
+     * The draft entry to update.
      */
     entry_id: string;
     /**
      * Posting Date
+     *
+     * New posting date.
      */
     posting_date?: string | null;
     /**
      * Memo
+     *
+     * New entry-level memo.
      */
     memo?: string | null;
     /**
      * Type
+     *
+     * New entry type. `closing` should normally only be set by close-period.
      */
     type?: 'standard' | 'adjusting' | 'closing' | 'reversing' | null;
     /**
      * Line Items
+     *
+     * Replacement line items. Whole-list replacement (not patch). The new set must still balance (total_debit == total_credit). Omit to leave existing lines untouched.
      */
     line_items?: Array<JournalEntryLineItemInput> | null;
 };
@@ -8214,26 +12516,68 @@ export type UpdatePortfolioBlockOperation = {
      * Target portfolio ID.
      */
     portfolio_id: string;
+    /**
+     * Patch to portfolio core fields. Omit or leave fields unset to leave the portfolio core unchanged.
+     */
     portfolio?: PortfolioBlockPortfolioPatch;
+    /**
+     * Position deltas — additions, in-place updates, and dispositions — applied atomically with the portfolio patch.
+     */
     positions?: PortfolioBlockPositions;
 };
 
 /**
  * UpdatePublishListOperation
+ *
+ * Update a publish list's metadata. Carries `list_id`.
  */
 export type UpdatePublishListOperation = {
     /**
      * Name
+     *
+     * New list name. Omit to leave unchanged.
      */
     name?: string | null;
     /**
      * Description
+     *
+     * New description. Omit to leave unchanged.
      */
     description?: string | null;
     /**
      * List Id
+     *
+     * The publish list to update.
      */
     list_id: string;
+};
+
+/**
+ * UpdateScheduleRequest
+ *
+ * Update mutable fields on a schedule.
+ *
+ * Editable: name, entry_template, schedule_metadata (all live on the
+ * Structure row / its metadata_ JSONB column).
+ *
+ * NOT editable via this op: period_start, period_end, monthly_amount.
+ * Those require fact regeneration — fire an event block that terminates
+ * the schedule (e.g., `asset_disposed`) and create a fresh schedule via
+ * `create-schedule`.
+ *
+ * Omitted fields are left unchanged.
+ */
+export type UpdateScheduleRequest = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    entry_template?: EntryTemplateRequest | null;
+    schedule_metadata?: ScheduleMetadataRequest | null;
 };
 
 /**
@@ -8244,40 +12588,58 @@ export type UpdatePublishListOperation = {
 export type UpdateSecurityOperation = {
     /**
      * Entity Id
+     *
+     * Reassign to a different issuing entity. Unset = unchanged.
      */
     entity_id?: string | null;
     /**
      * Source Graph Id
+     *
+     * Update the pre-association tenant graph. Unset = unchanged.
      */
     source_graph_id?: string | null;
     /**
      * Name
+     *
+     * New display name. Unset = unchanged.
      */
     name?: string | null;
     /**
      * Security Type
+     *
+     * New instrument family. Unset = unchanged. Reclassifying a security may invalidate existing `terms` shape; the operation does not validate the cross-field consistency.
      */
     security_type?: string | null;
     /**
      * Security Subtype
+     *
+     * New subtype refinement. Unset = unchanged.
      */
     security_subtype?: string | null;
     /**
      * Terms
+     *
+     * Replacement terms blob. Pass `null`/omit to leave existing terms unchanged; pass `{}` to clear them.
      */
     terms?: {
         [key: string]: unknown;
     } | null;
     /**
      * Is Active
+     *
+     * Active flag. Set `false` to soft-deactivate (positions remain addressable but the security is hidden from active lookups).
      */
     is_active?: boolean | null;
     /**
      * Authorized Shares
+     *
+     * New authorized share count. Unset = unchanged.
      */
     authorized_shares?: number | null;
     /**
      * Outstanding Shares
+     *
+     * New outstanding share count. Unset = unchanged.
      */
     outstanding_shares?: number | null;
     /**
@@ -8486,6 +12848,86 @@ export type ValidationError = {
 };
 
 /**
+ * ValidationLite
+ *
+ * Outcome of guard-rail validation on a rendered statement.
+ *
+ * Distinct from :class:`VerificationResultLite` (which surfaces the
+ * rule-engine outcomes from ``public.verification_results``). This lite
+ * type carries the synchronous guard-rail checks computed at
+ * envelope-build time — accounting equation, totals foot, etc.
+ */
+export type ValidationLite = {
+    /**
+     * Passed
+     */
+    passed?: boolean;
+    /**
+     * Checks
+     */
+    checks?: Array<string>;
+    /**
+     * Failures
+     */
+    failures?: Array<string>;
+    /**
+     * Warnings
+     */
+    warnings?: Array<string>;
+};
+
+/**
+ * VerificationResultLite
+ *
+ * Persisted outcome of one Rule evaluation.
+ *
+ * One row per ``public.verification_results`` entry the rule engine
+ * writes. The envelope surfaces them so the block viewer's
+ * "Verification Results" tab and MCP ``list-verification-failures``
+ * tool can render + aggregate without a second round-trip.
+ */
+export type VerificationResultLite = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Rule Id
+     */
+    rule_id: string;
+    /**
+     * Structure Id
+     */
+    structure_id?: string | null;
+    /**
+     * Fact Set Id
+     */
+    fact_set_id?: string | null;
+    /**
+     * Status
+     *
+     * 'pass' | 'fail' | 'error' | 'skipped'. Enum closure enforced by the ``public.verification_results`` CHECK constraint.
+     */
+    status: string;
+    /**
+     * Message
+     */
+    message?: string | null;
+    /**
+     * Period Start
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     */
+    period_end?: string | null;
+    /**
+     * Evaluated At
+     */
+    evaluated_at?: string | null;
+};
+
+/**
  * ViewAxisConfig
  */
 export type ViewAxisConfig = {
@@ -8577,6 +13019,174 @@ export type ViewConfig = {
      * Value to use for missing data
      */
     fill_value?: number;
+};
+
+/**
+ * ViewProjections
+ *
+ * Charlie's six ``type-of View`` arms, surfaced at the envelope boundary.
+ *
+ * Each projection is computed server-side at envelope-build time when
+ * its source data is available. The frontend's ``BlockView`` dispatcher
+ * routes to the projection component matching the user's selected view
+ * mode; missing projections (those still in backlog) render as empty
+ * states without breaking the dispatcher.
+ *
+ * Today: ``rendering`` is computed for the statement family.
+ * Other arms (``fact_table``, ``model_structure``, ``verification_results``,
+ * ``report_elements``, ``business_rules``) come online as their backend
+ * support lands; ``fact_table`` is trivially derivable from
+ * ``InformationBlockEnvelope.facts`` and may stay as a frontend-only
+ * projection.
+ */
+export type ViewProjections = {
+    rendering?: RenderingLite | null;
+};
+
+/**
+ * _CreateLegacyArm
+ *
+ * Create-information-block body for block types that don't yet have
+ * a typed construction path at the API boundary.
+ *
+ * Statement-family blocks (balance_sheet, income_statement,
+ * cash_flow_statement, equity_statement) are constructed via
+ * `create-report`, not this endpoint. Metric blocks are recognized
+ * but their evaluator has not shipped. Calling this endpoint with one
+ * of these block types returns HTTP 501 with a hint pointing to the
+ * correct construction path.
+ */
+export type CreateLegacyArm = {
+    /**
+     * Block Type
+     *
+     * Statement-family or metric block type. The endpoint returns 501 for these values — statements are constructed via `create-report`; metric construction is pending.
+     */
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'metric';
+    /**
+     * Payload
+     *
+     * Untyped payload — typed-arm validation is skipped because the dispatch handler raises 501 before the payload is consumed.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * _CreateScheduleArm
+ *
+ * Create-information-block body for `block_type="schedule"`.
+ *
+ * Carries a typed schedule payload — full schedule shape is exposed
+ * inline in the OpenAPI schema so SDK callers see every required field.
+ */
+export type CreateScheduleArm = {
+    /**
+     * Block Type
+     *
+     * Discriminator value selecting this arm.
+     */
+    block_type: 'schedule';
+    /**
+     * Schedule creation payload.
+     */
+    payload: CreateScheduleRequest;
+};
+
+/**
+ * _DeleteLegacyArm
+ *
+ * Delete-information-block body for block types that don't yet have
+ * a typed delete path at the API boundary.
+ *
+ * Statement-family blocks cannot be deleted per tenant (the underlying
+ * Report should be archived via the report APIs instead). Metric
+ * deletion is not yet implemented. Calls return HTTP 501.
+ */
+export type DeleteLegacyArm = {
+    /**
+     * Block Type
+     *
+     * Statement-family or metric block type. Deletion returns 501 — statements are library-seeded (archive the underlying Report instead); metric deletion is pending.
+     */
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'metric';
+    /**
+     * Payload
+     *
+     * Untyped payload — typed-arm validation is skipped because the dispatch handler raises 501 before the payload is consumed.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * _DeleteScheduleArm
+ *
+ * Delete-information-block body for `block_type="schedule"`.
+ *
+ * Carries a typed schedule delete payload — just the `structure_id`.
+ */
+export type DeleteScheduleArm = {
+    /**
+     * Block Type
+     *
+     * Discriminator value selecting this arm.
+     */
+    block_type: 'schedule';
+    /**
+     * Schedule delete payload.
+     */
+    payload: DeleteScheduleRequest;
+};
+
+/**
+ * _UpdateLegacyArm
+ *
+ * Update-information-block body for block types that don't yet have
+ * a typed update path at the API boundary.
+ *
+ * Statement-family blocks are library-seeded and immutable. Metric
+ * block updates are not yet implemented. Calling this endpoint with
+ * one of these block types returns HTTP 501.
+ */
+export type UpdateLegacyArm = {
+    /**
+     * Block Type
+     *
+     * Statement-family or metric block type. Updates return 501 — statement Structures are library-seeded; metric updates are pending.
+     */
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'metric';
+    /**
+     * Payload
+     *
+     * Untyped payload — typed-arm validation is skipped because the dispatch handler raises 501 before the payload is consumed.
+     */
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * _UpdateScheduleArm
+ *
+ * Update-information-block body for `block_type="schedule"`.
+ *
+ * Carries a typed schedule update payload — full editable shape is
+ * exposed inline.
+ */
+export type UpdateScheduleArm = {
+    /**
+     * Block Type
+     *
+     * Discriminator value selecting this arm.
+     */
+    block_type: 'schedule';
+    /**
+     * Schedule update payload.
+     */
+    payload: UpdateScheduleRequest;
 };
 
 /**
@@ -12326,7 +16936,7 @@ export type CreateRepositorySubscriptionResponses = {
 export type CreateRepositorySubscriptionResponse = CreateRepositorySubscriptionResponses[keyof CreateRepositorySubscriptionResponses];
 
 export type CancelRepositorySubscriptionData = {
-    body: CancelSubscriptionRequest;
+    body?: CancelSubscriptionRequest;
     path: {
         /**
          * Graph Id
@@ -14832,7 +19442,7 @@ export type OpInitializeLedgerResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeInitializeLedgerResponse;
 };
 
 export type OpInitializeLedgerResponse = OpInitializeLedgerResponses[keyof OpInitializeLedgerResponses];
@@ -14896,7 +19506,7 @@ export type OpUpdateEntityResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeLedgerEntityResponse;
 };
 
 export type OpUpdateEntityResponse = OpUpdateEntityResponses[keyof OpUpdateEntityResponses];
@@ -14960,7 +19570,7 @@ export type OpCreateTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeTaxonomyBlockEnvelope;
 };
 
 export type OpCreateTaxonomyBlockResponse = OpCreateTaxonomyBlockResponses[keyof OpCreateTaxonomyBlockResponses];
@@ -15024,7 +19634,7 @@ export type OpUpdateTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeTaxonomyBlockEnvelope;
 };
 
 export type OpUpdateTaxonomyBlockResponse = OpUpdateTaxonomyBlockResponses[keyof OpUpdateTaxonomyBlockResponses];
@@ -15088,7 +19698,7 @@ export type OpDeleteTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteTaxonomyBlockResponse;
 };
 
 export type OpDeleteTaxonomyBlockResponse = OpDeleteTaxonomyBlockResponses[keyof OpDeleteTaxonomyBlockResponses];
@@ -15152,7 +19762,7 @@ export type OpLinkEntityTaxonomyResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeEntityTaxonomyResponse;
 };
 
 export type OpLinkEntityTaxonomyResponse = OpLinkEntityTaxonomyResponses[keyof OpLinkEntityTaxonomyResponses];
@@ -15216,7 +19826,7 @@ export type OpCreateMappingAssociationResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeAssociationResponse;
 };
 
 export type OpCreateMappingAssociationResponse = OpCreateMappingAssociationResponses[keyof OpCreateMappingAssociationResponses];
@@ -15280,7 +19890,7 @@ export type OpDeleteMappingAssociationResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteResult;
 };
 
 export type OpDeleteMappingAssociationResponse = OpDeleteMappingAssociationResponses[keyof OpDeleteMappingAssociationResponses];
@@ -15408,7 +20018,7 @@ export type OpCreateInformationBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeInformationBlockEnvelope;
 };
 
 export type OpCreateInformationBlockResponse = OpCreateInformationBlockResponses[keyof OpCreateInformationBlockResponses];
@@ -15472,7 +20082,7 @@ export type OpUpdateInformationBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeInformationBlockEnvelope;
 };
 
 export type OpUpdateInformationBlockResponse = OpUpdateInformationBlockResponses[keyof OpUpdateInformationBlockResponses];
@@ -15536,7 +20146,7 @@ export type OpDeleteInformationBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteInformationBlockResponse;
 };
 
 export type OpDeleteInformationBlockResponse = OpDeleteInformationBlockResponses[keyof OpDeleteInformationBlockResponses];
@@ -15600,7 +20210,7 @@ export type OpEvaluateRulesResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeEvaluateRulesResponse;
 };
 
 export type OpEvaluateRulesResponse = OpEvaluateRulesResponses[keyof OpEvaluateRulesResponses];
@@ -15664,7 +20274,7 @@ export type OpCreateAgentResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeLedgerAgentResponse;
 };
 
 export type OpCreateAgentResponse = OpCreateAgentResponses[keyof OpCreateAgentResponses];
@@ -15728,7 +20338,7 @@ export type OpUpdateAgentResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeLedgerAgentResponse;
 };
 
 export type OpUpdateAgentResponse = OpUpdateAgentResponses[keyof OpUpdateAgentResponses];
@@ -15792,7 +20402,7 @@ export type OpCreateEventBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeEventBlockEnvelope;
 };
 
 export type OpCreateEventBlockResponse = OpCreateEventBlockResponses[keyof OpCreateEventBlockResponses];
@@ -15856,7 +20466,7 @@ export type OpUpdateEventBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeEventBlockEnvelope;
 };
 
 export type OpUpdateEventBlockResponse = OpUpdateEventBlockResponses[keyof OpUpdateEventBlockResponses];
@@ -15920,7 +20530,7 @@ export type OpCreateEventHandlerResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeEventHandlerResponse;
 };
 
 export type OpCreateEventHandlerResponse = OpCreateEventHandlerResponses[keyof OpCreateEventHandlerResponses];
@@ -15984,7 +20594,7 @@ export type OpUpdateEventHandlerResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeEventHandlerResponse;
 };
 
 export type OpUpdateEventHandlerResponse = OpUpdateEventHandlerResponses[keyof OpUpdateEventHandlerResponses];
@@ -16048,7 +20658,7 @@ export type OpPreviewEventBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopePreviewEventBlockResponse;
 };
 
 export type OpPreviewEventBlockResponse = OpPreviewEventBlockResponses[keyof OpPreviewEventBlockResponses];
@@ -16112,7 +20722,7 @@ export type OpUpdateJournalEntryResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeJournalEntryResponse;
 };
 
 export type OpUpdateJournalEntryResponse = OpUpdateJournalEntryResponses[keyof OpUpdateJournalEntryResponses];
@@ -16176,7 +20786,7 @@ export type OpDeleteJournalEntryResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteResult;
 };
 
 export type OpDeleteJournalEntryResponse = OpDeleteJournalEntryResponses[keyof OpDeleteJournalEntryResponses];
@@ -16240,7 +20850,7 @@ export type OpSetCloseTargetResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeFiscalCalendarResponse;
 };
 
 export type OpSetCloseTargetResponse = OpSetCloseTargetResponses[keyof OpSetCloseTargetResponses];
@@ -16304,7 +20914,7 @@ export type OpClosePeriodResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeClosePeriodResponse;
 };
 
 export type OpClosePeriodResponse = OpClosePeriodResponses[keyof OpClosePeriodResponses];
@@ -16368,7 +20978,7 @@ export type OpReopenPeriodResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeFiscalCalendarResponse;
 };
 
 export type OpReopenPeriodResponse = OpReopenPeriodResponses[keyof OpReopenPeriodResponses];
@@ -16432,7 +21042,7 @@ export type OpCreateReportResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeReportResponse;
 };
 
 export type OpCreateReportResponse = OpCreateReportResponses[keyof OpCreateReportResponses];
@@ -16496,7 +21106,7 @@ export type OpRegenerateReportResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeReportResponse;
 };
 
 export type OpRegenerateReportResponse = OpRegenerateReportResponses[keyof OpRegenerateReportResponses];
@@ -16560,7 +21170,7 @@ export type OpDeleteReportResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteResult;
 };
 
 export type OpDeleteReportResponse = OpDeleteReportResponses[keyof OpDeleteReportResponses];
@@ -16624,7 +21234,7 @@ export type OpShareReportResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeShareReportResponse;
 };
 
 export type OpShareReportResponse = OpShareReportResponses[keyof OpShareReportResponses];
@@ -16688,7 +21298,7 @@ export type OpFileReportResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeReportResponse;
 };
 
 export type OpFileReportResponse = OpFileReportResponses[keyof OpFileReportResponses];
@@ -16752,7 +21362,7 @@ export type OpTransitionFilingStatusResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeReportResponse;
 };
 
 export type OpTransitionFilingStatusResponse = OpTransitionFilingStatusResponses[keyof OpTransitionFilingStatusResponses];
@@ -16816,7 +21426,7 @@ export type OpCreatePublishListResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopePublishListResponse;
 };
 
 export type OpCreatePublishListResponse = OpCreatePublishListResponses[keyof OpCreatePublishListResponses];
@@ -16880,7 +21490,7 @@ export type OpUpdatePublishListResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopePublishListResponse;
 };
 
 export type OpUpdatePublishListResponse = OpUpdatePublishListResponses[keyof OpUpdatePublishListResponses];
@@ -16944,7 +21554,7 @@ export type OpDeletePublishListResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteResult;
 };
 
 export type OpDeletePublishListResponse = OpDeletePublishListResponses[keyof OpDeletePublishListResponses];
@@ -17008,7 +21618,7 @@ export type OpAddPublishListMembersResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeListPublishListMemberResponse;
 };
 
 export type OpAddPublishListMembersResponse = OpAddPublishListMembersResponses[keyof OpAddPublishListMembersResponses];
@@ -17072,7 +21682,7 @@ export type OpRemovePublishListMemberResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteResult;
 };
 
 export type OpRemovePublishListMemberResponse = OpRemovePublishListMemberResponses[keyof OpRemovePublishListMemberResponses];
@@ -17328,7 +21938,7 @@ export type OpCreatePortfolioBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopePortfolioBlockEnvelope;
 };
 
 export type OpCreatePortfolioBlockResponse = OpCreatePortfolioBlockResponses[keyof OpCreatePortfolioBlockResponses];
@@ -17392,7 +22002,7 @@ export type OpUpdatePortfolioBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopePortfolioBlockEnvelope;
 };
 
 export type OpUpdatePortfolioBlockResponse = OpUpdatePortfolioBlockResponses[keyof OpUpdatePortfolioBlockResponses];
@@ -17456,7 +22066,7 @@ export type OpDeletePortfolioBlockResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeletePortfolioBlockResponse;
 };
 
 export type OpDeletePortfolioBlockResponse = OpDeletePortfolioBlockResponses[keyof OpDeletePortfolioBlockResponses];
@@ -17520,7 +22130,7 @@ export type OpCreateSecurityResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeSecurityResponse;
 };
 
 export type OpCreateSecurityResponse = OpCreateSecurityResponses[keyof OpCreateSecurityResponses];
@@ -17584,7 +22194,7 @@ export type OpUpdateSecurityResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeSecurityResponse;
 };
 
 export type OpUpdateSecurityResponse = OpUpdateSecurityResponses[keyof OpUpdateSecurityResponses];
@@ -17648,7 +22258,7 @@ export type OpDeleteSecurityResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeDeleteResult;
 };
 
 export type OpDeleteSecurityResponse = OpDeleteSecurityResponses[keyof OpDeleteSecurityResponses];

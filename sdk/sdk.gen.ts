@@ -965,7 +965,7 @@ export const opDeleteSubgraph = <ThrowOnError extends boolean = false>(options: 
 /**
  * Delete Graph
  *
- * Permanently destroys a user graph and cancels its subscription. Two modes via the `at_period_end` body flag: omit it (or pass `false`) to tear down immediately (~10 min); pass `true` to keep the graph usable through the current billing period and tear it down at the period boundary via the existing suspend → deprovision pipeline. Requires `confirm` to equal the URL `graph_id`. Caller must be admin on the graph. Not allowed on shared repositories.
+ * Permanently destroys a user graph and cancels its subscription. Two modes via the `at_period_end` body flag: omit it (or pass `false`) to tear down immediately (~10 min); pass `true` to keep the graph usable through the current billing period and tear it down at the period boundary via the existing suspend → deprovision pipeline. Requires `confirm` to equal the URL `graph_id`. Caller must be both org owner (billing authority) and admin on the graph (operational authority). Not allowed on shared repositories.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1365,7 +1365,7 @@ export const opInitializeLedger = <ThrowOnError extends boolean = false>(options
 /**
  * Update Entity
  *
- * Only provided (non-null) fields are updated.
+ * Update the graph's primary entity. Only provided (non-null) fields are updated. The graph is implicit in the URL — the operation always targets the graph's primary entity.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1450,7 +1450,7 @@ export const opLinkEntityTaxonomy = <ThrowOnError extends boolean = false>(optio
 /**
  * Create Mapping Association
  *
- * Link a chart-of-accounts element to a US GAAP reporting concept.
+ * Link a chart-of-accounts element to a US GAAP reporting concept. One mapping edge per call — use `auto-map-elements` for bulk AI-assisted mapping. Duplicate (from, to, type) tuples return 409.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1467,7 +1467,7 @@ export const opCreateMappingAssociation = <ThrowOnError extends boolean = false>
 /**
  * Delete Mapping Association
  *
- *
+ * Remove a single CoA → reporting-concept mapping edge. The mapping structure itself remains; only the association row is dropped.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1722,7 +1722,7 @@ export const opDeleteJournalEntry = <ThrowOnError extends boolean = false>(optio
 /**
  * Set Close Target
  *
- * Period format: YYYY-MM. The close target is the user-controlled goal date, distinct from `closed_through` (what's actually closed).
+ * Set the user-controlled goal period for closing (`close_target`). Format: YYYY-MM. Distinct from `closed_through` (what's actually locked) — setting a target doesn't close anything; call `close-period` for that. The catch-up sequence between `closed_through` and this target appears on the response's `fiscal_calendar.catch_up_sequence`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1739,7 +1739,7 @@ export const opSetCloseTarget = <ThrowOnError extends boolean = false>(options: 
 /**
  * Close Fiscal Period
  *
- *
+ * Lock a single fiscal period. Posts draft entries, runs the balance-sheet equation check, advances `closed_through` by one, and auto-advances `close_target` if this close caught up to it. Period must be exactly `closed_through + 1` — sequence violations return 422 with structured `blockers`. Common blockers: `sync_stale` (override with `allow_stale_sync=true` after manual verification), `period_incomplete` (draft entries unbalanced), `sequence_violation` (out-of-order).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1756,7 +1756,7 @@ export const opClosePeriod = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Reopen Fiscal Period
  *
- * Decrements `closed_through` by one — only the most recently closed period can be reopened.
+ * Decrement `closed_through` by one. Only the most recently closed period can be reopened (no reach-back). The required `reason` is captured in the audit log. Use sparingly — reopen invalidates downstream artifacts that trusted the closed state (reports, shared filings).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1790,7 +1790,7 @@ export const opCreateReport = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Regenerate Report
  *
- *
+ * Re-runs fact generation for an existing Report against the latest ledger state. Pass `period_start`/`period_end`/`periods` only if you want to change the reporting window.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1824,7 +1824,7 @@ export const opDeleteReport = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Share Report
  *
- * Only published reports can be shared. Sends the report to all members of the target publish list.
+ * Pushes a published report to every member of the target publish list. Each share is an independent copy: the report row + all its facts are cloned into the recipient's tenant schema with `source_graph_id` / `source_report_id` provenance fields populated. Per-target outcomes (success or error) surface in the response — share does not fail-fast across targets.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1875,7 +1875,7 @@ export const opTransitionFilingStatus = <ThrowOnError extends boolean = false>(o
 /**
  * Create Publish List
  *
- *
+ * Create a publish list (a saved set of recipient graphs). Members are managed separately via add/remove-member operations.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1909,7 +1909,7 @@ export const opUpdatePublishList = <ThrowOnError extends boolean = false>(option
 /**
  * Delete Publish List
  *
- *
+ * Delete a publish list and its membership rows. Reports previously shared via this list are not affected — each share is an independent copy in the recipient's graph.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1926,7 +1926,7 @@ export const opDeletePublishList = <ThrowOnError extends boolean = false>(option
 /**
  * Add Members to Publish List
  *
- *
+ * Add one or more recipient graphs to a publish list. Targets must exist and have the same extension enabled (e.g. roboledger). Self-graph rejected (422); already-member rejected (409).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1943,7 +1943,7 @@ export const opAddPublishListMembers = <ThrowOnError extends boolean = false>(op
 /**
  * Remove Member from Publish List
  *
- *
+ * Remove a single recipient from a publish list.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
