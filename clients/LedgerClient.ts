@@ -67,6 +67,7 @@ import {
 } from '../sdk/sdk.gen'
 import type {
   AddPublishListMembersOperation,
+  AssociationResponse,
   AutoMapElementsOperation,
   ClosePeriodOperation,
   CreateAgentRequest,
@@ -79,18 +80,34 @@ import type {
   CreateTaxonomyBlockRequest,
   CreateViewRequest,
   DeleteInformationBlockRequest,
+  DeleteInformationBlockResponse,
   DeleteJournalEntryRequest,
   DeleteMappingAssociationOperation,
+  DeleteResult,
   DeleteTaxonomyBlockRequest,
+  DeleteTaxonomyBlockResponse,
+  EntityTaxonomyResponse,
   EvaluateRulesRequest,
+  EvaluateRulesResponse,
+  EventBlockEnvelope,
+  EventHandlerResponse,
   FileReportRequest,
   FinancialStatementAnalysisRequest,
+  InformationBlockEnvelope,
   InitializeLedgerRequest,
+  JournalEntryResponse,
+  LedgerAgentResponse,
   LinkEntityTaxonomyRequest,
   LiveFinancialStatementRequest,
   OperationEnvelope,
+  PreviewEventBlockResponse,
+  PublishListMemberResponse,
+  PublishListResponse,
   ReopenPeriodOperation,
+  ReportResponse,
   SetCloseTargetOperation,
+  ShareReportResponse,
+  TaxonomyBlockEnvelope,
   TransitionFilingStatusRequest,
   UpdateAgentRequest,
   UpdateEntityRequest,
@@ -277,10 +294,17 @@ export interface CreateReportOptions {
   periods?: PeriodSpecInput[]
 }
 
-export interface ReportOperationAck {
+/**
+ * Wrapper returned by report write methods — pairs the audit-side
+ * envelope fields (`operationId`, `status`) with the typed result
+ * payload. Generic on ``T`` so each method advertises its specific
+ * result type (e.g. ``ReportResponse`` for creates, ``DeleteResult``
+ * for deletes).
+ */
+export interface ReportOperationAck<T = unknown> {
   operationId: string
   status: OperationEnvelope['status']
-  result: Record<string, unknown> | null
+  result: T | null
 }
 
 // ── Write result shapes (envelope.result payloads) ─────────────────────
@@ -756,12 +780,12 @@ export class LedgerClient {
   async linkEntityTaxonomy(
     graphId: string,
     body: LinkEntityTaxonomyRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EntityTaxonomyResponse> {
     const envelope = await this.callOperation(
       'Link entity taxonomy',
       opLinkEntityTaxonomy({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Link entity taxonomy', envelope.result)
   }
 
   /**
@@ -772,37 +796,37 @@ export class LedgerClient {
     graphId: string,
     body: CreateTaxonomyBlockRequest,
     idempotencyKey?: string
-  ): Promise<Record<string, unknown>> {
+  ): Promise<TaxonomyBlockEnvelope> {
     const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
     const envelope = await this.callOperation(
       'Create taxonomy block',
       opCreateTaxonomyBlock({ path: { graph_id: graphId }, body, headers })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Create taxonomy block', envelope.result)
   }
 
   /** Update a taxonomy block — add/update/remove elements, structures, associations, or rules. */
   async updateTaxonomyBlock(
     graphId: string,
     body: UpdateTaxonomyBlockRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<TaxonomyBlockEnvelope> {
     const envelope = await this.callOperation(
       'Update taxonomy block',
       opUpdateTaxonomyBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Update taxonomy block', envelope.result)
   }
 
   /** Delete a taxonomy block. Cascades through elements, structures, and associations. */
   async deleteTaxonomyBlock(
     graphId: string,
     body: DeleteTaxonomyBlockRequest
-  ): Promise<{ deleted: boolean }> {
+  ): Promise<DeleteTaxonomyBlockResponse> {
     const envelope = await this.callOperation(
       'Delete taxonomy block',
       opDeleteTaxonomyBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+    return (envelope.result ?? { deleted: true }) as DeleteTaxonomyBlockResponse
   }
 
   /** List elements (CoA accounts, GAAP concepts, etc.) with filters. */
@@ -910,24 +934,24 @@ export class LedgerClient {
   async createMappingAssociation(
     graphId: string,
     body: CreateMappingAssociationOperation
-  ): Promise<Record<string, unknown>> {
+  ): Promise<AssociationResponse> {
     const envelope = await this.callOperation(
       'Create mapping association',
       opCreateMappingAssociation({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Create mapping association', envelope.result)
   }
 
   /** Delete a mapping association. */
   async deleteMappingAssociation(
     graphId: string,
     body: DeleteMappingAssociationOperation
-  ): Promise<{ deleted: boolean }> {
+  ): Promise<DeleteResult> {
     const envelope = await this.callOperation(
       'Delete mapping association',
       opDeleteMappingAssociation({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+    return (envelope.result ?? { deleted: true }) as DeleteResult
   }
 
   /**
@@ -1042,7 +1066,7 @@ export class LedgerClient {
     graphId: string,
     structureId: string,
     options: { name?: string }
-  ): Promise<Record<string, unknown>> {
+  ): Promise<InformationBlockEnvelope> {
     const body: UpdateInformationBlockRequest = {
       block_type: 'schedule',
       payload: { structure_id: structureId, ...options },
@@ -1051,11 +1075,14 @@ export class LedgerClient {
       'Update schedule',
       opUpdateInformationBlock({ path: { graph_id: graphId }, body })
     )
-    return envelope.result ?? {}
+    return this.requireResult('Update schedule', envelope.result)
   }
 
   /** Permanently delete a schedule (cascades through facts + associations). */
-  async deleteSchedule(graphId: string, structureId: string): Promise<{ deleted: boolean }> {
+  async deleteSchedule(
+    graphId: string,
+    structureId: string
+  ): Promise<DeleteInformationBlockResponse> {
     const body: DeleteInformationBlockRequest = {
       block_type: 'schedule',
       payload: { structure_id: structureId },
@@ -1064,10 +1091,7 @@ export class LedgerClient {
       'Delete schedule',
       opDeleteInformationBlock({ path: { graph_id: graphId }, body })
     )
-    // DeleteInformationBlockResponse.deleted is `Literal[True] = True` on
-    // the backend, which becomes `deleted?: true` (optional) in the SDK.
-    // The cast bridges that to the public `{ deleted: boolean }` shape.
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+    return (envelope.result ?? { deleted: true }) as DeleteInformationBlockResponse
   }
 
   /**
@@ -1088,7 +1112,7 @@ export class LedgerClient {
       memo?: string | null
       reason?: string
     }
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EventBlockEnvelope> {
     const body: CreateEventBlockRequest = {
       event_type: 'asset_disposed',
       event_category: 'adjustment',
@@ -1108,19 +1132,16 @@ export class LedgerClient {
       'Dispose schedule',
       opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return envelope.result ?? {}
+    return this.requireResult('Dispose schedule', envelope.result)
   }
 
   /** Evaluate taxonomy rules against facts in a structure. */
-  async evaluateRules(
-    graphId: string,
-    body: EvaluateRulesRequest
-  ): Promise<Record<string, unknown>> {
+  async evaluateRules(graphId: string, body: EvaluateRulesRequest): Promise<EvaluateRulesResponse> {
     const envelope = await this.callOperation(
       'Evaluate rules',
       opEvaluateRules({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Evaluate rules', envelope.result)
   }
 
   // ── Period close ────────────────────────────────────────────────────
@@ -1167,7 +1188,7 @@ export class LedgerClient {
     periodStart: string,
     periodEnd: string,
     memo?: string
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EventBlockEnvelope> {
     const body: CreateEventBlockRequest = {
       event_type: 'schedule_entry_due',
       event_category: 'recognition',
@@ -1186,7 +1207,7 @@ export class LedgerClient {
       'Create closing entry',
       opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return envelope.result ?? {}
+    return this.requireResult('Create closing entry', envelope.result)
   }
 
   // ── Closing book ───────────────────────────────────────────────────
@@ -1316,7 +1337,7 @@ export class LedgerClient {
   async createJournalEntry(
     graphId: string,
     options: CreateJournalEntryOptions
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EventBlockEnvelope> {
     const body: CreateEventBlockRequest = {
       event_type: 'journal_entry_recorded',
       event_category: 'adjustment',
@@ -1344,29 +1365,29 @@ export class LedgerClient {
       'Create journal entry',
       opCreateEventBlock({ path: { graph_id: graphId }, body, headers })
     )
-    return envelope.result ?? {}
+    return this.requireResult('Create journal entry', envelope.result)
   }
 
   /** Update a draft journal entry. Posted entries are immutable. */
   async updateJournalEntry(
     graphId: string,
     body: UpdateJournalEntryRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<JournalEntryResponse> {
     const envelope = await this.callOperation(
       'Update journal entry',
       opUpdateJournalEntry({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Update journal entry', envelope.result)
   }
 
   /** Hard-delete a draft journal entry. Posted entries must be reversed. */
-  async deleteJournalEntry(graphId: string, entryId: string): Promise<{ deleted: boolean }> {
+  async deleteJournalEntry(graphId: string, entryId: string): Promise<DeleteResult> {
     const body: DeleteJournalEntryRequest = { entry_id: entryId }
     const envelope = await this.callOperation(
       'Delete journal entry',
       opDeleteJournalEntry({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+    return (envelope.result ?? { deleted: true }) as DeleteResult
   }
 
   /**
@@ -1384,7 +1405,7 @@ export class LedgerClient {
       memo?: string | null
       reason?: string | null
     }
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EventBlockEnvelope> {
     const occurredDate = options?.postingDate ?? new Date().toISOString().slice(0, 10)
     const body: CreateEventBlockRequest = {
       event_type: 'journal_entry_reversed',
@@ -1403,7 +1424,7 @@ export class LedgerClient {
       'Reverse journal entry',
       opCreateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return envelope.result ?? {}
+    return this.requireResult('Reverse journal entry', envelope.result)
   }
 
   // ── Event blocks (generic preview + status transitions) ──────────────
@@ -1419,12 +1440,12 @@ export class LedgerClient {
   async previewEventBlock(
     graphId: string,
     body: CreateEventBlockRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<PreviewEventBlockResponse> {
     const envelope = await this.callOperation(
       'Preview event block',
       opPreviewEventBlock({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Preview event block', envelope.result)
   }
 
   /**
@@ -1436,12 +1457,12 @@ export class LedgerClient {
   async updateEventBlock(
     graphId: string,
     body: UpdateEventBlockRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EventBlockEnvelope> {
     const envelope = await this.callOperation(
       'Update event block',
       opUpdateEventBlock({ path: { graph_id: graphId }, body })
     )
-    return envelope.result ?? {}
+    return this.requireResult('Update event block', envelope.result)
   }
 
   // ── Agents (REA counterparties) ───────────────────────────────────────
@@ -1456,25 +1477,25 @@ export class LedgerClient {
     graphId: string,
     body: CreateAgentRequest,
     idempotencyKey?: string
-  ): Promise<Record<string, unknown>> {
+  ): Promise<LedgerAgentResponse> {
     const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
     const envelope = await this.callOperation(
       'Create agent',
       opCreateAgent({ path: { graph_id: graphId }, body, headers })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Create agent', envelope.result)
   }
 
   /**
    * Update an agent. `metadata_patch` is a partial merge into the existing
    * metadata object; all other fields replace.
    */
-  async updateAgent(graphId: string, body: UpdateAgentRequest): Promise<Record<string, unknown>> {
+  async updateAgent(graphId: string, body: UpdateAgentRequest): Promise<LedgerAgentResponse> {
     const envelope = await this.callOperation(
       'Update agent',
       opUpdateAgent({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Update agent', envelope.result)
   }
 
   // ── Event handlers (DSL handler registry) ────────────────────────────
@@ -1488,12 +1509,12 @@ export class LedgerClient {
   async createEventHandler(
     graphId: string,
     body: CreateEventHandlerRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EventHandlerResponse> {
     const envelope = await this.callOperation(
       'Create event handler',
       opCreateEventHandler({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Create event handler', envelope.result)
   }
 
   /**
@@ -1503,12 +1524,12 @@ export class LedgerClient {
   async updateEventHandler(
     graphId: string,
     body: UpdateEventHandlerRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<EventHandlerResponse> {
     const envelope = await this.callOperation(
       'Update event handler',
       opUpdateEventHandler({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Update event handler', envelope.result)
   }
 
   // ── Financial statements (graph-backed) ──────────────────────────────
@@ -1602,7 +1623,10 @@ export class LedgerClient {
    * Kick off report creation (async). Use the returned `operationId` to
    * subscribe to progress via SSE, then call `getReport()` once finished.
    */
-  async createReport(graphId: string, options: CreateReportOptions): Promise<ReportOperationAck> {
+  async createReport(
+    graphId: string,
+    options: CreateReportOptions
+  ): Promise<ReportOperationAck<ReportResponse>> {
     const body: CreateReportRequest = {
       name: options.name,
       mapping_id: options.mappingId,
@@ -1622,7 +1646,7 @@ export class LedgerClient {
     return {
       operationId: envelope.operationId,
       status: envelope.status,
-      result: (envelope.result as Record<string, unknown> | null) ?? null,
+      result: envelope.result ?? null,
     }
   }
 
@@ -1693,7 +1717,7 @@ export class LedgerClient {
     reportId: string,
     periodStart?: string,
     periodEnd?: string
-  ): Promise<ReportOperationAck> {
+  ): Promise<ReportOperationAck<ReportResponse>> {
     const envelope = await this.callOperation(
       'Regenerate report',
       opRegenerateReport({
@@ -1708,30 +1732,31 @@ export class LedgerClient {
     return {
       operationId: envelope.operationId,
       status: envelope.status,
-      result: (envelope.result as Record<string, unknown> | null) ?? null,
+      result: envelope.result ?? null,
     }
   }
 
   /** Delete a report and its generated facts. */
-  async deleteReport(graphId: string, reportId: string): Promise<void> {
-    await this.callOperation(
+  async deleteReport(graphId: string, reportId: string): Promise<DeleteResult> {
+    const envelope = await this.callOperation(
       'Delete report',
       opDeleteReport({
         path: { graph_id: graphId },
         body: { report_id: reportId },
       })
     )
+    return (envelope.result ?? { deleted: true }) as DeleteResult
   }
 
   /**
-   * Share a published report to every member of a publish list (async).
-   * Each target graph receives a snapshot copy of the report's facts.
+   * Share a published report to every member of a publish list. Each
+   * target graph receives a snapshot copy of the report's facts.
    */
   async shareReport(
     graphId: string,
     reportId: string,
     publishListId: string
-  ): Promise<ReportOperationAck> {
+  ): Promise<ReportOperationAck<ShareReportResponse>> {
     const envelope = await this.callOperation(
       'Share report',
       opShareReport({
@@ -1745,7 +1770,7 @@ export class LedgerClient {
     return {
       operationId: envelope.operationId,
       status: envelope.status,
-      result: (envelope.result as Record<string, unknown> | null) ?? null,
+      result: envelope.result ?? null,
     }
   }
 
@@ -1754,7 +1779,7 @@ export class LedgerClient {
    * Allowed from 'draft' or 'under_review'. Stamps filed_at + filed_by
    * from the auth context + server clock.
    */
-  async fileReport(graphId: string, reportId: string): Promise<ReportOperationAck> {
+  async fileReport(graphId: string, reportId: string): Promise<ReportOperationAck<ReportResponse>> {
     const body: FileReportRequest = { report_id: reportId }
     const envelope = await this.callOperation(
       'File report',
@@ -1763,7 +1788,7 @@ export class LedgerClient {
     return {
       operationId: envelope.operationId,
       status: envelope.status,
-      result: (envelope.result as Record<string, unknown> | null) ?? null,
+      result: envelope.result ?? null,
     }
   }
 
@@ -1776,7 +1801,7 @@ export class LedgerClient {
     graphId: string,
     reportId: string,
     targetStatus: string
-  ): Promise<ReportOperationAck> {
+  ): Promise<ReportOperationAck<ReportResponse>> {
     const body: TransitionFilingStatusRequest = {
       report_id: reportId,
       target_status: targetStatus,
@@ -1788,7 +1813,7 @@ export class LedgerClient {
     return {
       operationId: envelope.operationId,
       status: envelope.status,
-      result: (envelope.result as Record<string, unknown> | null) ?? null,
+      result: envelope.result ?? null,
     }
   }
 
@@ -1822,7 +1847,7 @@ export class LedgerClient {
     graphId: string,
     name: string,
     description?: string
-  ): Promise<Record<string, unknown>> {
+  ): Promise<PublishListResponse> {
     const body: CreatePublishListRequest = {
       name,
       description: description ?? null,
@@ -1831,7 +1856,7 @@ export class LedgerClient {
       'Create publish list',
       opCreatePublishList({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Create publish list', envelope.result)
   }
 
   /** Get a single publish list with its full member list. */
@@ -1850,7 +1875,7 @@ export class LedgerClient {
     graphId: string,
     listId: string,
     updates: { name?: string; description?: string | null }
-  ): Promise<Record<string, unknown>> {
+  ): Promise<PublishListResponse> {
     const envelope = await this.callOperation(
       'Update publish list',
       opUpdatePublishList({
@@ -1862,18 +1887,19 @@ export class LedgerClient {
         } as UpdatePublishListOperation,
       })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Update publish list', envelope.result)
   }
 
   /** Delete a publish list. */
-  async deletePublishList(graphId: string, listId: string): Promise<void> {
-    await this.callOperation(
+  async deletePublishList(graphId: string, listId: string): Promise<DeleteResult> {
+    const envelope = await this.callOperation(
       'Delete publish list',
       opDeletePublishList({
         path: { graph_id: graphId },
         body: { list_id: listId },
       })
     )
+    return (envelope.result ?? { deleted: true }) as DeleteResult
   }
 
   /** Add target graphs as members of a publish list. */
@@ -1881,7 +1907,7 @@ export class LedgerClient {
     graphId: string,
     listId: string,
     targetGraphIds: string[]
-  ): Promise<Record<string, unknown>> {
+  ): Promise<PublishListMemberResponse[]> {
     const envelope = await this.callOperation(
       'Add publish list members',
       opAddPublishListMembers({
@@ -1892,7 +1918,7 @@ export class LedgerClient {
         } as AddPublishListMembersOperation,
       })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Add publish list members', envelope.result)
   }
 
   /** Remove a single member from a publish list. */
@@ -1900,7 +1926,7 @@ export class LedgerClient {
     graphId: string,
     listId: string,
     memberId: string
-  ): Promise<{ deleted: boolean }> {
+  ): Promise<DeleteResult> {
     const envelope = await this.callOperation(
       'Remove publish list member',
       opRemovePublishListMember({
@@ -1908,7 +1934,7 @@ export class LedgerClient {
         body: { list_id: listId, member_id: memberId },
       })
     )
-    return (envelope.result ?? { deleted: true }) as { deleted: boolean }
+    return (envelope.result ?? { deleted: true }) as DeleteResult
   }
 
   // ── Internal helpers ────────────────────────────────────────────────
@@ -1935,6 +1961,18 @@ export class LedgerClient {
       throw new Error(`${label} failed: empty response`)
     }
     return response.data
+  }
+
+  /**
+   * Unwrap the typed result from an OperationEnvelope. Throws when the
+   * server returned an envelope with no `result` field — generally a
+   * sign that a synchronous operation failed silently.
+   */
+  private requireResult<T>(label: string, result: T | null | undefined): T {
+    if (result === null || result === undefined) {
+      throw new Error(`${label}: operation envelope had no result`)
+    }
+    return result
   }
 }
 
