@@ -15162,9 +15162,9 @@ export type SyncConnectionErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -17553,9 +17553,9 @@ export type OpCreateSubgraphErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -17617,9 +17617,9 @@ export type OpDeleteSubgraphErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -17681,9 +17681,9 @@ export type OpDeleteGraphErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -17745,9 +17745,9 @@ export type OpCreateBackupErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -17809,9 +17809,9 @@ export type OpRestoreBackupErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -17873,9 +17873,9 @@ export type OpChangeTierErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -17937,9 +17937,9 @@ export type OpMaterializeErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -18359,9 +18359,9 @@ export type CreateGraphErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -19423,9 +19423,9 @@ export type OpInitializeLedgerErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -19487,9 +19487,9 @@ export type OpUpdateEntityErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -19531,37 +19531,37 @@ export type OpCreateTaxonomyBlockData = {
 
 export type OpCreateTaxonomyBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateTaxonomyBlockError = OpCreateTaxonomyBlockErrors[keyof OpCreateTaxonomyBlockErrors];
@@ -19595,37 +19595,37 @@ export type OpUpdateTaxonomyBlockData = {
 
 export type OpUpdateTaxonomyBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateTaxonomyBlockError = OpUpdateTaxonomyBlockErrors[keyof OpUpdateTaxonomyBlockErrors];
@@ -19659,37 +19659,37 @@ export type OpDeleteTaxonomyBlockData = {
 
 export type OpDeleteTaxonomyBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteTaxonomyBlockError = OpDeleteTaxonomyBlockErrors[keyof OpDeleteTaxonomyBlockErrors];
@@ -19723,37 +19723,37 @@ export type OpLinkEntityTaxonomyData = {
 
 export type OpLinkEntityTaxonomyErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpLinkEntityTaxonomyError = OpLinkEntityTaxonomyErrors[keyof OpLinkEntityTaxonomyErrors];
@@ -19787,37 +19787,37 @@ export type OpCreateMappingAssociationData = {
 
 export type OpCreateMappingAssociationErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
@@ -19871,9 +19871,9 @@ export type OpDeleteMappingAssociationErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -19935,9 +19935,9 @@ export type OpAutoMapElementsErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -19979,37 +19979,37 @@ export type OpCreateInformationBlockData = {
 
 export type OpCreateInformationBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateInformationBlockError = OpCreateInformationBlockErrors[keyof OpCreateInformationBlockErrors];
@@ -20043,37 +20043,37 @@ export type OpUpdateInformationBlockData = {
 
 export type OpUpdateInformationBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateInformationBlockError = OpUpdateInformationBlockErrors[keyof OpUpdateInformationBlockErrors];
@@ -20107,37 +20107,37 @@ export type OpDeleteInformationBlockData = {
 
 export type OpDeleteInformationBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteInformationBlockError = OpDeleteInformationBlockErrors[keyof OpDeleteInformationBlockErrors];
@@ -20171,37 +20171,37 @@ export type OpEvaluateRulesData = {
 
 export type OpEvaluateRulesErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpEvaluateRulesError = OpEvaluateRulesErrors[keyof OpEvaluateRulesErrors];
@@ -20235,37 +20235,37 @@ export type OpCreateAgentData = {
 
 export type OpCreateAgentErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateAgentError = OpCreateAgentErrors[keyof OpCreateAgentErrors];
@@ -20299,37 +20299,37 @@ export type OpUpdateAgentData = {
 
 export type OpUpdateAgentErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateAgentError = OpUpdateAgentErrors[keyof OpUpdateAgentErrors];
@@ -20363,37 +20363,37 @@ export type OpCreateEventBlockData = {
 
 export type OpCreateEventBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateEventBlockError = OpCreateEventBlockErrors[keyof OpCreateEventBlockErrors];
@@ -20427,37 +20427,37 @@ export type OpUpdateEventBlockData = {
 
 export type OpUpdateEventBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateEventBlockError = OpUpdateEventBlockErrors[keyof OpUpdateEventBlockErrors];
@@ -20491,37 +20491,37 @@ export type OpCreateEventHandlerData = {
 
 export type OpCreateEventHandlerErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateEventHandlerError = OpCreateEventHandlerErrors[keyof OpCreateEventHandlerErrors];
@@ -20555,37 +20555,37 @@ export type OpUpdateEventHandlerData = {
 
 export type OpUpdateEventHandlerErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateEventHandlerError = OpUpdateEventHandlerErrors[keyof OpUpdateEventHandlerErrors];
@@ -20619,37 +20619,37 @@ export type OpPreviewEventBlockData = {
 
 export type OpPreviewEventBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpPreviewEventBlockError = OpPreviewEventBlockErrors[keyof OpPreviewEventBlockErrors];
@@ -20683,37 +20683,37 @@ export type OpUpdateJournalEntryData = {
 
 export type OpUpdateJournalEntryErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateJournalEntryError = OpUpdateJournalEntryErrors[keyof OpUpdateJournalEntryErrors];
@@ -20747,37 +20747,37 @@ export type OpDeleteJournalEntryData = {
 
 export type OpDeleteJournalEntryErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteJournalEntryError = OpDeleteJournalEntryErrors[keyof OpDeleteJournalEntryErrors];
@@ -20831,9 +20831,9 @@ export type OpSetCloseTargetErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -20895,9 +20895,9 @@ export type OpClosePeriodErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -20959,9 +20959,9 @@ export type OpReopenPeriodErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21023,9 +21023,9 @@ export type OpCreateReportErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21087,9 +21087,9 @@ export type OpRegenerateReportErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21151,9 +21151,9 @@ export type OpDeleteReportErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21215,9 +21215,9 @@ export type OpShareReportErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21279,9 +21279,9 @@ export type OpFileReportErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21343,9 +21343,9 @@ export type OpTransitionFilingStatusErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21407,9 +21407,9 @@ export type OpCreatePublishListErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21471,9 +21471,9 @@ export type OpUpdatePublishListErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21535,9 +21535,9 @@ export type OpDeletePublishListErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21599,9 +21599,9 @@ export type OpAddPublishListMembersErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21663,9 +21663,9 @@ export type OpRemovePublishListMemberErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21727,9 +21727,9 @@ export type OpLiveFinancialStatementErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21791,9 +21791,9 @@ export type OpBuildFactGridErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21855,9 +21855,9 @@ export type OpFinancialStatementAnalysisErrors = {
      */
     409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -21899,37 +21899,37 @@ export type OpCreatePortfolioBlockData = {
 
 export type OpCreatePortfolioBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreatePortfolioBlockError = OpCreatePortfolioBlockErrors[keyof OpCreatePortfolioBlockErrors];
@@ -21963,37 +21963,37 @@ export type OpUpdatePortfolioBlockData = {
 
 export type OpUpdatePortfolioBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdatePortfolioBlockError = OpUpdatePortfolioBlockErrors[keyof OpUpdatePortfolioBlockErrors];
@@ -22027,37 +22027,37 @@ export type OpDeletePortfolioBlockData = {
 
 export type OpDeletePortfolioBlockErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeletePortfolioBlockError = OpDeletePortfolioBlockErrors[keyof OpDeletePortfolioBlockErrors];
@@ -22091,37 +22091,37 @@ export type OpCreateSecurityData = {
 
 export type OpCreateSecurityErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpCreateSecurityError = OpCreateSecurityErrors[keyof OpCreateSecurityErrors];
@@ -22155,37 +22155,37 @@ export type OpUpdateSecurityData = {
 
 export type OpUpdateSecurityErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpUpdateSecurityError = OpUpdateSecurityErrors[keyof OpUpdateSecurityErrors];
@@ -22219,37 +22219,37 @@ export type OpDeleteSecurityData = {
 
 export type OpDeleteSecurityErrors = {
     /**
-     * Invalid request payload
+     * Invalid request
      */
-    400: OperationError;
+    400: ErrorResponse;
     /**
-     * Unauthorized — missing or invalid credentials
+     * Authentication required
      */
-    401: unknown;
+    401: ErrorResponse;
     /**
-     * Forbidden — caller cannot access this graph
+     * Access denied
      */
-    403: unknown;
+    403: ErrorResponse;
     /**
-     * Resource not found (graph, ledger, report, etc.)
+     * Resource not found
      */
-    404: OperationError;
+    404: ErrorResponse;
     /**
-     * Idempotency-Key reused with a different request body, or other operation-level conflict
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: OperationError;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
-    429: unknown;
+    429: ErrorResponse;
     /**
-     * Internal error
+     * Internal server error
      */
-    500: unknown;
+    500: ErrorResponse;
 };
 
 export type OpDeleteSecurityError = OpDeleteSecurityErrors[keyof OpDeleteSecurityErrors];
