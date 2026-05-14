@@ -334,7 +334,7 @@ export type FactRow = {
 
 /** Current fiscal calendar state for a graph. */
 export type FiscalCalendar = {
-  /** Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed' */
+  /** Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations' */
   blockers: Array<Scalars['String']['output']>
   /** Ordered list of periods that a close run would process */
   catchUpSequence: Array<Scalars['String']['output']>
@@ -344,6 +344,8 @@ export type FiscalCalendar = {
   closeableNow: Scalars['Boolean']['output']
   /** Latest closed period (YYYY-MM), or null if nothing closed */
   closedThrough: Maybe<Scalars['String']['output']>
+  /** Earliest period (YYYY-MM) with a pending obligation blocking close. Null when no pending_obligations blocker is active. */
+  earliestPendingPeriod: Maybe<Scalars['String']['output']>
   fiscalYearStartMonth: Scalars['Int']['output']
   /** Number of periods between closed_through and close_target (inclusive of close_target). 0 means caught up. */
   gapPeriods: Scalars['Int']['output']
@@ -352,8 +354,14 @@ export type FiscalCalendar = {
   lastCloseAt: Maybe<Scalars['DateTime']['output']>
   /** Most recent QB sync timestamp (if connected) */
   lastSyncAt: Maybe<Scalars['DateTime']['output']>
+  /** Number of pending schedule_entry_due events blocking close. Non-zero only when `pending_obligations` is in `blockers`. */
+  pendingObligationCount: Scalars['Int']['output']
+  /** Sample of up to 5 pending obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at. Use `list-event-blocks` with event_type=schedule_entry_due&status=pending for the full set. */
+  pendingObligationSample: Array<PendingObligationDetail>
   /** Fiscal period rows for this graph */
   periods: Array<FiscalPeriodSummary>
+  /** Days the most recent sync is stale relative to the period to close. Populated only when `sync_stale` is in `blockers` and last_sync_at exists (null when there's a connection but no sync has ever run). */
+  syncStaleDays: Maybe<Scalars['Int']['output']>
 }
 
 /**
@@ -428,6 +436,7 @@ export type InformationBlock = {
   category: Scalars['String']['output']
   connections: Array<InformationBlockConnection>
   dimensions: Array<Scalars['JSON']['output']>
+  disclosureId: Maybe<Scalars['String']['output']>
   displayName: Scalars['String']['output']
   elements: Array<InformationBlockElement>
   factSet: Maybe<InformationBlockFactSet>
@@ -513,6 +522,8 @@ export type InformationBlockElement = {
 /** Fact projection — just the values the envelope caller cares about. */
 export type InformationBlockFact = {
   elementId: Scalars['String']['output']
+  elementName: Maybe<Scalars['String']['output']>
+  elementQname: Maybe<Scalars['String']['output']>
   /** historical | in_scope */
   factScope: Scalars['String']['output']
   factSetId: Maybe<Scalars['String']['output']>
@@ -1074,6 +1085,20 @@ export type PaginationInfo = {
 }
 
 /**
+ * One pending schedule-derived obligation blocking close.
+ *
+ * Surfaced on `FiscalCalendarResponse` when `pending_obligations` is in
+ * the blockers list so callers can name which schedules to promote.
+ */
+export type PendingObligationDetail = {
+  eventId: Scalars['String']['output']
+  /** Period in YYYY-MM format */
+  period: Scalars['String']['output']
+  scheduleId: Maybe<Scalars['String']['output']>
+  scheduleName: Maybe<Scalars['String']['output']>
+}
+
+/**
  * One schedule's contribution to a period close — drafted closing
  * entry plus its reversal (when ``auto_reverse=True``).
  *
@@ -1549,6 +1574,8 @@ export type QueryLibraryTaxonomyArgs = {
 }
 
 export type QueryLibraryTaxonomyArcCountArgs = {
+  associationType?: InputMaybe<Scalars['String']['input']>
+  structureId?: InputMaybe<Scalars['ID']['input']>
   taxonomyId: Scalars['ID']['input']
 }
 
@@ -1556,6 +1583,7 @@ export type QueryLibraryTaxonomyArcsArgs = {
   associationType?: InputMaybe<Scalars['String']['input']>
   limit?: Scalars['Int']['input']
   offset?: Scalars['Int']['input']
+  structureId?: InputMaybe<Scalars['ID']['input']>
   taxonomyId: Scalars['ID']['input']
 }
 

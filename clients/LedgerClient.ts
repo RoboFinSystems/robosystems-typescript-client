@@ -346,6 +346,12 @@ interface RawClosePeriodResult {
   entries_posted: number
   target_auto_advanced: boolean
   fiscal_calendar: RawFiscalCalendar
+  // §3.8 — auto-run rules on close. `null` when no schedules with facts
+  // in the period had rules attached. Otherwise a status-keyed tally.
+  rule_summary?: Record<string, number> | null
+  // ids of schedule Structures whose rules were evaluated during the
+  // close. Empty when `rule_summary` is null.
+  evaluated_structure_ids?: string[]
 }
 
 interface RawScheduleCreatedResult {
@@ -354,6 +360,9 @@ interface RawScheduleCreatedResult {
   taxonomy_id: string
   total_periods: number
   total_facts: number
+  // §3.8 — populated when create_schedule (or update_schedule on a
+  // template change) re-runs the rule engine. Otherwise null.
+  rule_summary?: Record<string, number> | null
 }
 
 export interface InitializeLedgerResult {
@@ -367,6 +376,14 @@ export interface ClosePeriodResult {
   entriesPosted: number
   targetAutoAdvanced: boolean
   fiscalCalendar: LedgerFiscalCalendar
+  /**
+   * §3.8 — aggregated rule-eval outcome across every schedule Structure
+   * with facts in the closed period. Keys: `pass` / `fail` / `error` /
+   * `skipped`. `null` when no schedules had facts in the period.
+   */
+  ruleSummary: Record<string, number> | null
+  /** ids of schedule Structures whose rules were evaluated. */
+  evaluatedStructureIds: string[]
 }
 
 export interface ScheduleCreated {
@@ -375,6 +392,12 @@ export interface ScheduleCreated {
   taxonomyId: string
   totalPeriods: number
   totalFacts: number
+  /**
+   * §3.8 — populated when create_schedule (or update_schedule on a
+   * template change) re-runs the rule engine. Keys: `pass` / `fail` /
+   * `error` / `skipped`. `null` when no rules were re-evaluated.
+   */
+  ruleSummary: Record<string, number> | null
 }
 
 export type LedgerEntryType = 'standard' | 'adjusting' | 'closing' | 'reversing'
@@ -1065,6 +1088,7 @@ export class LedgerClient {
       taxonomyId: raw.taxonomy_id,
       totalPeriods: raw.total_periods,
       totalFacts: raw.total_facts,
+      ruleSummary: raw.rule_summary ?? null,
     }
   }
 
@@ -1306,6 +1330,8 @@ export class LedgerClient {
       entriesPosted: raw.entries_posted ?? 0,
       targetAutoAdvanced: raw.target_auto_advanced ?? false,
       fiscalCalendar: rawFiscalCalendarToCamel(raw.fiscal_calendar),
+      ruleSummary: raw.rule_summary ?? null,
+      evaluatedStructureIds: raw.evaluated_structure_ids ?? [],
     }
   }
 
