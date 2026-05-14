@@ -1055,6 +1055,28 @@ export type CancelSubscriptionRequest = {
 };
 
 /**
+ * ChangeReportingStyleOp
+ *
+ * Body for the change-reporting-style operation (Phase 2 of §3.2).
+ *
+ * Switches the graph to a different Reporting Style. The target Style
+ * must be a library- or customer-authored Structure with
+ * ``structure_type='reporting_style'`` and a complete composition
+ * (one Network per required statement type — BS / IS / CF / SE). Filed
+ * Reports are unaffected because each ``Report`` already pins its own
+ * ``structure_id`` per FactSet at create-time; new reports use the new
+ * Style. Idempotent on the same target id.
+ */
+export type ChangeReportingStyleOp = {
+    /**
+     * Reporting Style Id
+     *
+     * Structure id of the target Reporting Style (e.g., `025f5d48-12ce-5d65-b9eb-4f137a10ef06` for the library-seeded Default Style). Must resolve to a Structure with structure_type='reporting_style' that has a complete composition in the graph's tenant schema.
+     */
+    reporting_style_id: string;
+};
+
+/**
  * ChangeTierOp
  *
  * Body for the change-tier operation (supports upgrades and downgrades).
@@ -1249,6 +1271,20 @@ export type ClosePeriodResponse = {
      * Whether close_target was auto-advanced because it was reached
      */
     target_auto_advanced?: boolean;
+    /**
+     * Rule Summary
+     *
+     * Aggregated rule-eval outcome across every schedule Structure with facts in the closed period — keys: pass/fail/error/skipped. None when no schedules had facts in the period (§3.8 auto-run on close).
+     */
+    rule_summary?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Evaluated Structure Ids
+     *
+     * ids of schedule Structures whose rules were evaluated during the close. Pairs with rule_summary.
+     */
+    evaluated_structure_ids?: Array<string>;
 };
 
 /**
@@ -2002,7 +2038,7 @@ export type CreateGraphRequest = {
 export type CreateInformationBlockRequest = ({
     block_type: 'schedule';
 } & CreateScheduleArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'income_statement' | 'metric';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric';
 } & CreateLegacyArm);
 
 /**
@@ -3018,7 +3054,7 @@ export type DeleteGraphOp = {
 export type DeleteInformationBlockRequest = ({
     block_type: 'schedule';
 } & DeleteScheduleArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'income_statement' | 'metric';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric';
 } & DeleteLegacyArm);
 
 /**
@@ -4327,6 +4363,14 @@ export type FactLite = {
      */
     element_id: string;
     /**
+     * Element Name
+     */
+    element_name?: string | null;
+    /**
+     * Element Qname
+     */
+    element_qname?: string | null;
+    /**
      * Value
      */
     value: number;
@@ -4681,9 +4725,33 @@ export type FiscalCalendarResponse = {
     /**
      * Blockers
      *
-     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed'
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations'
      */
     blockers?: Array<string>;
+    /**
+     * Pending Obligation Count
+     *
+     * Number of pending schedule_entry_due events blocking close. Non-zero only when `pending_obligations` is in `blockers`.
+     */
+    pending_obligation_count?: number;
+    /**
+     * Pending Obligation Sample
+     *
+     * Sample of up to 5 pending obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at. Use `list-event-blocks` with event_type=schedule_entry_due&status=pending for the full set.
+     */
+    pending_obligation_sample?: Array<PendingObligationDetailResponse>;
+    /**
+     * Earliest Pending Period
+     *
+     * Earliest period (YYYY-MM) with a pending obligation blocking close. Null when no pending_obligations blocker is active.
+     */
+    earliest_pending_period?: string | null;
+    /**
+     * Sync Stale Days
+     *
+     * Days the most recent sync is stale relative to the period to close. Populated only when `sync_stale` is in `blockers` and last_sync_at exists (null when there's a connection but no sync has ever run).
+     */
+    sync_stale_days?: number | null;
     /**
      * Last Close At
      */
@@ -5668,6 +5736,12 @@ export type InformationBlockEnvelope = {
      * Display name of the source taxonomy.
      */
     taxonomy_name?: string | null;
+    /**
+     * Disclosure Id
+     *
+     * Qname of the named Disclosure this block corresponds to (e.g., 'disclosures:BalanceSheet'), when an inbound reportedDisclosure-requiresDisclosure arc identifies one. Null for tenant-authored blocks without a Disclosure mapping.
+     */
+    disclosure_id?: string | null;
     information_model: InformationModelResponse;
     artifact: ArtifactResponse;
     /**
@@ -8571,6 +8645,35 @@ export type PaymentMethod = {
      * Whether this is the default payment method
      */
     is_default: boolean;
+};
+
+/**
+ * PendingObligationDetailResponse
+ *
+ * One pending schedule-derived obligation blocking close.
+ *
+ * Surfaced on `FiscalCalendarResponse` when `pending_obligations` is in
+ * the blockers list so callers can name which schedules to promote.
+ */
+export type PendingObligationDetailResponse = {
+    /**
+     * Event Id
+     */
+    event_id: string;
+    /**
+     * Schedule Id
+     */
+    schedule_id?: string | null;
+    /**
+     * Schedule Name
+     */
+    schedule_name?: string | null;
+    /**
+     * Period
+     *
+     * Period in YYYY-MM format
+     */
+    period: string;
 };
 
 /**
@@ -12405,7 +12508,7 @@ export type UpdateEventHandlerRequest = {
 export type UpdateInformationBlockRequest = ({
     block_type: 'schedule';
 } & UpdateScheduleArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'equity_statement' | 'income_statement' | 'metric';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric';
 } & UpdateLegacyArm);
 
 /**
@@ -13050,11 +13153,11 @@ export type ViewProjections = {
  * a typed construction path at the API boundary.
  *
  * Statement-family blocks (balance_sheet, income_statement,
- * cash_flow_statement, equity_statement) are constructed via
- * `create-report`, not this endpoint. Metric blocks are recognized
- * but their evaluator has not shipped. Calling this endpoint with one
- * of these block types returns HTTP 501 with a hint pointing to the
- * correct construction path.
+ * cash_flow_statement, equity_statement, comprehensive_income) are
+ * constructed via `create-report`, not this endpoint. Metric blocks
+ * are recognized but their evaluator has not shipped. Calling this
+ * endpoint with one of these block types returns HTTP 501 with a hint
+ * pointing to the correct construction path.
  */
 export type CreateLegacyArm = {
     /**
@@ -13062,7 +13165,7 @@ export type CreateLegacyArm = {
      *
      * Statement-family or metric block type. The endpoint returns 501 for these values — statements are constructed via `create-report`; metric construction is pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'metric';
     /**
      * Payload
      *
@@ -13110,7 +13213,7 @@ export type DeleteLegacyArm = {
      *
      * Statement-family or metric block type. Deletion returns 501 — statements are library-seeded (archive the underlying Report instead); metric deletion is pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'metric';
     /**
      * Payload
      *
@@ -13157,7 +13260,7 @@ export type UpdateLegacyArm = {
      *
      * Statement-family or metric block type. Updates return 501 — statement Structures are library-seeded; metric updates are pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'metric';
     /**
      * Payload
      *
@@ -17896,6 +17999,70 @@ export type OpChangeTierResponses = {
 };
 
 export type OpChangeTierResponse = OpChangeTierResponses[keyof OpChangeTierResponses];
+
+export type OpChangeReportingStyleData = {
+    body: ChangeReportingStyleOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/change-reporting-style';
+};
+
+export type OpChangeReportingStyleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpChangeReportingStyleError = OpChangeReportingStyleErrors[keyof OpChangeReportingStyleErrors];
+
+export type OpChangeReportingStyleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpChangeReportingStyleResponse = OpChangeReportingStyleResponses[keyof OpChangeReportingStyleResponses];
 
 export type OpMaterializeData = {
     body: MaterializeOp;
