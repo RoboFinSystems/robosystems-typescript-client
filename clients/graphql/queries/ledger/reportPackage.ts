@@ -95,6 +95,14 @@ export const GET_REPORT_PACKAGE = gql`
             ruleMessage
             ruleSeverity
             ruleOrigin
+            ruleTarget {
+              targetKind
+              targetRefId
+            }
+            ruleVariables {
+              variableName
+              variableQname
+            }
           }
           factSet {
             id
