@@ -2785,6 +2785,8 @@ export type GetInformationBlockQuery = {
       ruleMessage: string | null
       ruleSeverity: string
       ruleOrigin: string
+      ruleTarget: { targetKind: string; targetRefId: string } | null
+      ruleVariables: Array<{ variableName: string; variableQname: string }>
     }>
     factSet: {
       id: string
@@ -2893,6 +2895,8 @@ export type ListInformationBlocksQuery = {
       ruleMessage: string | null
       ruleSeverity: string
       ruleOrigin: string
+      ruleTarget: { targetKind: string; targetRefId: string } | null
+      ruleVariables: Array<{ variableName: string; variableQname: string }>
     }>
     factSet: {
       id: string
@@ -3240,6 +3244,8 @@ export type GetLedgerReportPackageQuery = {
           ruleMessage: string | null
           ruleSeverity: string
           ruleOrigin: string
+          ruleTarget: { targetKind: string; targetRefId: string } | null
+          ruleVariables: Array<{ variableName: string; variableQname: string }>
         }>
         factSet: {
           id: string
@@ -5518,6 +5524,28 @@ export const GetInformationBlockDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleOrigin' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'ruleTarget' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'targetKind' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'targetRefId' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'ruleVariables' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'variableName' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'variableQname' } },
+                          ],
+                        },
+                      },
                     ],
                   },
                 },
@@ -5783,6 +5811,28 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleOrigin' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'ruleTarget' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'targetKind' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'targetRefId' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'ruleVariables' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'variableName' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'variableQname' } },
+                          ],
+                        },
+                      },
                     ],
                   },
                 },
@@ -6701,6 +6751,40 @@ export const GetLedgerReportPackageDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'ruleOrigin' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'ruleTarget' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'targetKind' },
+                                        },
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'targetRefId' },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'ruleVariables' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'variableName' },
+                                        },
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'variableQname' },
+                                        },
+                                      ],
+                                    },
+                                  },
                                 ],
                               },
                             },

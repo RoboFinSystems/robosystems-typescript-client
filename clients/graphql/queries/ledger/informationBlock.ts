@@ -66,6 +66,14 @@ export const GET_INFORMATION_BLOCK = gql`
         ruleMessage
         ruleSeverity
         ruleOrigin
+        ruleTarget {
+          targetKind
+          targetRefId
+        }
+        ruleVariables {
+          variableName
+          variableQname
+        }
       }
       factSet {
         id
@@ -182,6 +190,14 @@ export const LIST_INFORMATION_BLOCKS = gql`
         ruleMessage
         ruleSeverity
         ruleOrigin
+        ruleTarget {
+          targetKind
+          targetRefId
+        }
+        ruleVariables {
+          variableName
+          variableQname
+        }
       }
       factSet {
         id
