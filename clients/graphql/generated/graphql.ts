@@ -126,6 +126,8 @@ export type Agent = {
   legalName: Maybe<Scalars['String']['output']>
   lei: Maybe<Scalars['String']['output']>
   name: Scalars['String']['output']
+  openPayable: Maybe<OpenBalanceByAgent>
+  openReceivable: Maybe<OpenBalanceByAgent>
   phone: Maybe<Scalars['String']['output']>
   registrationNumber: Maybe<Scalars['String']['output']>
   source: Scalars['String']['output']
@@ -1060,6 +1062,8 @@ export type MappingCoverage = {
   mediumConfidence: Scalars['Int']['output']
   totalCoaElements: Scalars['Int']['output']
   unmappedCount: Scalars['Int']['output']
+  unreachable: Array<UnreachableMappingType>
+  unreachableCount: Scalars['Int']['output']
 }
 
 /** A mapping structure with all its associations. */
@@ -1070,6 +1074,43 @@ export type MappingDetail = {
   structureType: Scalars['String']['output']
   taxonomyId: Scalars['String']['output']
   totalAssociations: Scalars['Int']['output']
+}
+
+/**
+ * Graph-wide open AR or open AP aggregate.
+ *
+ * ``total_open_cents`` is the sum of unsettled originating-event
+ * balances; ``counterparty_count`` is the number of distinct agents
+ * with at least one open invoice or bill. The currency is uniform
+ * per graph today (mixed-currency books would need a per-currency
+ * breakdown — out of scope for v1).
+ */
+export type OpenBalanceAggregate = {
+  /** Distinct agents with at least one open balance. */
+  counterpartyCount: Scalars['Int']['output']
+  /** Currency code (uniform per graph). */
+  currency: Scalars['String']['output']
+  /** Distinct originating events with a nonzero open balance. */
+  openEventCount: Scalars['Int']['output']
+  /** Sum of unsettled balances in minor currency units. */
+  totalOpenCents: Scalars['Int']['output']
+}
+
+/**
+ * Per-agent open balance row.
+ *
+ * Used for both the aging-by-counterparty list and the per-Agent
+ * GraphQL field. ``open_balance_cents`` reflects only the unsettled
+ * remainder (sum of originating amounts minus sum of discharges) so
+ * partial-payment chains net out correctly.
+ */
+export type OpenBalanceByAgent = {
+  agentId: Scalars['String']['output']
+  currency: Scalars['String']['output']
+  /** Unsettled originating-event amounts minus discharges, in minor currency units. Positive for normal AR/AP; negative when overpaid. */
+  openBalanceCents: Scalars['Int']['output']
+  /** Number of originating events with nonzero balance for this agent. */
+  openEventCount: Scalars['Int']['output']
 }
 
 /** Pagination information for list responses. */
@@ -1422,6 +1463,10 @@ export type Query = {
   mapping: Maybe<MappingDetail>
   mappingCoverage: Maybe<MappingCoverage>
   mappings: Maybe<StructureList>
+  openPayables: OpenBalanceAggregate
+  openPayablesByAgent: Array<OpenBalanceByAgent>
+  openReceivables: OpenBalanceAggregate
+  openReceivablesByAgent: Array<OpenBalanceByAgent>
   periodCloseStatus: Maybe<PeriodCloseStatus>
   periodDrafts: Maybe<PeriodDrafts>
   portfolioBlock: Maybe<PortfolioBlock>
@@ -2058,6 +2103,28 @@ export type UnmappedElement = {
   name: Scalars['String']['output']
   suggestedTargets: Array<SuggestedTarget>
   trait: Maybe<Scalars['String']['output']>
+}
+
+/**
+ * A CoA→rs-gaap mapping whose target doesn't reach a Network root.
+ *
+ * The reporting layer is closed: every mapping target must trace upward
+ * through the rs-gaap calc DAG to one of the canonical roots
+ * (rs-gaap:Assets, rs-gaap:LiabilitiesAndStockholdersEquity,
+ * rs-gaap:NetIncomeLoss, rs-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease).
+ * When it doesn't, the fact will land on a dead branch — visible in the
+ * trial balance but invisible to any rendered statement. Surfacing
+ * these as defects lets operators fix the mapping before the report is
+ * filed.
+ */
+export type UnreachableMappingType = {
+  coaCode: Maybe<Scalars['String']['output']>
+  coaElementId: Scalars['String']['output']
+  coaName: Maybe<Scalars['String']['output']>
+  coaQname: Maybe<Scalars['String']['output']>
+  targetElementId: Scalars['String']['output']
+  targetName: Maybe<Scalars['String']['output']>
+  targetQname: Maybe<Scalars['String']['output']>
 }
 
 /** Aggregate result of running reporting rules over a structure. */
