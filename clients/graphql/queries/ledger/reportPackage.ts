@@ -91,6 +91,7 @@ export const GET_REPORT_PACKAGE = gql`
             id
             ruleCategory
             rulePattern
+            ruleCheckKind
             ruleExpression
             ruleMessage
             ruleSeverity
