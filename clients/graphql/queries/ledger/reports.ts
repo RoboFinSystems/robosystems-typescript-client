@@ -35,7 +35,7 @@ export const LIST_REPORTS = gql`
         structures {
           id
           name
-          structureType
+          blockType
         }
       }
     }

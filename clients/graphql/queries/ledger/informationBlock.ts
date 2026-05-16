@@ -23,7 +23,7 @@ export const GET_INFORMATION_BLOCK = gql`
       }
       artifact {
         topic
-        parentheticalNote
+        rendererNote
         template
         mechanics
       }
@@ -62,6 +62,7 @@ export const GET_INFORMATION_BLOCK = gql`
         id
         ruleCategory
         rulePattern
+        ruleCheckKind
         ruleExpression
         ruleMessage
         ruleSeverity
@@ -147,7 +148,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
       }
       artifact {
         topic
-        parentheticalNote
+        rendererNote
         template
         mechanics
       }
@@ -186,6 +187,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
         id
         ruleCategory
         rulePattern
+        ruleCheckKind
         ruleExpression
         ruleMessage
         ruleSeverity

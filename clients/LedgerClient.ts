@@ -906,14 +906,14 @@ export class LedgerClient {
   /** List reporting structures (IS, BS, CF, schedules) with optional filters. */
   async listStructures(
     graphId: string,
-    options?: { taxonomyId?: string; structureType?: string }
+    options?: { taxonomyId?: string; blockType?: string }
   ): Promise<LedgerStructure[]> {
     const list = await this.gqlQuery(
       graphId,
       ListLedgerStructuresDocument,
       {
         taxonomyId: options?.taxonomyId ?? null,
-        structureType: options?.structureType ?? null,
+        blockType: options?.blockType ?? null,
       },
       'List structures',
       (data) => data.structures
@@ -1731,17 +1731,17 @@ export class LedgerClient {
   /**
    * Render a financial statement — facts viewed through a structure.
    *
-   * @param structureType - income_statement, balance_sheet, cash_flow_statement
+   * @param blockType - income_statement, balance_sheet, cash_flow_statement
    */
   async getStatement(
     graphId: string,
     reportId: string,
-    structureType: string
+    blockType: string
   ): Promise<StatementData | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerStatementDocument,
-      { reportId, structureType },
+      { reportId, blockType },
       'Get statement',
       (data) => data.statement
     )

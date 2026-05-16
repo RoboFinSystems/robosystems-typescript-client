@@ -15,7 +15,7 @@ export const GET_CLOSING_BOOK_STRUCTURES = gql`
           id
           name
           itemType
-          structureType
+          blockType
           reportId
           status
         }

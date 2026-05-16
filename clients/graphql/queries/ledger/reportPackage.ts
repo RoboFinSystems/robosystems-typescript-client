@@ -4,7 +4,7 @@ import { gql } from 'graphql-request'
  * Report rehydrated as a package — Report metadata + N rendered
  * Information Block envelopes (one per attached FactSet). Drives the
  * `/reports/[id]` package viewer; replaces the per-statement
- * `getStatement(reportId, structureType)` round-trip flow.
+ * `getStatement(reportId, blockType)` round-trip flow.
  *
  * Each item's `block` is a fully-rehydrated `InformationBlock` envelope
  * pinned to its specific FactSet snapshot, so the frontend can render
@@ -52,7 +52,7 @@ export const GET_REPORT_PACKAGE = gql`
           }
           artifact {
             topic
-            parentheticalNote
+            rendererNote
             template
             mechanics
           }

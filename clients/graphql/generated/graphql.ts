@@ -137,7 +137,7 @@ export type Agent = {
 
 export type Artifact = {
   mechanics: Scalars['JSON']['output']
-  parentheticalNote: Maybe<Scalars['String']['output']>
+  rendererNote: Maybe<Scalars['String']['output']>
   template: Maybe<Scalars['JSON']['output']>
   topic: Maybe<Scalars['String']['output']>
 }
@@ -188,12 +188,12 @@ export type ClosingBookCategory = {
  * carry ``status`` ('complete' | 'draft' | 'pending').
  */
 export type ClosingBookItem = {
+  blockType: Maybe<Scalars['String']['output']>
   id: Scalars['String']['output']
   itemType: Scalars['String']['output']
   name: Scalars['String']['output']
   reportId: Maybe<Scalars['String']['output']>
   status: Maybe<Scalars['String']['output']>
-  structureType: Maybe<Scalars['String']['output']>
 }
 
 /**
@@ -473,7 +473,7 @@ export type InformationBlockClassification = {
   confidence: Maybe<Scalars['Float']['output']>
   /** Classification vocabulary row id. */
   id: Scalars['String']['output']
-  /** Vocabulary identifier within the category — e.g. 'RollUp', 'aggregation', 'AssetsRollUp'. */
+  /** Vocabulary identifier within the category — e.g. 'RollUp', 'whole_part', 'AssetsRollUp'. */
   identifier: Scalars['String']['output']
   /** Whether this is the canonical classification for the (association|element, category) pair. Non-primary rows capture alternates / AI suggestions alongside the chosen primary. */
   isPrimary: Scalars['Boolean']['output']
@@ -614,12 +614,14 @@ export type InformationBlockRule = {
   id: Scalars['String']['output']
   /** One of 8 cm:VerificationRule subclasses — AutomatedAccountingAndReportingChecks, FundamentalAccountingConceptRelation, PeerConsistencyRule, PriorPeriodConsistencyRule, ReportLevelModelStructureRule, ReportingSystemSpecificRule, ToDoManualTask, XBRLTechnicalSyntaxRule. */
   ruleCategory: Scalars['String']['output']
+  /** Model-structure check kind evaluated over the association graph. One of 6 kinds — LeafHasClassification, LibraryOriginImmutability, NoCycles, NoOrphanArcs, ParentBeforeChild, UniqueQNameInTaxonomy. Null when the rule is an arithmetic pattern (see rule_pattern). Exactly one of rule_pattern / rule_check_kind is non-null per rule. */
+  ruleCheckKind: Maybe<Scalars['String']['output']>
   ruleExpression: Scalars['String']['output']
   ruleMessage: Maybe<Scalars['String']['output']>
   /** Provenance — 'forked' (from an upstream artifact, e.g. Seattle Method) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the ``public.rules`` CHECK constraint. */
   ruleOrigin: Scalars['String']['output']
-  /** One of 10 cm:BusinessRulePattern mechanisms — Adjustment, CoExists, EqualTo, Exists, GreaterThan, GreaterThanOrEqualToZero, LessThan, RollForward, RollUp, Variance. */
-  rulePattern: Scalars['String']['output']
+  /** Arithmetic / logical pattern evaluated over fact values. One of 11 cm:BusinessRulePattern mechanisms — Adjustment, CoExists, EqualTo, Exists, GreaterThan, GreaterThanOrEqualToZero, LessThan, RollForward, RollUp, SumEquals, Variance. Null when the rule is a structural check (see rule_check_kind). */
+  rulePattern: Maybe<Scalars['String']['output']>
   /** Failure severity — 'info' | 'warning' | 'error'. Enum closure enforced by the ``public.rules`` CHECK constraint. */
   ruleSeverity: Scalars['String']['output']
   ruleTarget: Maybe<InformationBlockRuleTarget>
@@ -702,7 +704,7 @@ export type InformationBlockViewProjections = {
 export type InformationModel = {
   /** roll_up | roll_forward | variance | adjustment | set | arithmetic | textblock. Null for block types where the concept arrangement is implicit in their mechanics. */
   conceptArrangement: Maybe<Scalars['String']['output']>
-  /** aggregation | nonaggregation, or null if non-hypercube. */
+  /** is_a | whole_part | nested_whole_part | two_dimension_aggregation | complex_aggregating_whole_part, or null if non-hypercube. */
   memberArrangement: Maybe<Scalars['String']['output']>
 }
 
@@ -1006,13 +1008,13 @@ export type LibraryReference = {
 
 /** A named structure (extended link role) within a library taxonomy. */
 export type LibraryStructure = {
+  /** balance_sheet | income_statement | cash_flow_statement | custom | … */
+  blockType: Scalars['String']['output']
   id: Scalars['String']['output']
   isActive: Scalars['Boolean']['output']
   name: Scalars['String']['output']
   /** Original XBRL role URI if any */
   roleUri: Maybe<Scalars['String']['output']>
-  /** balance_sheet | income_statement | cash_flow_statement | custom | … */
-  structureType: Scalars['String']['output']
   taxonomyId: Scalars['String']['output']
 }
 
@@ -1069,9 +1071,9 @@ export type MappingCoverage = {
 /** A mapping structure with all its associations. */
 export type MappingDetail = {
   associations: Array<Association>
+  blockType: Scalars['String']['output']
   id: Scalars['String']['output']
   name: Scalars['String']['output']
-  structureType: Scalars['String']['output']
   taxonomyId: Scalars['String']['output']
   totalAssociations: Scalars['Int']['output']
 }
@@ -1602,7 +1604,7 @@ export type QueryLibraryStructureArgs = {
 }
 
 export type QueryLibraryStructuresArgs = {
-  structureType?: InputMaybe<Scalars['String']['input']>
+  blockType?: InputMaybe<Scalars['String']['input']>
   taxonomyId?: InputMaybe<Scalars['ID']['input']>
 }
 
@@ -1712,12 +1714,12 @@ export type QuerySecurityArgs = {
 }
 
 export type QueryStatementArgs = {
+  blockType: Scalars['String']['input']
   reportId: Scalars['String']['input']
-  structureType: Scalars['String']['input']
 }
 
 export type QueryStructuresArgs = {
-  structureType?: InputMaybe<Scalars['String']['input']>
+  blockType?: InputMaybe<Scalars['String']['input']>
   taxonomyId?: InputMaybe<Scalars['String']['input']>
 }
 
@@ -1906,6 +1908,8 @@ export type SecurityLite = {
  * rehydrated as ``InformationBlockEnvelope`` items instead.
  */
 export type Statement = {
+  /** Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`. */
+  blockType: Scalars['String']['output']
   /** Period columns rendered in this statement, in display order. */
   periods: Array<PeriodSpec>
   /** The Report this statement was rendered from. */
@@ -1916,8 +1920,6 @@ export type Statement = {
   structureId: Scalars['String']['output']
   /** Human-readable structure name. */
   structureName: Scalars['String']['output']
-  /** Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`. */
-  structureType: Scalars['String']['output']
   /** Number of GL elements that fell through the mapping with no destination concept. Indicates mapping gaps. */
   unmappedCount: Scalars['Int']['output']
   /** Outcome of running reporting rules over this structure. Null when the structure has no rules attached. */
@@ -1928,16 +1930,16 @@ export type Statement = {
  * One structure header — a renderable section within a taxonomy
  * (balance sheet, income statement, schedule, etc.).
  *
- * ``structure_type`` drives presentation: 'balance_sheet',
+ * ``block_type`` drives presentation: 'balance_sheet',
  * 'income_statement', 'cash_flow_statement', 'equity_statement',
  * 'schedule', 'chart_of_accounts', 'coa_mapping', 'rollforward', etc.
  */
 export type Structure = {
+  blockType: Scalars['String']['output']
   description: Maybe<Scalars['String']['output']>
   id: Scalars['String']['output']
   isActive: Scalars['Boolean']['output']
   name: Scalars['String']['output']
-  structureType: Scalars['String']['output']
   taxonomyId: Scalars['String']['output']
 }
 
@@ -1954,12 +1956,12 @@ export type StructureList = {
  * row owns the facts; structures are the lenses that project them.
  */
 export type StructureSummary = {
+  /** Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`. */
+  blockType: Scalars['String']['output']
   /** Structure identifier. */
   id: Scalars['String']['output']
   /** Human-readable structure name. */
   name: Scalars['String']['output']
-  /** Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`. */
-  structureType: Scalars['String']['output']
 }
 
 /** A suggested mapping target from the reporting taxonomy. */
@@ -2056,11 +2058,11 @@ export type TaxonomyBlockRule = {
 }
 
 export type TaxonomyBlockStructure = {
+  blockType: Scalars['String']['output']
   description: Maybe<Scalars['String']['output']>
   id: Scalars['String']['output']
   name: Scalars['String']['output']
   roleUri: Maybe<Scalars['String']['output']>
-  structureType: Scalars['String']['output']
 }
 
 /** Flat list of taxonomy headers. Used by the catalog/picker UIs. */
@@ -2523,7 +2525,7 @@ export type GetLedgerClosingBookStructuresQuery = {
         id: string
         name: string
         itemType: string
-        structureType: string | null
+        blockType: string | null
         reportId: string | null
         status: string | null
       }>
@@ -2742,7 +2744,7 @@ export type GetInformationBlockQuery = {
     informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
     artifact: {
       topic: string | null
-      parentheticalNote: string | null
+      rendererNote: string | null
       template: any | null
       mechanics: any
     }
@@ -2780,7 +2782,7 @@ export type GetInformationBlockQuery = {
     rules: Array<{
       id: string
       ruleCategory: string
-      rulePattern: string
+      rulePattern: string | null
       ruleExpression: string
       ruleMessage: string | null
       ruleSeverity: string
@@ -2852,7 +2854,7 @@ export type ListInformationBlocksQuery = {
     informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
     artifact: {
       topic: string | null
-      parentheticalNote: string | null
+      rendererNote: string | null
       template: any | null
       mechanics: any
     }
@@ -2890,7 +2892,7 @@ export type ListInformationBlocksQuery = {
     rules: Array<{
       id: string
       ruleCategory: string
-      rulePattern: string
+      rulePattern: string | null
       ruleExpression: string
       ruleMessage: string | null
       ruleSeverity: string
@@ -2973,7 +2975,7 @@ export type GetLedgerMappingQuery = {
   mapping: {
     id: string
     name: string
-    structureType: string
+    blockType: string
     taxonomyId: string
     totalAssociations: number
     associations: Array<{
@@ -3020,7 +3022,7 @@ export type ListLedgerMappingsQuery = {
       id: string
       name: string
       description: string | null
-      structureType: string
+      blockType: string
       taxonomyId: string
       isActive: boolean
     }>
@@ -3155,7 +3157,7 @@ export type GetLedgerReportQuery = {
     sourceReportId: string | null
     sharedAt: any | null
     periods: Array<{ start: any; end: any; label: string }> | null
-    structures: Array<{ id: string; name: string; structureType: string }>
+    structures: Array<{ id: string; name: string; blockType: string }>
   } | null
 }
 
@@ -3201,7 +3203,7 @@ export type GetLedgerReportPackageQuery = {
         informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
         artifact: {
           topic: string | null
-          parentheticalNote: string | null
+          rendererNote: string | null
           template: any | null
           mechanics: any
         }
@@ -3239,7 +3241,7 @@ export type GetLedgerReportPackageQuery = {
         rules: Array<{
           id: string
           ruleCategory: string
-          rulePattern: string
+          rulePattern: string | null
           ruleExpression: string
           ruleMessage: string | null
           ruleSeverity: string
@@ -3335,14 +3337,14 @@ export type ListLedgerReportsQuery = {
       sourceReportId: string | null
       sharedAt: any | null
       periods: Array<{ start: any; end: any; label: string }> | null
-      structures: Array<{ id: string; name: string; structureType: string }>
+      structures: Array<{ id: string; name: string; blockType: string }>
     }>
   } | null
 }
 
 export type GetLedgerStatementQueryVariables = Exact<{
   reportId: Scalars['String']['input']
-  structureType: Scalars['String']['input']
+  blockType: Scalars['String']['input']
 }>
 
 export type GetLedgerStatementQuery = {
@@ -3350,7 +3352,7 @@ export type GetLedgerStatementQuery = {
     reportId: string
     structureId: string
     structureName: string
-    structureType: string
+    blockType: string
     unmappedCount: number
     periods: Array<{ start: any; end: any; label: string }>
     rows: Array<{
@@ -3373,7 +3375,7 @@ export type GetLedgerStatementQuery = {
 
 export type ListLedgerStructuresQueryVariables = Exact<{
   taxonomyId: InputMaybe<Scalars['String']['input']>
-  structureType: InputMaybe<Scalars['String']['input']>
+  blockType: InputMaybe<Scalars['String']['input']>
 }>
 
 export type ListLedgerStructuresQuery = {
@@ -3382,7 +3384,7 @@ export type ListLedgerStructuresQuery = {
       id: string
       name: string
       description: string | null
-      structureType: string
+      blockType: string
       taxonomyId: string
       isActive: boolean
     }>
@@ -4886,7 +4888,7 @@ export const GetLedgerClosingBookStructuresDocument = {
                             { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'itemType' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                           ],
@@ -5453,7 +5455,7 @@ export const GetInformationBlockDocument = {
                     kind: 'SelectionSet',
                     selections: [
                       { kind: 'Field', name: { kind: 'Name', value: 'topic' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'parentheticalNote' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'rendererNote' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'template' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'mechanics' } },
                     ],
@@ -5740,7 +5742,7 @@ export const ListInformationBlocksDocument = {
                     kind: 'SelectionSet',
                     selections: [
                       { kind: 'Field', name: { kind: 'Name', value: 'topic' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'parentheticalNote' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'rendererNote' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'template' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'mechanics' } },
                     ],
@@ -6059,7 +6061,7 @@ export const GetLedgerMappingDocument = {
               selections: [
                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'totalAssociations' } },
                 {
@@ -6167,7 +6169,7 @@ export const ListLedgerMappingsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
                     ],
@@ -6559,7 +6561,7 @@ export const GetLedgerReportDocument = {
                     selections: [
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                     ],
                   },
                 },
@@ -6671,10 +6673,7 @@ export const GetLedgerReportPackageDocument = {
                                 kind: 'SelectionSet',
                                 selections: [
                                   { kind: 'Field', name: { kind: 'Name', value: 'topic' } },
-                                  {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'parentheticalNote' },
-                                  },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'rendererNote' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'template' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'mechanics' } },
                                 ],
@@ -7042,7 +7041,7 @@ export const ListLedgerReportsDocument = {
                           selections: [
                             { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                            { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                           ],
                         },
                       },
@@ -7075,7 +7074,7 @@ export const GetLedgerStatementDocument = {
         },
         {
           kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'structureType' } },
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
           type: {
             kind: 'NonNullType',
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
@@ -7096,8 +7095,8 @@ export const GetLedgerStatementDocument = {
               },
               {
                 kind: 'Argument',
-                name: { kind: 'Name', value: 'structureType' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'structureType' } },
+                name: { kind: 'Name', value: 'blockType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
               },
             ],
             selectionSet: {
@@ -7106,7 +7105,7 @@ export const GetLedgerStatementDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'structureName' } },
-                { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'unmappedCount' } },
                 {
                   kind: 'Field',
@@ -7172,7 +7171,7 @@ export const ListLedgerStructuresDocument = {
         },
         {
           kind: 'VariableDefinition',
-          variable: { kind: 'Variable', name: { kind: 'Name', value: 'structureType' } },
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
         },
       ],
@@ -7190,8 +7189,8 @@ export const ListLedgerStructuresDocument = {
               },
               {
                 kind: 'Argument',
-                name: { kind: 'Name', value: 'structureType' },
-                value: { kind: 'Variable', name: { kind: 'Name', value: 'structureType' } },
+                name: { kind: 'Name', value: 'blockType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
               },
             ],
             selectionSet: {
@@ -7206,7 +7205,7 @@ export const ListLedgerStructuresDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'description' } },
-                      { kind: 'Field', name: { kind: 'Name', value: 'structureType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
                     ],

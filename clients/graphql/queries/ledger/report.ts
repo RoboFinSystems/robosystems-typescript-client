@@ -31,7 +31,7 @@ export const GET_REPORT = gql`
       structures {
         id
         name
-        structureType
+        blockType
       }
     }
   }
