@@ -2783,6 +2783,7 @@ export type GetInformationBlockQuery = {
       id: string
       ruleCategory: string
       rulePattern: string | null
+      ruleCheckKind: string | null
       ruleExpression: string
       ruleMessage: string | null
       ruleSeverity: string
@@ -2893,6 +2894,7 @@ export type ListInformationBlocksQuery = {
       id: string
       ruleCategory: string
       rulePattern: string | null
+      ruleCheckKind: string | null
       ruleExpression: string
       ruleMessage: string | null
       ruleSeverity: string
@@ -3242,6 +3244,7 @@ export type GetLedgerReportPackageQuery = {
           id: string
           ruleCategory: string
           rulePattern: string | null
+          ruleCheckKind: string | null
           ruleExpression: string
           ruleMessage: string | null
           ruleSeverity: string
@@ -5522,6 +5525,7 @@ export const GetInformationBlockDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleCategory' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'rulePattern' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleCheckKind' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleExpression' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
@@ -5809,6 +5813,7 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleCategory' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'rulePattern' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleCheckKind' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleExpression' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
@@ -6743,6 +6748,7 @@ export const GetLedgerReportPackageDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'ruleCategory' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'rulePattern' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'ruleCheckKind' } },
                                   {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'ruleExpression' },
