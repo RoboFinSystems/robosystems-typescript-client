@@ -5,13 +5,13 @@ import { gql } from 'graphql-request'
  * (e.g. "coa_mapping", "statement_income", "schedule").
  */
 export const LIST_STRUCTURES = gql`
-  query ListLedgerStructures($taxonomyId: String, $structureType: String) {
-    structures(taxonomyId: $taxonomyId, structureType: $structureType) {
+  query ListLedgerStructures($taxonomyId: String, $blockType: String) {
+    structures(taxonomyId: $taxonomyId, blockType: $blockType) {
       structures {
         id
         name
         description
-        structureType
+        blockType
         taxonomyId
         isActive
       }

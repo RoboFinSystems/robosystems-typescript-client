@@ -400,7 +400,7 @@ describe('LedgerClient', () => {
                 id: 'map_1',
                 name: 'CoA → GAAP',
                 description: null,
-                structureType: 'coa_mapping',
+                blockType: 'coa_mapping',
                 taxonomyId: 'tax_usgaap',
                 isActive: true,
               },
@@ -410,7 +410,7 @@ describe('LedgerClient', () => {
       )
       const mappings = await client.listMappings('graph_1')
       expect(mappings).toHaveLength(1)
-      expect(mappings[0].structureType).toBe('coa_mapping')
+      expect(mappings[0].blockType).toBe('coa_mapping')
     })
 
     it('returns an empty array when mappings is null', async () => {

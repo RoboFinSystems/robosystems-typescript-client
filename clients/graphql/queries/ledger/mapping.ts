@@ -9,7 +9,7 @@ export const GET_MAPPING = gql`
     mapping(mappingId: $mappingId) {
       id
       name
-      structureType
+      blockType
       taxonomyId
       totalAssociations
       associations {

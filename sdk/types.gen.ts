@@ -464,11 +464,11 @@ export type ArtifactResponse = {
      */
     topic?: string | null;
     /**
-     * Parenthetical Note
+     * Renderer Note
      *
      * e.g. 'in thousands', 'except per share'.
      */
-    parenthetical_note?: string | null;
+    renderer_note?: string | null;
     /**
      * Template
      *
@@ -1061,7 +1061,7 @@ export type CancelSubscriptionRequest = {
  *
  * Switches the graph to a different Reporting Style. The target Style
  * must be a library- or customer-authored Structure with
- * ``structure_type='reporting_style'`` and a complete composition
+ * ``block_type='reporting_style'`` and a complete composition
  * (one Network per required statement type — BS / IS / CF / SE). Filed
  * Reports are unaffected because each ``Report`` already pins its own
  * ``structure_id`` per FactSet at create-time; new reports use the new
@@ -1071,7 +1071,7 @@ export type ChangeReportingStyleOp = {
     /**
      * Reporting Style Id
      *
-     * Structure id of the target Reporting Style (e.g., `025f5d48-12ce-5d65-b9eb-4f137a10ef06` for the library-seeded Default Style). Must resolve to a Structure with structure_type='reporting_style' that has a complete composition in the graph's tenant schema.
+     * Structure id of the target Reporting Style (e.g., `025f5d48-12ce-5d65-b9eb-4f137a10ef06` for the library-seeded Default Style). Must resolve to a Structure with block_type='reporting_style' that has a complete composition in the graph's tenant schema.
      */
     reporting_style_id: string;
 };
@@ -1197,7 +1197,7 @@ export type ClassificationLite = {
     /**
      * Identifier
      *
-     * Vocabulary identifier within the category — e.g. 'RollUp', 'aggregation', 'AssetsRollUp'.
+     * Vocabulary identifier within the category — e.g. 'RollUp', 'whole_part', 'AssetsRollUp'.
      */
     identifier: string;
     /**
@@ -5795,7 +5795,7 @@ export type InformationModelResponse = {
     /**
      * Member Arrangement
      *
-     * aggregation | nonaggregation, or null if non-hypercube.
+     * is_a | whole_part | nested_whole_part | two_dimension_aggregation | complex_aggregating_whole_part, or null if non-hypercube.
      */
     member_arrangement?: string | null;
 };
@@ -9948,9 +9948,15 @@ export type RuleLite = {
     /**
      * Rule Pattern
      *
-     * One of 10 cm:BusinessRulePattern mechanisms — Adjustment, CoExists, EqualTo, Exists, GreaterThan, GreaterThanOrEqualToZero, LessThan, RollForward, RollUp, Variance.
+     * Arithmetic / logical pattern evaluated over fact values. One of 11 cm:BusinessRulePattern mechanisms — Adjustment, CoExists, EqualTo, Exists, GreaterThan, GreaterThanOrEqualToZero, LessThan, RollForward, RollUp, SumEquals, Variance. Null when the rule is a structural check (see rule_check_kind).
      */
-    rule_pattern: string;
+    rule_pattern?: string | null;
+    /**
+     * Rule Check Kind
+     *
+     * Model-structure check kind evaluated over the association graph. One of 6 kinds — LeafHasClassification, LibraryOriginImmutability, NoCycles, NoOrphanArcs, ParentBeforeChild, UniqueQNameInTaxonomy. Null when the rule is an arithmetic pattern (see rule_pattern). Exactly one of rule_pattern / rule_check_kind is non-null per rule.
+     */
+    rule_check_kind?: string | null;
     /**
      * Rule Expression
      */
@@ -10986,11 +10992,11 @@ export type StructureSummary = {
      */
     name: string;
     /**
-     * Structure Type
+     * Block Type
      *
      * Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`.
      */
-    structure_type: string;
+    block_type: string;
 };
 
 /**
@@ -11862,9 +11868,9 @@ export type TaxonomyBlockStructure = {
      */
     name: string;
     /**
-     * Structure Type
+     * Block Type
      */
-    structure_type: string;
+    block_type: string;
     /**
      * Description
      */
@@ -11888,11 +11894,11 @@ export type TaxonomyBlockStructureRequest = {
      */
     name: string;
     /**
-     * Structure Type
+     * Block Type
      *
-     * DB ``structures.structure_type`` enum. CoA blocks use ``chart_of_accounts``; reporting extensions use the statement family or ``custom``; custom ontology uses ``custom``.
+     * DB ``structures.block_type`` enum. CoA blocks use ``chart_of_accounts``; reporting extensions use the statement family or ``custom``; custom ontology uses ``custom``.
      */
-    structure_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'rollforward' | 'reconciliation' | 'policy' | 'metric';
+    block_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'rollforward' | 'reconciliation' | 'policy' | 'metric';
     /**
      * Description
      */
