@@ -4,13 +4,13 @@
  */
 
 import { client } from '../sdk/client.gen'
-import { AgentClient } from './AgentClient'
 import { extractTokenFromSDKClient, getSDKClientConfig } from './config'
 import type { TokenProvider } from './graphql/client'
 import { InvestorClient } from './InvestorClient'
 import { LedgerClient } from './LedgerClient'
 import { LibraryClient } from './LibraryClient'
 import { OperationClient } from './OperationClient'
+import { OperatorClient } from './OperatorClient'
 import { QueryClient } from './QueryClient'
 import { SSEClient } from './SSEClient'
 
@@ -53,7 +53,7 @@ interface ResolvedConfig {
 
 export class RoboSystemsClients {
   public readonly query: QueryClient
-  public readonly agent: AgentClient
+  public readonly operator: OperatorClient
   public readonly operations: OperationClient
   public readonly ledger: LedgerClient
   public readonly investor: InvestorClient
@@ -94,7 +94,7 @@ export class RoboSystemsClients {
       headers: this.config.headers,
     })
 
-    this.agent = new AgentClient({
+    this.operator = new OperatorClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
@@ -168,27 +168,27 @@ export class RoboSystemsClients {
    */
   close(): void {
     this.query.close()
-    this.agent.close()
+    this.operator.close()
     this.operations.closeAll()
   }
 }
 
 // Export all types and classes
-export * from './AgentClient'
 export * from './config'
 export * from './InvestorClient'
 export * from './LedgerClient'
 export * from './LibraryClient'
 export * from './OperationClient'
+export * from './OperatorClient'
 export * from './QueryClient'
 export * from './SSEClient'
 
 export {
-  AgentClient,
   InvestorClient,
   LedgerClient,
   LibraryClient,
   OperationClient,
+  OperatorClient,
   QueryClient,
   SSEClient,
 }
@@ -216,8 +216,8 @@ export const clients = {
   get query() {
     return getClients().query
   },
-  get agent() {
-    return getClients().agent
+  get operator() {
+    return getClients().operator
   },
   get operations() {
     return getClients().operations
@@ -255,8 +255,8 @@ export const streamQuery = (
   chunkSize?: number
 ) => getClients().query.streamQuery(graphId, query, parameters, chunkSize)
 
-export const agentQuery = (graphId: string, message: string, context?: Record<string, any>) =>
-  getClients().agent.query(graphId, message, context)
+export const operatorQuery = (graphId: string, message: string, context?: Record<string, any>) =>
+  getClients().operator.query(graphId, message, context)
 
 export const analyzeFinancials = (graphId: string, message: string) =>
-  getClients().agent.analyzeFinancials(graphId, message)
+  getClients().operator.analyzeFinancials(graphId, message)

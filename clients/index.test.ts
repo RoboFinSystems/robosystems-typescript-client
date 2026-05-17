@@ -91,8 +91,8 @@ describe('RoboSystemsClients', () => {
       // Verify each client has its signature methods
       expect(typeof ext.query.executeQuery).toBe('function')
       expect(typeof ext.query.query).toBe('function')
-      expect(typeof ext.agent.executeQuery).toBe('function')
-      expect(typeof ext.agent.analyzeFinancials).toBe('function')
+      expect(typeof ext.operator.executeQuery).toBe('function')
+      expect(typeof ext.operator.analyzeFinancials).toBe('function')
       expect(typeof ext.operations.monitorOperation).toBe('function')
       expect(typeof ext.operations.closeAll).toBe('function')
       expect(typeof ext.ledger.listAccounts).toBe('function')
@@ -213,13 +213,13 @@ describe('RoboSystemsClients', () => {
       const ext = new RoboSystemsClients()
 
       const queryCloseSpy = vi.spyOn(ext.query, 'close')
-      const agentCloseSpy = vi.spyOn(ext.agent, 'close')
+      const operatorCloseSpy = vi.spyOn(ext.operator, 'close')
       const operationsCloseSpy = vi.spyOn(ext.operations, 'closeAll')
 
       ext.close()
 
       expect(queryCloseSpy).toHaveBeenCalled()
-      expect(agentCloseSpy).toHaveBeenCalled()
+      expect(operatorCloseSpy).toHaveBeenCalled()
       expect(operationsCloseSpy).toHaveBeenCalled()
     })
 
@@ -253,7 +253,7 @@ describe('RoboSystemsClients', () => {
       expect(ext.operations).toBeDefined()
       expect(ext.ledger).toBeDefined()
       expect(ext.reports).toBeDefined()
-      expect(ext.agent).toBeDefined()
+      expect(ext.operator).toBeDefined()
       expect(typeof ext.query.executeQuery).toBe('function')
       expect(typeof ext.operations.monitorOperation).toBe('function')
     })
@@ -303,7 +303,7 @@ describe('clients singleton', () => {
     const { clients } = await import('./index')
 
     expect(typeof clients.query.executeQuery).toBe('function')
-    expect(typeof clients.agent.executeQuery).toBe('function')
+    expect(typeof clients.operator.executeQuery).toBe('function')
     expect(typeof clients.operations.monitorOperation).toBe('function')
     expect(typeof clients.ledger.listAccounts).toBe('function')
     expect(typeof clients.reports.createReport).toBe('function')
@@ -347,9 +347,9 @@ describe('convenience functions', () => {
     expect(typeof streamQuery).toBe('function')
   })
 
-  it('should export agentQuery function', async () => {
-    const { agentQuery } = await import('./index')
-    expect(typeof agentQuery).toBe('function')
+  it('should export operatorQuery function', async () => {
+    const { operatorQuery } = await import('./index')
+    expect(typeof operatorQuery).toBe('function')
   })
 
   it('should export analyzeFinancials function', async () => {
@@ -369,7 +369,7 @@ describe('re-exports', () => {
 
     // Verify these are constructor functions (classes)
     expect(typeof mod.QueryClient).toBe('function')
-    expect(typeof mod.AgentClient).toBe('function')
+    expect(typeof mod.OperatorClient).toBe('function')
     expect(typeof mod.OperationClient).toBe('function')
     expect(typeof mod.SSEClient).toBe('function')
     expect(typeof mod.LedgerClient).toBe('function')
@@ -405,7 +405,7 @@ describe('re-exports', () => {
     const mod = await import('./index')
 
     expect(typeof mod.QueuedQueryError).toBe('function')
-    expect(typeof mod.QueuedAgentError).toBe('function')
+    expect(typeof mod.QueuedOperatorError).toBe('function')
   })
 
   it('should re-export EventType enum', async () => {

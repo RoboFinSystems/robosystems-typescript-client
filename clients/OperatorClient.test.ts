@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { AgentClient, QueuedAgentError } from './AgentClient'
+import { OperatorClient, QueuedOperatorError } from './OperatorClient'
 
 // Mock EventSource for SSE tests
 class MockEventSource {
@@ -81,12 +81,12 @@ function createMockResponse(data: any, options: { ok?: boolean; status?: number 
   }
 }
 
-describe('AgentClient', () => {
-  let client: AgentClient
+describe('OperatorClient', () => {
+  let client: OperatorClient
   let mockFetch: any
 
   beforeEach(() => {
-    client = new AgentClient({
+    client = new OperatorClient({
       baseUrl: 'http://localhost:8000',
       token: 'test-token',
       headers: { 'X-API-Key': 'test-key' },
@@ -106,7 +106,7 @@ describe('AgentClient', () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'Revenue increased 15% year-over-year.',
-          agent_used: 'financial',
+          operator_used: 'financial',
           mode_used: 'standard',
           metadata: { sources: ['10-K'] },
           tokens_used: { prompt_tokens: 500, completion_tokens: 100, total_tokens: 600 },
@@ -120,7 +120,7 @@ describe('AgentClient', () => {
       })
 
       expect(result.content).toBe('Revenue increased 15% year-over-year.')
-      expect(result.agent_used).toBe('financial')
+      expect(result.operator_used).toBe('financial')
       expect(result.mode_used).toBe('standard')
       expect(result.metadata).toEqual({ sources: ['10-K'] })
       expect(result.tokens_used).toEqual({
@@ -137,7 +137,7 @@ describe('AgentClient', () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'Answer',
-          agent_used: 'rag',
+          operator_used: 'rag',
           mode_used: 'quick',
         })
       )
@@ -155,12 +155,12 @@ describe('AgentClient', () => {
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
 
-    it('should throw QueuedAgentError when maxWait is 0', async () => {
+    it('should throw QueuedOperatorError when maxWait is 0', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           status: 'queued',
           operation_id: 'op_123',
-          message: 'Agent execution queued',
+          message: 'Operator execution queued',
         })
       )
 
@@ -168,10 +168,10 @@ describe('AgentClient', () => {
         await client.executeQuery('graph_1', { message: 'complex query' }, { maxWait: 0 })
         expect.fail('Should have thrown')
       } catch (error) {
-        expect(error).toBeInstanceOf(QueuedAgentError)
-        const queuedError = error as QueuedAgentError
+        expect(error).toBeInstanceOf(QueuedOperatorError)
+        const queuedError = error as QueuedOperatorError
         expect(queuedError.queueInfo.operation_id).toBe('op_123')
-        expect(queuedError.message).toBe('Agent execution was queued')
+        expect(queuedError.message).toBe('Operator execution was queued')
       }
     })
 
@@ -183,7 +183,7 @@ describe('AgentClient', () => {
       )
 
       await expect(client.executeQuery('graph_1', { message: 'test' })).rejects.toThrow(
-        'Unexpected response format from agent endpoint'
+        'Unexpected response format from operator endpoint'
       )
     })
 
@@ -201,12 +201,12 @@ describe('AgentClient', () => {
       // Wait for SSE client to connect
       await new Promise((r) => setTimeout(r, 10))
 
-      // Find the SSEClient's EventSource and simulate agent_completed
+      // Find the SSEClient's EventSource and simulate operator_completed
       // The SSEClient creates a new EventSource internally
       // We need to find the last created MockEventSource
       // Since we mocked EventSource globally, the last constructed instance will get the events
 
-      // Simulate the agent_completed event through the mock EventSource
+      // Simulate the operator_completed event through the mock EventSource
       // The SSEClient connects and registers listeners
       await new Promise((r) => setTimeout(r, 50))
 
@@ -216,64 +216,64 @@ describe('AgentClient', () => {
     })
   })
 
-  // ── executeAgent ──────────────────────────────────────────────────────
+  // ── executeOperator ──────────────────────────────────────────────────────
 
-  describe('executeAgent', () => {
-    it('should handle immediate sync response for specific agent', async () => {
+  describe('executeOperator', () => {
+    it('should handle immediate sync response for specific operator', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'Financial analysis complete.',
-          agent_used: 'financial',
+          operator_used: 'financial',
           mode_used: 'extended',
           confidence_score: 0.95,
           execution_time: 3.2,
         })
       )
 
-      const result = await client.executeAgent('graph_1', 'financial', {
+      const result = await client.executeOperator('graph_1', 'financial', {
         message: 'Analyze Q3 earnings',
       })
 
       expect(result.content).toBe('Financial analysis complete.')
-      expect(result.agent_used).toBe('financial')
+      expect(result.operator_used).toBe('financial')
       expect(result.mode_used).toBe('extended')
       expect(result.confidence_score).toBe(0.95)
     })
 
-    it('should throw QueuedAgentError when maxWait is 0', async () => {
+    it('should throw QueuedOperatorError when maxWait is 0', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           operation_id: 'op_789',
-          message: 'Queued for financial agent',
+          message: 'Queued for financial operator',
         })
       )
 
       await expect(
-        client.executeAgent('graph_1', 'financial', { message: 'test' }, { maxWait: 0 })
-      ).rejects.toThrow(QueuedAgentError)
+        client.executeOperator('graph_1', 'financial', { message: 'test' }, { maxWait: 0 })
+      ).rejects.toThrow(QueuedOperatorError)
     })
 
     it('should throw on unexpected response format', async () => {
       mockFetch.mockResolvedValueOnce(createMockResponse({ weird: true }))
 
-      await expect(client.executeAgent('graph_1', 'research', { message: 'test' })).rejects.toThrow(
-        'Unexpected response format from agent endpoint'
-      )
+      await expect(
+        client.executeOperator('graph_1', 'research', { message: 'test' })
+      ).rejects.toThrow('Unexpected response format from operator endpoint')
     })
 
-    it('should execute specific agent type', async () => {
+    it('should execute specific operator type', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'RAG result',
-          agent_used: 'rag',
+          operator_used: 'rag',
           mode_used: 'quick',
         })
       )
 
-      const result = await client.executeAgent('graph_1', 'rag', { message: 'search docs' })
+      const result = await client.executeOperator('graph_1', 'rag', { message: 'search docs' })
 
       expect(result.content).toBe('RAG result')
-      expect(result.agent_used).toBe('rag')
+      expect(result.operator_used).toBe('rag')
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
   })
@@ -285,7 +285,7 @@ describe('AgentClient', () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'Auto-selected answer',
-          agent_used: 'rag',
+          operator_used: 'rag',
           mode_used: 'quick',
         })
       )
@@ -293,17 +293,17 @@ describe('AgentClient', () => {
       const result = await client.query('graph_1', 'What is revenue?', { year: 2024 })
 
       expect(result.content).toBe('Auto-selected answer')
-      expect(result.agent_used).toBe('rag')
+      expect(result.operator_used).toBe('rag')
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('analyzeFinancials', () => {
-    it('should execute financial agent', async () => {
+    it('should execute financial operator', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'Financial analysis',
-          agent_used: 'financial',
+          operator_used: 'financial',
           mode_used: 'extended',
         })
       )
@@ -311,16 +311,16 @@ describe('AgentClient', () => {
       const result = await client.analyzeFinancials('graph_1', 'Analyze margins')
 
       expect(result.content).toBe('Financial analysis')
-      expect(result.agent_used).toBe('financial')
+      expect(result.operator_used).toBe('financial')
     })
   })
 
   describe('research', () => {
-    it('should execute research agent', async () => {
+    it('should execute research operator', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'Research findings',
-          agent_used: 'research',
+          operator_used: 'research',
           mode_used: 'extended',
         })
       )
@@ -328,16 +328,16 @@ describe('AgentClient', () => {
       const result = await client.research('graph_1', 'Industry trends')
 
       expect(result.content).toBe('Research findings')
-      expect(result.agent_used).toBe('research')
+      expect(result.operator_used).toBe('research')
     })
   })
 
   describe('rag', () => {
-    it('should execute RAG agent', async () => {
+    it('should execute RAG operator', async () => {
       mockFetch.mockResolvedValueOnce(
         createMockResponse({
           content: 'Retrieved document excerpt',
-          agent_used: 'rag',
+          operator_used: 'rag',
           mode_used: 'quick',
         })
       )
@@ -345,7 +345,7 @@ describe('AgentClient', () => {
       const result = await client.rag('graph_1', 'Find disclosure about goodwill')
 
       expect(result.content).toBe('Retrieved document excerpt')
-      expect(result.agent_used).toBe('rag')
+      expect(result.operator_used).toBe('rag')
     })
   })
 
@@ -362,9 +362,9 @@ describe('AgentClient', () => {
     })
   })
 
-  // ── QueuedAgentError ──────────────────────────────────────────────────
+  // ── QueuedOperatorError ──────────────────────────────────────────────────
 
-  describe('QueuedAgentError', () => {
+  describe('QueuedOperatorError', () => {
     it('should create error with queue info', () => {
       const queueInfo = {
         status: 'queued' as const,
@@ -373,10 +373,10 @@ describe('AgentClient', () => {
         sse_endpoint: '/v1/operations/op_test/stream',
       }
 
-      const error = new QueuedAgentError(queueInfo)
+      const error = new QueuedOperatorError(queueInfo)
 
-      expect(error.message).toBe('Agent execution was queued')
-      expect(error.name).toBe('QueuedAgentError')
+      expect(error.message).toBe('Operator execution was queued')
+      expect(error.name).toBe('QueuedOperatorError')
       expect(error.queueInfo).toEqual(queueInfo)
       expect(error).toBeInstanceOf(Error)
     })
@@ -386,18 +386,18 @@ describe('AgentClient', () => {
 
   describe('constructor', () => {
     it('should create with minimal config', () => {
-      const c = new AgentClient({ baseUrl: 'http://localhost:8000' })
-      expect(c).toBeInstanceOf(AgentClient)
+      const c = new OperatorClient({ baseUrl: 'http://localhost:8000' })
+      expect(c).toBeInstanceOf(OperatorClient)
     })
 
     it('should accept all config options', () => {
-      const c = new AgentClient({
+      const c = new OperatorClient({
         baseUrl: 'http://localhost:8000',
         credentials: 'include',
         headers: { Authorization: 'Bearer token' },
         token: 'jwt-token',
       })
-      expect(c).toBeInstanceOf(AgentClient)
+      expect(c).toBeInstanceOf(OperatorClient)
     })
   })
 })

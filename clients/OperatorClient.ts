@@ -1,15 +1,15 @@
 'use client'
 
 /**
- * Enhanced Agent Client with SSE support
- * Provides intelligent agent execution with automatic strategy selection
+ * Enhanced AI Operator Client with SSE support
+ * Provides intelligent operator execution with automatic strategy selection
  */
 
-import { autoSelectAgent, executeSpecificAgent } from '../sdk/sdk.gen'
-import type { AutoSelectAgentData, ExecuteSpecificAgentData } from '../sdk/types.gen'
+import { autoSelectOperator, executeSpecificOperator } from '../sdk/sdk.gen'
+import type { AutoSelectOperatorData, ExecuteSpecificOperatorData } from '../sdk/types.gen'
 import { EventType, SSEClient } from './SSEClient'
 
-export interface AgentQueryRequest {
+export interface OperatorQueryRequest {
   message: string
   history?: Array<{ role: string; content: string }>
   context?: Record<string, any>
@@ -18,15 +18,15 @@ export interface AgentQueryRequest {
   forceExtendedAnalysis?: boolean
 }
 
-export interface AgentOptions {
+export interface OperatorOptions {
   mode?: 'auto' | 'sync' | 'async'
   maxWait?: number
   onProgress?: (message: string, percentage?: number) => void
 }
 
-export interface AgentResult {
+export interface OperatorResult {
   content: string
-  agent_used: string
+  operator_used: string
   mode_used: 'quick' | 'standard' | 'extended' | 'streaming'
   metadata?: Record<string, any>
   tokens_used?: {
@@ -39,14 +39,14 @@ export interface AgentResult {
   timestamp?: string
 }
 
-export interface QueuedAgentResponse {
+export interface QueuedOperatorResponse {
   status: 'queued'
   operation_id: string
   message: string
   sse_endpoint?: string
 }
 
-export class AgentClient {
+export class OperatorClient {
   private sseClient?: SSEClient
   private config: {
     baseUrl: string
@@ -65,15 +65,15 @@ export class AgentClient {
   }
 
   /**
-   * Execute agent query with automatic agent selection
+   * Execute operator query with automatic operator selection
    */
   async executeQuery(
     graphId: string,
-    request: AgentQueryRequest,
-    options: AgentOptions = {}
-  ): Promise<AgentResult> {
-    const data: AutoSelectAgentData = {
-      url: '/v1/graphs/{graph_id}/agent' as const,
+    request: OperatorQueryRequest,
+    options: OperatorOptions = {}
+  ): Promise<OperatorResult> {
+    const data: AutoSelectOperatorData = {
+      url: '/v1/graphs/{graph_id}/operator' as const,
       path: { graph_id: graphId },
       body: {
         message: request.message,
@@ -85,14 +85,14 @@ export class AgentClient {
       },
     }
 
-    const response = await autoSelectAgent(data)
+    const response = await autoSelectOperator(data)
     const responseData = response.data as any
 
     // Check if this is an immediate response (sync execution)
-    if (responseData?.content !== undefined && responseData?.agent_used) {
+    if (responseData?.content !== undefined && responseData?.operator_used) {
       return {
         content: responseData.content,
-        agent_used: responseData.agent_used,
+        operator_used: responseData.operator_used,
         mode_used: responseData.mode_used,
         metadata: responseData.metadata,
         tokens_used: responseData.tokens_used,
@@ -104,33 +104,33 @@ export class AgentClient {
 
     // Check if this is a queued response (async background task execution)
     if (responseData?.operation_id) {
-      const queuedResponse = responseData as QueuedAgentResponse
+      const queuedResponse = responseData as QueuedOperatorResponse
 
       // If user doesn't want to wait, throw with queue info
       if (options.maxWait === 0) {
-        throw new QueuedAgentError(queuedResponse)
+        throw new QueuedOperatorError(queuedResponse)
       }
 
       // Use SSE to monitor the operation
-      return this.waitForAgentCompletion(queuedResponse.operation_id, options)
+      return this.waitForOperatorCompletion(queuedResponse.operation_id, options)
     }
 
     // Unexpected response format
-    throw new Error('Unexpected response format from agent endpoint')
+    throw new Error('Unexpected response format from operator endpoint')
   }
 
   /**
-   * Execute specific agent type
+   * Execute specific operator type
    */
-  async executeAgent(
+  async executeOperator(
     graphId: string,
-    agentType: string,
-    request: AgentQueryRequest,
-    options: AgentOptions = {}
-  ): Promise<AgentResult> {
-    const data: ExecuteSpecificAgentData = {
-      url: '/v1/graphs/{graph_id}/agent/{agent_type}' as const,
-      path: { graph_id: graphId, agent_type: agentType },
+    operatorType: string,
+    request: OperatorQueryRequest,
+    options: OperatorOptions = {}
+  ): Promise<OperatorResult> {
+    const data: ExecuteSpecificOperatorData = {
+      url: '/v1/graphs/{graph_id}/operator/{operator_type}' as const,
+      path: { graph_id: graphId, operator_type: operatorType },
       body: {
         message: request.message,
         history: request.history,
@@ -141,14 +141,14 @@ export class AgentClient {
       },
     }
 
-    const response = await executeSpecificAgent(data)
+    const response = await executeSpecificOperator(data)
     const responseData = response.data as any
 
     // Check if this is an immediate response (sync execution)
-    if (responseData?.content !== undefined && responseData?.agent_used) {
+    if (responseData?.content !== undefined && responseData?.operator_used) {
       return {
         content: responseData.content,
-        agent_used: responseData.agent_used,
+        operator_used: responseData.operator_used,
         mode_used: responseData.mode_used,
         metadata: responseData.metadata,
         tokens_used: responseData.tokens_used,
@@ -160,32 +160,32 @@ export class AgentClient {
 
     // Check if this is a queued response (async background task execution)
     if (responseData?.operation_id) {
-      const queuedResponse = responseData as QueuedAgentResponse
+      const queuedResponse = responseData as QueuedOperatorResponse
 
       // If user doesn't want to wait, throw with queue info
       if (options.maxWait === 0) {
-        throw new QueuedAgentError(queuedResponse)
+        throw new QueuedOperatorError(queuedResponse)
       }
 
       // Use SSE to monitor the operation
-      return this.waitForAgentCompletion(queuedResponse.operation_id, options)
+      return this.waitForOperatorCompletion(queuedResponse.operation_id, options)
     }
 
     // Unexpected response format
-    throw new Error('Unexpected response format from agent endpoint')
+    throw new Error('Unexpected response format from operator endpoint')
   }
 
-  private async waitForAgentCompletion(
+  private async waitForOperatorCompletion(
     operationId: string,
-    options: AgentOptions
-  ): Promise<AgentResult> {
+    options: OperatorOptions
+  ): Promise<OperatorResult> {
     return new Promise((resolve, reject) => {
       const sseClient = new SSEClient(this.config)
 
       sseClient
         .connect(operationId)
         .then(() => {
-          let result: AgentResult | null = null
+          let result: OperatorResult | null = null
 
           // Listen for progress events
           sseClient.on(EventType.OPERATION_PROGRESS, (data) => {
@@ -193,11 +193,11 @@ export class AgentClient {
           })
 
           // Listen for agent-specific events
-          sseClient.on('agent_started' as EventType, (data) => {
-            options.onProgress?.(`Agent ${data.agent_type} started`, 0)
+          sseClient.on('operator_started' as EventType, (data) => {
+            options.onProgress?.(`Operator ${data.operator_type} started`, 0)
           })
 
-          sseClient.on('agent_initialized' as EventType, (data) => {
+          sseClient.on('operator_initialized' as EventType, (data) => {
             options.onProgress?.(`${data.agent_name} initialized`, 10)
           })
 
@@ -205,10 +205,10 @@ export class AgentClient {
             options.onProgress?.(data.message, data.percentage)
           })
 
-          sseClient.on('agent_completed' as EventType, (data) => {
+          sseClient.on('operator_completed' as EventType, (data) => {
             result = {
               content: data.content,
-              agent_used: data.agent_used,
+              operator_used: data.operator_used,
               mode_used: data.mode_used,
               metadata: data.metadata,
               tokens_used: data.tokens_used,
@@ -223,16 +223,16 @@ export class AgentClient {
           // Fallback to generic completion event
           sseClient.on(EventType.OPERATION_COMPLETED, (data) => {
             if (!result) {
-              const agentResult = data.result || data
+              const operatorResult = data.result || data
               result = {
-                content: agentResult.content || '',
-                agent_used: agentResult.agent_used || 'unknown',
-                mode_used: agentResult.mode_used || 'standard',
-                metadata: agentResult.metadata,
-                tokens_used: agentResult.tokens_used,
-                confidence_score: agentResult.confidence_score,
-                execution_time: agentResult.execution_time,
-                timestamp: agentResult.timestamp || new Date().toISOString(),
+                content: operatorResult.content || '',
+                operator_used: operatorResult.operator_used || 'unknown',
+                mode_used: operatorResult.mode_used || 'standard',
+                metadata: operatorResult.metadata,
+                tokens_used: operatorResult.tokens_used,
+                confidence_score: operatorResult.confidence_score,
+                execution_time: operatorResult.execution_time,
+                timestamp: operatorResult.timestamp || new Date().toISOString(),
               }
               sseClient.close()
               resolve(result)
@@ -266,7 +266,7 @@ export class AgentClient {
     graphId: string,
     message: string,
     context?: Record<string, any>
-  ): Promise<AgentResult> {
+  ): Promise<OperatorResult> {
     return this.executeQuery(graphId, { message, context }, { mode: 'auto' })
   }
 
@@ -276,9 +276,9 @@ export class AgentClient {
   async analyzeFinancials(
     graphId: string,
     message: string,
-    options: AgentOptions = {}
-  ): Promise<AgentResult> {
-    return this.executeAgent(graphId, 'financial', { message }, options)
+    options: OperatorOptions = {}
+  ): Promise<OperatorResult> {
+    return this.executeOperator(graphId, 'financial', { message }, options)
   }
 
   /**
@@ -287,16 +287,20 @@ export class AgentClient {
   async research(
     graphId: string,
     message: string,
-    options: AgentOptions = {}
-  ): Promise<AgentResult> {
-    return this.executeAgent(graphId, 'research', { message }, options)
+    options: OperatorOptions = {}
+  ): Promise<OperatorResult> {
+    return this.executeOperator(graphId, 'research', { message }, options)
   }
 
   /**
    * Execute RAG agent for fast retrieval
    */
-  async rag(graphId: string, message: string, options: AgentOptions = {}): Promise<AgentResult> {
-    return this.executeAgent(graphId, 'rag', { message }, options)
+  async rag(
+    graphId: string,
+    message: string,
+    options: OperatorOptions = {}
+  ): Promise<OperatorResult> {
+    return this.executeOperator(graphId, 'rag', { message }, options)
   }
 
   /**
@@ -313,9 +317,9 @@ export class AgentClient {
 /**
  * Error thrown when agent execution is queued and maxWait is 0
  */
-export class QueuedAgentError extends Error {
-  constructor(public queueInfo: QueuedAgentResponse) {
-    super('Agent execution was queued')
-    this.name = 'QueuedAgentError'
+export class QueuedOperatorError extends Error {
+  constructor(public queueInfo: QueuedOperatorResponse) {
+    super('Operator execution was queued')
+    this.name = 'QueuedOperatorError'
   }
 }

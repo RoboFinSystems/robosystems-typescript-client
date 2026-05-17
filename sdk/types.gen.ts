@@ -121,337 +121,6 @@ export type AddPublishListMembersOperation = {
 };
 
 /**
- * AgentListResponse
- *
- * Response for listing available agents.
- */
-export type AgentListResponse = {
-    /**
-     * Agents
-     *
-     * Dictionary of available agents with metadata
-     */
-    agents: {
-        [key: string]: {
-            [key: string]: unknown;
-        };
-    };
-    /**
-     * Total
-     *
-     * Total number of agents
-     */
-    total: number;
-};
-
-/**
- * AgentMessage
- *
- * Message in conversation history.
- */
-export type AgentMessage = {
-    /**
-     * Role
-     *
-     * Message role (user/assistant)
-     */
-    role: string;
-    /**
-     * Content
-     *
-     * Message content
-     */
-    content: string;
-    /**
-     * Timestamp
-     *
-     * Message timestamp
-     */
-    timestamp?: string | null;
-};
-
-/**
- * AgentMetadataResponse
- *
- * Response for agent metadata.
- */
-export type AgentMetadataResponse = {
-    /**
-     * Name
-     *
-     * Agent name
-     */
-    name: string;
-    /**
-     * Description
-     *
-     * Agent description
-     */
-    description: string;
-    /**
-     * Version
-     *
-     * Agent version
-     */
-    version: string;
-    /**
-     * Capabilities
-     *
-     * Agent capabilities
-     */
-    capabilities: Array<string>;
-    /**
-     * Supported Modes
-     *
-     * Supported execution modes
-     */
-    supported_modes: Array<string>;
-    /**
-     * Requires Credits
-     *
-     * Whether agent requires credits
-     */
-    requires_credits: boolean;
-    /**
-     * Author
-     *
-     * Agent author
-     */
-    author?: string | null;
-    /**
-     * Tags
-     *
-     * Agent tags
-     */
-    tags?: Array<string>;
-};
-
-/**
- * AgentMode
- *
- * Agent execution modes.
- */
-export type AgentMode = 'quick' | 'standard' | 'extended' | 'streaming';
-
-/**
- * AgentRecommendation
- *
- * Single agent recommendation.
- */
-export type AgentRecommendation = {
-    /**
-     * Agent Type
-     *
-     * Agent type identifier
-     */
-    agent_type: string;
-    /**
-     * Agent Name
-     *
-     * Agent display name
-     */
-    agent_name: string;
-    /**
-     * Confidence
-     *
-     * Confidence score (0-1)
-     */
-    confidence: number;
-    /**
-     * Capabilities
-     *
-     * Agent capabilities
-     */
-    capabilities: Array<string>;
-    /**
-     * Reason
-     *
-     * Reason for recommendation
-     */
-    reason?: string | null;
-};
-
-/**
- * AgentRecommendationRequest
- *
- * Request for agent recommendations.
- */
-export type AgentRecommendationRequest = {
-    /**
-     * Query
-     *
-     * Query to analyze
-     */
-    query: string;
-    /**
-     * Context
-     *
-     * Additional context
-     */
-    context?: {
-        [key: string]: unknown;
-    } | null;
-};
-
-/**
- * AgentRecommendationResponse
- *
- * Response for agent recommendations.
- */
-export type AgentRecommendationResponse = {
-    /**
-     * Recommendations
-     *
-     * List of agent recommendations sorted by confidence
-     */
-    recommendations: Array<AgentRecommendation>;
-    /**
-     * Query
-     *
-     * The analyzed query
-     */
-    query: string;
-};
-
-/**
- * AgentRequest
- *
- * Request model for agent interactions.
- */
-export type AgentRequest = {
-    /**
-     * Message
-     *
-     * The query or message to process
-     */
-    message: string;
-    /**
-     * History
-     *
-     * Conversation history
-     */
-    history?: Array<AgentMessage>;
-    /**
-     * Context
-     *
-     * Additional context for analysis (e.g., enable_rag, include_schema)
-     */
-    context?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Execution mode
-     */
-    mode?: AgentMode | null;
-    /**
-     * Agent Type
-     *
-     * Specific agent type to use (optional)
-     */
-    agent_type?: string | null;
-    /**
-     * Criteria for agent selection
-     */
-    selection_criteria?: SelectionCriteria | null;
-    /**
-     * Force Extended Analysis
-     *
-     * Force extended analysis mode with comprehensive research
-     */
-    force_extended_analysis?: boolean;
-    /**
-     * Enable Rag
-     *
-     * Enable RAG context enrichment
-     */
-    enable_rag?: boolean;
-    /**
-     * Stream
-     *
-     * Enable streaming response
-     */
-    stream?: boolean;
-};
-
-/**
- * AgentResponse
- *
- * Response model for agent interactions.
- */
-export type AgentResponse = {
-    /**
-     * Content
-     *
-     * The agent's response content
-     */
-    content: string;
-    /**
-     * Agent Used
-     *
-     * The agent type that handled the request
-     */
-    agent_used: string;
-    /**
-     * The execution mode used
-     */
-    mode_used: AgentMode;
-    /**
-     * Metadata
-     *
-     * Response metadata including routing info
-     */
-    metadata?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Tokens Used
-     *
-     * Token usage statistics
-     */
-    tokens_used?: {
-        [key: string]: number;
-    } | null;
-    /**
-     * Confidence Score
-     *
-     * Confidence score of the response (0.0-1.0 scale)
-     */
-    confidence_score?: number | null;
-    /**
-     * Operation Id
-     *
-     * Operation ID for SSE monitoring
-     */
-    operation_id?: string | null;
-    /**
-     * Is Partial
-     *
-     * Whether this is a partial response
-     */
-    is_partial?: boolean;
-    /**
-     * Error Details
-     *
-     * Error details if any
-     */
-    error_details?: {
-        [key: string]: unknown;
-    } | null;
-    /**
-     * Execution Time
-     *
-     * Execution time in seconds
-     */
-    execution_time?: number | null;
-    /**
-     * Timestamp
-     *
-     * Response timestamp
-     */
-    timestamp?: string;
-};
-
-/**
  * ArtifactResponse
  *
  * The block's producible-artifact envelope — topic, template, mechanics.
@@ -611,9 +280,9 @@ export type AuthResponse = {
 /**
  * AutoMapElementsOperation
  *
- * Run the MappingAgent over a mapping structure (async).
+ * Run the MappingOperator over a mapping structure (async).
  *
- * The MappingAgent walks every unmapped CoA element and proposes
+ * The MappingOperator walks every unmapped CoA element and proposes
  * associations to reporting concepts. Confidence thresholds: ≥0.90
  * auto-approved (association created), 0.70-0.89 flagged for review
  * (created with `confidence` set; surface it in your UI), <0.70 skipped.
@@ -940,17 +609,17 @@ export type BackupStatsResponse = {
 };
 
 /**
- * BatchAgentRequest
+ * BatchOperatorRequest
  *
  * Request for batch processing multiple queries.
  */
-export type BatchAgentRequest = {
+export type BatchOperatorRequest = {
     /**
      * Queries
      *
      * List of queries to process (max 10)
      */
-    queries: Array<AgentRequest>;
+    queries: Array<OperatorRequest>;
     /**
      * Parallel
      *
@@ -960,17 +629,17 @@ export type BatchAgentRequest = {
 };
 
 /**
- * BatchAgentResponse
+ * BatchOperatorResponse
  *
  * Response for batch processing.
  */
-export type BatchAgentResponse = {
+export type BatchOperatorResponse = {
     /**
      * Results
      *
-     * List of agent responses (includes successes and failures)
+     * List of operator responses (includes successes and failures)
      */
-    results: Array<AgentResponse>;
+    results: Array<OperatorResponse>;
     /**
      * Total Execution Time
      *
@@ -2048,7 +1717,7 @@ export type CreateInformationBlockRequest = ({
  *
  * This is the iterative, AI-assisted craft path. Each call adds a single
  * association to the target mapping structure. Use `auto-map-elements`
- * to create many at once via the MappingAgent. Reject duplicates: if
+ * to create many at once via the MappingOperator. Reject duplicates: if
  * the (from, to, type) tuple already exists, the call returns 409.
  */
 export type CreateMappingAssociationOperation = {
@@ -2173,7 +1842,7 @@ export type CreateReportRequest = {
     /**
      * Taxonomy Id
      *
-     * Taxonomy that defines the structures (BS / IS / CF / Equity / Schedules) this report can render. Defaults to the platform US GAAP reporting taxonomy.
+     * Taxonomy that defines the structures (BS / IS / CF / Equity / Schedules) this report can render. Accepts either an exact tenant-specific taxonomy UUID or a standard name (e.g. 'rs-gaap'). Standard names resolve to the latest reporting_standard taxonomy with that name. Defaults to 'rs-gaap', the canonical reporting vocabulary.
      */
     taxonomy_id?: string;
     /**
@@ -8244,6 +7913,337 @@ export type OperationEnvelopeListPublishListMemberResponse = {
 };
 
 /**
+ * OperatorListResponse
+ *
+ * Response for listing available operators.
+ */
+export type OperatorListResponse = {
+    /**
+     * Operators
+     *
+     * Dictionary of available operators with metadata
+     */
+    operators: {
+        [key: string]: {
+            [key: string]: unknown;
+        };
+    };
+    /**
+     * Total
+     *
+     * Total number of operators
+     */
+    total: number;
+};
+
+/**
+ * OperatorMessage
+ *
+ * Message in conversation history.
+ */
+export type OperatorMessage = {
+    /**
+     * Role
+     *
+     * Message role (user/assistant)
+     */
+    role: string;
+    /**
+     * Content
+     *
+     * Message content
+     */
+    content: string;
+    /**
+     * Timestamp
+     *
+     * Message timestamp
+     */
+    timestamp?: string | null;
+};
+
+/**
+ * OperatorMetadataResponse
+ *
+ * Response for operator metadata.
+ */
+export type OperatorMetadataResponse = {
+    /**
+     * Name
+     *
+     * Operator name
+     */
+    name: string;
+    /**
+     * Description
+     *
+     * Operator description
+     */
+    description: string;
+    /**
+     * Version
+     *
+     * Operator version
+     */
+    version: string;
+    /**
+     * Capabilities
+     *
+     * Operator capabilities
+     */
+    capabilities: Array<string>;
+    /**
+     * Supported Modes
+     *
+     * Supported execution modes
+     */
+    supported_modes: Array<string>;
+    /**
+     * Requires Credits
+     *
+     * Whether operator requires credits
+     */
+    requires_credits: boolean;
+    /**
+     * Author
+     *
+     * Operator author
+     */
+    author?: string | null;
+    /**
+     * Tags
+     *
+     * Operator tags
+     */
+    tags?: Array<string>;
+};
+
+/**
+ * OperatorMode
+ *
+ * Operator execution modes.
+ */
+export type OperatorMode = 'quick' | 'standard' | 'extended' | 'streaming';
+
+/**
+ * OperatorRecommendation
+ *
+ * Single operator recommendation.
+ */
+export type OperatorRecommendation = {
+    /**
+     * Operator Type
+     *
+     * Operator type identifier
+     */
+    operator_type: string;
+    /**
+     * Operator Name
+     *
+     * Operator display name
+     */
+    operator_name: string;
+    /**
+     * Confidence
+     *
+     * Confidence score (0-1)
+     */
+    confidence: number;
+    /**
+     * Capabilities
+     *
+     * Operator capabilities
+     */
+    capabilities: Array<string>;
+    /**
+     * Reason
+     *
+     * Reason for recommendation
+     */
+    reason?: string | null;
+};
+
+/**
+ * OperatorRecommendationRequest
+ *
+ * Request for operator recommendations.
+ */
+export type OperatorRecommendationRequest = {
+    /**
+     * Query
+     *
+     * Query to analyze
+     */
+    query: string;
+    /**
+     * Context
+     *
+     * Additional context
+     */
+    context?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * OperatorRecommendationResponse
+ *
+ * Response for operator recommendations.
+ */
+export type OperatorRecommendationResponse = {
+    /**
+     * Recommendations
+     *
+     * List of operator recommendations sorted by confidence
+     */
+    recommendations: Array<OperatorRecommendation>;
+    /**
+     * Query
+     *
+     * The analyzed query
+     */
+    query: string;
+};
+
+/**
+ * OperatorRequest
+ *
+ * Request model for operator interactions.
+ */
+export type OperatorRequest = {
+    /**
+     * Message
+     *
+     * The query or message to process
+     */
+    message: string;
+    /**
+     * History
+     *
+     * Conversation history
+     */
+    history?: Array<OperatorMessage>;
+    /**
+     * Context
+     *
+     * Additional context for analysis (e.g., enable_rag, include_schema)
+     */
+    context?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Execution mode
+     */
+    mode?: OperatorMode | null;
+    /**
+     * Operator Type
+     *
+     * Specific operator type to use (optional)
+     */
+    operator_type?: string | null;
+    /**
+     * Criteria for operator selection
+     */
+    selection_criteria?: SelectionCriteria | null;
+    /**
+     * Force Extended Analysis
+     *
+     * Force extended analysis mode with comprehensive research
+     */
+    force_extended_analysis?: boolean;
+    /**
+     * Enable Rag
+     *
+     * Enable RAG context enrichment
+     */
+    enable_rag?: boolean;
+    /**
+     * Stream
+     *
+     * Enable streaming response
+     */
+    stream?: boolean;
+};
+
+/**
+ * OperatorResponse
+ *
+ * Response model for operator interactions.
+ */
+export type OperatorResponse = {
+    /**
+     * Content
+     *
+     * The operator's response content
+     */
+    content: string;
+    /**
+     * Operator Used
+     *
+     * The operator type that handled the request
+     */
+    operator_used: string;
+    /**
+     * The execution mode used
+     */
+    mode_used: OperatorMode;
+    /**
+     * Metadata
+     *
+     * Response metadata including routing info
+     */
+    metadata?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Tokens Used
+     *
+     * Token usage statistics
+     */
+    tokens_used?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Confidence Score
+     *
+     * Confidence score of the response (0.0-1.0 scale)
+     */
+    confidence_score?: number | null;
+    /**
+     * Operation Id
+     *
+     * Operation ID for SSE monitoring
+     */
+    operation_id?: string | null;
+    /**
+     * Is Partial
+     *
+     * Whether this is a partial response
+     */
+    is_partial?: boolean;
+    /**
+     * Error Details
+     *
+     * Error details if any
+     */
+    error_details?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Execution Time
+     *
+     * Execution time in seconds
+     */
+    execution_time?: number | null;
+    /**
+     * Timestamp
+     *
+     * Response timestamp
+     */
+    timestamp?: string;
+};
+
+/**
  * OrgDetailResponse
  *
  * Detailed organization response.
@@ -10677,7 +10677,7 @@ export type SecurityResponse = {
 /**
  * SelectionCriteria
  *
- * Criteria for agent selection.
+ * Criteria for operator selection.
  */
 export type SelectionCriteria = {
     /**
@@ -10689,13 +10689,13 @@ export type SelectionCriteria = {
     /**
      * Required Capabilities
      *
-     * Required agent capabilities
+     * Required operator capabilities
      */
     required_capabilities?: Array<string>;
     /**
      * Preferred execution mode
      */
-    preferred_mode?: AgentMode | null;
+    preferred_mode?: OperatorMode | null;
     /**
      * Max Response Time
      *
@@ -10703,11 +10703,11 @@ export type SelectionCriteria = {
      */
     max_response_time?: number;
     /**
-     * Excluded Agents
+     * Excluded Operators
      *
-     * Agents to exclude from selection
+     * Operators to exclude from selection
      */
-    excluded_agents?: Array<string>;
+    excluded_operators?: Array<string>;
 };
 
 /**
@@ -15317,7 +15317,7 @@ export type SyncConnectionResponses = {
 
 export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
 
-export type ListAgentsData = {
+export type ListOperatorsData = {
     body?: never;
     path: {
         /**
@@ -15333,10 +15333,10 @@ export type ListAgentsData = {
          */
         capability?: string | null;
     };
-    url: '/v1/graphs/{graph_id}/agent';
+    url: '/v1/graphs/{graph_id}/operator';
 };
 
-export type ListAgentsErrors = {
+export type ListOperatorsErrors = {
     /**
      * Invalid request
      */
@@ -15367,19 +15367,19 @@ export type ListAgentsErrors = {
     500: ErrorResponse;
 };
 
-export type ListAgentsError = ListAgentsErrors[keyof ListAgentsErrors];
+export type ListOperatorsError = ListOperatorsErrors[keyof ListOperatorsErrors];
 
-export type ListAgentsResponses = {
+export type ListOperatorsResponses = {
     /**
      * Successful Response
      */
-    200: AgentListResponse;
+    200: OperatorListResponse;
 };
 
-export type ListAgentsResponse = ListAgentsResponses[keyof ListAgentsResponses];
+export type ListOperatorsResponse = ListOperatorsResponses[keyof ListOperatorsResponses];
 
-export type AutoSelectAgentData = {
-    body: AgentRequest;
+export type AutoSelectOperatorData = {
+    body: OperatorRequest;
     path: {
         /**
          * Graph Id
@@ -15394,10 +15394,10 @@ export type AutoSelectAgentData = {
          */
         mode?: ResponseMode | null;
     };
-    url: '/v1/graphs/{graph_id}/agent';
+    url: '/v1/graphs/{graph_id}/operator';
 };
 
-export type AutoSelectAgentErrors = {
+export type AutoSelectOperatorErrors = {
     /**
      * Invalid request
      */
@@ -15432,22 +15432,22 @@ export type AutoSelectAgentErrors = {
     500: ErrorResponse;
 };
 
-export type AutoSelectAgentError = AutoSelectAgentErrors[keyof AutoSelectAgentErrors];
+export type AutoSelectOperatorError = AutoSelectOperatorErrors[keyof AutoSelectOperatorErrors];
 
-export type AutoSelectAgentResponses = {
+export type AutoSelectOperatorResponses = {
     /**
      * Successful Response
      */
-    200: AgentResponse;
+    200: OperatorResponse;
     /**
      * Query queued for async processing
      */
     202: unknown;
 };
 
-export type AutoSelectAgentResponse = AutoSelectAgentResponses[keyof AutoSelectAgentResponses];
+export type AutoSelectOperatorResponse = AutoSelectOperatorResponses[keyof AutoSelectOperatorResponses];
 
-export type GetAgentMetadataData = {
+export type GetOperatorMetadataData = {
     body?: never;
     path: {
         /**
@@ -15455,17 +15455,17 @@ export type GetAgentMetadataData = {
          */
         graph_id: string;
         /**
-         * Agent Type
+         * Operator Type
          *
-         * Agent type identifier (e.g., 'financial', 'research', 'rag')
+         * Operator type identifier (e.g., 'financial', 'research', 'rag')
          */
-        agent_type: string;
+        operator_type: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/agent/{agent_type}';
+    url: '/v1/graphs/{graph_id}/operator/{operator_type}';
 };
 
-export type GetAgentMetadataErrors = {
+export type GetOperatorMetadataErrors = {
     /**
      * Invalid request
      */
@@ -15496,24 +15496,24 @@ export type GetAgentMetadataErrors = {
     500: ErrorResponse;
 };
 
-export type GetAgentMetadataError = GetAgentMetadataErrors[keyof GetAgentMetadataErrors];
+export type GetOperatorMetadataError = GetOperatorMetadataErrors[keyof GetOperatorMetadataErrors];
 
-export type GetAgentMetadataResponses = {
+export type GetOperatorMetadataResponses = {
     /**
      * Successful Response
      */
-    200: AgentMetadataResponse;
+    200: OperatorMetadataResponse;
 };
 
-export type GetAgentMetadataResponse = GetAgentMetadataResponses[keyof GetAgentMetadataResponses];
+export type GetOperatorMetadataResponse = GetOperatorMetadataResponses[keyof GetOperatorMetadataResponses];
 
-export type ExecuteSpecificAgentData = {
-    body: AgentRequest;
+export type ExecuteSpecificOperatorData = {
+    body: OperatorRequest;
     path: {
         /**
-         * Agent Type
+         * Operator Type
          */
-        agent_type: string;
+        operator_type: string;
         /**
          * Graph Id
          */
@@ -15527,10 +15527,10 @@ export type ExecuteSpecificAgentData = {
          */
         mode?: ResponseMode | null;
     };
-    url: '/v1/graphs/{graph_id}/agent/{agent_type}';
+    url: '/v1/graphs/{graph_id}/operator/{operator_type}';
 };
 
-export type ExecuteSpecificAgentErrors = {
+export type ExecuteSpecificOperatorErrors = {
     /**
      * Invalid request
      */
@@ -15565,23 +15565,23 @@ export type ExecuteSpecificAgentErrors = {
     500: ErrorResponse;
 };
 
-export type ExecuteSpecificAgentError = ExecuteSpecificAgentErrors[keyof ExecuteSpecificAgentErrors];
+export type ExecuteSpecificOperatorError = ExecuteSpecificOperatorErrors[keyof ExecuteSpecificOperatorErrors];
 
-export type ExecuteSpecificAgentResponses = {
+export type ExecuteSpecificOperatorResponses = {
     /**
      * Successful Response
      */
-    200: AgentResponse;
+    200: OperatorResponse;
     /**
      * Query queued for async processing
      */
     202: unknown;
 };
 
-export type ExecuteSpecificAgentResponse = ExecuteSpecificAgentResponses[keyof ExecuteSpecificAgentResponses];
+export type ExecuteSpecificOperatorResponse = ExecuteSpecificOperatorResponses[keyof ExecuteSpecificOperatorResponses];
 
 export type BatchProcessQueriesData = {
-    body: BatchAgentRequest;
+    body: BatchOperatorRequest;
     path: {
         /**
          * Graph Id
@@ -15589,7 +15589,7 @@ export type BatchProcessQueriesData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/agent/batch';
+    url: '/v1/graphs/{graph_id}/operator/batch';
 };
 
 export type BatchProcessQueriesErrors = {
@@ -15633,13 +15633,13 @@ export type BatchProcessQueriesResponses = {
     /**
      * Successful Response
      */
-    200: BatchAgentResponse;
+    200: BatchOperatorResponse;
 };
 
 export type BatchProcessQueriesResponse = BatchProcessQueriesResponses[keyof BatchProcessQueriesResponses];
 
-export type RecommendAgentData = {
-    body: AgentRecommendationRequest;
+export type RecommendOperatorData = {
+    body: OperatorRecommendationRequest;
     path: {
         /**
          * Graph Id
@@ -15647,10 +15647,10 @@ export type RecommendAgentData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/agent/recommend';
+    url: '/v1/graphs/{graph_id}/operator/recommend';
 };
 
-export type RecommendAgentErrors = {
+export type RecommendOperatorErrors = {
     /**
      * Invalid request
      */
@@ -15681,16 +15681,16 @@ export type RecommendAgentErrors = {
     500: ErrorResponse;
 };
 
-export type RecommendAgentError = RecommendAgentErrors[keyof RecommendAgentErrors];
+export type RecommendOperatorError = RecommendOperatorErrors[keyof RecommendOperatorErrors];
 
-export type RecommendAgentResponses = {
+export type RecommendOperatorResponses = {
     /**
      * Successful Response
      */
-    200: AgentRecommendationResponse;
+    200: OperatorRecommendationResponse;
 };
 
-export type RecommendAgentResponse = RecommendAgentResponses[keyof RecommendAgentResponses];
+export type RecommendOperatorResponse = RecommendOperatorResponses[keyof RecommendOperatorResponses];
 
 export type ListMcpToolsData = {
     body?: never;
