@@ -1502,6 +1502,10 @@ export type QueryAccountRollupsArgs = {
   startDate?: InputMaybe<Scalars['Date']['input']>
 }
 
+export type QueryAccountTreeArgs = {
+  includeInactive?: Scalars['Boolean']['input']
+}
+
 export type QueryAccountsArgs = {
   classification?: InputMaybe<Scalars['String']['input']>
   isActive?: InputMaybe<Scalars['Boolean']['input']>
