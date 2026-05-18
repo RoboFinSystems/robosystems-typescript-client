@@ -1453,6 +1453,12 @@ export type CreateEventBlockRequest = {
      */
     event_class?: 'economic' | 'support';
     /**
+     * Event Action
+     *
+     * Canonical action verb refining `event_category`. Disambiguates concepts ERPs collapse: `transferAllRights` (ownership transfer, no physical movement) vs `transferCustody` (physical only, no rights transfer) — load-bearing for consignment, drop-shipping, marketplace settlement, escrow. Optional; null is valid for legacy events and during adapter rollout.
+     */
+    event_action?: 'produce' | 'raise' | 'consume' | 'lower' | 'use' | 'cite' | 'work' | 'deliverService' | 'pickup' | 'dropoff' | 'accept' | 'transferCustody' | 'transferAllRights' | 'transfer' | 'move' | 'modify' | 'combine' | 'separate' | 'copy' | null;
+    /**
      * Agent Id
      *
      * ID of the counterparty agent (customer, vendor, employee, lender) involved in the event. `null` for internal-only events.
@@ -3871,6 +3877,12 @@ export type EventBlockEnvelope = {
      * REA event class — `economic` (drives GL postings) or `support` (audit-trail / value-chain primitive, no GL impact).
      */
     event_class: string;
+    /**
+     * Event Action
+     *
+     * Canonical action verb refining `event_category`. Null when the source adapter or capture path didn't supply one.
+     */
+    event_action?: 'produce' | 'raise' | 'consume' | 'lower' | 'use' | 'cite' | 'work' | 'deliverService' | 'pickup' | 'dropoff' | 'accept' | 'transferCustody' | 'transferAllRights' | 'transfer' | 'move' | 'modify' | 'combine' | 'separate' | 'copy' | null;
     /**
      * Agent Id
      *
@@ -12424,6 +12436,12 @@ export type UpdateEventBlockRequest = {
     metadata_patch?: {
         [key: string]: unknown;
     };
+    /**
+     * Event Action
+     *
+     * Set or correct the canonical action verb. Unset = unchanged. Useful when an adapter improvement makes a previously-NULL verb fillable, or when reclassifying after the fact.
+     */
+    event_action?: 'produce' | 'raise' | 'consume' | 'lower' | 'use' | 'cite' | 'work' | 'deliverService' | 'pickup' | 'dropoff' | 'accept' | 'transferCustody' | 'transferAllRights' | 'transfer' | 'move' | 'modify' | 'combine' | 'separate' | 'copy' | null;
     /**
      * Obligated By Event Id
      *
