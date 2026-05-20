@@ -1050,6 +1050,65 @@ export class LedgerClient {
   // ── Schedules ──────────────────────────────────────────────────────
 
   /** Create a new schedule with pre-generated monthly facts. */
+  /**
+   * Create an Information Block of any registered block_type.
+   *
+   * Generic wrapper over `create-information-block`. Pass a typed
+   * `CreateInformationBlockRequest` body — the discriminator routes
+   * server-side to the correct dispatch handler. Convenience methods
+   * exist for specific block types (e.g. `createSchedule`); for
+   * block types without one (currently `rollforward`), use this
+   * generic entry.
+   */
+  async createInformationBlock(
+    graphId: string,
+    body: CreateInformationBlockRequest,
+    options?: { idempotencyKey?: string }
+  ): Promise<InformationBlockEnvelope> {
+    const envelope = await this.callOperation(
+      'Create information block',
+      opCreateInformationBlock({
+        path: { graph_id: graphId },
+        body,
+        headers: options?.idempotencyKey
+          ? { 'Idempotency-Key': options.idempotencyKey }
+          : undefined,
+      })
+    )
+    return this.requireResult('Create information block', envelope.result)
+  }
+
+  /**
+   * Update an Information Block in place. Generic wrapper over
+   * `update-information-block`.
+   */
+  async updateInformationBlock(
+    graphId: string,
+    body: UpdateInformationBlockRequest
+  ): Promise<InformationBlockEnvelope> {
+    const envelope = await this.callOperation(
+      'Update information block',
+      opUpdateInformationBlock({ path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Update information block', envelope.result)
+  }
+
+  /**
+   * Delete an Information Block. Generic wrapper over
+   * `delete-information-block`. Cascades through any facts /
+   * associations tied to the block.
+   */
+  async deleteInformationBlock(
+    graphId: string,
+    body: DeleteInformationBlockRequest
+  ): Promise<DeleteInformationBlockResponse> {
+    const envelope = await this.callOperation(
+      'Delete information block',
+      opDeleteInformationBlock({ path: { graph_id: graphId }, body })
+    )
+    return (envelope.result ?? { deleted: true }) as DeleteInformationBlockResponse
+  }
+
   async createSchedule(graphId: string, options: CreateScheduleOptions): Promise<ScheduleCreated> {
     const body: CreateInformationBlockRequest = {
       block_type: 'schedule',
