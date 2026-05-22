@@ -477,7 +477,7 @@ export type InformationBlockClassification = {
   identifier: Scalars['String']['output']
   /** Whether this is the canonical classification for the (association|element, category) pair. Non-primary rows capture alternates / AI suggestions alongside the chosen primary. */
   isPrimary: Scalars['Boolean']['output']
-  /** Provenance — 'arcrole_analysis', 'disclosure_mechanics', 'us-gaap-metamodel', adapter name, etc. */
+  /** Provenance — 'arcrole_analysis', 'disclosure_mechanics', 'fac-traits', adapter name, etc. */
   source: Maybe<Scalars['String']['output']>
 }
 
@@ -935,7 +935,7 @@ export type LibraryElement = {
  *
  * Scoped to arcs whose structure belongs to a `taxonomy_type='mapping'`
  * taxonomy — the cross-taxonomy bridges (equivalence, general-special,
- * type-subtype). Hierarchical arcs inside a single reporting taxonomy
+ * rs-gaap-type-subtype). Hierarchical arcs inside a single reporting taxonomy
  * are out of scope.
  */
 export type LibraryElementArc = {
