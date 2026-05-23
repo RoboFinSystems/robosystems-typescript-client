@@ -450,6 +450,7 @@ export type InformationBlock = {
   taxonomyId: Maybe<Scalars['String']['output']>
   taxonomyName: Maybe<Scalars['String']['output']>
   verificationResults: Array<InformationBlockVerificationResult>
+  verificationSummary: Maybe<InformationBlockVerificationSummary>
   view: InformationBlockViewProjections
 }
 
@@ -660,6 +661,24 @@ export type InformationBlockValidation = {
 }
 
 /**
+ * Pass/fail/skip counts for one ``rule_category`` within a block's
+ * verification results.
+ *
+ * Drives the per-category accordions in the Verification Results panel
+ * (financial-viewer §7.12). ``category`` is the rule's ``rule_category``
+ * (one of the cm:VerificationRule subclasses), resolved by joining each
+ * result to its Rule.
+ */
+export type InformationBlockVerificationCategorySummary = {
+  category: Scalars['String']['output']
+  errored: Scalars['Int']['output']
+  failed: Scalars['Int']['output']
+  passed: Scalars['Int']['output']
+  skipped: Scalars['Int']['output']
+  total: Scalars['Int']['output']
+}
+
+/**
  * Persisted outcome of one Rule evaluation.
  *
  * One row per ``public.verification_results`` entry the rule engine
@@ -678,6 +697,24 @@ export type InformationBlockVerificationResult = {
   /** 'pass' | 'fail' | 'error' | 'skipped'. Enum closure enforced by the ``public.verification_results`` CHECK constraint. */
   status: Scalars['String']['output']
   structureId: Maybe<Scalars['String']['output']>
+}
+
+/**
+ * Server-computed aggregate of a block's ``verification_results``.
+ *
+ * Overall counts plus a per-``rule_category`` breakdown, so the viewer
+ * renders the grouped Verification Results panel (financial-viewer §7.12)
+ * without a client-side results→rules join. Status closure is
+ * ``pass | fail | error | skipped`` (the ``public.verification_results``
+ * CHECK); ``total`` is their sum.
+ */
+export type InformationBlockVerificationSummary = {
+  byCategory: Array<InformationBlockVerificationCategorySummary>
+  errored: Scalars['Int']['output']
+  failed: Scalars['Int']['output']
+  passed: Scalars['Int']['output']
+  skipped: Scalars['Int']['output']
+  total: Scalars['Int']['output']
 }
 
 /**
@@ -2815,6 +2852,21 @@ export type GetInformationBlockQuery = {
       periodEnd: any | null
       evaluatedAt: any | null
     }>
+    verificationSummary: {
+      total: number
+      passed: number
+      failed: number
+      errored: number
+      skipped: number
+      byCategory: Array<{
+        category: string
+        total: number
+        passed: number
+        failed: number
+        errored: number
+        skipped: number
+      }>
+    } | null
     view: {
       rendering: {
         unmappedCount: number
@@ -2926,6 +2978,21 @@ export type ListInformationBlocksQuery = {
       periodEnd: any | null
       evaluatedAt: any | null
     }>
+    verificationSummary: {
+      total: number
+      passed: number
+      failed: number
+      errored: number
+      skipped: number
+      byCategory: Array<{
+        category: string
+        total: number
+        passed: number
+        failed: number
+        errored: number
+        skipped: number
+      }>
+    } | null
     view: {
       rendering: {
         unmappedCount: number
@@ -5595,6 +5662,35 @@ export const GetInformationBlockDocument = {
                 },
                 {
                   kind: 'Field',
+                  name: { kind: 'Name', value: 'verificationSummary' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'byCategory' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
                   name: { kind: 'Name', value: 'view' },
                   selectionSet: {
                     kind: 'SelectionSet',
@@ -5878,6 +5974,35 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'evaluatedAt' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'verificationSummary' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'byCategory' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                          ],
+                        },
+                      },
                     ],
                   },
                 },

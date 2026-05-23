@@ -5629,6 +5629,10 @@ export type InformationBlockEnvelope = {
      */
     verification_results?: Array<VerificationResultLite>;
     /**
+     * Server-computed aggregate over ``verification_results`` — overall pass/fail/error/skip counts plus a per-rule_category breakdown for the grouped Verification Results panel. Null when the block has no verification results.
+     */
+    verification_summary?: VerificationSummary | null;
+    /**
      * Server-computed view projections (Charlie's six type-of View arms). ``view.rendering`` carries pre-computed rows + periods + validation for blocks where rendering is deterministic (the statement family today). Other projections come online as their backend support lands — see :class:`ViewProjections`.
      */
     view?: ViewProjections;
@@ -13409,6 +13413,44 @@ export type ValidationLite = {
 };
 
 /**
+ * VerificationCategorySummary
+ *
+ * Pass/fail/skip counts for one ``rule_category`` within a block's
+ * verification results.
+ *
+ * Drives the per-category accordions in the Verification Results panel
+ * (financial-viewer §7.12). ``category`` is the rule's ``rule_category``
+ * (one of the cm:VerificationRule subclasses), resolved by joining each
+ * result to its Rule.
+ */
+export type VerificationCategorySummary = {
+    /**
+     * Category
+     */
+    category: string;
+    /**
+     * Total
+     */
+    total?: number;
+    /**
+     * Passed
+     */
+    passed?: number;
+    /**
+     * Failed
+     */
+    failed?: number;
+    /**
+     * Errored
+     */
+    errored?: number;
+    /**
+     * Skipped
+     */
+    skipped?: number;
+};
+
+/**
  * VerificationResultLite
  *
  * Persisted outcome of one Rule evaluation.
@@ -13457,6 +13499,44 @@ export type VerificationResultLite = {
      * Evaluated At
      */
     evaluated_at?: string | null;
+};
+
+/**
+ * VerificationSummary
+ *
+ * Server-computed aggregate of a block's ``verification_results``.
+ *
+ * Overall counts plus a per-``rule_category`` breakdown, so the viewer
+ * renders the grouped Verification Results panel (financial-viewer §7.12)
+ * without a client-side results→rules join. Status closure is
+ * ``pass | fail | error | skipped`` (the ``public.verification_results``
+ * CHECK); ``total`` is their sum.
+ */
+export type VerificationSummary = {
+    /**
+     * Total
+     */
+    total?: number;
+    /**
+     * Passed
+     */
+    passed?: number;
+    /**
+     * Failed
+     */
+    failed?: number;
+    /**
+     * Errored
+     */
+    errored?: number;
+    /**
+     * Skipped
+     */
+    skipped?: number;
+    /**
+     * By Category
+     */
+    by_category?: Array<VerificationCategorySummary>;
 };
 
 /**
