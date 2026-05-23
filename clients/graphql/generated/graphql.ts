@@ -3343,6 +3343,21 @@ export type GetLedgerReportPackageQuery = {
           periodEnd: any | null
           evaluatedAt: any | null
         }>
+        verificationSummary: {
+          total: number
+          passed: number
+          failed: number
+          errored: number
+          skipped: number
+          byCategory: Array<{
+            category: string
+            total: number
+            passed: number
+            failed: number
+            errored: number
+            skipped: number
+          }>
+        } | null
         view: {
           rendering: {
             unmappedCount: number
@@ -6953,6 +6968,38 @@ export const GetLedgerReportPackageDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'evaluatedAt' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'verificationSummary' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'byCategory' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'category' },
+                                        },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                                      ],
+                                    },
+                                  },
                                 ],
                               },
                             },
