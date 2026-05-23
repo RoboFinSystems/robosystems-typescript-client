@@ -921,7 +921,7 @@ export type ClassificationLite = {
     /**
      * Source
      *
-     * Provenance — 'arcrole_analysis', 'disclosure_mechanics', 'us-gaap-metamodel', adapter name, etc.
+     * Provenance — 'arcrole_analysis', 'disclosure_mechanics', 'fac-traits', adapter name, etc.
      */
     source?: string | null;
 };
@@ -5629,6 +5629,10 @@ export type InformationBlockEnvelope = {
      */
     verification_results?: Array<VerificationResultLite>;
     /**
+     * Server-computed aggregate over ``verification_results`` — overall pass/fail/error/skip counts plus a per-rule_category breakdown for the grouped Verification Results panel. Null when the block has no verification results.
+     */
+    verification_summary?: VerificationSummary | null;
+    /**
      * Server-computed view projections (Charlie's six type-of View arms). ``view.rendering`` carries pre-computed rows + periods + validation for blocks where rendering is deterministic (the statement family today). Other projections come online as their backend support lands — see :class:`ViewProjections`.
      */
     view?: ViewProjections;
@@ -5723,6 +5727,18 @@ export type InitialEntityData = {
      * Employer Identification Number
      */
     ein?: string | null;
+    /**
+     * Entity Type
+     *
+     * Entity legal form (e.g. 'corporation', 'llc' / 'limited_liability_company', 'partnership', 'sole_proprietorship', 'non_profit'). Drives the graph's default Reporting Style at creation — partnership and llc get dedicated equity-form Styles; everything else defaults to corporate. Blank falls back to corporate.
+     */
+    entity_type?: string | null;
+    /**
+     * Reporting Style Id
+     *
+     * Optional explicit Reporting Style Structure id to pin on the graph, overriding the entity_type-derived default. Leave blank to derive from entity_type. Change later via the change-reporting-style operation.
+     */
+    reporting_style_id?: string | null;
 };
 
 /**
@@ -6407,17 +6423,20 @@ export type LedgerEntityResponse = {
 /**
  * LineItemMetadataPredicate
  *
- * Filter ledger LineItems whose ``metadata_[field]`` is in ``values``.
+ * Filter ledger LineItems by flow concept.
  *
- * The single predicate kind shipped in Phase 2 MVP. Sufficient for any
- * source taxonomy that stamps a flow-tag column on each transaction
- * line — mini's ``TransactionDescriptionCode``, future XBRL GL
- * ``GenericFlowCategory`` columns, custom tenant tags.
+ * The single predicate kind shipped to date. ``values`` are flow-concept
+ * qnames — mini's ``TransactionDescriptionCode`` values, rs-gaap flow
+ * concepts (what the enrichment classifier emits for QuickBooks data),
+ * future XBRL GL ``GenericFlowCategory`` codes. The engine resolves them
+ * to element_ids and matches the first-class ``LineItem.flow_element_id``
+ * FK; matched lines aggregate signed into the attributed fact for the
+ * period.
  *
- * ``field`` is the JSONB key under ``line_items.metadata`` (e.g.
- * ``"transaction_description_code"``). ``values`` is the set of values
- * that route to the filter's target concept; matched LineItems aggregate
- * signed into the attributed fact for the period.
+ * ``field`` is **legacy and ignored** — the flow tag used to live in
+ * ``line_items.metadata[field]`` but has been promoted to the typed
+ * ``flow_element_id`` FK. Retained for wire-compatibility; the engine no
+ * longer reads it.
  */
 export type LineItemMetadataPredicate = {
     /**
@@ -6429,13 +6448,13 @@ export type LineItemMetadataPredicate = {
     /**
      * Field
      *
-     * JSONB key under ``line_items.metadata`` to match against — e.g. ``transaction_description_code``. The renderer performs an exact-string comparison on the JSONB-extracted text value.
+     * Legacy/ignored. The flow tag now lives in the typed ``flow_element_id`` FK, not JSONB metadata; the engine no longer reads this. Retained for wire-compatibility.
      */
-    field: string;
+    field?: string;
     /**
      * Values
      *
-     * Metadata values that route to this filter's target concept. A LineItem matches when ``metadata[field] ∈ values`` AND the line falls within the rollforward's period.
+     * Flow-concept qnames that route to this filter's target concept. A LineItem matches when its ``flow_element_id`` is one of the elements named here AND the line falls within the rollforward's period.
      */
     values: Array<string>;
 };
@@ -13394,6 +13413,44 @@ export type ValidationLite = {
 };
 
 /**
+ * VerificationCategorySummary
+ *
+ * Pass/fail/skip counts for one ``rule_category`` within a block's
+ * verification results.
+ *
+ * Drives the per-category accordions in the Verification Results panel
+ * (financial-viewer §7.12). ``category`` is the rule's ``rule_category``
+ * (one of the cm:VerificationRule subclasses), resolved by joining each
+ * result to its Rule.
+ */
+export type VerificationCategorySummary = {
+    /**
+     * Category
+     */
+    category: string;
+    /**
+     * Total
+     */
+    total?: number;
+    /**
+     * Passed
+     */
+    passed?: number;
+    /**
+     * Failed
+     */
+    failed?: number;
+    /**
+     * Errored
+     */
+    errored?: number;
+    /**
+     * Skipped
+     */
+    skipped?: number;
+};
+
+/**
  * VerificationResultLite
  *
  * Persisted outcome of one Rule evaluation.
@@ -13442,6 +13499,44 @@ export type VerificationResultLite = {
      * Evaluated At
      */
     evaluated_at?: string | null;
+};
+
+/**
+ * VerificationSummary
+ *
+ * Server-computed aggregate of a block's ``verification_results``.
+ *
+ * Overall counts plus a per-``rule_category`` breakdown, so the viewer
+ * renders the grouped Verification Results panel (financial-viewer §7.12)
+ * without a client-side results→rules join. Status closure is
+ * ``pass | fail | error | skipped`` (the ``public.verification_results``
+ * CHECK); ``total`` is their sum.
+ */
+export type VerificationSummary = {
+    /**
+     * Total
+     */
+    total?: number;
+    /**
+     * Passed
+     */
+    passed?: number;
+    /**
+     * Failed
+     */
+    failed?: number;
+    /**
+     * Errored
+     */
+    errored?: number;
+    /**
+     * Skipped
+     */
+    skipped?: number;
+    /**
+     * By Category
+     */
+    by_category?: Array<VerificationCategorySummary>;
 };
 
 /**

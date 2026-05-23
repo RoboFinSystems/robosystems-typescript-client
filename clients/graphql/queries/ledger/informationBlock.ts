@@ -96,6 +96,21 @@ export const GET_INFORMATION_BLOCK = gql`
         periodEnd
         evaluatedAt
       }
+      verificationSummary {
+        total
+        passed
+        failed
+        errored
+        skipped
+        byCategory {
+          category
+          total
+          passed
+          failed
+          errored
+          skipped
+        }
+      }
       view {
         rendering {
           rows {
@@ -220,6 +235,21 @@ export const LIST_INFORMATION_BLOCKS = gql`
         periodStart
         periodEnd
         evaluatedAt
+      }
+      verificationSummary {
+        total
+        passed
+        failed
+        errored
+        skipped
+        byCategory {
+          category
+          total
+          passed
+          failed
+          errored
+          skipped
+        }
       }
       view {
         rendering {
