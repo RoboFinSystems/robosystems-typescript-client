@@ -125,6 +125,21 @@ export const GET_REPORT_PACKAGE = gql`
             periodEnd
             evaluatedAt
           }
+          verificationSummary {
+            total
+            passed
+            failed
+            errored
+            skipped
+            byCategory {
+              category
+              total
+              passed
+              failed
+              errored
+              skipped
+            }
+          }
           view {
             rendering {
               rows {
