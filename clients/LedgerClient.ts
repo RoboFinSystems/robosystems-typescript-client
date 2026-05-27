@@ -155,6 +155,7 @@ import {
   ListLedgerTaxonomiesDocument,
   ListLedgerTransactionsDocument,
   ListLedgerUnmappedElementsDocument,
+  MappingCandidatesDocument,
   type GetInformationBlockQuery,
   type GetLedgerAccountRollupsQuery,
   type GetLedgerAccountTreeQuery,
@@ -189,6 +190,7 @@ import {
   type ListLedgerTaxonomiesQuery,
   type ListLedgerTransactionsQuery,
   type ListLedgerUnmappedElementsQuery,
+  type MappingCandidatesQuery,
 } from './graphql/generated/graphql'
 
 // ── Friendly types derived from GraphQL codegen ────────────────────────
@@ -231,6 +233,7 @@ export type LedgerTaxonomy = LedgerTaxonomyList['taxonomies'][number]
 
 export type LedgerElementList = NonNullable<ListLedgerElementsQuery['elements']>
 export type LedgerElement = LedgerElementList['elements'][number]
+export type LedgerMappingCandidate = MappingCandidatesQuery['mappingCandidates'][number]
 export type LedgerUnmappedElement = ListLedgerUnmappedElementsQuery['unmappedElements'][number]
 
 export type LedgerStructureList = NonNullable<ListLedgerStructuresQuery['structures']>
@@ -884,6 +887,26 @@ export class LedgerClient {
       },
       'List elements',
       (data) => data.elements
+    )
+  }
+
+  /**
+   * rs-gaap concepts a CoA element of the given EFS `classification`
+   * (asset / liability / equity / revenue / expense) may map to — limited
+   * to concepts that render under the graph's active Reporting Style, with
+   * statement-level subtotals excluded. Use this to populate the mapping
+   * picker so it never offers an unreachable target.
+   */
+  async getMappingCandidates(
+    graphId: string,
+    classification: string
+  ): Promise<LedgerMappingCandidate[]> {
+    return this.gqlQuery(
+      graphId,
+      MappingCandidatesDocument,
+      { classification },
+      'Mapping candidates',
+      (data) => data.mappingCandidates
     )
   }
 
@@ -1730,7 +1753,7 @@ export class LedgerClient {
       mapping_id: options.mappingId,
       period_start: options.periodStart,
       period_end: options.periodEnd,
-      taxonomy_id: options.taxonomyId ?? 'tax_usgaap_reporting',
+      taxonomy_id: options.taxonomyId ?? 'rs-gaap',
       period_type: options.periodType ?? 'quarterly',
       comparative: options.comparative ?? true,
     }

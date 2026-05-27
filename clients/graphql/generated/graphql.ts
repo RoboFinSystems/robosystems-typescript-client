@@ -1500,6 +1500,7 @@ export type Query = {
   libraryTaxonomyArcs: Array<LibraryAssociation>
   mappedTrialBalance: Maybe<MappedTrialBalance>
   mapping: Maybe<MappingDetail>
+  mappingCandidates: Array<Element>
   mappingCoverage: Maybe<MappingCoverage>
   mappings: Maybe<StructureList>
   openPayables: OpenBalanceAggregate
@@ -1683,6 +1684,10 @@ export type QueryMappedTrialBalanceArgs = {
 
 export type QueryMappingArgs = {
   mappingId: Scalars['String']['input']
+}
+
+export type QueryMappingCandidatesArgs = {
+  classification: Scalars['String']['input']
 }
 
 export type QueryMappingCoverageArgs = {
@@ -2592,6 +2597,7 @@ export type ListLedgerElementsQuery = {
       description: string | null
       qname: string | null
       namespace: string | null
+      trait: string | null
       subClassification: string | null
       balanceType: string
       periodType: string
@@ -3068,6 +3074,14 @@ export type GetLedgerMappingQuery = {
       approvedBy: string | null
     }>
   } | null
+}
+
+export type MappingCandidatesQueryVariables = Exact<{
+  classification: Scalars['String']['input']
+}>
+
+export type MappingCandidatesQuery = {
+  mappingCandidates: Array<{ id: string; name: string; qname: string | null; trait: string | null }>
 }
 
 export type GetLedgerMappingCoverageQueryVariables = Exact<{
@@ -5097,6 +5111,7 @@ export const ListLedgerElementsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'namespace' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'subClassification' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
@@ -6244,6 +6259,51 @@ export const GetLedgerMappingDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLedgerMappingQuery, GetLedgerMappingQueryVariables>
+export const MappingCandidatesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'MappingCandidates' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'classification' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'mappingCandidates' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'classification' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'classification' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<MappingCandidatesQuery, MappingCandidatesQueryVariables>
 export const GetLedgerMappingCoverageDocument = {
   kind: 'Document',
   definitions: [
