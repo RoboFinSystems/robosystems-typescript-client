@@ -280,6 +280,36 @@ export type PublishList = NonNullable<
 export type PublishListDetail = NonNullable<GetLedgerPublishListQuery['publishList']>
 export type PublishListMember = PublishListDetail['members'][number]
 
+/**
+ * Presigned-URL response for a Report bundle download.
+ *
+ * Returned by ``LedgerClient.getReportBundleDownloadUrl`` — the
+ * ``downloadUrl`` is a time-limited URL that streams the
+ * serialization artifact directly from object storage. Browser
+ * callers typically follow the URL via ``window.location.href`` or
+ * an anchor element to trigger the file download.
+ */
+export interface ReportBundleDownloadResponse {
+  /** Presigned URL that streams the bundle directly from S3. */
+  downloadUrl: string
+  /** ISO-8601 UTC instant at which the presigned URL stops working. */
+  expiresAt: string
+  /** MIME type of the artifact behind the URL. */
+  contentType: string
+  /** Serialization flavor — ``jsonld`` is the Phase 1a default. */
+  format: string
+  /** Bundle generation number stamped on the Report. */
+  generationCount: number
+}
+
+interface RawReportBundleDownloadResponse {
+  download_url: string
+  expires_at: string
+  content_type: string
+  format: string
+  generation_count: number
+}
+
 export interface PeriodSpecInput {
   start: string
   end: string
@@ -1870,6 +1900,71 @@ export class LedgerClient {
   }
 
   /**
+   * Get a short-lived presigned URL for downloading a published
+   * Report's serialization bundle.
+   *
+   * Phase 1a only resolves the JSON-LD flavor; reserved RDF and XBRL
+   * flavors return HTTP 400 until their producers ship. Reports
+   * published before the serialization feature shipped will resolve
+   * to a 404 — those Reports have no stamped bundle_url and must be
+   * regenerated to produce one.
+   *
+   * The returned ``downloadUrl`` is a presigned S3 URL valid for
+   * ``expiresIn`` seconds (default 300, max 3600). Browser callers
+   * typically navigate to it via ``window.location.href`` (or assign
+   * to an `<a href>` and click) to trigger the file download; the
+   * server-set Content-Disposition forces "attachment" with a
+   * versioned filename.
+   *
+   * @param graphId Graph identifier owning the Report.
+   * @param reportId Report identifier (rpt_-prefixed ULID).
+   * @param options.format Serialization flavor — defaults to ``'jsonld'``.
+   * @param options.expiresIn Presigned URL lifetime, in seconds.
+   */
+  async getReportBundleDownloadUrl(
+    graphId: string,
+    reportId: string,
+    options: { format?: string; expiresIn?: number } = {}
+  ): Promise<ReportBundleDownloadResponse> {
+    const format = options.format ?? 'jsonld'
+    const expiresIn = options.expiresIn ?? 300
+    const url =
+      `${this.config.baseUrl.replace(/\/$/, '')}` +
+      `/extensions/roboledger/${encodeURIComponent(graphId)}` +
+      `/reports/${encodeURIComponent(reportId)}/download` +
+      `?format=${encodeURIComponent(format)}&expires_in=${expiresIn}`
+    const headers = new Headers({ Accept: 'application/json', ...(this.config.headers ?? {}) })
+    const token = await this.resolveToken()
+    if (token) {
+      // ``rfs…`` long-lived keys go in X-API-Key; everything else is
+      // a short-lived JWT. Mirrors the GraphQL client behaviour at
+      // ``clients/graphql/client.ts``.
+      if (token.startsWith('rfs')) {
+        headers.set('X-API-Key', token)
+      } else {
+        headers.set('Authorization', `Bearer ${token}`)
+      }
+    }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      credentials: this.config.credentials,
+    })
+    if (!response.ok) {
+      const body = await response.text()
+      throw new Error(`Get report bundle download URL failed (${response.status}): ${body}`)
+    }
+    const raw = (await response.json()) as RawReportBundleDownloadResponse
+    return {
+      downloadUrl: raw.download_url,
+      expiresAt: raw.expires_at,
+      contentType: raw.content_type,
+      format: raw.format,
+      generationCount: raw.generation_count,
+    }
+  }
+
+  /**
    * Share a published report to every member of a publish list. Each
    * target graph receives a snapshot copy of the report's facts.
    */
@@ -2094,6 +2189,30 @@ export class LedgerClient {
       throw new Error(`${label}: operation envelope had no result`)
     }
     return result
+  }
+
+  /**
+   * Resolve the current bearer token / API key for non-GraphQL REST
+   * calls. Mirrors the GraphQL client's behaviour — dynamic
+   * ``tokenProvider`` is consulted first (so JWT rotation flows
+   * naturally), then the static ``token`` config. Returns ``null``
+   * when no credential is configured; the caller decides whether to
+   * proceed anonymously or short-circuit with an error.
+   */
+  private async resolveToken(): Promise<string | null> {
+    if (this.config.tokenProvider) {
+      try {
+        const token = await this.config.tokenProvider()
+        return token ?? null
+      } catch (err) {
+        console.warn(
+          '[RoboSystems SDK] tokenProvider threw — sending unauthenticated request:',
+          err
+        )
+        return null
+      }
+    }
+    return this.config.token ?? null
   }
 }
 

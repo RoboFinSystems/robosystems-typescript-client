@@ -9907,6 +9907,47 @@ export type ReopenPeriodOperation = {
 };
 
 /**
+ * ReportBundleDownloadResponse
+ *
+ * Presigned-URL response for a Report bundle download.
+ *
+ * Mirrors :class:`BackupDownloadUrlResponse` in shape — the frontend
+ * treats both the same way (fetch, follow URL, GET the artifact).
+ */
+export type ReportBundleDownloadResponse = {
+    /**
+     * Download Url
+     *
+     * Presigned URL that streams the bundle directly from S3.
+     */
+    download_url: string;
+    /**
+     * Expires At
+     *
+     * UTC timestamp at which the presigned URL stops working.
+     */
+    expires_at: string;
+    /**
+     * Content Type
+     *
+     * MIME type of the artifact behind the URL.
+     */
+    content_type: string;
+    /**
+     * Format
+     *
+     * Serialization flavor delivered by this URL — matches the ``format`` query parameter.
+     */
+    format: string;
+    /**
+     * Generation Count
+     *
+     * Bundle generation number stamped on the Report.
+     */
+    generation_count: number;
+};
+
+/**
  * ReportResponse
  *
  * Report definition summary — header metadata, no facts.
@@ -22554,6 +22595,55 @@ export type OpLiveFinancialStatementResponses = {
 };
 
 export type OpLiveFinancialStatementResponse = OpLiveFinancialStatementResponses[keyof OpLiveFinancialStatementResponses];
+
+export type GetReportBundleDownloadUrlData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Report Id
+         *
+         * Report identifier (rpt_-prefixed ULID).
+         */
+        report_id: string;
+    };
+    query?: {
+        /**
+         * Format
+         *
+         * Serialization flavor. ``jsonld`` returns the stored JSON-LD artifact. XBRL flavors arrive in Phase 1b.
+         */
+        format?: string;
+        /**
+         * Expires In
+         *
+         * Presigned URL lifetime in seconds (min 60, max 3600).
+         */
+        expires_in?: number;
+    };
+    url: '/extensions/roboledger/{graph_id}/reports/{report_id}/download';
+};
+
+export type GetReportBundleDownloadUrlErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetReportBundleDownloadUrlError = GetReportBundleDownloadUrlErrors[keyof GetReportBundleDownloadUrlErrors];
+
+export type GetReportBundleDownloadUrlResponses = {
+    /**
+     * Successful Response
+     */
+    200: ReportBundleDownloadResponse;
+};
+
+export type GetReportBundleDownloadUrlResponse = GetReportBundleDownloadUrlResponses[keyof GetReportBundleDownloadUrlResponses];
 
 export type OpBuildFactGridData = {
     body: CreateViewRequest;
