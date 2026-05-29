@@ -1965,6 +1965,65 @@ export class LedgerClient {
   }
 
   /**
+   * Download the Report's serialization bundle as an XBRL 2.1 zip.
+   *
+   * Rebuilds the bundle on the server and streams the zip body
+   * directly — no S3 presigned URL is involved (XBRL is on-demand
+   * emit, per the serialization spec). The returned ``Blob`` can be
+   * saved via URL.createObjectURL + a temporary anchor click to
+   * trigger the browser download dialog.
+   *
+   * The zip contains five files: ``instance.xml``, ``report.xsd``,
+   * ``report-pre.xml``, ``report-cal.xml``, ``report-def.xml``.
+   *
+   * @param graphId Graph identifier owning the Report.
+   * @param reportId Report identifier (rpt_-prefixed ULID).
+   * @param options.flavor XBRL flavor (default ``'xbrl-2.1'``).
+   */
+  async getReportBundleXbrlZip(
+    graphId: string,
+    reportId: string,
+    options: { flavor?: string } = {}
+  ): Promise<{ blob: Blob; filename: string; generationCount: number | null }> {
+    const flavor = options.flavor ?? 'xbrl-2.1'
+    const url =
+      `${this.config.baseUrl.replace(/\/$/, '')}` +
+      `/extensions/roboledger/${encodeURIComponent(graphId)}` +
+      `/reports/${encodeURIComponent(reportId)}/download` +
+      `?format=${encodeURIComponent(flavor)}`
+    const headers = new Headers({
+      Accept: 'application/zip',
+      ...(this.config.headers ?? {}),
+    })
+    const token = await this.resolveToken()
+    if (token) {
+      if (token.startsWith('rfs')) {
+        headers.set('X-API-Key', token)
+      } else {
+        headers.set('Authorization', `Bearer ${token}`)
+      }
+    }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+      credentials: this.config.credentials,
+    })
+    if (!response.ok) {
+      const body = await response.text()
+      throw new Error(`Get report bundle XBRL zip failed (${response.status}): ${body}`)
+    }
+    const blob = await response.blob()
+    // Parse Content-Disposition for the server-suggested filename;
+    // fall back to a sensible default if absent.
+    const disposition = response.headers.get('Content-Disposition') ?? ''
+    const filenameMatch = disposition.match(/filename="?([^";]+)"?/i)
+    const filename = filenameMatch ? filenameMatch[1] : `${reportId}.zip`
+    const generationHeader = response.headers.get('X-Bundle-Generation')
+    const generationCount = generationHeader ? Number.parseInt(generationHeader, 10) : null
+    return { blob, filename, generationCount }
+  }
+
+  /**
    * Share a published report to every member of a publish list. Each
    * target graph receives a snapshot copy of the report's facts.
    */
