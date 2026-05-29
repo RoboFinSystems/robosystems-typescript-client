@@ -9907,47 +9907,6 @@ export type ReopenPeriodOperation = {
 };
 
 /**
- * ReportBundleDownloadResponse
- *
- * Presigned-URL response for a Report bundle download.
- *
- * Mirrors :class:`BackupDownloadUrlResponse` in shape — the frontend
- * treats both the same way (fetch, follow URL, GET the artifact).
- */
-export type ReportBundleDownloadResponse = {
-    /**
-     * Download Url
-     *
-     * Presigned URL that streams the bundle directly from S3.
-     */
-    download_url: string;
-    /**
-     * Expires At
-     *
-     * UTC timestamp at which the presigned URL stops working.
-     */
-    expires_at: string;
-    /**
-     * Content Type
-     *
-     * MIME type of the artifact behind the URL.
-     */
-    content_type: string;
-    /**
-     * Format
-     *
-     * Serialization flavor delivered by this URL — matches the ``format`` query parameter.
-     */
-    format: string;
-    /**
-     * Generation Count
-     *
-     * Bundle generation number stamped on the Report.
-     */
-    generation_count: number;
-};
-
-/**
  * ReportResponse
  *
  * Report definition summary — header metadata, no facts.
@@ -22614,13 +22573,13 @@ export type GetReportBundleDownloadUrlData = {
         /**
          * Format
          *
-         * Serialization flavor. ``jsonld`` returns the stored JSON-LD artifact. XBRL flavors arrive in Phase 1b.
+         * Serialization flavor. ``jsonld`` returns a presigned URL to the stored JSON-LD bundle; ``xbrl-2.1`` streams a freshly-emitted XBRL zip directly. Other RDF / XBRL flavors slot in as their producers ship.
          */
         format?: string;
         /**
          * Expires In
          *
-         * Presigned URL lifetime in seconds (min 60, max 3600).
+         * Presigned URL lifetime in seconds (min 60, max 3600). Ignored for XBRL flavors (streamed directly, no URL).
          */
         expires_in?: number;
     };
@@ -22638,9 +22597,49 @@ export type GetReportBundleDownloadUrlError = GetReportBundleDownloadUrlErrors[k
 
 export type GetReportBundleDownloadUrlResponses = {
     /**
-     * Successful Response
+     * ReportBundleDownloadResponse
+     *
+     * Presigned-URL response for a Report bundle download.
+     *
+     * Mirrors :class:`BackupDownloadUrlResponse` in shape — the frontend
+     * treats both the same way (fetch, follow URL, GET the artifact).
+     *
+     * Only returned for RDF-family flavors (JSON-LD) where the artifact
+     * is stored in S3. XBRL flavors stream the binary content directly
+     * in the response body (no JSON wrapper).
      */
-    200: ReportBundleDownloadResponse;
+    200: {
+        /**
+         * Download Url
+         *
+         * Presigned URL that streams the bundle directly from S3.
+         */
+        download_url: string;
+        /**
+         * Expires At
+         *
+         * UTC timestamp at which the presigned URL stops working.
+         */
+        expires_at: string;
+        /**
+         * Content Type
+         *
+         * MIME type of the artifact behind the URL.
+         */
+        content_type: string;
+        /**
+         * Format
+         *
+         * Serialization flavor delivered by this URL — matches the ``format`` query parameter.
+         */
+        format: string;
+        /**
+         * Generation Count
+         *
+         * Bundle generation number stamped on the Report.
+         */
+        generation_count: number;
+    };
 };
 
 export type GetReportBundleDownloadUrlResponse = GetReportBundleDownloadUrlResponses[keyof GetReportBundleDownloadUrlResponses];

@@ -2011,7 +2011,7 @@ export const opLiveFinancialStatement = <ThrowOnError extends boolean = false>(o
 /**
  * Download Report bundle
  *
- * Return a short-lived presigned URL to the published Report's serialization bundle. JSON-LD (default) is stored at publish; additional flavors slot in as Phase 1b/Phase 4 work. 404 when the Report exists but has no bundle (published before the serialization feature shipped).
+ * Return the published Report's serialization bundle. ``format=jsonld`` (default) returns a JSON envelope containing a short-lived presigned URL to the stamped JSON-LD bundle in S3. ``format=xbrl-2.1`` rebuilds the bundle on-demand and streams an XBRL 2.1 zip directly. 404 when the Report has no stamped bundle (published before the serialization feature shipped — JSON-LD only).
  */
 export const getReportBundleDownloadUrl = <ThrowOnError extends boolean = false>(options: Options<GetReportBundleDownloadUrlData, ThrowOnError>) => (options.client ?? client).get<GetReportBundleDownloadUrlResponses, GetReportBundleDownloadUrlErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
