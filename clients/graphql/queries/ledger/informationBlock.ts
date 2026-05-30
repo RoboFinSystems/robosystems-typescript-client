@@ -84,6 +84,7 @@ export const GET_INFORMATION_BLOCK = gql`
         factsetType
         entityId
         reportId
+        provenance
       }
       verificationResults {
         id
@@ -224,6 +225,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
         factsetType
         entityId
         reportId
+        provenance
       }
       verificationResults {
         id
