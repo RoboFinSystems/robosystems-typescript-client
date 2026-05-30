@@ -4299,6 +4299,14 @@ export type FactSetLite = {
      * Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands.
      */
     report_id?: string | null;
+    /**
+     * Provenance
+     *
+     * Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null for pre-feature historical FactSets.
+     */
+    provenance?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**

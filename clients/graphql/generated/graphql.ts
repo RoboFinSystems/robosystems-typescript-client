@@ -553,6 +553,8 @@ export type InformationBlockFactSet = {
   id: Scalars['String']['output']
   periodEnd: Scalars['Date']['output']
   periodStart: Maybe<Scalars['Date']['output']>
+  /** Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null for pre-feature historical FactSets. */
+  provenance: Maybe<Scalars['JSON']['output']>
   /** Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands. */
   reportId: Maybe<Scalars['String']['output']>
   structureId: Maybe<Scalars['String']['output']>
@@ -2846,6 +2848,7 @@ export type GetInformationBlockQuery = {
       factsetType: string
       entityId: string
       reportId: string | null
+      provenance: any | null
     } | null
     verificationResults: Array<{
       id: string
@@ -2972,6 +2975,7 @@ export type ListInformationBlocksQuery = {
       factsetType: string
       entityId: string
       reportId: string | null
+      provenance: any | null
     } | null
     verificationResults: Array<{
       id: string
@@ -3345,6 +3349,7 @@ export type GetLedgerReportPackageQuery = {
           factsetType: string
           entityId: string
           reportId: string | null
+          provenance: any | null
         } | null
         verificationResults: Array<{
           id: string
@@ -5669,6 +5674,7 @@ export const GetInformationBlockDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
                     ],
                   },
                 },
@@ -5986,6 +5992,7 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
                     ],
                   },
                 },
@@ -7010,6 +7017,7 @@ export const GetLedgerReportPackageDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
                                 ],
                               },
                             },
