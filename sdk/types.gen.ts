@@ -1189,6 +1189,12 @@ export type ConnectionResponse = {
      */
     last_sync?: string | null;
     /**
+     * Write Policy
+     *
+     * Source-of-truth write policy: 'native' (RoboSystems is authoritative; no outbound write-back) or 'qb_authoritative' (QuickBooks is authoritative; RoboSystems-originated entries publish to QB). Set via the write-policy endpoint.
+     */
+    write_policy?: string | null;
+    /**
      * Metadata
      *
      * Provider-specific metadata
@@ -1528,7 +1534,7 @@ export type CreateEventBlockRequest = {
     /**
      * Source
      *
-     * 'quickbooks' | 'xero' | 'plaid' | 'native' | 'scheduled' | ...
+     * 'manual' | 'system' | 'schedule' | 'quickbooks' | 'xero' | 'plaid'
      */
     source: string;
     /**
@@ -3933,7 +3939,7 @@ export type EventBlockEnvelope = {
     /**
      * Source
      *
-     * Capture source (`quickbooks`, `xero`, `plaid`, `native`, `scheduled`, …). Used for adapter routing.
+     * Capture source (`manual`, `system`, `schedule`, `quickbooks`, `xero`, `plaid`). Used for adapter routing.
      */
     source: string;
     /**
@@ -7937,6 +7943,52 @@ export type OperationEnvelopePreviewEventBlockResponse = {
 };
 
 /**
+ * OperationEnvelope[PromoteObligationsResponse]
+ */
+export type OperationEnvelopePromoteObligationsResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: PromoteObligationsResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[PublishListResponse]
  */
 export type OperationEnvelopePublishListResponse = {
@@ -9536,6 +9588,67 @@ export type PreviewEventBlockResponse = {
 };
 
 /**
+ * PromoteObligationsRequest
+ *
+ * On-demand trigger for the obligation-promotion sweep.
+ *
+ * Mirrors what the ``scheduled_obligation_promoter`` Dagster sensor does
+ * on its tick, but lets an interactive caller or an MCP close co-pilot
+ * run it now instead of waiting for the background cadence — required to
+ * drive a schedule-driven close to completion in a single session.
+ * Flips matured ``pending`` ``schedule_entry_due`` events (period boundary
+ * passed) to ``classified``; with ``dispatch_handlers`` it also drafts the
+ * closing entries in the same transaction (idempotent — reconciles to an
+ * existing draft).
+ */
+export type PromoteObligationsRequest = {
+    /**
+     * Dispatch Handlers
+     *
+     * When True (default), also fire the schedule_entry_due handler for each promoted obligation so the draft closing entry materializes immediately (autopilot). When False, flip status only (co-pilot) — the draft is created separately.
+     */
+    dispatch_handlers?: boolean;
+};
+
+/**
+ * PromoteObligationsResponse
+ *
+ * Counts from a single on-demand promotion sweep.
+ */
+export type PromoteObligationsResponse = {
+    /**
+     * Classified Count
+     *
+     * Matured obligations flipped pending → classified.
+     */
+    classified_count: number;
+    /**
+     * Dispatched Count
+     *
+     * Obligations whose closing entry was drafted this run.
+     */
+    dispatched_count: number;
+    /**
+     * Error Count
+     *
+     * Per-obligation handler errors (non-fatal).
+     */
+    error_count: number;
+    /**
+     * Classified Event Ids
+     */
+    classified_event_ids?: Array<string>;
+    /**
+     * Errors
+     *
+     * Per-obligation errors as {event_id, error}; the sweep continues past them.
+     */
+    errors?: Array<{
+        [key: string]: string;
+    }>;
+};
+
+/**
  * PublishListMemberResponse
  *
  * One recipient graph in a publish list.
@@ -10382,9 +10495,15 @@ export type RuleVariableLite = {
     /**
      * Variable Qname
      *
-     * Concept qname the variable resolves to, e.g. 'fac:Assets'.
+     * Concept qname the variable resolves to, e.g. 'fac:Assets'. Null for tenant CoA elements (which key on `code`/`element_id`, not qname) — in that case the binding is carried by `variable_element_id`.
      */
-    variable_qname: string;
+    variable_qname?: string | null;
+    /**
+     * Variable Element Id
+     *
+     * Element id the variable binds to directly. Set for schedule SumEquals rules over CoA-debit elements that have no qname; null otherwise.
+     */
+    variable_element_id?: string | null;
 };
 
 /**
@@ -11151,6 +11270,23 @@ export type SetCloseTargetOperation = {
      * Free-form note attached to the audit event
      */
     note?: string | null;
+};
+
+/**
+ * SetWritePolicyRequest
+ *
+ * Request to set a connection's source-of-truth write policy.
+ *
+ * The explicit operator opt-in for outbound write-back. `hybrid` is omitted
+ * until its code path ships.
+ */
+export type SetWritePolicyRequest = {
+    /**
+     * Write Policy
+     *
+     * 'native' = RoboSystems authoritative, no write-back; 'qb_authoritative' = QuickBooks authoritative, entries publish to QB.
+     */
+    write_policy: 'native' | 'qb_authoritative';
 };
 
 /**
@@ -15873,6 +16009,66 @@ export type SyncConnectionResponses = {
 };
 
 export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
+
+export type SetConnectionWritePolicyData = {
+    body: SetWritePolicyRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Connection Id
+         *
+         * Unique connection identifier
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}/write-policy';
+};
+
+export type SetConnectionWritePolicyErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type SetConnectionWritePolicyError = SetConnectionWritePolicyErrors[keyof SetConnectionWritePolicyErrors];
+
+export type SetConnectionWritePolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConnectionResponse;
+};
+
+export type SetConnectionWritePolicyResponse = SetConnectionWritePolicyResponses[keyof SetConnectionWritePolicyResponses];
 
 export type ListOperatorsData = {
     body?: never;
@@ -21602,6 +21798,70 @@ export type OpDeleteJournalEntryResponses = {
 };
 
 export type OpDeleteJournalEntryResponse = OpDeleteJournalEntryResponses[keyof OpDeleteJournalEntryResponses];
+
+export type OpPromoteObligationsData = {
+    body: PromoteObligationsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/promote-obligations';
+};
+
+export type OpPromoteObligationsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpPromoteObligationsError = OpPromoteObligationsErrors[keyof OpPromoteObligationsErrors];
+
+export type OpPromoteObligationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopePromoteObligationsResponse;
+};
+
+export type OpPromoteObligationsResponse = OpPromoteObligationsResponses[keyof OpPromoteObligationsResponses];
 
 export type OpSetCloseTargetData = {
     body: SetCloseTargetOperation;

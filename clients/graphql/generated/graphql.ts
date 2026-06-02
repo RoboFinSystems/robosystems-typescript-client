@@ -226,6 +226,8 @@ export type DraftEntry = {
   totalDebit: Scalars['Int']['output']
   /** Entry type (e.g., 'closing', 'adjusting') */
   type: Scalars['String']['output']
+  /** True if closing the period will publish this draft to QuickBooks — i.e. the graph has a qb_authoritative/hybrid QB connection AND this is an RL-originated draft (schedule/manual) not already in QB. False means it posts locally only. */
+  willPublishToQb: Scalars['Boolean']['output']
 }
 
 /** A single line item within a draft entry. */
@@ -641,10 +643,12 @@ export type InformationBlockRuleTarget = {
 
 /** `$Variable` → concept qname binding for a rule expression. */
 export type InformationBlockRuleVariable = {
+  /** Element id the variable binds to directly. Set for schedule SumEquals rules over CoA-debit elements that have no qname; null otherwise. */
+  variableElementId: Maybe<Scalars['String']['output']>
   /** Local name in the rule expression, e.g. 'Assets'. */
   variableName: Scalars['String']['output']
-  /** Concept qname the variable resolves to, e.g. 'fac:Assets'. */
-  variableQname: Scalars['String']['output']
+  /** Concept qname the variable resolves to, e.g. 'fac:Assets'. Null for tenant CoA elements (which key on `code`/`element_id`, not qname) — in that case the binding is carried by `variable_element_id`. */
+  variableQname: Maybe<Scalars['String']['output']>
 }
 
 /**
@@ -1220,10 +1224,18 @@ export type PeriodDrafts = {
   allBalanced: Scalars['Boolean']['output']
   draftCount: Scalars['Int']['output']
   drafts: Array<DraftEntry>
+  /** Number of drafts that post locally only (no QB write-back). */
+  localOnlyCount: Scalars['Int']['output']
   /** YYYY-MM period name */
   period: Scalars['String']['output']
   periodEnd: Scalars['Date']['output']
   periodStart: Scalars['Date']['output']
+  /** Number of drafts that will publish to QuickBooks on close. */
+  qbPublishCount: Scalars['Int']['output']
+  /** write_policy of the publishing QB connection ('qb_authoritative' / 'hybrid'), or null when there is no write-back connection. */
+  qbWritePolicy: Maybe<Scalars['String']['output']>
+  /** Id of the QuickBooks connection these drafts publish to on close, or null when the graph has no qb_authoritative/hybrid QB connection (the drafts post locally only). */
+  qbWritebackConnectionId: Maybe<Scalars['String']['output']>
   /** Sum across all drafts, in cents */
   totalCredit: Scalars['Int']['output']
   /** Sum across all drafts, in cents */
@@ -2838,7 +2850,7 @@ export type GetInformationBlockQuery = {
       ruleSeverity: string
       ruleOrigin: string
       ruleTarget: { targetKind: string; targetRefId: string } | null
-      ruleVariables: Array<{ variableName: string; variableQname: string }>
+      ruleVariables: Array<{ variableName: string; variableQname: string | null }>
     }>
     factSet: {
       id: string
@@ -2965,7 +2977,7 @@ export type ListInformationBlocksQuery = {
       ruleSeverity: string
       ruleOrigin: string
       ruleTarget: { targetKind: string; targetRefId: string } | null
-      ruleVariables: Array<{ variableName: string; variableQname: string }>
+      ruleVariables: Array<{ variableName: string; variableQname: string | null }>
     }>
     factSet: {
       id: string
@@ -3157,6 +3169,10 @@ export type GetLedgerPeriodDraftsQuery = {
     totalDebit: number
     totalCredit: number
     allBalanced: boolean
+    qbWritebackConnectionId: string | null
+    qbWritePolicy: string | null
+    qbPublishCount: number
+    localOnlyCount: number
     drafts: Array<{
       entryId: string
       postingDate: any
@@ -3168,6 +3184,7 @@ export type GetLedgerPeriodDraftsQuery = {
       totalDebit: number
       totalCredit: number
       balanced: boolean
+      willPublishToQb: boolean
       lineItems: Array<{
         lineItemId: string
         elementId: string
@@ -3339,7 +3356,7 @@ export type GetLedgerReportPackageQuery = {
           ruleSeverity: string
           ruleOrigin: string
           ruleTarget: { targetKind: string; targetRefId: string } | null
-          ruleVariables: Array<{ variableName: string; variableQname: string }>
+          ruleVariables: Array<{ variableName: string; variableQname: string | null }>
         }>
         factSet: {
           id: string
@@ -6517,6 +6534,10 @@ export const GetLedgerPeriodDraftsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'totalDebit' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'totalCredit' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'allBalanced' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qbWritebackConnectionId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qbWritePolicy' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qbPublishCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'localOnlyCount' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'drafts' },
@@ -6533,6 +6554,7 @@ export const GetLedgerPeriodDraftsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'totalDebit' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'totalCredit' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'balanced' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'willPublishToQb' } },
                       {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'lineItems' },
