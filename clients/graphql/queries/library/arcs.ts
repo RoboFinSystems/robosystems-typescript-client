@@ -10,13 +10,19 @@ export const LIST_LIBRARY_TAXONOMY_ARCS = gql`
   query ListLibraryTaxonomyArcs(
     $taxonomyId: ID!
     $associationType: String
+    $structureId: ID
     $limit: Int! = 200
     $offset: Int! = 0
   ) {
-    libraryTaxonomyArcCount(taxonomyId: $taxonomyId)
+    libraryTaxonomyArcCount(
+      taxonomyId: $taxonomyId
+      associationType: $associationType
+      structureId: $structureId
+    )
     libraryTaxonomyArcs(
       taxonomyId: $taxonomyId
       associationType: $associationType
+      structureId: $structureId
       limit: $limit
       offset: $offset
     ) {
@@ -26,9 +32,13 @@ export const LIST_LIBRARY_TAXONOMY_ARCS = gql`
       fromElementId
       fromElementQname
       fromElementName
+      fromElementTrait
+      fromElementIsAbstract
       toElementId
       toElementQname
       toElementName
+      toElementTrait
+      toElementIsAbstract
       associationType
       arcrole
       orderValue
