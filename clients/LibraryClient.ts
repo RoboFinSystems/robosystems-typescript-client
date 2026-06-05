@@ -37,6 +37,7 @@ import {
   GetLibraryElementEquivalentsDocument,
   GetLibraryTaxonomyDocument,
   ListLibraryElementsDocument,
+  ListLibraryStructuresDocument,
   ListLibraryTaxonomiesDocument,
   ListLibraryTaxonomyArcsDocument,
   SearchLibraryElementsDocument,
@@ -46,6 +47,7 @@ import {
   type GetLibraryElementQuery,
   type GetLibraryTaxonomyQuery,
   type ListLibraryElementsQuery,
+  type ListLibraryStructuresQuery,
   type ListLibraryTaxonomiesQuery,
   type ListLibraryTaxonomyArcsQuery,
   type SearchLibraryElementsQuery,
@@ -67,6 +69,7 @@ export type LibraryLabel = LibraryElementDetail['labels'][number]
 export type LibraryReference = LibraryElementDetail['references'][number]
 
 export type LibraryArc = ListLibraryTaxonomyArcsQuery['libraryTaxonomyArcs'][number]
+export type LibraryStructure = ListLibraryStructuresQuery['libraryStructures'][number]
 export type LibraryElementArc = GetLibraryElementArcsQuery['libraryElementArcs'][number]
 export type LibraryElementClassification =
   GetLibraryElementClassificationsQuery['libraryElementClassifications'][number]
@@ -99,6 +102,8 @@ export interface SearchLibraryElementsOptions {
 
 export interface ListLibraryTaxonomyArcsOptions {
   associationType?: string
+  /** Scope to a single structure (one presentation/calculation hierarchy). */
+  structureId?: string
   limit?: number
   offset?: number
 }
@@ -106,6 +111,12 @@ export interface ListLibraryTaxonomyArcsOptions {
 export interface ListLibraryTaxonomyArcsResult {
   arcs: LibraryArc[]
   count: number
+}
+
+export interface ListLibraryStructuresOptions {
+  taxonomyId?: string
+  /** Filter to one statement kind (balance_sheet | income_statement | …). */
+  blockType?: string
 }
 
 export interface GetLibraryElementIdentifier {
@@ -276,6 +287,7 @@ export class LibraryClient {
       {
         taxonomyId,
         associationType: options?.associationType ?? null,
+        structureId: options?.structureId ?? null,
         limit: options?.limit ?? 200,
         offset: options?.offset ?? 0,
       },
@@ -284,6 +296,32 @@ export class LibraryClient {
         arcs: data.libraryTaxonomyArcs,
         count: data.libraryTaxonomyArcCount,
       })
+    )
+  }
+
+  // ── Structures ───────────────────────────────────────────────────────
+
+  /**
+   * List the structures (extended link roles) a taxonomy contributes —
+   * the named presentation/calculation hierarchies (BS-classified,
+   * IS-multistep, the calc DAG roots, …). Pair a structure's `id` with
+   * `listLibraryTaxonomyArcs({ structureId })` to load just that
+   * hierarchy's arcs — the hierarchy view uses this to scope a tree to
+   * one role at a time.
+   */
+  async listLibraryStructures(
+    graphId: string,
+    options?: ListLibraryStructuresOptions
+  ): Promise<LibraryStructure[]> {
+    return this.gqlQuery(
+      graphId,
+      ListLibraryStructuresDocument,
+      {
+        taxonomyId: options?.taxonomyId ?? null,
+        blockType: options?.blockType ?? null,
+      },
+      'List library structures',
+      (data) => data.libraryStructures
     )
   }
 
