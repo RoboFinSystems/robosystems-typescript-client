@@ -68,12 +68,6 @@
       "problemMatcher": []
     },
     {
-      "label": "Create PR",
-      "type": "shell",
-      "command": "npm run pr:create ${input:targetBranch} ${input:claudeReview}",
-      "problemMatcher": []
-    },
-    {
       "label": "Claude Code",
       "type": "shell",
       "command": "claude",
@@ -114,19 +108,6 @@
       "description": "Update dependencies after creating branch:",
       "default": "yes",
       "options": ["yes", "no"]
-    },
-    {
-      "id": "targetBranch",
-      "type": "promptString",
-      "description": "Choose target branch:",
-      "default": "main"
-    },
-    {
-      "id": "claudeReview",
-      "type": "pickString",
-      "description": "Request Claude review automatically:",
-      "default": "true",
-      "options": ["true", "false"]
     },
     {
       "id": "apiUrl",
