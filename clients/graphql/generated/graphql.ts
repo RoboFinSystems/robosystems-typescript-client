@@ -670,8 +670,8 @@ export type InformationBlockValidation = {
  * Pass/fail/skip counts for one ``rule_category`` within a block's
  * verification results.
  *
- * Drives the per-category accordions in the Verification Results panel
- * (financial-viewer §7.12). ``category`` is the rule's ``rule_category``
+ * Drives the per-category accordions in the Verification Results panel.
+ * ``category`` is the rule's ``rule_category``
  * (one of the cm:VerificationRule subclasses), resolved by joining each
  * result to its Rule.
  */
@@ -709,7 +709,7 @@ export type InformationBlockVerificationResult = {
  * Server-computed aggregate of a block's ``verification_results``.
  *
  * Overall counts plus a per-``rule_category`` breakdown, so the viewer
- * renders the grouped Verification Results panel (financial-viewer §7.12)
+ * renders the grouped Verification Results panel
  * without a client-side results→rules join. Status closure is
  * ``pass | fail | error | skipped`` (the ``public.verification_results``
  * CHECK); ``total`` is their sum.
@@ -2168,6 +2168,7 @@ export type UnmappedElement = {
   code: Maybe<Scalars['String']['output']>
   externalSource: Maybe<Scalars['String']['output']>
   id: Scalars['String']['output']
+  liquidity: Maybe<Scalars['String']['output']>
   name: Scalars['String']['output']
   suggestedTargets: Array<SuggestedTarget>
   trait: Maybe<Scalars['String']['output']>
