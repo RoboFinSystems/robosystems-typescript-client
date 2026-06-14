@@ -1048,7 +1048,7 @@ export const opChangeTier = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Change Reporting Style
  *
- * Switches the graph's Reporting Style (Phase 2 of §3.2). Synchronous: validates the target Style has a complete composition in the tenant schema, then updates `graphs.reporting_style_id`. Filed Reports are unaffected; new reports use the new Style. Idempotent on the same id.
+ * Switches the graph's Reporting Style. Synchronous: validates the target Style has a complete composition in the tenant schema, then updates `graphs.reporting_style_id`. Filed Reports are unaffected; new reports use the new Style. Idempotent on the same id.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1414,7 +1414,7 @@ export const opUpdateEntity = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Create Taxonomy Block
  *
- * Create a taxonomy block atomically: one envelope carrying the taxonomy row plus its structures, elements, associations, and rules. Dispatches by `taxonomy_type` — `chart_of_accounts` (declarative tenant CoA) is live; `reporting_extension` / `custom_ontology` / `reporting_standard` land in later sub-phases.
+ * Create a taxonomy block atomically: one envelope carrying the taxonomy row plus its structures, elements, associations, and rules. Dispatches by `taxonomy_type` — `chart_of_accounts` (declarative tenant CoA) is supported; `reporting_extension` / `custom_ontology` / `reporting_standard` are not yet implemented.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1584,7 +1584,7 @@ export const opDeleteInformationBlock = <ThrowOnError extends boolean = false>(o
 /**
  * Evaluate Rules for an Information Block
  *
- * Runs every rule targeting the given structure (plus element- and association-scoped rules for the structure's atoms), binds $Variable references to in-scope facts via qname lookup, writes one VerificationResult row per rule, and returns the results plus a status-keyed summary. Phase delta.3 — decoding mode, 5 patterns (EqualTo, RollUp, RollForward, Exists, CoExists).
+ * Runs every rule targeting the given structure (plus element- and association-scoped rules for the structure's atoms), binds $Variable references to in-scope facts via qname lookup, writes one VerificationResult row per rule, and returns the results plus a status-keyed summary. Decoding mode, 5 patterns (EqualTo, RollUp, RollForward, Exists, CoExists).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

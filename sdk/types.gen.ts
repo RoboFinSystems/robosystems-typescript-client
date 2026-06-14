@@ -763,7 +763,7 @@ export type CancelSubscriptionRequest = {
 /**
  * ChangeReportingStyleOp
  *
- * Body for the change-reporting-style operation (Phase 2 of §3.2).
+ * Body for the change-reporting-style operation.
  *
  * Switches the graph to a different Reporting Style. The target Style
  * must be a library- or customer-authored Structure with
@@ -980,7 +980,7 @@ export type ClosePeriodResponse = {
     /**
      * Rule Summary
      *
-     * Aggregated rule-eval outcome across every schedule Structure with facts in the closed period — keys: pass/fail/error/skipped. None when no schedules had facts in the period (§3.8 auto-run on close).
+     * Aggregated rule-eval outcome across every schedule Structure with facts in the closed period — keys: pass/fail/error/skipped. None when no schedules had facts in the period (auto-run on close).
      */
     rule_summary?: {
         [key: string]: number;
@@ -6541,7 +6541,7 @@ export type ListSubgraphsResponse = {
     /**
      * Subgraphs Enabled
      *
-     * Whether subgraphs are enabled for this tier (requires LadybugDB Large/XLarge)
+     * Whether subgraphs are enabled for this tier (requires Large/XLarge tier)
      */
     subgraphs_enabled: boolean;
     /**
@@ -10343,18 +10343,17 @@ export type RestoreBackupOp = {
  *
  * Filter-based attribution mechanics for ``block_type='rollforward'``.
  *
- * Implements Tier 2 of the rollforward attribution design
- * (``information-block.md`` §4.5). Each block decomposes one BS
- * source element's period delta into a list of flow concepts via
- * declared :class:`AttributionFilter` predicates. The renderer
- * evaluates the filters against ledger LineItems at envelope-build
- * time, emits one attributed fact per filter per period, and arbitrates
- * any residual against the default change tag (Tier 1 fallback).
+ * Filter-based attribution: each block decomposes one BS source
+ * element's period delta into a list of flow concepts via declared
+ * :class:`AttributionFilter` predicates. The renderer evaluates the
+ * filters against ledger LineItems at envelope-build time, emits one
+ * attributed fact per filter per period, and arbitrates any residual
+ * against the default change tag fallback.
  *
  * Reads directly from the typed ``structures.artifact_mechanics`` JSONB
  * column. ``attribution_filters`` rides as nested JSON; the predicate
- * union widens as new predicate shapes ship (Phase 2 MVP carries only
- * ``line_item_metadata_field``).
+ * union widens as new predicate shapes are added — currently only
+ * ``line_item_metadata_field`` is carried.
  */
 export type RollforwardMechanics = {
     /**
@@ -10376,13 +10375,13 @@ export type RollforwardMechanics = {
     /**
      * Default Change Tag Element Id
      *
-     * Element id of the Tier 1 default change tag — the fallback flow concept that receives any residual (Δ BS − Σ filter matches). Null when no default is declared; behavior on residual then follows ``validation_mode``.
+     * Element id of the default change tag — the fallback flow concept that receives any residual (Δ BS − Σ filter matches). Null when no default is declared; behavior on residual then follows ``validation_mode``.
      */
     default_change_tag_element_id?: string | null;
     /**
      * Default Change Tag Qname
      *
-     * QName of the Tier 1 default change tag (e.g. ``rs-gaap:IncreaseDecreaseInCashAndCashEquivalents``). Round-tripped for caller convenience and operator-readable envelopes; ``default_change_tag_element_id`` is authoritative. Null iff ``default_change_tag_element_id`` is null.
+     * QName of the default change tag (e.g. ``rs-gaap:IncreaseDecreaseInCashAndCashEquivalents``). Round-tripped for caller convenience and operator-readable envelopes; ``default_change_tag_element_id`` is authoritative. Null iff ``default_change_tag_element_id`` is null.
      */
     default_change_tag_qname?: string | null;
     /**
@@ -12231,8 +12230,7 @@ export type TaxonomyBlockEnvelope = {
  *
  * Exactly one of ``rule_pattern`` (arithmetic) or ``rule_check_kind``
  * (model-structure) is non-null per row, enforced by the
- * ``check_rule_pattern_kind_xor`` DB constraint. See
- * information-block.md §5.2.2.
+ * ``check_rule_pattern_kind_xor`` DB constraint.
  */
 export type TaxonomyBlockRule = {
     /**
@@ -12296,8 +12294,7 @@ export type TaxonomyBlockRule = {
  * ``LeafHasClassification``, ``LibraryOriginImmutability``,
  * ``UniqueQNameInTaxonomy``) are system-managed — they're auto-emitted
  * by :func:`emit_auto_rules` at taxonomy-block creation time and
- * populate ``rules.rule_check_kind`` instead of ``rule_pattern``. See
- * information-block.md §5.2.2 for the axis split.
+ * populate ``rules.rule_check_kind`` instead of ``rule_pattern``.
  */
 export type TaxonomyBlockRuleRequest = {
     /**
@@ -13562,8 +13559,8 @@ export type ValidationLite = {
  * Pass/fail/skip counts for one ``rule_category`` within a block's
  * verification results.
  *
- * Drives the per-category accordions in the Verification Results panel
- * (financial-viewer §7.12). ``category`` is the rule's ``rule_category``
+ * Drives the per-category accordions in the Verification Results panel.
+ * ``category`` is the rule's ``rule_category``
  * (one of the cm:VerificationRule subclasses), resolved by joining each
  * result to its Rule.
  */
@@ -13651,7 +13648,7 @@ export type VerificationResultLite = {
  * Server-computed aggregate of a block's ``verification_results``.
  *
  * Overall counts plus a per-``rule_category`` breakdown, so the viewer
- * renders the grouped Verification Results panel (financial-viewer §7.12)
+ * renders the grouped Verification Results panel
  * without a client-side results→rules join. Status closure is
  * ``pass | fail | error | skipped`` (the ``public.verification_results``
  * CHECK); ``total`` is their sum.
