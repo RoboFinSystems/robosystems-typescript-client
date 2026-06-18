@@ -1536,6 +1536,7 @@ export type Query = {
   publishList: Maybe<PublishListDetail>
   publishLists: Maybe<PublishListList>
   report: Maybe<Report>
+  reportDownloadUrl: Maybe<ReportBundleDownload>
   reportPackage: Maybe<ReportPackage>
   reportingTaxonomy: Maybe<Taxonomy>
   reports: Maybe<ReportList>
@@ -1757,6 +1758,12 @@ export type QueryReportArgs = {
   reportId: Scalars['String']['input']
 }
 
+export type QueryReportDownloadUrlArgs = {
+  expiresIn?: Scalars['Int']['input']
+  format?: ReportDownloadFormat
+  reportId: Scalars['String']['input']
+}
+
 export type QueryReportPackageArgs = {
   reportId: Scalars['String']['input']
 }
@@ -1884,6 +1891,31 @@ export type Report = {
   /** Taxonomy this report renders against. */
   taxonomyId: Scalars['String']['output']
 }
+
+/**
+ * Presigned-URL response for a published Report's serialization bundle.
+ *
+ * Every flavor resolves to a short-lived presigned URL pointing at the
+ * bundle in S3 — JSON-LD is stamped at publish time, XBRL is
+ * materialized on first download and cached by ``generation_count``.
+ * The client follows ``download_url`` to fetch the artifact directly
+ * from S3 (the API never streams the bytes). Mirrors the
+ * backup-download shape the frontend already consumes.
+ */
+export type ReportBundleDownload = {
+  /** MIME type of the artifact behind the URL. */
+  contentType: Scalars['String']['output']
+  /** Presigned URL that streams the bundle directly from S3. */
+  downloadUrl: Scalars['String']['output']
+  /** UTC timestamp at which the presigned URL stops working. */
+  expiresAt: Scalars['DateTime']['output']
+  /** Serialization flavor delivered by this URL — one of the ``RdfFlavor`` / ``XbrlFlavor`` values (e.g. ``jsonld``, ``xbrl-2.1``). */
+  format: Scalars['String']['output']
+  /** Bundle generation number stamped on the Report. */
+  generationCount: Scalars['Int']['output']
+}
+
+export type ReportDownloadFormat = 'JSONLD' | 'XBRL_2_1'
 
 /** List of report header summaries (used by report list reads). */
 export type ReportList = {
@@ -3273,6 +3305,22 @@ export type GetLedgerReportQuery = {
     sharedAt: any | null
     periods: Array<{ start: any; end: any; label: string }> | null
     structures: Array<{ id: string; name: string; blockType: string }>
+  } | null
+}
+
+export type GetLedgerReportDownloadUrlQueryVariables = Exact<{
+  reportId: Scalars['String']['input']
+  format?: InputMaybe<ReportDownloadFormat>
+  expiresIn?: InputMaybe<Scalars['Int']['input']>
+}>
+
+export type GetLedgerReportDownloadUrlQuery = {
+  reportDownloadUrl: {
+    downloadUrl: string
+    expiresAt: any
+    contentType: string
+    format: string
+    generationCount: number
   } | null
 }
 
@@ -6854,6 +6902,77 @@ export const GetLedgerReportDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLedgerReportQuery, GetLedgerReportQueryVariables>
+export const GetLedgerReportDownloadUrlDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLedgerReportDownloadUrl' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'format' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'ReportDownloadFormat' } },
+          defaultValue: { kind: 'EnumValue', value: 'JSONLD' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'expiresIn' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          defaultValue: { kind: 'IntValue', value: '300' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'reportDownloadUrl' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'reportId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'format' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'format' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'expiresIn' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'expiresIn' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'downloadUrl' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'contentType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'format' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'generationCount' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  GetLedgerReportDownloadUrlQuery,
+  GetLedgerReportDownloadUrlQueryVariables
+>
 export const GetLedgerReportPackageDocument = {
   kind: 'Document',
   definitions: [

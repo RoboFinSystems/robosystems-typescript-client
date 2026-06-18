@@ -136,6 +136,7 @@ import {
   GetLedgerPeriodDraftsDocument,
   GetLedgerPublishListDocument,
   GetLedgerReportDocument,
+  GetLedgerReportDownloadUrlDocument,
   GetLedgerReportingTaxonomyDocument,
   GetLedgerReportPackageDocument,
   GetLedgerStatementDocument,
@@ -191,6 +192,7 @@ import {
   type ListLedgerTransactionsQuery,
   type ListLedgerUnmappedElementsQuery,
   type MappingCandidatesQuery,
+  type ReportDownloadFormat,
 } from './graphql/generated/graphql'
 
 // ── Friendly types derived from GraphQL codegen ────────────────────────
@@ -283,7 +285,7 @@ export type PublishListMember = PublishListDetail['members'][number]
 /**
  * Presigned-URL response for a Report bundle download.
  *
- * Returned by ``LedgerClient.getReportBundleDownloadUrl`` — the
+ * Returned by ``LedgerClient.getReportDownloadUrl`` — the
  * ``downloadUrl`` is a time-limited URL that streams the
  * serialization artifact directly from object storage. Browser
  * callers typically follow the URL via ``window.location.href`` or
@@ -296,18 +298,10 @@ export interface ReportBundleDownloadResponse {
   expiresAt: string
   /** MIME type of the artifact behind the URL. */
   contentType: string
-  /** Serialization flavor — ``jsonld`` is the Phase 1a default. */
+  /** Serialization flavor — ``jsonld`` or ``xbrl-2.1``. */
   format: string
   /** Bundle generation number stamped on the Report. */
   generationCount: number
-}
-
-interface RawReportBundleDownloadResponse {
-  download_url: string
-  expires_at: string
-  content_type: string
-  format: string
-  generation_count: number
 }
 
 export interface PeriodSpecInput {
@@ -1903,124 +1897,51 @@ export class LedgerClient {
    * Get a short-lived presigned URL for downloading a published
    * Report's serialization bundle.
    *
-   * Phase 1a only resolves the JSON-LD flavor; reserved RDF and XBRL
-   * flavors return HTTP 400 until their producers ship. Reports
-   * published before the serialization feature shipped will resolve
-   * to a 404 — those Reports have no stamped bundle_url and must be
-   * regenerated to produce one.
+   * A download is a read, so this resolves through GraphQL
+   * (`reportDownloadUrl`) — the retired `GET .../reports/{id}/download`
+   * REST resource is gone. Every flavor resolves to a presigned S3 URL:
+   * JSON-LD is stamped at publish time; XBRL is materialized + cached
+   * on first request. The returned `downloadUrl` is valid for
+   * `expiresIn` seconds (default 300, max 3600); browser callers
+   * navigate to it via `window.location.href` (or an `<a href>` click)
+   * to trigger the download — the server-set Content-Disposition forces
+   * "attachment" with a versioned filename.
    *
-   * The returned ``downloadUrl`` is a presigned S3 URL valid for
-   * ``expiresIn`` seconds (default 300, max 3600). Browser callers
-   * typically navigate to it via ``window.location.href`` (or assign
-   * to an `<a href>` and click) to trigger the file download; the
-   * server-set Content-Disposition forces "attachment" with a
-   * versioned filename.
+   * Returns `null` when the report doesn't exist. A report that has
+   * never been published surfaces a `REPORT_BUNDLE_NOT_AVAILABLE`
+   * GraphQL error (regenerate it to produce a bundle).
    *
    * @param graphId Graph identifier owning the Report.
    * @param reportId Report identifier (rpt_-prefixed ULID).
-   * @param options.format Serialization flavor — defaults to ``'jsonld'``.
+   * @param options.format Serialization flavor — `JSONLD` (default) or `XBRL_2_1`.
    * @param options.expiresIn Presigned URL lifetime, in seconds.
    */
-  async getReportBundleDownloadUrl(
+  async getReportDownloadUrl(
     graphId: string,
     reportId: string,
-    options: { format?: string; expiresIn?: number } = {}
-  ): Promise<ReportBundleDownloadResponse> {
-    const format = options.format ?? 'jsonld'
-    const expiresIn = options.expiresIn ?? 300
-    const url =
-      `${this.config.baseUrl.replace(/\/$/, '')}` +
-      `/extensions/roboledger/${encodeURIComponent(graphId)}` +
-      `/reports/${encodeURIComponent(reportId)}/download` +
-      `?format=${encodeURIComponent(format)}&expires_in=${expiresIn}`
-    const headers = new Headers({ Accept: 'application/json', ...(this.config.headers ?? {}) })
-    const token = await this.resolveToken()
-    if (token) {
-      // ``rfs…`` long-lived keys go in X-API-Key; everything else is
-      // a short-lived JWT. Mirrors the GraphQL client behaviour at
-      // ``clients/graphql/client.ts``.
-      if (token.startsWith('rfs')) {
-        headers.set('X-API-Key', token)
-      } else {
-        headers.set('Authorization', `Bearer ${token}`)
+    options: { format?: ReportDownloadFormat; expiresIn?: number } = {}
+  ): Promise<ReportBundleDownloadResponse | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerReportDownloadUrlDocument,
+      {
+        reportId,
+        format: options.format ?? 'JSONLD',
+        expiresIn: options.expiresIn ?? 300,
+      },
+      'Get report download URL',
+      (data) => {
+        const node = data.reportDownloadUrl
+        if (!node) return null
+        return {
+          downloadUrl: node.downloadUrl,
+          expiresAt: node.expiresAt,
+          contentType: node.contentType,
+          format: node.format,
+          generationCount: node.generationCount,
+        }
       }
-    }
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-      credentials: this.config.credentials,
-    })
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`Get report bundle download URL failed (${response.status}): ${body}`)
-    }
-    const raw = (await response.json()) as RawReportBundleDownloadResponse
-    return {
-      downloadUrl: raw.download_url,
-      expiresAt: raw.expires_at,
-      contentType: raw.content_type,
-      format: raw.format,
-      generationCount: raw.generation_count,
-    }
-  }
-
-  /**
-   * Download the Report's serialization bundle as an XBRL 2.1 zip.
-   *
-   * Rebuilds the bundle on the server and streams the zip body
-   * directly — no S3 presigned URL is involved (XBRL is on-demand
-   * emit, per the serialization spec). The returned ``Blob`` can be
-   * saved via URL.createObjectURL + a temporary anchor click to
-   * trigger the browser download dialog.
-   *
-   * The zip contains five files: ``instance.xml``, ``report.xsd``,
-   * ``report-pre.xml``, ``report-cal.xml``, ``report-def.xml``.
-   *
-   * @param graphId Graph identifier owning the Report.
-   * @param reportId Report identifier (rpt_-prefixed ULID).
-   * @param options.flavor XBRL flavor (default ``'xbrl-2.1'``).
-   */
-  async getReportBundleXbrlZip(
-    graphId: string,
-    reportId: string,
-    options: { flavor?: string } = {}
-  ): Promise<{ blob: Blob; filename: string; generationCount: number | null }> {
-    const flavor = options.flavor ?? 'xbrl-2.1'
-    const url =
-      `${this.config.baseUrl.replace(/\/$/, '')}` +
-      `/extensions/roboledger/${encodeURIComponent(graphId)}` +
-      `/reports/${encodeURIComponent(reportId)}/download` +
-      `?format=${encodeURIComponent(flavor)}`
-    const headers = new Headers({
-      Accept: 'application/zip',
-      ...(this.config.headers ?? {}),
-    })
-    const token = await this.resolveToken()
-    if (token) {
-      if (token.startsWith('rfs')) {
-        headers.set('X-API-Key', token)
-      } else {
-        headers.set('Authorization', `Bearer ${token}`)
-      }
-    }
-    const response = await fetch(url, {
-      method: 'GET',
-      headers,
-      credentials: this.config.credentials,
-    })
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`Get report bundle XBRL zip failed (${response.status}): ${body}`)
-    }
-    const blob = await response.blob()
-    // Parse Content-Disposition for the server-suggested filename;
-    // fall back to a sensible default if absent.
-    const disposition = response.headers.get('Content-Disposition') ?? ''
-    const filenameMatch = disposition.match(/filename="?([^";]+)"?/i)
-    const filename = filenameMatch ? filenameMatch[1] : `${reportId}.zip`
-    const generationHeader = response.headers.get('X-Bundle-Generation')
-    const generationCount = generationHeader ? Number.parseInt(generationHeader, 10) : null
-    return { blob, filename, generationCount }
+    )
   }
 
   /**

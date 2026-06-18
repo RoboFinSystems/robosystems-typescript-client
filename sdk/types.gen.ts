@@ -2017,7 +2017,7 @@ export type CreateScheduleRequest = {
     /**
      * Element Ids
      *
-     * Element IDs to include
+     * CoA element ids the schedule touches (the `id` from get-unmapped-elements, not taxonomy qnames) — typically the same debit + credit ids used in entry_template.
      */
     element_ids: Array<string>;
     /**
@@ -2043,7 +2043,7 @@ export type CreateScheduleRequest = {
     /**
      * Closed Through
      *
-     * If provided, facts with period_end ≤ this date are flagged as 'historical' (already reflected in opening balances, ignored by the close workflow). Used during initial ledger setup to create schedules whose early facts have already been captured elsewhere.
+     * Watermark for onboarding. Facts with period_end ≤ this date are flagged 'historical' and their schedule_entry_due obligations are emitted 'voided', so the close workflow starts drafting at the first open period. Set this to the last day of the fiscal calendar's closed_through month (calendar '2026-05' → '2026-05-31') whether those months were actually closed in RoboLedger or just baseline-watermarked at initialization. Omitting it (when prior periods exist) leaves pre-watermark periods as 'pending' obligations that block the first close.
      */
     closed_through?: string | null;
     /**
@@ -3756,13 +3756,13 @@ export type EntryTemplateRequest = {
     /**
      * Debit Element Id
      *
-     * Element to debit (e.g., Depreciation Expense)
+     * CoA element id to debit (e.g. Depreciation Expense). This is a chart-of-accounts element id — the `id` returned by get-unmapped-elements / get-graph-schema — NOT a taxonomy qname.
      */
     debit_element_id: string;
     /**
      * Credit Element Id
      *
-     * Element to credit (e.g., Accumulated Depreciation)
+     * CoA element id to credit (e.g. Accumulated Depreciation). A chart-of-accounts element id (see get-unmapped-elements), not a taxonomy qname. One template = one debit/credit pair; model a multi-account entry as several schedules.
      */
     credit_element_id: string;
     /**
@@ -22819,95 +22819,6 @@ export type OpLiveFinancialStatementResponses = {
 };
 
 export type OpLiveFinancialStatementResponse = OpLiveFinancialStatementResponses[keyof OpLiveFinancialStatementResponses];
-
-export type GetReportBundleDownloadUrlData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Report Id
-         *
-         * Report identifier (rpt_-prefixed ULID).
-         */
-        report_id: string;
-    };
-    query?: {
-        /**
-         * Format
-         *
-         * Serialization flavor. ``jsonld`` returns a presigned URL to the stored JSON-LD bundle; ``xbrl-2.1`` streams a freshly-emitted XBRL zip directly. Other RDF / XBRL flavors slot in as their producers ship.
-         */
-        format?: string;
-        /**
-         * Expires In
-         *
-         * Presigned URL lifetime in seconds (min 60, max 3600). Ignored for XBRL flavors (streamed directly, no URL).
-         */
-        expires_in?: number;
-    };
-    url: '/extensions/roboledger/{graph_id}/reports/{report_id}/download';
-};
-
-export type GetReportBundleDownloadUrlErrors = {
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetReportBundleDownloadUrlError = GetReportBundleDownloadUrlErrors[keyof GetReportBundleDownloadUrlErrors];
-
-export type GetReportBundleDownloadUrlResponses = {
-    /**
-     * ReportBundleDownloadResponse
-     *
-     * Presigned-URL response for a Report bundle download.
-     *
-     * Mirrors :class:`BackupDownloadUrlResponse` in shape — the frontend
-     * treats both the same way (fetch, follow URL, GET the artifact).
-     *
-     * Only returned for RDF-family flavors (JSON-LD) where the artifact
-     * is stored in S3. XBRL flavors stream the binary content directly
-     * in the response body (no JSON wrapper).
-     */
-    200: {
-        /**
-         * Download Url
-         *
-         * Presigned URL that streams the bundle directly from S3.
-         */
-        download_url: string;
-        /**
-         * Expires At
-         *
-         * UTC timestamp at which the presigned URL stops working.
-         */
-        expires_at: string;
-        /**
-         * Content Type
-         *
-         * MIME type of the artifact behind the URL.
-         */
-        content_type: string;
-        /**
-         * Format
-         *
-         * Serialization flavor delivered by this URL — matches the ``format`` query parameter.
-         */
-        format: string;
-        /**
-         * Generation Count
-         *
-         * Bundle generation number stamped on the Report.
-         */
-        generation_count: number;
-    };
-};
-
-export type GetReportBundleDownloadUrlResponse = GetReportBundleDownloadUrlResponses[keyof GetReportBundleDownloadUrlResponses];
 
 export type OpBuildFactGridData = {
     body: CreateViewRequest;
