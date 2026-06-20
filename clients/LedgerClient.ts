@@ -50,6 +50,7 @@ import {
   opLinkEntityTaxonomy,
   opLiveFinancialStatement,
   opPreviewEventBlock,
+  opRebuildSchedule,
   opRegenerateReport,
   opRemovePublishListMember,
   opReopenPeriod,
@@ -103,6 +104,7 @@ import type {
   PreviewEventBlockResponse,
   PublishListMemberResponse,
   PublishListResponse,
+  RebuildScheduleRequest,
   ReopenPeriodOperation,
   ReportResponse,
   SetCloseTargetOperation,
@@ -1229,6 +1231,46 @@ export class LedgerClient {
       opDeleteInformationBlock({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as DeleteInformationBlockResponse
+  }
+
+  /**
+   * Rebuild a schedule in place — atomic alternative to
+   * delete-then-recreate (which orphans pending obligations). Preserves
+   * the structure id, element associations, and taxonomy; voids the old
+   * pending obligation chain; deletes the old facts + SumEquals rules;
+   * and regenerates fresh forward facts + a fresh obligation chain from
+   * the schedule's stored definition. The historical-vs-in-scope split
+   * is re-derived from the CURRENT fiscal calendar `closed_through`, so
+   * a rebuild re-scopes the schedule to today's close state. Use this to
+   * pick up a fixed generator without orphaning obligations.
+   *
+   * Returns the same shape as `createSchedule`.
+   */
+  async rebuildSchedule(
+    graphId: string,
+    structureId: string,
+    options?: { idempotencyKey?: string }
+  ): Promise<ScheduleCreated> {
+    const body: RebuildScheduleRequest = { structure_id: structureId }
+    const envelope = await this.callOperation(
+      'Rebuild schedule',
+      opRebuildSchedule({
+        path: { graph_id: graphId },
+        body,
+        headers: options?.idempotencyKey
+          ? { 'Idempotency-Key': options.idempotencyKey }
+          : undefined,
+      })
+    )
+    const raw = envelope.result as unknown as RawScheduleCreatedResult
+    return {
+      structureId: raw.structure_id,
+      name: raw.name,
+      taxonomyId: raw.taxonomy_id,
+      totalPeriods: raw.total_periods,
+      totalFacts: raw.total_facts,
+      ruleSummary: raw.rule_summary ?? null,
+    }
   }
 
   /**

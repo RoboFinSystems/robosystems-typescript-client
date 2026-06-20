@@ -974,6 +974,43 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('rebuildSchedule', () => {
+    it('converts the regenerated schedule result to camelCase', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('rebuild-schedule', {
+          structure_id: 'str_1',
+          name: 'Depreciation — Laptops',
+          taxonomy_id: 'tax_depreciation',
+          total_periods: 36,
+          total_facts: 36,
+          rule_summary: { pass: 36 },
+        })
+      )
+      const result = await client.rebuildSchedule('graph_1', 'str_1')
+      expect(result.structureId).toBe('str_1')
+      expect(result.totalPeriods).toBe(36)
+      expect(result.ruleSummary).toEqual({ pass: 36 })
+    })
+
+    it('POSTs structure_id to the rebuild-schedule URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('rebuild-schedule', {}))
+      await client.rebuildSchedule('graph_42', 'str_abc')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/rebuild-schedule'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.structure_id).toBe('str_abc')
+    })
+
+    it('forwards an Idempotency-Key header when provided', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('rebuild-schedule', {}))
+      await client.rebuildSchedule('graph_1', 'str_1', { idempotencyKey: 'idem_123' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.headers.get('Idempotency-Key')).toBe('idem_123')
+    })
+  })
+
   // ── Journal entry writes ────────────────────────────────────────────
 
   describe('createJournalEntry', () => {
