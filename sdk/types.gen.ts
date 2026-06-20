@@ -8081,6 +8081,52 @@ export type OperationEnvelopeReportResponse = {
 };
 
 /**
+ * OperationEnvelope[ScheduleCreatedResponse]
+ */
+export type OperationEnvelopeScheduleCreatedResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ScheduleCreatedResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[SecurityResponse]
  */
 export type OperationEnvelopeSecurityResponse = {
@@ -9821,6 +9867,32 @@ export type RateLimits = {
 };
 
 /**
+ * RebuildScheduleRequest
+ *
+ * Re-run the schedule generator in place on an existing schedule.
+ *
+ * Atomic alternative to delete-then-recreate: the structure id and its
+ * element associations are preserved, the old pending obligation chain
+ * is voided, the old facts + rules are deleted, and a fresh set of
+ * forward facts + a fresh obligation chain are regenerated from the
+ * schedule's stored definition (entry_template / schedule_metadata /
+ * monthly_amount / period bounds on the Structure's metadata).
+ *
+ * The historical-vs-in-scope split is re-derived from the CURRENT fiscal
+ * calendar `closed_through`, so a rebuild re-scopes the schedule to
+ * today's close state. Use this to pick up a fixed generator (e.g. the
+ * roll-forward direction fix) without orphaning obligations.
+ */
+export type RebuildScheduleRequest = {
+    /**
+     * Structure Id
+     *
+     * The schedule structure to regenerate in place.
+     */
+    structure_id: string;
+};
+
+/**
  * RegenerateReportOperation
  *
  * Regenerate facts for an existing Report. Carries `report_id` from
@@ -10609,6 +10681,46 @@ export type SsoTokenResponse = {
      * Available apps for this user
      */
     apps: Array<string>;
+};
+
+/**
+ * ScheduleCreatedResponse
+ */
+export type ScheduleCreatedResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Taxonomy Id
+     */
+    taxonomy_id: string;
+    /**
+     * Total Periods
+     */
+    total_periods: number;
+    /**
+     * Total Facts
+     */
+    total_facts: number;
+    /**
+     * Rule Summary
+     */
+    rule_summary?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Schedule Created Event Id
+     */
+    schedule_created_event_id?: string | null;
+    /**
+     * Pending Event Count
+     */
+    pending_event_count?: number;
 };
 
 /**
@@ -13240,7 +13352,7 @@ export type UpdateRollforwardRequest = {
  * NOT editable via this op: period_start, period_end, monthly_amount.
  * Those require fact regeneration — fire an event block that terminates
  * the schedule (e.g., `asset_disposed`) and create a fresh schedule via
- * `create-schedule`.
+ * `create-information-block` (`block_type='schedule'`).
  *
  * Omitted fields are left unchanged.
  */
@@ -21859,6 +21971,70 @@ export type OpPromoteObligationsResponses = {
 };
 
 export type OpPromoteObligationsResponse = OpPromoteObligationsResponses[keyof OpPromoteObligationsResponses];
+
+export type OpRebuildScheduleData = {
+    body: RebuildScheduleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/rebuild-schedule';
+};
+
+export type OpRebuildScheduleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpRebuildScheduleError = OpRebuildScheduleErrors[keyof OpRebuildScheduleErrors];
+
+export type OpRebuildScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeScheduleCreatedResponse;
+};
+
+export type OpRebuildScheduleResponse = OpRebuildScheduleResponses[keyof OpRebuildScheduleResponses];
 
 export type OpSetCloseTargetData = {
     body: SetCloseTargetOperation;
