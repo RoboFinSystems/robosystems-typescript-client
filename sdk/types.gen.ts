@@ -6706,6 +6706,12 @@ export type McpToolsResponse = {
     tools: Array<{
         [key: string]: unknown;
     }>;
+    /**
+     * Instructions
+     *
+     * Per-graph routing guidance for MCP clients, tailored to the graph's category and live tool set. Clients should pass this to the MCP server's `instructions` handshake field so it is always in the agent's context.
+     */
+    instructions?: string | null;
 };
 
 /**
@@ -15632,88 +15638,31 @@ export type GetOrgUsageResponses = {
 
 export type GetOrgUsageResponse = GetOrgUsageResponses[keyof GetOrgUsageResponses];
 
-export type ListConnectionsData = {
-    body?: never;
+export type SyncConnectionData = {
+    body: SyncConnectionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-    };
-    query?: {
         /**
-         * Entity Id
+         * Connection Id
          *
-         * Filter by entity ID
+         * Connection identifier
          */
-        entity_id?: string | null;
-        /**
-         * Provider
-         *
-         * Filter by provider type
-         */
-        provider?: 'sec' | 'quickbooks' | null;
-    };
-    url: '/v1/graphs/{graph_id}/connections';
-};
-
-export type ListConnectionsErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type ListConnectionsError = ListConnectionsErrors[keyof ListConnectionsErrors];
-
-export type ListConnectionsResponses = {
-    /**
-     * Response Listconnections
-     *
-     * Successful Response
-     */
-    200: Array<ConnectionResponse>;
-};
-
-export type ListConnectionsResponse = ListConnectionsResponses[keyof ListConnectionsResponses];
-
-export type CreateConnectionData = {
-    body: CreateConnectionRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
+        connection_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/connections';
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
 };
 
-export type CreateConnectionErrors = {
+export type SyncConnectionErrors = {
     /**
      * Invalid request
      */
@@ -15731,13 +15680,13 @@ export type CreateConnectionErrors = {
      */
     404: ErrorResponse;
     /**
-     * Connection already exists for this provider
+     * Idempotency-Key conflict — key reused with different body
      */
-    409: unknown;
+    409: ErrorResponse;
     /**
-     * Validation Error
+     * Validation error
      */
-    422: HttpValidationError;
+    422: ErrorResponse;
     /**
      * Rate limit exceeded
      */
@@ -15746,18 +15695,22 @@ export type CreateConnectionErrors = {
      * Internal server error
      */
     500: ErrorResponse;
+    /**
+     * Sync request timed out
+     */
+    504: unknown;
 };
 
-export type CreateConnectionError = CreateConnectionErrors[keyof CreateConnectionErrors];
+export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
 
-export type CreateConnectionResponses = {
+export type SyncConnectionResponses = {
     /**
      * Successful Response
      */
-    201: ConnectionResponse;
+    202: OperationEnvelope;
 };
 
-export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateConnectionResponses];
+export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
 
 export type GetConnectionOptionsData = {
     body?: never;
@@ -15925,6 +15878,133 @@ export type OauthCallbackResponses = {
     200: unknown;
 };
 
+export type ListConnectionsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Entity Id
+         *
+         * Filter by entity ID
+         */
+        entity_id?: string | null;
+        /**
+         * Provider
+         *
+         * Filter by provider type
+         */
+        provider?: 'sec' | 'quickbooks' | null;
+    };
+    url: '/v1/graphs/{graph_id}/connections';
+};
+
+export type ListConnectionsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListConnectionsError = ListConnectionsErrors[keyof ListConnectionsErrors];
+
+export type ListConnectionsResponses = {
+    /**
+     * Response Listconnections
+     *
+     * Successful Response
+     */
+    200: Array<ConnectionResponse>;
+};
+
+export type ListConnectionsResponse = ListConnectionsResponses[keyof ListConnectionsResponses];
+
+export type CreateConnectionData = {
+    body: CreateConnectionRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/connections';
+};
+
+export type CreateConnectionErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Connection already exists for this provider
+     */
+    409: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type CreateConnectionError = CreateConnectionErrors[keyof CreateConnectionErrors];
+
+export type CreateConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    201: ConnectionResponse;
+};
+
+export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateConnectionResponses];
+
 export type DeleteConnectionData = {
     body?: never;
     path: {
@@ -16044,80 +16124,6 @@ export type GetConnectionResponses = {
 };
 
 export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionResponses];
-
-export type SyncConnectionData = {
-    body: SyncConnectionRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         *
-         * Connection identifier
-         */
-        connection_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
-};
-
-export type SyncConnectionErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-    /**
-     * Sync request timed out
-     */
-    504: unknown;
-};
-
-export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
-
-export type SyncConnectionResponses = {
-    /**
-     * Successful Response
-     */
-    202: OperationEnvelope;
-};
-
-export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
 
 export type SetConnectionWritePolicyData = {
     body: SetWritePolicyRequest;
