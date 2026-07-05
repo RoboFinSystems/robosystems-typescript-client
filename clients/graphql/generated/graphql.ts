@@ -8,8 +8,7 @@ export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> =
   [_ in K]?: never
 }
 export type Incremental<T> =
-  | T
-  | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never }
+  T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never }
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: { input: string; output: string }
@@ -214,7 +213,7 @@ export type DraftEntry = {
   lineItems: Array<DraftLineItem>
   memo: Maybe<Scalars['String']['output']>
   postingDate: Scalars['Date']['output']
-  /** Where the entry came from: 'ai_generated', 'manual_entry', etc. */
+  /** Where the entry came from (ENTRY_PROVENANCE_VALUES): source_sync, ai_generated, manual_entry, schedule_derived, system_computed, event_handler */
   provenance: Maybe<Scalars['String']['output']>
   /** Schedule structure that generated this entry (if any) */
   sourceStructureId: Maybe<Scalars['String']['output']>
@@ -1915,7 +1914,7 @@ export type ReportBundleDownload = {
   generationCount: Scalars['Int']['output']
 }
 
-export type ReportDownloadFormat = 'JSONLD' | 'XBRL_2_1'
+export type ReportDownloadFormat = 'HOLON_JSONLD' | 'JSONLD' | 'XBRL_2_1'
 
 /** List of report header summaries (used by report list reads). */
 export type ReportList = {

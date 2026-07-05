@@ -383,22 +383,13 @@ export const getOrgUsage = <ThrowOnError extends boolean = false>(options: Optio
 });
 
 /**
- * List Connections
- */
-export const listConnections = <ThrowOnError extends boolean = false>(options: Options<ListConnectionsData, ThrowOnError>) => (options.client ?? client).get<ListConnectionsResponses, ListConnectionsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/connections',
-    ...options
-});
-
-/**
- * Create Connection
+ * Sync Connection
  *
- * SEC: provide entity CIK, no auth needed. QuickBooks: returns an OAuth URL — complete the flow to activate. One connection allowed per provider per graph.
+ * SEC: downloads latest EDGAR filings (5-10 min). QuickBooks: fetches transactions, balances, and chart of accounts. Returns an `OperationEnvelope` — monitor progress via SSE at `/v1/operations/{operation_id}/stream`. Supports `Idempotency-Key`.
  */
-export const createConnection = <ThrowOnError extends boolean = false>(options: Options<CreateConnectionData, ThrowOnError>) => (options.client ?? client).post<CreateConnectionResponses, CreateConnectionErrors, ThrowOnError>({
+export const syncConnection = <ThrowOnError extends boolean = false>(options: Options<SyncConnectionData, ThrowOnError>) => (options.client ?? client).post<SyncConnectionResponses, SyncConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/connections',
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -446,6 +437,30 @@ export const oauthCallback = <ThrowOnError extends boolean = false>(options: Opt
 });
 
 /**
+ * List Connections
+ */
+export const listConnections = <ThrowOnError extends boolean = false>(options: Options<ListConnectionsData, ThrowOnError>) => (options.client ?? client).get<ListConnectionsResponses, ListConnectionsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/connections',
+    ...options
+});
+
+/**
+ * Create Connection
+ *
+ * SEC: provide entity CIK, no auth needed. QuickBooks: returns an OAuth URL — complete the flow to activate. One connection allowed per provider per graph.
+ */
+export const createConnection = <ThrowOnError extends boolean = false>(options: Options<CreateConnectionData, ThrowOnError>) => (options.client ?? client).post<CreateConnectionResponses, CreateConnectionErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/{graph_id}/connections',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Delete Connection
  *
  * Removes the connection and revokes credentials. Imported data is preserved in the graph. Requires admin role.
@@ -463,21 +478,6 @@ export const getConnection = <ThrowOnError extends boolean = false>(options: Opt
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/connections/{connection_id}',
     ...options
-});
-
-/**
- * Sync Connection
- *
- * SEC: downloads latest EDGAR filings (5-10 min). QuickBooks: fetches transactions, balances, and chart of accounts. Returns an `OperationEnvelope` — monitor progress via SSE at `/v1/operations/{operation_id}/stream`. Supports `Idempotency-Key`.
- */
-export const syncConnection = <ThrowOnError extends boolean = false>(options: Options<SyncConnectionData, ThrowOnError>) => (options.client ?? client).post<SyncConnectionResponses, SyncConnectionErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
 });
 
 /**
