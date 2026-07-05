@@ -51,7 +51,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.check-published.outputs.already_published == 'false'
-        run: npm install
+        run: npm ci
       
       - name: Regenerate SDK (if requested)
         if: steps.check-published.outputs.already_published == 'false' && github.event.inputs.regenerate == 'true'
