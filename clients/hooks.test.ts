@@ -33,7 +33,7 @@ vi.mock('./config', () => ({
 
 // Mock the SDK gen functions to prevent real HTTP calls.
 //
-// `executeCypherQuery` is implemented as a thin wrapper that delegates to
+// `executeCypher` is implemented as a thin wrapper that delegates to
 // `global.fetch`, so the existing `mockFetch.mockResolvedValue(...)` /
 // `mockFetch.mockRejectedValue(...)` setup in each test continues to work.
 //
@@ -45,7 +45,7 @@ vi.mock('./config', () => ({
 // through fetch keeps a single source of truth (mockFetch) and mirrors the
 // openapi-ts generated envelope shape `{ data, error, response }`.
 vi.mock('../sdk/sdk.gen', () => ({
-  executeCypherQuery: vi.fn(async () => {
+  executeCypher: vi.fn(async () => {
     try {
       const response = await (global.fetch as any)('http://mock-api/')
       const data = await response.json()

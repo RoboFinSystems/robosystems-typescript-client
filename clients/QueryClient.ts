@@ -5,8 +5,8 @@
  * Provides intelligent query execution with automatic strategy selection
  */
 
-import { executeCypherQuery } from '../sdk/sdk.gen'
-import type { ExecuteCypherQueryData } from '../sdk/types.gen'
+import { executeCypher } from '../sdk/sdk.gen'
+import type { ExecuteCypherData } from '../sdk/types.gen'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface QueryRequest {
@@ -64,8 +64,8 @@ export class QueryClient {
     request: QueryRequest,
     options: QueryOptions = {}
   ): Promise<QueryResult | AsyncIterableIterator<any>> {
-    const data: ExecuteCypherQueryData = {
-      url: '/v1/graphs/{graph_id}/query' as const,
+    const data: ExecuteCypherData = {
+      url: '/v1/graphs/{graph_id}/query/cypher' as const,
       path: { graph_id: graphId },
       body: {
         query: request.query,
@@ -79,7 +79,7 @@ export class QueryClient {
       ...(options.mode === 'stream' ? { parseAs: 'stream' as const } : {}),
     }
 
-    const response = await executeCypherQuery(data)
+    const response = await executeCypher(data)
 
     // Check for errors in the response (network errors, etc.)
     if ('error' in response && response.error) {
