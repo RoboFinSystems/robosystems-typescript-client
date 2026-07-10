@@ -703,21 +703,6 @@ export const exportGraphSchema = <ThrowOnError extends boolean = false>(options:
 });
 
 /**
- * Validate Schema
- *
- * Validates a custom schema definition before deployment — checks structure, types, constraints, and relationship references. Returns errors and warnings without applying changes. Supports JSON, YAML, and dict formats.
- */
-export const validateSchema = <ThrowOnError extends boolean = false>(options: Options<ValidateSchemaData, ThrowOnError>) => (options.client ?? client).post<ValidateSchemaResponses, ValidateSchemaErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/v1/graphs/{graph_id}/schema/validate',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Get Credit Summary
  */
 export const getCreditSummary = <ThrowOnError extends boolean = false>(options: Options<GetCreditSummaryData, ThrowOnError>) => (options.client ?? client).get<GetCreditSummaryResponses, GetCreditSummaryErrors, ThrowOnError>({
@@ -1274,6 +1259,21 @@ export const selectGraph = <ThrowOnError extends boolean = false>(options: Optio
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/select',
     ...options
+});
+
+/**
+ * Validate Schema
+ *
+ * Validates a custom schema definition before deployment — checks structure, types, constraints, and relationship references. Returns errors and warnings without applying changes. Supports JSON, YAML, and dict formats.
+ */
+export const validateSchema = <ThrowOnError extends boolean = false>(options: Options<ValidateSchemaData, ThrowOnError>) => (options.client ?? client).post<ValidateSchemaResponses, ValidateSchemaErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/v1/graphs/schema/validate',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
