@@ -17497,67 +17497,6 @@ export type ExportGraphSchemaResponses = {
 
 export type ExportGraphSchemaResponse = ExportGraphSchemaResponses[keyof ExportGraphSchemaResponses];
 
-export type ValidateSchemaData = {
-    /**
-     * Schema definition to validate
-     */
-    body: SchemaValidationRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/schema/validate';
-};
-
-export type ValidateSchemaErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Schema fails validation rules
-     */
-    422: unknown;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-    /**
-     * Validation timed out
-     */
-    504: unknown;
-};
-
-export type ValidateSchemaError = ValidateSchemaErrors[keyof ValidateSchemaErrors];
-
-export type ValidateSchemaResponses = {
-    /**
-     * Successful Response
-     */
-    200: SchemaValidationResponse;
-};
-
-export type ValidateSchemaResponse = ValidateSchemaResponses[keyof ValidateSchemaResponses];
-
 export type GetCreditSummaryData = {
     body?: never;
     path: {
@@ -20127,6 +20066,62 @@ export type SelectGraphResponses = {
 };
 
 export type SelectGraphResponse = SelectGraphResponses[keyof SelectGraphResponses];
+
+export type ValidateSchemaData = {
+    /**
+     * Schema definition to validate
+     */
+    body: SchemaValidationRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/graphs/schema/validate';
+};
+
+export type ValidateSchemaErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Schema fails validation rules
+     */
+    422: unknown;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Validation timed out
+     */
+    504: unknown;
+};
+
+export type ValidateSchemaError = ValidateSchemaErrors[keyof ValidateSchemaErrors];
+
+export type ValidateSchemaResponses = {
+    /**
+     * Successful Response
+     */
+    200: SchemaValidationResponse;
+};
+
+export type ValidateSchemaResponse = ValidateSchemaResponses[keyof ValidateSchemaResponses];
 
 export type GetServiceOfferingsData = {
     body?: never;
