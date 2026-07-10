@@ -793,6 +793,8 @@ export type LedgerEntity = {
   /** Parent entity ID for subsidiaries; null for top-level. */
   parentEntityId: Maybe<Scalars['String']['output']>
   phone: Maybe<Scalars['String']['output']>
+  /** Active Reporting Style (Structure id) governing this entity's statement layout. Change it via the change-reporting-style operation. */
+  reportingStyleId: Maybe<Scalars['String']['output']>
   /** SIC industry code. */
   sic: Maybe<Scalars['String']['output']>
   /** SIC code description. */

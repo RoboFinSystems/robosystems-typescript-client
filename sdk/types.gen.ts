@@ -761,25 +761,66 @@ export type CancelSubscriptionRequest = {
 };
 
 /**
- * ChangeReportingStyleOp
+ * ChangeReportingStyleRequest
  *
- * Body for the change-reporting-style operation.
+ * Switch a reporting entity's Reporting Style.
  *
- * Switches the graph to a different Reporting Style. The target Style
- * must be a library- or customer-authored Structure with
- * ``block_type='reporting_style'`` and a complete composition
- * (one Network per required statement type — BS / IS / CF / SE). Filed
- * Reports are unaffected because each ``Report`` already pins its own
- * ``structure_id`` per FactSet at create-time; new reports use the new
- * Style. Idempotent on the same target id.
+ * The Reporting Style governs how the entity's statements are laid out
+ * (equity-form, close-target concept, per-statement Networks). It's
+ * validated against the tenant schema — the target must be a renderable
+ * Style with a complete composition — before the switch is applied.
  */
-export type ChangeReportingStyleOp = {
+export type ChangeReportingStyleRequest = {
     /**
      * Reporting Style Id
      *
-     * Structure id of the target Reporting Style (e.g., `025f5d48-12ce-5d65-b9eb-4f137a10ef06` for the library-seeded Default Style). Must resolve to a Structure with block_type='reporting_style' that has a complete composition in the graph's tenant schema.
+     * Structure id of the target Reporting Style. Must exist in the tenant schema with a complete Network composition.
      */
     reporting_style_id: string;
+    /**
+     * Entity Id
+     *
+     * Target entity. Omit to target the graph's primary (earliest-created) entity — the single-entity default.
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * ChangeReportingStyleResponse
+ *
+ * Result of a change-reporting-style operation.
+ */
+export type ChangeReportingStyleResponse = {
+    /**
+     * Entity Id
+     *
+     * Entity whose Style was targeted.
+     */
+    entity_id: string;
+    /**
+     * Previous Reporting Style Id
+     *
+     * Style id before the change (null for legacy/unset).
+     */
+    previous_reporting_style_id?: string | null;
+    /**
+     * Reporting Style Id
+     *
+     * Active Style id after the call.
+     */
+    reporting_style_id: string;
+    /**
+     * Reporting Style Code
+     *
+     * 4-segment Style code (e.g. BSC-CORP-IS02-CF1), when stamped.
+     */
+    reporting_style_code?: string | null;
+    /**
+     * Changed
+     *
+     * False when the target equals the current Style (no-op).
+     */
+    changed: boolean;
 };
 
 /**
@@ -2483,11 +2524,11 @@ export type CustomSchemaDefinition = {
 };
 
 /**
- * CypherQueryRequest
+ * CypherStatementRequest
  *
  * Request model for Cypher query execution.
  */
-export type CypherQueryRequest = {
+export type CypherStatementRequest = {
     /**
      * Query
      *
@@ -2733,51 +2774,37 @@ export type DatabaseStorageEntry = {
 };
 
 /**
- * DeleteFileResponse
+ * DeleteDocumentOp
+ *
+ * Body for delete-document (corpus content-op).
  */
-export type DeleteFileResponse = {
+export type DeleteDocumentOp = {
     /**
-     * Status
+     * Document Id
      *
-     * Deletion status
+     * Document id to delete
      */
-    status: string;
+    document_id: string;
+};
+
+/**
+ * DeleteFileOp
+ *
+ * Body for delete-file (raw content-op).
+ */
+export type DeleteFileOp = {
     /**
      * File Id
      *
-     * Deleted file ID
+     * File id to delete
      */
     file_id: string;
     /**
-     * File Name
+     * Cascade
      *
-     * Deleted file name
+     * Also delete the file's rows from DuckDB tables and mark the graph stale
      */
-    file_name: string;
-    /**
-     * Message
-     *
-     * Operation message
-     */
-    message: string;
-    /**
-     * Cascade Deleted
-     *
-     * Whether cascade deletion was performed
-     */
-    cascade_deleted?: boolean;
-    /**
-     * Tables Affected
-     *
-     * Tables from which file data was deleted (if cascade=true)
-     */
-    tables_affected?: Array<string> | null;
-    /**
-     * Graph Marked Stale
-     *
-     * Whether graph was marked as stale
-     */
-    graph_marked_stale?: boolean;
+    cascade?: boolean;
 };
 
 /**
@@ -3374,96 +3401,6 @@ export type DocumentSection = {
      * Folder
      */
     folder?: string | null;
-};
-
-/**
- * DocumentUpdateRequest
- *
- * Update a document's metadata and/or content.
- */
-export type DocumentUpdateRequest = {
-    /**
-     * Title
-     */
-    title?: string | null;
-    /**
-     * Content
-     */
-    content?: string | null;
-    /**
-     * Tags
-     */
-    tags?: Array<string> | null;
-    /**
-     * Folder
-     */
-    folder?: string | null;
-};
-
-/**
- * DocumentUploadRequest
- *
- * Upload a markdown document for text indexing.
- */
-export type DocumentUploadRequest = {
-    /**
-     * Title
-     *
-     * Document title
-     */
-    title: string;
-    /**
-     * Content
-     *
-     * Markdown content
-     */
-    content: string;
-    /**
-     * Tags
-     *
-     * Optional tags for filtering
-     */
-    tags?: Array<string> | null;
-    /**
-     * Folder
-     *
-     * Optional folder/category
-     */
-    folder?: string | null;
-    /**
-     * External Id
-     *
-     * Optional external identifier for upsert (e.g., Google Drive file ID)
-     */
-    external_id?: string | null;
-};
-
-/**
- * DocumentUploadResponse
- *
- * Response from document upload.
- */
-export type DocumentUploadResponse = {
-    /**
-     * Id
-     */
-    id: string;
-    /**
-     * Document Id
-     */
-    document_id: string;
-    /**
-     * Sections Indexed
-     */
-    sections_indexed: number;
-    /**
-     * Total Content Length
-     */
-    total_content_length: number;
-    /**
-     * Section Ids
-     */
-    section_ids: Array<string>;
 };
 
 /**
@@ -4433,24 +4370,6 @@ export type FileReportRequest = {
 };
 
 /**
- * FileStatusUpdate
- */
-export type FileStatusUpdate = {
-    /**
-     * Status
-     *
-     * File status: 'uploaded' (ready for ingest), 'disabled' (exclude from ingest), 'archived' (soft deleted)
-     */
-    status: string;
-    /**
-     * Ingest To Graph
-     *
-     * Auto-ingest to graph after DuckDB staging. Default=false (batch mode). Set to true for real-time incremental updates.
-     */
-    ingest_to_graph?: boolean;
-};
-
-/**
  * FileUploadRequest
  */
 export type FileUploadRequest = {
@@ -4472,36 +4391,6 @@ export type FileUploadRequest = {
      * Table name to associate file with (required for first-class /files endpoint)
      */
     table_name?: string | null;
-};
-
-/**
- * FileUploadResponse
- */
-export type FileUploadResponse = {
-    /**
-     * Upload Url
-     *
-     * Presigned S3 upload URL
-     */
-    upload_url: string;
-    /**
-     * Expires In
-     *
-     * URL expiration time in seconds
-     */
-    expires_in: number;
-    /**
-     * File Id
-     *
-     * File tracking ID
-     */
-    file_id: string;
-    /**
-     * S3 Key
-     *
-     * S3 object key
-     */
-    s3_key: string;
 };
 
 /**
@@ -4676,6 +4565,20 @@ export type FiscalPeriodSummary = {
      * Closed At
      */
     closed_at?: string | null;
+};
+
+/**
+ * ForgetOp
+ *
+ * Body for the forget operation (delete a semantic memory by id).
+ */
+export type ForgetOp = {
+    /**
+     * Memory Id
+     *
+     * Server-generated memory id to forget
+     */
+    memory_id: string;
 };
 
 /**
@@ -5554,6 +5457,53 @@ export type HealthStatus = {
 };
 
 /**
+ * IndexDocumentOp
+ *
+ * Body for index-document (corpus content-op).
+ *
+ * Create a new document when ``document_id`` is absent; update the named
+ * document (partial — only supplied fields) when present.
+ */
+export type IndexDocumentOp = {
+    /**
+     * Document Id
+     *
+     * Present → update that document; absent → create a new one
+     */
+    document_id?: string | null;
+    /**
+     * Title
+     *
+     * Required when creating
+     */
+    title?: string | null;
+    /**
+     * Content
+     *
+     * Required when creating
+     */
+    content?: string | null;
+    /**
+     * Tags
+     *
+     * Optional labels
+     */
+    tags?: Array<string> | null;
+    /**
+     * Folder
+     *
+     * Optional folder
+     */
+    folder?: string | null;
+    /**
+     * External Id
+     *
+     * Upsert key (create): re-indexing the same id replaces
+     */
+    external_id?: string | null;
+};
+
+/**
  * InformationBlockEnvelope
  *
  * The Information Block exchange format.
@@ -5673,6 +5623,29 @@ export type InformationModelResponse = {
 };
 
 /**
+ * IngestFileOp
+ *
+ * Body for ingest-file (raw→staging content flow).
+ *
+ * Marks an uploaded file ready and triggers DuckDB staging. Set
+ * ``ingest_to_graph`` to auto-chain graph materialization after staging.
+ */
+export type IngestFileOp = {
+    /**
+     * File Id
+     *
+     * Uploaded file id to ingest
+     */
+    file_id: string;
+    /**
+     * Ingest To Graph
+     *
+     * Auto-materialize into the graph after DuckDB staging
+     */
+    ingest_to_graph?: boolean;
+};
+
+/**
  * InitialEntityData
  *
  * Initial entity data for entity-focused graph creation.
@@ -5750,7 +5723,7 @@ export type InitialEntityData = {
     /**
      * Reporting Style Id
      *
-     * Optional explicit Reporting Style Structure id to pin on the graph, overriding the entity_type-derived default. Leave blank to derive from entity_type. Change later via the change-reporting-style operation.
+     * Optional explicit Reporting Style Structure id to pin on the entity, overriding the entity_type-derived default. Leave blank to derive from entity_type. Change later via the change-reporting-style operation.
      */
     reporting_style_id?: string | null;
 };
@@ -6355,6 +6328,12 @@ export type LedgerEntityResponse = {
      */
     entity_type?: string | null;
     /**
+     * Reporting Style Id
+     *
+     * Active Reporting Style (Structure id) governing this entity's statement layout. Change it via the change-reporting-style operation.
+     */
+    reporting_style_id?: string | null;
+    /**
      * Phone
      */
     phone?: string | null;
@@ -6759,6 +6738,108 @@ export type MaterializeOp = {
 };
 
 /**
+ * MemoryListResponse
+ *
+ * Governance list of memories for a graph.
+ */
+export type MemoryListResponse = {
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Memories
+     */
+    memories: Array<MemoryRecord>;
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+};
+
+/**
+ * MemoryRecallRequest
+ *
+ * Body for recall (ranked semantic search over memory).
+ */
+export type MemoryRecallRequest = {
+    /**
+     * Query
+     *
+     * Recall query
+     */
+    query: string;
+    /**
+     * K
+     *
+     * Max results to return
+     */
+    k?: number;
+    /**
+     * Memory Type
+     *
+     * Filter by memory type
+     */
+    memory_type?: string | null;
+    /**
+     * Source
+     *
+     * Filter by source
+     */
+    source?: string | null;
+};
+
+/**
+ * MemoryRecord
+ *
+ * A stored memory (never includes the raw embedding vector).
+ */
+export type MemoryRecord = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Text
+     */
+    text: string;
+    /**
+     * Source
+     */
+    source?: string | null;
+    /**
+     * Memory Type
+     */
+    memory_type?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Source Ref
+     */
+    source_ref?: string | null;
+    /**
+     * Provenance
+     */
+    provenance?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Created By
+     */
+    created_by?: string | null;
+    /**
+     * Created At
+     */
+    created_at?: string | null;
+    /**
+     * Updated At
+     */
+    updated_at?: string | null;
+};
+
+/**
  * MetricMechanics
  *
  * Derivative mechanics for ``block_type='metric'``.
@@ -7100,6 +7181,52 @@ export type OperationEnvelopeAssociationResponse = {
      * Command-specific result payload
      */
     result?: AssociationResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ChangeReportingStyleResponse]
+ */
+export type OperationEnvelopeChangeReportingStyleResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ChangeReportingStyleResponse | null;
     /**
      * At
      *
@@ -9965,6 +10092,52 @@ export type RegisterRequest = {
 };
 
 /**
+ * RememberOp
+ *
+ * Body for the remember operation (write a semantic memory).
+ */
+export type RememberOp = {
+    /**
+     * Text
+     *
+     * Memory content
+     */
+    text: string;
+    /**
+     * Source
+     *
+     * Origin of the memory
+     */
+    source?: string;
+    /**
+     * Memory Type
+     *
+     * Freeform classifier
+     */
+    memory_type?: string;
+    /**
+     * Tags
+     *
+     * Optional labels
+     */
+    tags?: Array<string> | null;
+    /**
+     * Source Ref
+     *
+     * Optional external reference/URI
+     */
+    source_ref?: string | null;
+    /**
+     * Provenance
+     *
+     * Opaque provenance metadata
+     */
+    provenance?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
  * RemovePublishListMemberOperation
  *
  * Remove a single recipient from a publish list.
@@ -11479,6 +11652,54 @@ export type ShareResultItem = {
 };
 
 /**
+ * SqlStatementRequest
+ */
+export type SqlStatementRequest = {
+    /**
+     * Sql
+     *
+     * SQL query over the graph's columnar tables (DuckDB) — a relational lens on the same graph-centric data, often ahead of the materialized graph. Use ? placeholders or $param_name for dynamic values to prevent SQL injection.
+     */
+    sql: string;
+    /**
+     * Parameters
+     *
+     * Query parameters for safe value substitution. ALWAYS use parameters instead of string concatenation.
+     */
+    parameters?: Array<unknown> | null;
+};
+
+/**
+ * SqlStatementResponse
+ */
+export type SqlStatementResponse = {
+    /**
+     * Columns
+     *
+     * Column names
+     */
+    columns: Array<string>;
+    /**
+     * Rows
+     *
+     * Query results
+     */
+    rows: Array<Array<unknown>>;
+    /**
+     * Row Count
+     *
+     * Number of rows returned
+     */
+    row_count: number;
+    /**
+     * Execution Time Ms
+     *
+     * Query execution time
+     */
+    execution_time_ms: number;
+};
+
+/**
  * StatementMechanics
  *
  * Renderer mechanics for the statement family of block types.
@@ -11964,54 +12185,6 @@ export type TableListResponse = {
      * Total number of tables
      */
     total_count: number;
-};
-
-/**
- * TableQueryRequest
- */
-export type TableQueryRequest = {
-    /**
-     * Sql
-     *
-     * SQL query to execute on staging tables. Use ? placeholders or $param_name for dynamic values to prevent SQL injection.
-     */
-    sql: string;
-    /**
-     * Parameters
-     *
-     * Query parameters for safe value substitution. ALWAYS use parameters instead of string concatenation.
-     */
-    parameters?: Array<unknown> | null;
-};
-
-/**
- * TableQueryResponse
- */
-export type TableQueryResponse = {
-    /**
-     * Columns
-     *
-     * Column names
-     */
-    columns: Array<string>;
-    /**
-     * Rows
-     *
-     * Query results
-     */
-    rows: Array<Array<unknown>>;
-    /**
-     * Row Count
-     *
-     * Number of rows returned
-     */
-    row_count: number;
-    /**
-     * Execution Time Ms
-     *
-     * Query execution time
-     */
-    execution_time_ms: number;
 };
 
 /**
@@ -13208,6 +13381,55 @@ export type UpdateJournalEntryRequest = {
  */
 export type UpdateMemberRoleRequest = {
     role: OrgRole;
+};
+
+/**
+ * UpdateMemoryOp
+ *
+ * Body for the update-memory operation (partial update of a stored memory).
+ *
+ * Only supplied fields are changed; the memory is re-embedded when ``text``
+ * changes.
+ */
+export type UpdateMemoryOp = {
+    /**
+     * Memory Id
+     *
+     * Server-generated memory id to update
+     */
+    memory_id: string;
+    /**
+     * Text
+     *
+     * New memory content
+     */
+    text?: string | null;
+    /**
+     * Memory Type
+     *
+     * Freeform classifier
+     */
+    memory_type?: string | null;
+    /**
+     * Tags
+     *
+     * Optional labels
+     */
+    tags?: Array<string> | null;
+    /**
+     * Source Ref
+     *
+     * Optional external reference/URI
+     */
+    source_ref?: string | null;
+    /**
+     * Provenance
+     *
+     * Opaque provenance metadata
+     */
+    provenance?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -17006,8 +17228,8 @@ export type GetGraphUsageAnalyticsResponses = {
 
 export type GetGraphUsageAnalyticsResponse = GetGraphUsageAnalyticsResponses[keyof GetGraphUsageAnalyticsResponses];
 
-export type ExecuteCypherQueryData = {
-    body: CypherQueryRequest;
+export type ExecuteCypherData = {
+    body: CypherStatementRequest;
     path: {
         /**
          * Graph Id
@@ -17034,10 +17256,10 @@ export type ExecuteCypherQueryData = {
          */
         test_mode?: boolean;
     };
-    url: '/v1/graphs/{graph_id}/query';
+    url: '/v1/graphs/{graph_id}/query/cypher';
 };
 
-export type ExecuteCypherQueryErrors = {
+export type ExecuteCypherErrors = {
     /**
      * Invalid request
      */
@@ -17076,9 +17298,9 @@ export type ExecuteCypherQueryErrors = {
     503: unknown;
 };
 
-export type ExecuteCypherQueryError = ExecuteCypherQueryErrors[keyof ExecuteCypherQueryErrors];
+export type ExecuteCypherError = ExecuteCypherErrors[keyof ExecuteCypherErrors];
 
-export type ExecuteCypherQueryResponses = {
+export type ExecuteCypherResponses = {
     /**
      * Successful Response
      */
@@ -17088,6 +17310,67 @@ export type ExecuteCypherQueryResponses = {
      */
     202: unknown;
 };
+
+export type ExecuteSqlData = {
+    /**
+     * SQL statement request
+     */
+    body: SqlStatementRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/query/sql';
+};
+
+export type ExecuteSqlErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Query timeout
+     */
+    408: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ExecuteSqlError = ExecuteSqlErrors[keyof ExecuteSqlErrors];
+
+export type ExecuteSqlResponses = {
+    /**
+     * Successful Response
+     */
+    200: SqlStatementResponse;
+};
+
+export type ExecuteSqlResponse = ExecuteSqlResponses[keyof ExecuteSqlResponses];
 
 export type GetGraphSchemaData = {
     body?: never;
@@ -18040,67 +18323,6 @@ export type ListTablesResponses = {
 
 export type ListTablesResponse = ListTablesResponses[keyof ListTablesResponses];
 
-export type QueryTablesData = {
-    /**
-     * SQL query request
-     */
-    body: TableQueryRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/tables/query';
-};
-
-export type QueryTablesErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Query timeout
-     */
-    408: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type QueryTablesError = QueryTablesErrors[keyof QueryTablesErrors];
-
-export type QueryTablesResponses = {
-    /**
-     * Successful Response
-     */
-    200: TableQueryResponse;
-};
-
-export type QueryTablesResponse = QueryTablesResponses[keyof QueryTablesResponses];
-
 export type SearchDocumentsData = {
     body: SearchRequest;
     path: {
@@ -18280,118 +18502,6 @@ export type ListDocumentsResponses = {
 
 export type ListDocumentsResponse = ListDocumentsResponses[keyof ListDocumentsResponses];
 
-export type UploadDocumentData = {
-    body: DocumentUploadRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/documents';
-};
-
-export type UploadDocumentErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type UploadDocumentError = UploadDocumentErrors[keyof UploadDocumentErrors];
-
-export type UploadDocumentResponses = {
-    /**
-     * Successful Response
-     */
-    200: DocumentUploadResponse;
-};
-
-export type UploadDocumentResponse = UploadDocumentResponses[keyof UploadDocumentResponses];
-
-export type DeleteDocumentData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Document Id
-         */
-        document_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/documents/{document_id}';
-};
-
-export type DeleteDocumentErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type DeleteDocumentError = DeleteDocumentErrors[keyof DeleteDocumentErrors];
-
-export type DeleteDocumentResponses = {
-    /**
-     * Successful Response
-     */
-    204: void;
-};
-
-export type DeleteDocumentResponse = DeleteDocumentResponses[keyof DeleteDocumentResponses];
-
 export type GetDocumentData = {
     body?: never;
     path: {
@@ -18450,23 +18560,40 @@ export type GetDocumentResponses = {
 
 export type GetDocumentResponse = GetDocumentResponses[keyof GetDocumentResponses];
 
-export type UpdateDocumentData = {
-    body: DocumentUpdateRequest;
+export type ListMemoriesData = {
+    body?: never;
     path: {
         /**
          * Graph Id
          */
         graph_id: string;
-        /**
-         * Document Id
-         */
-        document_id: string;
     };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/documents/{document_id}';
+    query?: {
+        /**
+         * Memory Type
+         *
+         * Filter by memory type
+         */
+        memory_type?: string | null;
+        /**
+         * Source
+         *
+         * Filter by source
+         */
+        source?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/graphs/{graph_id}/memory';
 };
 
-export type UpdateDocumentErrors = {
+export type ListMemoriesErrors = {
     /**
      * Invalid request
      */
@@ -18497,16 +18624,132 @@ export type UpdateDocumentErrors = {
     500: ErrorResponse;
 };
 
-export type UpdateDocumentError = UpdateDocumentErrors[keyof UpdateDocumentErrors];
+export type ListMemoriesError = ListMemoriesErrors[keyof ListMemoriesErrors];
 
-export type UpdateDocumentResponses = {
+export type ListMemoriesResponses = {
     /**
      * Successful Response
      */
-    200: DocumentUploadResponse;
+    200: MemoryListResponse;
 };
 
-export type UpdateDocumentResponse = UpdateDocumentResponses[keyof UpdateDocumentResponses];
+export type ListMemoriesResponse = ListMemoriesResponses[keyof ListMemoriesResponses];
+
+export type GetMemoryData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Memory Id
+         */
+        memory_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/memory/{memory_id}';
+};
+
+export type GetMemoryErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetMemoryError = GetMemoryErrors[keyof GetMemoryErrors];
+
+export type GetMemoryResponses = {
+    /**
+     * Successful Response
+     */
+    200: MemoryRecord;
+};
+
+export type GetMemoryResponse = GetMemoryResponses[keyof GetMemoryResponses];
+
+export type RecallMemoryData = {
+    body: MemoryRecallRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/memory/recall';
+};
+
+export type RecallMemoryErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Semantic memory not available
+     */
+    503: unknown;
+};
+
+export type RecallMemoryError = RecallMemoryErrors[keyof RecallMemoryErrors];
+
+export type RecallMemoryResponses = {
+    /**
+     * Successful Response
+     */
+    200: SearchResponse;
+};
+
+export type RecallMemoryResponse = RecallMemoryResponses[keyof RecallMemoryResponses];
 
 export type OpCreateSubgraphData = {
     body: CreateSubgraphRequest;
@@ -18892,70 +19135,6 @@ export type OpChangeTierResponses = {
 
 export type OpChangeTierResponse = OpChangeTierResponses[keyof OpChangeTierResponses];
 
-export type OpChangeReportingStyleData = {
-    body: ChangeReportingStyleOp;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/operations/change-reporting-style';
-};
-
-export type OpChangeReportingStyleErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OpChangeReportingStyleError = OpChangeReportingStyleErrors[keyof OpChangeReportingStyleErrors];
-
-export type OpChangeReportingStyleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelope;
-};
-
-export type OpChangeReportingStyleResponse = OpChangeReportingStyleResponses[keyof OpChangeReportingStyleResponses];
-
 export type OpMaterializeData = {
     body: MaterializeOp;
     headers?: {
@@ -19019,6 +19198,518 @@ export type OpMaterializeResponses = {
 };
 
 export type OpMaterializeResponse = OpMaterializeResponses[keyof OpMaterializeResponses];
+
+export type OpRememberData = {
+    body: RememberOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/remember';
+};
+
+export type OpRememberErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpRememberError = OpRememberErrors[keyof OpRememberErrors];
+
+export type OpRememberResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpRememberResponse = OpRememberResponses[keyof OpRememberResponses];
+
+export type OpForgetData = {
+    body: ForgetOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/forget';
+};
+
+export type OpForgetErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpForgetError = OpForgetErrors[keyof OpForgetErrors];
+
+export type OpForgetResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpForgetResponse = OpForgetResponses[keyof OpForgetResponses];
+
+export type OpUpdateMemoryData = {
+    body: UpdateMemoryOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/update-memory';
+};
+
+export type OpUpdateMemoryErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpUpdateMemoryError = OpUpdateMemoryErrors[keyof OpUpdateMemoryErrors];
+
+export type OpUpdateMemoryResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpUpdateMemoryResponse = OpUpdateMemoryResponses[keyof OpUpdateMemoryResponses];
+
+export type OpIndexDocumentData = {
+    body: IndexDocumentOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/index-document';
+};
+
+export type OpIndexDocumentErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpIndexDocumentError = OpIndexDocumentErrors[keyof OpIndexDocumentErrors];
+
+export type OpIndexDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpIndexDocumentResponse = OpIndexDocumentResponses[keyof OpIndexDocumentResponses];
+
+export type OpDeleteDocumentData = {
+    body: DeleteDocumentOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/delete-document';
+};
+
+export type OpDeleteDocumentErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpDeleteDocumentError = OpDeleteDocumentErrors[keyof OpDeleteDocumentErrors];
+
+export type OpDeleteDocumentResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteDocumentResponse = OpDeleteDocumentResponses[keyof OpDeleteDocumentResponses];
+
+export type OpCreateFileUploadData = {
+    body: FileUploadRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/create-file-upload';
+};
+
+export type OpCreateFileUploadErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpCreateFileUploadError = OpCreateFileUploadErrors[keyof OpCreateFileUploadErrors];
+
+export type OpCreateFileUploadResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpCreateFileUploadResponse = OpCreateFileUploadResponses[keyof OpCreateFileUploadResponses];
+
+export type OpIngestFileData = {
+    body: IngestFileOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/ingest-file';
+};
+
+export type OpIngestFileErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpIngestFileError = OpIngestFileErrors[keyof OpIngestFileErrors];
+
+export type OpIngestFileResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpIngestFileResponse = OpIngestFileResponses[keyof OpIngestFileResponses];
+
+export type OpDeleteFileData = {
+    body: DeleteFileOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/delete-file';
+};
+
+export type OpDeleteFileErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpDeleteFileError = OpDeleteFileErrors[keyof OpDeleteFileErrors];
+
+export type OpDeleteFileResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type OpDeleteFileResponse = OpDeleteFileResponses[keyof OpDeleteFileResponses];
 
 export type ListFilesData = {
     body?: never;
@@ -19087,130 +19778,6 @@ export type ListFilesResponses = {
 
 export type ListFilesResponse = ListFilesResponses[keyof ListFilesResponses];
 
-export type CreateFileUploadData = {
-    /**
-     * Upload request with table_name
-     */
-    body: FileUploadRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/files';
-};
-
-export type CreateFileUploadErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type CreateFileUploadError = CreateFileUploadErrors[keyof CreateFileUploadErrors];
-
-export type CreateFileUploadResponses = {
-    /**
-     * Successful Response
-     */
-    200: FileUploadResponse;
-};
-
-export type CreateFileUploadResponse = CreateFileUploadResponses[keyof CreateFileUploadResponses];
-
-export type DeleteFileData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * File Id
-         *
-         * File ID
-         */
-        file_id: string;
-    };
-    query?: {
-        /**
-         * Cascade
-         *
-         * If true, delete from all layers including DuckDB and mark graph stale
-         */
-        cascade?: boolean;
-    };
-    url: '/v1/graphs/{graph_id}/files/{file_id}';
-};
-
-export type DeleteFileErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type DeleteFileError = DeleteFileErrors[keyof DeleteFileErrors];
-
-export type DeleteFileResponses = {
-    /**
-     * Successful Response
-     */
-    200: DeleteFileResponse;
-};
-
-export type DeleteFileResponse2 = DeleteFileResponses[keyof DeleteFileResponses];
-
 export type GetFileData = {
     body?: never;
     path: {
@@ -19270,73 +19837,6 @@ export type GetFileResponses = {
 };
 
 export type GetFileResponse = GetFileResponses[keyof GetFileResponses];
-
-export type UpdateFileData = {
-    /**
-     * Status update request
-     */
-    body: FileStatusUpdate;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * File Id
-         *
-         * File ID
-         */
-        file_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/files/{file_id}';
-};
-
-export type UpdateFileErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type UpdateFileError = UpdateFileErrors[keyof UpdateFileErrors];
-
-export type UpdateFileResponses = {
-    /**
-     * Response Updatefile
-     *
-     * Successful Response
-     */
-    200: {
-        [key: string]: unknown;
-    };
-};
-
-export type UpdateFileResponse = UpdateFileResponses[keyof UpdateFileResponses];
 
 export type GetGraphsData = {
     body?: never;
@@ -20569,6 +21069,70 @@ export type OpUpdateEntityResponses = {
 };
 
 export type OpUpdateEntityResponse = OpUpdateEntityResponses[keyof OpUpdateEntityResponses];
+
+export type OpChangeReportingStyleData = {
+    body: ChangeReportingStyleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/change-reporting-style';
+};
+
+export type OpChangeReportingStyleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OpChangeReportingStyleError = OpChangeReportingStyleErrors[keyof OpChangeReportingStyleErrors];
+
+export type OpChangeReportingStyleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeChangeReportingStyleResponse;
+};
+
+export type OpChangeReportingStyleResponse = OpChangeReportingStyleResponses[keyof OpChangeReportingStyleResponses];
 
 export type OpCreateTaxonomyBlockData = {
     body: CreateTaxonomyBlockRequest;
