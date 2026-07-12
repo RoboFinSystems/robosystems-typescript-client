@@ -25,12 +25,12 @@
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
 import { ClientError } from 'graphql-request'
 import {
-  opCreatePortfolioBlock,
-  opCreateSecurity,
-  opDeletePortfolioBlock,
-  opDeleteSecurity,
-  opUpdatePortfolioBlock,
-  opUpdateSecurity,
+  createPortfolioBlock,
+  createSecurity,
+  deletePortfolioBlock,
+  deleteSecurity,
+  updatePortfolioBlock,
+  updateSecurity,
 } from '../sdk/sdk.gen'
 import type {
   CreatePortfolioBlockRequest,
@@ -156,7 +156,7 @@ export class InvestorClient {
   ): Promise<InvestorPortfolioBlock> {
     const envelope = await this.callOperation(
       'Create portfolio block',
-      opCreatePortfolioBlock({ path: { graph_id: graphId }, body })
+      createPortfolioBlock({ path: { graph_id: graphId }, body })
     )
     return rawToPortfolioBlock(envelope.result as unknown as RawPortfolioBlockResponse)
   }
@@ -181,7 +181,7 @@ export class InvestorClient {
     }
     const envelope = await this.callOperation(
       'Update portfolio block',
-      opUpdatePortfolioBlock({ path: { graph_id: graphId }, body })
+      updatePortfolioBlock({ path: { graph_id: graphId }, body })
     )
     return rawToPortfolioBlock(envelope.result as unknown as RawPortfolioBlockResponse)
   }
@@ -203,7 +203,7 @@ export class InvestorClient {
     }
     const envelope = await this.callOperation(
       'Delete portfolio block',
-      opDeletePortfolioBlock({ path: { graph_id: graphId }, body })
+      deletePortfolioBlock({ path: { graph_id: graphId }, body })
     )
     return envelope.result ?? { deleted: true }
   }
@@ -254,7 +254,7 @@ export class InvestorClient {
   async createSecurity(graphId: string, body: CreateSecurityRequest): Promise<InvestorSecurity> {
     const envelope = await this.callOperation(
       'Create security',
-      opCreateSecurity({ path: { graph_id: graphId }, body })
+      createSecurity({ path: { graph_id: graphId }, body })
     )
     return rawToInvestorSecurity(envelope.result as unknown as RawSecurityResponse)
   }
@@ -267,7 +267,7 @@ export class InvestorClient {
   ): Promise<InvestorSecurity> {
     const envelope = await this.callOperation(
       'Update security',
-      opUpdateSecurity({
+      updateSecurity({
         path: { graph_id: graphId },
         body: {
           ...updates,
@@ -282,7 +282,7 @@ export class InvestorClient {
   async deleteSecurity(graphId: string, securityId: string): Promise<{ deleted: boolean }> {
     const envelope = await this.callOperation(
       'Delete security',
-      opDeleteSecurity({
+      deleteSecurity({
         path: { graph_id: graphId },
         body: { security_id: securityId },
       })
@@ -370,7 +370,7 @@ export class InvestorClient {
   }
 
   // Generic over the SDK call's response shape so typed ops (e.g.
-  // `opCreatePortfolioBlock`, which returns
+  // `createPortfolioBlock`, which returns
   // `OperationEnvelopePortfolioBlockEnvelope`) flow through with a typed
   // `envelope.result` instead of being widened to `unknown`. Untyped ops
   // continue to land as `OperationEnvelope` automatically.
