@@ -2189,7 +2189,7 @@ export type CreateSubgraphRequest = {
      */
     schema_extensions?: Array<string>;
     /**
-     * Type of subgraph (currently only 'static' is supported)
+     * Type of subgraph: 'static' (parent's base + extensions), 'knowledge' (knowledge-only schema), or 'empty' (bare database, no schema).
      */
     subgraph_type?: SubgraphType;
     /**
@@ -11243,7 +11243,7 @@ export type SearchRequest = {
     /**
      * Source Type
      *
-     * Filter by source type (xbrl_textblock, narrative_section, ixbrl_disclosure, uploaded_doc, memory)
+     * Filter by source type (xbrl_textblock, narrative_section, ixbrl_disclosure, uploaded_doc, connection_doc)
      */
     source_type?: string | null;
     /**
@@ -12075,7 +12075,7 @@ export type SubgraphSummary = {
  *
  * Types of subgraphs.
  */
-export type SubgraphType = 'static' | 'temporal' | 'versioned' | 'memory';
+export type SubgraphType = 'static' | 'knowledge' | 'empty';
 
 /**
  * SuccessResponse

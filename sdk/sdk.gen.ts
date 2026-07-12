@@ -1042,7 +1042,7 @@ export const opMaterialize = <ThrowOnError extends boolean = false>(options: Opt
 });
 
 /**
- * Remember (write semantic memory)
+ * Store a Semantic Memory
  *
  * Store a semantic memory in the graph's per-graph memory store. The text is embedded locally; recall it later via `POST /memory/recall`.
  *
@@ -1059,7 +1059,7 @@ export const opRemember = <ThrowOnError extends boolean = false>(options: Option
 });
 
 /**
- * Forget (delete a semantic memory)
+ * Delete a Semantic Memory
  *
  * Delete a semantic memory by its server-generated id.
  *
@@ -1076,7 +1076,7 @@ export const opForget = <ThrowOnError extends boolean = false>(options: Options<
 });
 
 /**
- * Update Memory (edit a semantic memory)
+ * Update a Semantic Memory
  *
  * Partially update a stored memory by its server-generated id. Only supplied fields change; the memory is re-embedded when `text` changes.
  *
@@ -1093,7 +1093,7 @@ export const opUpdateMemory = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * Index Document (write to the corpus)
+ * Index a Document
  *
  * Create a document (omit `document_id`) or update one (provide it). Stored in PostgreSQL, synced to OpenSearch for search.
  *
@@ -1110,7 +1110,7 @@ export const opIndexDocument = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * Delete Document (remove from the corpus)
+ * Delete a Document
  *
  * Delete a document from PostgreSQL and OpenSearch by id.
  *
@@ -1127,7 +1127,7 @@ export const opDeleteDocument = <ThrowOnError extends boolean = false>(options: 
 });
 
 /**
- * Create File Upload (presign an S3 upload)
+ * Presign a File Upload
  *
  * Presign an S3 URL for direct upload and register the file. After uploading to the returned URL, call `POST /operations/ingest-file` to stage it into DuckDB. The staging table is auto-created if missing. Not allowed on entity graphs or shared repositories.
  *
@@ -1144,7 +1144,7 @@ export const opCreateFileUpload = <ThrowOnError extends boolean = false>(options
 });
 
 /**
- * Ingest File (stage an uploaded file)
+ * Stage an Uploaded File
  *
  * Mark an uploaded file ready and stage it into DuckDB. Small files stage directly (sync); large files stage via a background job (returns a pending envelope with an `operation_id` to monitor). Set `ingest_to_graph` to auto-materialize into the graph after staging.
  *
@@ -1161,7 +1161,7 @@ export const opIngestFile = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
- * Delete File
+ * Delete a File
  *
  * Delete a file from S3 and PostgreSQL. `cascade=true` also removes its rows from DuckDB staging tables and marks the graph stale.
  *
