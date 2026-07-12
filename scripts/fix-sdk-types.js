@@ -8,6 +8,8 @@
  * Current fixes:
  * 1. Remove unused @ts-expect-error directives (openapi-ts generates these but they're not needed)
  * 2. Simplify `(string & {})` type patterns (optional, improves compatibility)
+ * 3. Collapse redundant `string | string` unions (openapi-ts >=0.92 stopped
+ *    deduping anyOf members that both map to `string`)
  */
 
 const fs = require('fs')
@@ -36,6 +38,20 @@ function fixSdkFile(filePath) {
   if (content.includes('(string & {})')) {
     content = content.replace(/ \| \(string & \{\}\)/g, '')
     content = content.replace(/\(string & \{\}\)/g, 'string')
+    modified = true
+  }
+
+  // Fix 3: Collapse redundant `string | string` unions.
+  // Schemas like `anyOf: [{type: string, format: date-time}, {type: string}]`
+  // deduped to a single `string` under openapi-ts 0.91, but 0.92+ emit
+  // `string | string` (both members map to the same TS type). It's semantically
+  // identical to `string`; collapse it for clean output. `\b` anchoring keeps us
+  // from chewing into identifiers such as `MyString`. Loop until stable so runs
+  // longer than two members (`string | string | string`) also fully collapse.
+  if (/\bstring \| string\b/.test(content)) {
+    while (/\bstring \| string\b/.test(content)) {
+      content = content.replace(/\bstring \| string\b/g, 'string')
+    }
     modified = true
   }
 
