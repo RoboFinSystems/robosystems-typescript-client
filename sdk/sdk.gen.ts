@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AutoSelectOperatorData, AutoSelectOperatorErrors, AutoSelectOperatorResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, CancelRepositorySubscriptionData, CancelRepositorySubscriptionErrors, CancelRepositorySubscriptionResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, ExecuteCypherData, ExecuteCypherErrors, ExecuteCypherResponses, ExecuteSpecificOperatorData, ExecuteSpecificOperatorErrors, ExecuteSpecificOperatorResponses, ExecuteSqlData, ExecuteSqlErrors, ExecuteSqlResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigErrors, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetMemoryData, GetMemoryErrors, GetMemoryResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOperatorMetadataData, GetOperatorMetadataErrors, GetOperatorMetadataResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyErrors, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListMemoriesData, ListMemoriesErrors, ListMemoriesResponses, ListOperatorsData, ListOperatorsErrors, ListOperatorsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysErrors, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsErrors, ListUserOrgsResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserErrors, LogoutUserResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, OpAddPublishListMembersData, OpAddPublishListMembersErrors, OpAddPublishListMembersResponses, OpAutoMapElementsData, OpAutoMapElementsErrors, OpAutoMapElementsResponses, OpBuildFactGridData, OpBuildFactGridErrors, OpBuildFactGridResponses, OpChangeReportingStyleData, OpChangeReportingStyleErrors, OpChangeReportingStyleResponses, OpChangeTierData, OpChangeTierErrors, OpChangeTierResponses, OpClosePeriodData, OpClosePeriodErrors, OpClosePeriodResponses, OpCreateAgentData, OpCreateAgentErrors, OpCreateAgentResponses, OpCreateBackupData, OpCreateBackupErrors, OpCreateBackupResponses, OpCreateEventBlockData, OpCreateEventBlockErrors, OpCreateEventBlockResponses, OpCreateEventHandlerData, OpCreateEventHandlerErrors, OpCreateEventHandlerResponses, OpCreateFileUploadData, OpCreateFileUploadErrors, OpCreateFileUploadResponses, OpCreateInformationBlockData, OpCreateInformationBlockErrors, OpCreateInformationBlockResponses, OpCreateMappingAssociationData, OpCreateMappingAssociationErrors, OpCreateMappingAssociationResponses, OpCreatePortfolioBlockData, OpCreatePortfolioBlockErrors, OpCreatePortfolioBlockResponses, OpCreatePublishListData, OpCreatePublishListErrors, OpCreatePublishListResponses, OpCreateReportData, OpCreateReportErrors, OpCreateReportResponses, OpCreateSecurityData, OpCreateSecurityErrors, OpCreateSecurityResponses, OpCreateSubgraphData, OpCreateSubgraphErrors, OpCreateSubgraphResponses, OpCreateTaxonomyBlockData, OpCreateTaxonomyBlockErrors, OpCreateTaxonomyBlockResponses, OpDeleteDocumentData, OpDeleteDocumentErrors, OpDeleteDocumentResponses, OpDeleteFileData, OpDeleteFileErrors, OpDeleteFileResponses, OpDeleteGraphData, OpDeleteGraphErrors, OpDeleteGraphResponses, OpDeleteInformationBlockData, OpDeleteInformationBlockErrors, OpDeleteInformationBlockResponses, OpDeleteJournalEntryData, OpDeleteJournalEntryErrors, OpDeleteJournalEntryResponses, OpDeleteMappingAssociationData, OpDeleteMappingAssociationErrors, OpDeleteMappingAssociationResponses, OpDeletePortfolioBlockData, OpDeletePortfolioBlockErrors, OpDeletePortfolioBlockResponses, OpDeletePublishListData, OpDeletePublishListErrors, OpDeletePublishListResponses, OpDeleteReportData, OpDeleteReportErrors, OpDeleteReportResponses, OpDeleteSecurityData, OpDeleteSecurityErrors, OpDeleteSecurityResponses, OpDeleteSubgraphData, OpDeleteSubgraphErrors, OpDeleteSubgraphResponses, OpDeleteTaxonomyBlockData, OpDeleteTaxonomyBlockErrors, OpDeleteTaxonomyBlockResponses, OpEvaluateRulesData, OpEvaluateRulesErrors, OpEvaluateRulesResponses, OpExecuteEventBlockData, OpExecuteEventBlockErrors, OpExecuteEventBlockResponses, OpFileReportData, OpFileReportErrors, OpFileReportResponses, OpFinancialStatementAnalysisData, OpFinancialStatementAnalysisErrors, OpFinancialStatementAnalysisResponses, OpForgetData, OpForgetErrors, OpForgetResponses, OpIndexDocumentData, OpIndexDocumentErrors, OpIndexDocumentResponses, OpIngestFileData, OpIngestFileErrors, OpIngestFileResponses, OpInitializeLedgerData, OpInitializeLedgerErrors, OpInitializeLedgerResponses, OpLinkEntityTaxonomyData, OpLinkEntityTaxonomyErrors, OpLinkEntityTaxonomyResponses, OpLiveFinancialStatementData, OpLiveFinancialStatementErrors, OpLiveFinancialStatementResponses, OpMaterializeData, OpMaterializeErrors, OpMaterializeResponses, OpPreviewEventBlockData, OpPreviewEventBlockErrors, OpPreviewEventBlockResponses, OpPromoteObligationsData, OpPromoteObligationsErrors, OpPromoteObligationsResponses, OpRebuildScheduleData, OpRebuildScheduleErrors, OpRebuildScheduleResponses, OpRegenerateReportData, OpRegenerateReportErrors, OpRegenerateReportResponses, OpRememberData, OpRememberErrors, OpRememberResponses, OpRemovePublishListMemberData, OpRemovePublishListMemberErrors, OpRemovePublishListMemberResponses, OpReopenPeriodData, OpReopenPeriodErrors, OpReopenPeriodResponses, OpRestoreBackupData, OpRestoreBackupErrors, OpRestoreBackupResponses, OpSetCloseTargetData, OpSetCloseTargetErrors, OpSetCloseTargetResponses, OpShareReportData, OpShareReportErrors, OpShareReportResponses, OpTransitionFilingStatusData, OpTransitionFilingStatusErrors, OpTransitionFilingStatusResponses, OpUpdateAgentData, OpUpdateAgentErrors, OpUpdateAgentResponses, OpUpdateEntityData, OpUpdateEntityErrors, OpUpdateEntityResponses, OpUpdateEventBlockData, OpUpdateEventBlockErrors, OpUpdateEventBlockResponses, OpUpdateEventHandlerData, OpUpdateEventHandlerErrors, OpUpdateEventHandlerResponses, OpUpdateInformationBlockData, OpUpdateInformationBlockErrors, OpUpdateInformationBlockResponses, OpUpdateJournalEntryData, OpUpdateJournalEntryErrors, OpUpdateJournalEntryResponses, OpUpdateMemoryData, OpUpdateMemoryErrors, OpUpdateMemoryResponses, OpUpdatePortfolioBlockData, OpUpdatePortfolioBlockErrors, OpUpdatePortfolioBlockResponses, OpUpdatePublishListData, OpUpdatePublishListErrors, OpUpdatePublishListResponses, OpUpdateSecurityData, OpUpdateSecurityErrors, OpUpdateSecurityResponses, OpUpdateTaxonomyBlockData, OpUpdateTaxonomyBlockErrors, OpUpdateTaxonomyBlockResponses, RecallMemoryData, RecallMemoryErrors, RecallMemoryResponses, RecommendOperatorData, RecommendOperatorErrors, RecommendOperatorResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SetConnectionWritePolicyData, SetConnectionWritePolicyErrors, SetConnectionWritePolicyResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
+import type { AddPublishListMembersData, AddPublishListMembersErrors, AddPublishListMembersResponses, AutoMapElementsData, AutoMapElementsErrors, AutoMapElementsResponses, AutoSelectOperatorData, AutoSelectOperatorErrors, AutoSelectOperatorResponses, BatchProcessQueriesData, BatchProcessQueriesErrors, BatchProcessQueriesResponses, BuildFactGridData, BuildFactGridErrors, BuildFactGridResponses, CallMcpToolData, CallMcpToolErrors, CallMcpToolResponses, CancelOperationData, CancelOperationErrors, CancelOperationResponses, CancelOrgSubscriptionData, CancelOrgSubscriptionErrors, CancelOrgSubscriptionResponses, CancelRepositorySubscriptionData, CancelRepositorySubscriptionErrors, CancelRepositorySubscriptionResponses, ChangeReportingStyleData, ChangeReportingStyleErrors, ChangeReportingStyleResponses, ChangeSubscriptionPlanData, ChangeSubscriptionPlanErrors, ChangeSubscriptionPlanResponses, ChangeTierData, ChangeTierErrors, ChangeTierResponses, CheckPasswordStrengthData, CheckPasswordStrengthErrors, CheckPasswordStrengthResponses, ClosePeriodData, ClosePeriodErrors, ClosePeriodResponses, CompleteSsoAuthData, CompleteSsoAuthErrors, CompleteSsoAuthResponses, CreateAgentData, CreateAgentErrors, CreateAgentResponses, CreateBackupData, CreateBackupErrors, CreateBackupResponses, CreateCheckoutSessionData, CreateCheckoutSessionErrors, CreateCheckoutSessionResponses, CreateConnectionData, CreateConnectionErrors, CreateConnectionResponses, CreateEventBlockData, CreateEventBlockErrors, CreateEventBlockResponses, CreateEventHandlerData, CreateEventHandlerErrors, CreateEventHandlerResponses, CreateFileUploadData, CreateFileUploadErrors, CreateFileUploadResponses, CreateGraphData, CreateGraphErrors, CreateGraphResponses, CreateInformationBlockData, CreateInformationBlockErrors, CreateInformationBlockResponses, CreateMappingAssociationData, CreateMappingAssociationErrors, CreateMappingAssociationResponses, CreatePortalSessionData, CreatePortalSessionErrors, CreatePortalSessionResponses, CreatePortfolioBlockData, CreatePortfolioBlockErrors, CreatePortfolioBlockResponses, CreatePublishListData, CreatePublishListErrors, CreatePublishListResponses, CreateReportData, CreateReportErrors, CreateReportResponses, CreateRepositorySubscriptionData, CreateRepositorySubscriptionErrors, CreateRepositorySubscriptionResponses, CreateSecurityData, CreateSecurityErrors, CreateSecurityResponses, CreateSubgraphData, CreateSubgraphErrors, CreateSubgraphResponses, CreateTaxonomyBlockData, CreateTaxonomyBlockErrors, CreateTaxonomyBlockResponses, CreateUserApiKeyData, CreateUserApiKeyErrors, CreateUserApiKeyResponses, DeleteConnectionData, DeleteConnectionErrors, DeleteConnectionResponses, DeleteDocumentData, DeleteDocumentErrors, DeleteDocumentResponses, DeleteFileData, DeleteFileErrors, DeleteFileResponses, DeleteGraphData, DeleteGraphErrors, DeleteGraphResponses, DeleteInformationBlockData, DeleteInformationBlockErrors, DeleteInformationBlockResponses, DeleteJournalEntryData, DeleteJournalEntryErrors, DeleteJournalEntryResponses, DeleteMappingAssociationData, DeleteMappingAssociationErrors, DeleteMappingAssociationResponses, DeletePortfolioBlockData, DeletePortfolioBlockErrors, DeletePortfolioBlockResponses, DeletePublishListData, DeletePublishListErrors, DeletePublishListResponses, DeleteReportData, DeleteReportErrors, DeleteReportResponses, DeleteSecurityData, DeleteSecurityErrors, DeleteSecurityResponses, DeleteSubgraphData, DeleteSubgraphErrors, DeleteSubgraphResponses, DeleteTaxonomyBlockData, DeleteTaxonomyBlockErrors, DeleteTaxonomyBlockResponses, EvaluateRulesData, EvaluateRulesErrors, EvaluateRulesResponses, ExecuteCypherData, ExecuteCypherErrors, ExecuteCypherResponses, ExecuteEventBlockData, ExecuteEventBlockErrors, ExecuteEventBlockResponses, ExecuteSpecificOperatorData, ExecuteSpecificOperatorErrors, ExecuteSpecificOperatorResponses, ExecuteSqlData, ExecuteSqlErrors, ExecuteSqlResponses, ExportGraphSchemaData, ExportGraphSchemaErrors, ExportGraphSchemaResponses, FileReportData, FileReportErrors, FileReportResponses, FinancialStatementAnalysisData, FinancialStatementAnalysisErrors, FinancialStatementAnalysisResponses, ForgetData, ForgetErrors, ForgetResponses, ForgotPasswordData, ForgotPasswordErrors, ForgotPasswordResponses, GenerateSsoTokenData, GenerateSsoTokenErrors, GenerateSsoTokenResponses, GetAvailableExtensionsData, GetAvailableExtensionsErrors, GetAvailableExtensionsResponses, GetAvailableGraphTiersData, GetAvailableGraphTiersErrors, GetAvailableGraphTiersResponses, GetBackupDownloadUrlData, GetBackupDownloadUrlErrors, GetBackupDownloadUrlResponses, GetBackupStatsData, GetBackupStatsErrors, GetBackupStatsResponses, GetCaptchaConfigData, GetCaptchaConfigErrors, GetCaptchaConfigResponses, GetCheckoutStatusData, GetCheckoutStatusErrors, GetCheckoutStatusResponses, GetConnectionData, GetConnectionErrors, GetConnectionOptionsData, GetConnectionOptionsErrors, GetConnectionOptionsResponses, GetConnectionResponses, GetCreditSummaryData, GetCreditSummaryErrors, GetCreditSummaryResponses, GetCurrentAuthUserData, GetCurrentAuthUserErrors, GetCurrentAuthUserResponses, GetCurrentUserData, GetCurrentUserErrors, GetCurrentUserResponses, GetDatabaseHealthData, GetDatabaseHealthErrors, GetDatabaseHealthResponses, GetDatabaseInfoData, GetDatabaseInfoErrors, GetDatabaseInfoResponses, GetDocumentData, GetDocumentErrors, GetDocumentResponses, GetDocumentSectionData, GetDocumentSectionErrors, GetDocumentSectionResponses, GetFileData, GetFileErrors, GetFileResponses, GetGraphCapacityData, GetGraphCapacityErrors, GetGraphCapacityResponses, GetGraphLimitsData, GetGraphLimitsErrors, GetGraphLimitsResponses, GetGraphMetricsData, GetGraphMetricsErrors, GetGraphMetricsResponses, GetGraphSchemaData, GetGraphSchemaErrors, GetGraphSchemaResponses, GetGraphsData, GetGraphsErrors, GetGraphsResponses, GetGraphSubscriptionData, GetGraphSubscriptionErrors, GetGraphSubscriptionResponses, GetGraphUsageAnalyticsData, GetGraphUsageAnalyticsErrors, GetGraphUsageAnalyticsResponses, GetMemoryData, GetMemoryErrors, GetMemoryResponses, GetOperationStatusData, GetOperationStatusErrors, GetOperationStatusResponses, GetOperatorMetadataData, GetOperatorMetadataErrors, GetOperatorMetadataResponses, GetOrgBillingCustomerData, GetOrgBillingCustomerErrors, GetOrgBillingCustomerResponses, GetOrgData, GetOrgErrors, GetOrgLimitsData, GetOrgLimitsErrors, GetOrgLimitsResponses, GetOrgResponses, GetOrgSubscriptionData, GetOrgSubscriptionErrors, GetOrgSubscriptionResponses, GetOrgUpcomingInvoiceData, GetOrgUpcomingInvoiceErrors, GetOrgUpcomingInvoiceResponses, GetOrgUsageData, GetOrgUsageErrors, GetOrgUsageResponses, GetPasswordPolicyData, GetPasswordPolicyErrors, GetPasswordPolicyResponses, GetServiceOfferingsData, GetServiceOfferingsErrors, GetServiceOfferingsResponses, GetServiceStatusData, GetServiceStatusResponses, GetSubgraphInfoData, GetSubgraphInfoErrors, GetSubgraphInfoResponses, GetSubgraphQuotaData, GetSubgraphQuotaErrors, GetSubgraphQuotaResponses, HandleHttpGetExtensionsGraphIdGraphqlGetData, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpPostExtensionsGraphIdGraphqlPostData, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, HandleHttpPostExtensionsGraphIdGraphqlPostResponses, IndexDocumentData, IndexDocumentErrors, IndexDocumentResponses, IngestFileData, IngestFileErrors, IngestFileResponses, InitializeLedgerData, InitializeLedgerErrors, InitializeLedgerResponses, InitOAuthData, InitOAuthErrors, InitOAuthResponses, InviteOrgMemberData, InviteOrgMemberErrors, InviteOrgMemberResponses, LinkEntityTaxonomyData, LinkEntityTaxonomyErrors, LinkEntityTaxonomyResponses, ListBackupsData, ListBackupsErrors, ListBackupsResponses, ListConnectionsData, ListConnectionsErrors, ListConnectionsResponses, ListCreditTransactionsData, ListCreditTransactionsErrors, ListCreditTransactionsResponses, ListDocumentsData, ListDocumentsErrors, ListDocumentsResponses, ListFilesData, ListFilesErrors, ListFilesResponses, ListMcpToolsData, ListMcpToolsErrors, ListMcpToolsResponses, ListMemoriesData, ListMemoriesErrors, ListMemoriesResponses, ListOperatorsData, ListOperatorsErrors, ListOperatorsResponses, ListOrgGraphsData, ListOrgGraphsErrors, ListOrgGraphsResponses, ListOrgInvoicesData, ListOrgInvoicesErrors, ListOrgInvoicesResponses, ListOrgMembersData, ListOrgMembersErrors, ListOrgMembersResponses, ListOrgSubscriptionsData, ListOrgSubscriptionsErrors, ListOrgSubscriptionsResponses, ListSubgraphsData, ListSubgraphsErrors, ListSubgraphsResponses, ListTablesData, ListTablesErrors, ListTablesResponses, ListUserApiKeysData, ListUserApiKeysErrors, ListUserApiKeysResponses, ListUserOrgsData, ListUserOrgsErrors, ListUserOrgsResponses, LiveFinancialStatementData, LiveFinancialStatementErrors, LiveFinancialStatementResponses, LoginUserData, LoginUserErrors, LoginUserResponses, LogoutUserData, LogoutUserErrors, LogoutUserResponses, MaterializeData, MaterializeErrors, MaterializeResponses, OauthCallbackData, OauthCallbackErrors, OauthCallbackResponses, PreviewEventBlockData, PreviewEventBlockErrors, PreviewEventBlockResponses, PromoteObligationsData, PromoteObligationsErrors, PromoteObligationsResponses, RebuildScheduleData, RebuildScheduleErrors, RebuildScheduleResponses, RecallMemoryData, RecallMemoryErrors, RecallMemoryResponses, RecommendOperatorData, RecommendOperatorErrors, RecommendOperatorResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RegenerateReportData, RegenerateReportErrors, RegenerateReportResponses, RegisterUserData, RegisterUserErrors, RegisterUserResponses, RememberData, RememberErrors, RememberResponses, RemoveOrgMemberData, RemoveOrgMemberErrors, RemoveOrgMemberResponses, RemovePublishListMemberData, RemovePublishListMemberErrors, RemovePublishListMemberResponses, ReopenPeriodData, ReopenPeriodErrors, ReopenPeriodResponses, ResendVerificationEmailData, ResendVerificationEmailErrors, ResendVerificationEmailResponses, ResetPasswordData, ResetPasswordErrors, ResetPasswordResponses, RestoreBackupData, RestoreBackupErrors, RestoreBackupResponses, RevokeUserApiKeyData, RevokeUserApiKeyErrors, RevokeUserApiKeyResponses, SearchDocumentsData, SearchDocumentsErrors, SearchDocumentsResponses, SelectGraphData, SelectGraphErrors, SelectGraphResponses, SetCloseTargetData, SetCloseTargetErrors, SetCloseTargetResponses, SetConnectionWritePolicyData, SetConnectionWritePolicyErrors, SetConnectionWritePolicyResponses, ShareReportData, ShareReportErrors, ShareReportResponses, SsoTokenExchangeData, SsoTokenExchangeErrors, SsoTokenExchangeResponses, StreamOperationEventsData, StreamOperationEventsErrors, StreamOperationEventsResponses, SyncConnectionData, SyncConnectionErrors, SyncConnectionResponses, TransitionFilingStatusData, TransitionFilingStatusErrors, TransitionFilingStatusResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentResponses, UpdateEntityData, UpdateEntityErrors, UpdateEntityResponses, UpdateEventBlockData, UpdateEventBlockErrors, UpdateEventBlockResponses, UpdateEventHandlerData, UpdateEventHandlerErrors, UpdateEventHandlerResponses, UpdateInformationBlockData, UpdateInformationBlockErrors, UpdateInformationBlockResponses, UpdateJournalEntryData, UpdateJournalEntryErrors, UpdateJournalEntryResponses, UpdateMemoryData, UpdateMemoryErrors, UpdateMemoryResponses, UpdateOrgData, UpdateOrgErrors, UpdateOrgMemberRoleData, UpdateOrgMemberRoleErrors, UpdateOrgMemberRoleResponses, UpdateOrgResponses, UpdatePortfolioBlockData, UpdatePortfolioBlockErrors, UpdatePortfolioBlockResponses, UpdatePublishListData, UpdatePublishListErrors, UpdatePublishListResponses, UpdateSecurityData, UpdateSecurityErrors, UpdateSecurityResponses, UpdateTaxonomyBlockData, UpdateTaxonomyBlockErrors, UpdateTaxonomyBlockResponses, UpdateUserApiKeyData, UpdateUserApiKeyErrors, UpdateUserApiKeyResponses, UpdateUserData, UpdateUserErrors, UpdateUserPasswordData, UpdateUserPasswordErrors, UpdateUserPasswordResponses, UpdateUserResponses, ValidateResetTokenData, ValidateResetTokenErrors, ValidateResetTokenResponses, ValidateSchemaData, ValidateSchemaErrors, ValidateSchemaResponses, VerifyEmailData, VerifyEmailErrors, VerifyEmailResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -929,7 +929,7 @@ export const recallMemory = <ThrowOnError extends boolean = false>(options: Opti
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateSubgraph = <ThrowOnError extends boolean = false>(options: Options<OpCreateSubgraphData, ThrowOnError>) => (options.client ?? client).post<OpCreateSubgraphResponses, OpCreateSubgraphErrors, ThrowOnError>({
+export const createSubgraph = <ThrowOnError extends boolean = false>(options: Options<CreateSubgraphData, ThrowOnError>) => (options.client ?? client).post<CreateSubgraphResponses, CreateSubgraphErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/create-subgraph',
     ...options,
@@ -946,7 +946,7 @@ export const opCreateSubgraph = <ThrowOnError extends boolean = false>(options: 
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteSubgraph = <ThrowOnError extends boolean = false>(options: Options<OpDeleteSubgraphData, ThrowOnError>) => (options.client ?? client).post<OpDeleteSubgraphResponses, OpDeleteSubgraphErrors, ThrowOnError>({
+export const deleteSubgraph = <ThrowOnError extends boolean = false>(options: Options<DeleteSubgraphData, ThrowOnError>) => (options.client ?? client).post<DeleteSubgraphResponses, DeleteSubgraphErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/delete-subgraph',
     ...options,
@@ -963,7 +963,7 @@ export const opDeleteSubgraph = <ThrowOnError extends boolean = false>(options: 
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteGraph = <ThrowOnError extends boolean = false>(options: Options<OpDeleteGraphData, ThrowOnError>) => (options.client ?? client).post<OpDeleteGraphResponses, OpDeleteGraphErrors, ThrowOnError>({
+export const deleteGraph = <ThrowOnError extends boolean = false>(options: Options<DeleteGraphData, ThrowOnError>) => (options.client ?? client).post<DeleteGraphResponses, DeleteGraphErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/delete-graph',
     ...options,
@@ -980,7 +980,7 @@ export const opDeleteGraph = <ThrowOnError extends boolean = false>(options: Opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateBackup = <ThrowOnError extends boolean = false>(options: Options<OpCreateBackupData, ThrowOnError>) => (options.client ?? client).post<OpCreateBackupResponses, OpCreateBackupErrors, ThrowOnError>({
+export const createBackup = <ThrowOnError extends boolean = false>(options: Options<CreateBackupData, ThrowOnError>) => (options.client ?? client).post<CreateBackupResponses, CreateBackupErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/create-backup',
     ...options,
@@ -997,7 +997,7 @@ export const opCreateBackup = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opRestoreBackup = <ThrowOnError extends boolean = false>(options: Options<OpRestoreBackupData, ThrowOnError>) => (options.client ?? client).post<OpRestoreBackupResponses, OpRestoreBackupErrors, ThrowOnError>({
+export const restoreBackup = <ThrowOnError extends boolean = false>(options: Options<RestoreBackupData, ThrowOnError>) => (options.client ?? client).post<RestoreBackupResponses, RestoreBackupErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/restore-backup',
     ...options,
@@ -1014,7 +1014,7 @@ export const opRestoreBackup = <ThrowOnError extends boolean = false>(options: O
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opChangeTier = <ThrowOnError extends boolean = false>(options: Options<OpChangeTierData, ThrowOnError>) => (options.client ?? client).post<OpChangeTierResponses, OpChangeTierErrors, ThrowOnError>({
+export const changeTier = <ThrowOnError extends boolean = false>(options: Options<ChangeTierData, ThrowOnError>) => (options.client ?? client).post<ChangeTierResponses, ChangeTierErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/change-tier',
     ...options,
@@ -1031,7 +1031,7 @@ export const opChangeTier = <ThrowOnError extends boolean = false>(options: Opti
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opMaterialize = <ThrowOnError extends boolean = false>(options: Options<OpMaterializeData, ThrowOnError>) => (options.client ?? client).post<OpMaterializeResponses, OpMaterializeErrors, ThrowOnError>({
+export const materialize = <ThrowOnError extends boolean = false>(options: Options<MaterializeData, ThrowOnError>) => (options.client ?? client).post<MaterializeResponses, MaterializeErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/materialize',
     ...options,
@@ -1048,7 +1048,7 @@ export const opMaterialize = <ThrowOnError extends boolean = false>(options: Opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opRemember = <ThrowOnError extends boolean = false>(options: Options<OpRememberData, ThrowOnError>) => (options.client ?? client).post<OpRememberResponses, OpRememberErrors, ThrowOnError>({
+export const remember = <ThrowOnError extends boolean = false>(options: Options<RememberData, ThrowOnError>) => (options.client ?? client).post<RememberResponses, RememberErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/remember',
     ...options,
@@ -1065,7 +1065,7 @@ export const opRemember = <ThrowOnError extends boolean = false>(options: Option
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opForget = <ThrowOnError extends boolean = false>(options: Options<OpForgetData, ThrowOnError>) => (options.client ?? client).post<OpForgetResponses, OpForgetErrors, ThrowOnError>({
+export const forget = <ThrowOnError extends boolean = false>(options: Options<ForgetData, ThrowOnError>) => (options.client ?? client).post<ForgetResponses, ForgetErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/forget',
     ...options,
@@ -1082,7 +1082,7 @@ export const opForget = <ThrowOnError extends boolean = false>(options: Options<
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateMemory = <ThrowOnError extends boolean = false>(options: Options<OpUpdateMemoryData, ThrowOnError>) => (options.client ?? client).post<OpUpdateMemoryResponses, OpUpdateMemoryErrors, ThrowOnError>({
+export const updateMemory = <ThrowOnError extends boolean = false>(options: Options<UpdateMemoryData, ThrowOnError>) => (options.client ?? client).post<UpdateMemoryResponses, UpdateMemoryErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/update-memory',
     ...options,
@@ -1099,7 +1099,7 @@ export const opUpdateMemory = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opIndexDocument = <ThrowOnError extends boolean = false>(options: Options<OpIndexDocumentData, ThrowOnError>) => (options.client ?? client).post<OpIndexDocumentResponses, OpIndexDocumentErrors, ThrowOnError>({
+export const indexDocument = <ThrowOnError extends boolean = false>(options: Options<IndexDocumentData, ThrowOnError>) => (options.client ?? client).post<IndexDocumentResponses, IndexDocumentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/index-document',
     ...options,
@@ -1116,7 +1116,7 @@ export const opIndexDocument = <ThrowOnError extends boolean = false>(options: O
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteDocument = <ThrowOnError extends boolean = false>(options: Options<OpDeleteDocumentData, ThrowOnError>) => (options.client ?? client).post<OpDeleteDocumentResponses, OpDeleteDocumentErrors, ThrowOnError>({
+export const deleteDocument = <ThrowOnError extends boolean = false>(options: Options<DeleteDocumentData, ThrowOnError>) => (options.client ?? client).post<DeleteDocumentResponses, DeleteDocumentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/delete-document',
     ...options,
@@ -1133,7 +1133,7 @@ export const opDeleteDocument = <ThrowOnError extends boolean = false>(options: 
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateFileUpload = <ThrowOnError extends boolean = false>(options: Options<OpCreateFileUploadData, ThrowOnError>) => (options.client ?? client).post<OpCreateFileUploadResponses, OpCreateFileUploadErrors, ThrowOnError>({
+export const createFileUpload = <ThrowOnError extends boolean = false>(options: Options<CreateFileUploadData, ThrowOnError>) => (options.client ?? client).post<CreateFileUploadResponses, CreateFileUploadErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/create-file-upload',
     ...options,
@@ -1150,7 +1150,7 @@ export const opCreateFileUpload = <ThrowOnError extends boolean = false>(options
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opIngestFile = <ThrowOnError extends boolean = false>(options: Options<OpIngestFileData, ThrowOnError>) => (options.client ?? client).post<OpIngestFileResponses, OpIngestFileErrors, ThrowOnError>({
+export const ingestFile = <ThrowOnError extends boolean = false>(options: Options<IngestFileData, ThrowOnError>) => (options.client ?? client).post<IngestFileResponses, IngestFileErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/ingest-file',
     ...options,
@@ -1167,7 +1167,7 @@ export const opIngestFile = <ThrowOnError extends boolean = false>(options: Opti
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteFile = <ThrowOnError extends boolean = false>(options: Options<OpDeleteFileData, ThrowOnError>) => (options.client ?? client).post<OpDeleteFileResponses, OpDeleteFileErrors, ThrowOnError>({
+export const deleteFile = <ThrowOnError extends boolean = false>(options: Options<DeleteFileData, ThrowOnError>) => (options.client ?? client).post<DeleteFileResponses, DeleteFileErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/v1/graphs/{graph_id}/operations/delete-file',
     ...options,
@@ -1456,7 +1456,7 @@ export const handleHttpPostExtensionsGraphIdGraphqlPost = <ThrowOnError extends 
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opInitializeLedger = <ThrowOnError extends boolean = false>(options: Options<OpInitializeLedgerData, ThrowOnError>) => (options.client ?? client).post<OpInitializeLedgerResponses, OpInitializeLedgerErrors, ThrowOnError>({
+export const initializeLedger = <ThrowOnError extends boolean = false>(options: Options<InitializeLedgerData, ThrowOnError>) => (options.client ?? client).post<InitializeLedgerResponses, InitializeLedgerErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/initialize',
     ...options,
@@ -1473,7 +1473,7 @@ export const opInitializeLedger = <ThrowOnError extends boolean = false>(options
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateEntity = <ThrowOnError extends boolean = false>(options: Options<OpUpdateEntityData, ThrowOnError>) => (options.client ?? client).post<OpUpdateEntityResponses, OpUpdateEntityErrors, ThrowOnError>({
+export const updateEntity = <ThrowOnError extends boolean = false>(options: Options<UpdateEntityData, ThrowOnError>) => (options.client ?? client).post<UpdateEntityResponses, UpdateEntityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-entity',
     ...options,
@@ -1490,7 +1490,7 @@ export const opUpdateEntity = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opChangeReportingStyle = <ThrowOnError extends boolean = false>(options: Options<OpChangeReportingStyleData, ThrowOnError>) => (options.client ?? client).post<OpChangeReportingStyleResponses, OpChangeReportingStyleErrors, ThrowOnError>({
+export const changeReportingStyle = <ThrowOnError extends boolean = false>(options: Options<ChangeReportingStyleData, ThrowOnError>) => (options.client ?? client).post<ChangeReportingStyleResponses, ChangeReportingStyleErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/change-reporting-style',
     ...options,
@@ -1507,7 +1507,7 @@ export const opChangeReportingStyle = <ThrowOnError extends boolean = false>(opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateTaxonomyBlock = <ThrowOnError extends boolean = false>(options: Options<OpCreateTaxonomyBlockData, ThrowOnError>) => (options.client ?? client).post<OpCreateTaxonomyBlockResponses, OpCreateTaxonomyBlockErrors, ThrowOnError>({
+export const createTaxonomyBlock = <ThrowOnError extends boolean = false>(options: Options<CreateTaxonomyBlockData, ThrowOnError>) => (options.client ?? client).post<CreateTaxonomyBlockResponses, CreateTaxonomyBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-taxonomy-block',
     ...options,
@@ -1524,7 +1524,7 @@ export const opCreateTaxonomyBlock = <ThrowOnError extends boolean = false>(opti
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateTaxonomyBlock = <ThrowOnError extends boolean = false>(options: Options<OpUpdateTaxonomyBlockData, ThrowOnError>) => (options.client ?? client).post<OpUpdateTaxonomyBlockResponses, OpUpdateTaxonomyBlockErrors, ThrowOnError>({
+export const updateTaxonomyBlock = <ThrowOnError extends boolean = false>(options: Options<UpdateTaxonomyBlockData, ThrowOnError>) => (options.client ?? client).post<UpdateTaxonomyBlockResponses, UpdateTaxonomyBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-taxonomy-block',
     ...options,
@@ -1541,7 +1541,7 @@ export const opUpdateTaxonomyBlock = <ThrowOnError extends boolean = false>(opti
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteTaxonomyBlock = <ThrowOnError extends boolean = false>(options: Options<OpDeleteTaxonomyBlockData, ThrowOnError>) => (options.client ?? client).post<OpDeleteTaxonomyBlockResponses, OpDeleteTaxonomyBlockErrors, ThrowOnError>({
+export const deleteTaxonomyBlock = <ThrowOnError extends boolean = false>(options: Options<DeleteTaxonomyBlockData, ThrowOnError>) => (options.client ?? client).post<DeleteTaxonomyBlockResponses, DeleteTaxonomyBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/delete-taxonomy-block',
     ...options,
@@ -1558,7 +1558,7 @@ export const opDeleteTaxonomyBlock = <ThrowOnError extends boolean = false>(opti
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opLinkEntityTaxonomy = <ThrowOnError extends boolean = false>(options: Options<OpLinkEntityTaxonomyData, ThrowOnError>) => (options.client ?? client).post<OpLinkEntityTaxonomyResponses, OpLinkEntityTaxonomyErrors, ThrowOnError>({
+export const linkEntityTaxonomy = <ThrowOnError extends boolean = false>(options: Options<LinkEntityTaxonomyData, ThrowOnError>) => (options.client ?? client).post<LinkEntityTaxonomyResponses, LinkEntityTaxonomyErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/link-entity-taxonomy',
     ...options,
@@ -1575,7 +1575,7 @@ export const opLinkEntityTaxonomy = <ThrowOnError extends boolean = false>(optio
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<OpCreateMappingAssociationData, ThrowOnError>) => (options.client ?? client).post<OpCreateMappingAssociationResponses, OpCreateMappingAssociationErrors, ThrowOnError>({
+export const createMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<CreateMappingAssociationData, ThrowOnError>) => (options.client ?? client).post<CreateMappingAssociationResponses, CreateMappingAssociationErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association',
     ...options,
@@ -1592,7 +1592,7 @@ export const opCreateMappingAssociation = <ThrowOnError extends boolean = false>
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<OpDeleteMappingAssociationData, ThrowOnError>) => (options.client ?? client).post<OpDeleteMappingAssociationResponses, OpDeleteMappingAssociationErrors, ThrowOnError>({
+export const deleteMappingAssociation = <ThrowOnError extends boolean = false>(options: Options<DeleteMappingAssociationData, ThrowOnError>) => (options.client ?? client).post<DeleteMappingAssociationResponses, DeleteMappingAssociationErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/delete-mapping-association',
     ...options,
@@ -1609,7 +1609,7 @@ export const opDeleteMappingAssociation = <ThrowOnError extends boolean = false>
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opAutoMapElements = <ThrowOnError extends boolean = false>(options: Options<OpAutoMapElementsData, ThrowOnError>) => (options.client ?? client).post<OpAutoMapElementsResponses, OpAutoMapElementsErrors, ThrowOnError>({
+export const autoMapElements = <ThrowOnError extends boolean = false>(options: Options<AutoMapElementsData, ThrowOnError>) => (options.client ?? client).post<AutoMapElementsResponses, AutoMapElementsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/auto-map-elements',
     ...options,
@@ -1626,7 +1626,7 @@ export const opAutoMapElements = <ThrowOnError extends boolean = false>(options:
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateInformationBlock = <ThrowOnError extends boolean = false>(options: Options<OpCreateInformationBlockData, ThrowOnError>) => (options.client ?? client).post<OpCreateInformationBlockResponses, OpCreateInformationBlockErrors, ThrowOnError>({
+export const createInformationBlock = <ThrowOnError extends boolean = false>(options: Options<CreateInformationBlockData, ThrowOnError>) => (options.client ?? client).post<CreateInformationBlockResponses, CreateInformationBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-information-block',
     ...options,
@@ -1643,7 +1643,7 @@ export const opCreateInformationBlock = <ThrowOnError extends boolean = false>(o
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateInformationBlock = <ThrowOnError extends boolean = false>(options: Options<OpUpdateInformationBlockData, ThrowOnError>) => (options.client ?? client).post<OpUpdateInformationBlockResponses, OpUpdateInformationBlockErrors, ThrowOnError>({
+export const updateInformationBlock = <ThrowOnError extends boolean = false>(options: Options<UpdateInformationBlockData, ThrowOnError>) => (options.client ?? client).post<UpdateInformationBlockResponses, UpdateInformationBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-information-block',
     ...options,
@@ -1660,7 +1660,7 @@ export const opUpdateInformationBlock = <ThrowOnError extends boolean = false>(o
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteInformationBlock = <ThrowOnError extends boolean = false>(options: Options<OpDeleteInformationBlockData, ThrowOnError>) => (options.client ?? client).post<OpDeleteInformationBlockResponses, OpDeleteInformationBlockErrors, ThrowOnError>({
+export const deleteInformationBlock = <ThrowOnError extends boolean = false>(options: Options<DeleteInformationBlockData, ThrowOnError>) => (options.client ?? client).post<DeleteInformationBlockResponses, DeleteInformationBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/delete-information-block',
     ...options,
@@ -1677,7 +1677,7 @@ export const opDeleteInformationBlock = <ThrowOnError extends boolean = false>(o
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opEvaluateRules = <ThrowOnError extends boolean = false>(options: Options<OpEvaluateRulesData, ThrowOnError>) => (options.client ?? client).post<OpEvaluateRulesResponses, OpEvaluateRulesErrors, ThrowOnError>({
+export const evaluateRules = <ThrowOnError extends boolean = false>(options: Options<EvaluateRulesData, ThrowOnError>) => (options.client ?? client).post<EvaluateRulesResponses, EvaluateRulesErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/evaluate-rules',
     ...options,
@@ -1694,7 +1694,7 @@ export const opEvaluateRules = <ThrowOnError extends boolean = false>(options: O
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateAgent = <ThrowOnError extends boolean = false>(options: Options<OpCreateAgentData, ThrowOnError>) => (options.client ?? client).post<OpCreateAgentResponses, OpCreateAgentErrors, ThrowOnError>({
+export const createAgent = <ThrowOnError extends boolean = false>(options: Options<CreateAgentData, ThrowOnError>) => (options.client ?? client).post<CreateAgentResponses, CreateAgentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-agent',
     ...options,
@@ -1711,7 +1711,7 @@ export const opCreateAgent = <ThrowOnError extends boolean = false>(options: Opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateAgent = <ThrowOnError extends boolean = false>(options: Options<OpUpdateAgentData, ThrowOnError>) => (options.client ?? client).post<OpUpdateAgentResponses, OpUpdateAgentErrors, ThrowOnError>({
+export const updateAgent = <ThrowOnError extends boolean = false>(options: Options<UpdateAgentData, ThrowOnError>) => (options.client ?? client).post<UpdateAgentResponses, UpdateAgentErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-agent',
     ...options,
@@ -1728,7 +1728,7 @@ export const opUpdateAgent = <ThrowOnError extends boolean = false>(options: Opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateEventBlock = <ThrowOnError extends boolean = false>(options: Options<OpCreateEventBlockData, ThrowOnError>) => (options.client ?? client).post<OpCreateEventBlockResponses, OpCreateEventBlockErrors, ThrowOnError>({
+export const createEventBlock = <ThrowOnError extends boolean = false>(options: Options<CreateEventBlockData, ThrowOnError>) => (options.client ?? client).post<CreateEventBlockResponses, CreateEventBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-event-block',
     ...options,
@@ -1745,7 +1745,7 @@ export const opCreateEventBlock = <ThrowOnError extends boolean = false>(options
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateEventBlock = <ThrowOnError extends boolean = false>(options: Options<OpUpdateEventBlockData, ThrowOnError>) => (options.client ?? client).post<OpUpdateEventBlockResponses, OpUpdateEventBlockErrors, ThrowOnError>({
+export const updateEventBlock = <ThrowOnError extends boolean = false>(options: Options<UpdateEventBlockData, ThrowOnError>) => (options.client ?? client).post<UpdateEventBlockResponses, UpdateEventBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-event-block',
     ...options,
@@ -1762,7 +1762,7 @@ export const opUpdateEventBlock = <ThrowOnError extends boolean = false>(options
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opExecuteEventBlock = <ThrowOnError extends boolean = false>(options: Options<OpExecuteEventBlockData, ThrowOnError>) => (options.client ?? client).post<OpExecuteEventBlockResponses, OpExecuteEventBlockErrors, ThrowOnError>({
+export const executeEventBlock = <ThrowOnError extends boolean = false>(options: Options<ExecuteEventBlockData, ThrowOnError>) => (options.client ?? client).post<ExecuteEventBlockResponses, ExecuteEventBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/execute-event-block',
     ...options,
@@ -1779,7 +1779,7 @@ export const opExecuteEventBlock = <ThrowOnError extends boolean = false>(option
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateEventHandler = <ThrowOnError extends boolean = false>(options: Options<OpCreateEventHandlerData, ThrowOnError>) => (options.client ?? client).post<OpCreateEventHandlerResponses, OpCreateEventHandlerErrors, ThrowOnError>({
+export const createEventHandler = <ThrowOnError extends boolean = false>(options: Options<CreateEventHandlerData, ThrowOnError>) => (options.client ?? client).post<CreateEventHandlerResponses, CreateEventHandlerErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-event-handler',
     ...options,
@@ -1796,7 +1796,7 @@ export const opCreateEventHandler = <ThrowOnError extends boolean = false>(optio
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateEventHandler = <ThrowOnError extends boolean = false>(options: Options<OpUpdateEventHandlerData, ThrowOnError>) => (options.client ?? client).post<OpUpdateEventHandlerResponses, OpUpdateEventHandlerErrors, ThrowOnError>({
+export const updateEventHandler = <ThrowOnError extends boolean = false>(options: Options<UpdateEventHandlerData, ThrowOnError>) => (options.client ?? client).post<UpdateEventHandlerResponses, UpdateEventHandlerErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-event-handler',
     ...options,
@@ -1813,7 +1813,7 @@ export const opUpdateEventHandler = <ThrowOnError extends boolean = false>(optio
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opPreviewEventBlock = <ThrowOnError extends boolean = false>(options: Options<OpPreviewEventBlockData, ThrowOnError>) => (options.client ?? client).post<OpPreviewEventBlockResponses, OpPreviewEventBlockErrors, ThrowOnError>({
+export const previewEventBlock = <ThrowOnError extends boolean = false>(options: Options<PreviewEventBlockData, ThrowOnError>) => (options.client ?? client).post<PreviewEventBlockResponses, PreviewEventBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/preview-event-block',
     ...options,
@@ -1830,7 +1830,7 @@ export const opPreviewEventBlock = <ThrowOnError extends boolean = false>(option
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateJournalEntry = <ThrowOnError extends boolean = false>(options: Options<OpUpdateJournalEntryData, ThrowOnError>) => (options.client ?? client).post<OpUpdateJournalEntryResponses, OpUpdateJournalEntryErrors, ThrowOnError>({
+export const updateJournalEntry = <ThrowOnError extends boolean = false>(options: Options<UpdateJournalEntryData, ThrowOnError>) => (options.client ?? client).post<UpdateJournalEntryResponses, UpdateJournalEntryErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-journal-entry',
     ...options,
@@ -1847,7 +1847,7 @@ export const opUpdateJournalEntry = <ThrowOnError extends boolean = false>(optio
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteJournalEntry = <ThrowOnError extends boolean = false>(options: Options<OpDeleteJournalEntryData, ThrowOnError>) => (options.client ?? client).post<OpDeleteJournalEntryResponses, OpDeleteJournalEntryErrors, ThrowOnError>({
+export const deleteJournalEntry = <ThrowOnError extends boolean = false>(options: Options<DeleteJournalEntryData, ThrowOnError>) => (options.client ?? client).post<DeleteJournalEntryResponses, DeleteJournalEntryErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/delete-journal-entry',
     ...options,
@@ -1864,7 +1864,7 @@ export const opDeleteJournalEntry = <ThrowOnError extends boolean = false>(optio
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opPromoteObligations = <ThrowOnError extends boolean = false>(options: Options<OpPromoteObligationsData, ThrowOnError>) => (options.client ?? client).post<OpPromoteObligationsResponses, OpPromoteObligationsErrors, ThrowOnError>({
+export const promoteObligations = <ThrowOnError extends boolean = false>(options: Options<PromoteObligationsData, ThrowOnError>) => (options.client ?? client).post<PromoteObligationsResponses, PromoteObligationsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/promote-obligations',
     ...options,
@@ -1881,7 +1881,7 @@ export const opPromoteObligations = <ThrowOnError extends boolean = false>(optio
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opRebuildSchedule = <ThrowOnError extends boolean = false>(options: Options<OpRebuildScheduleData, ThrowOnError>) => (options.client ?? client).post<OpRebuildScheduleResponses, OpRebuildScheduleErrors, ThrowOnError>({
+export const rebuildSchedule = <ThrowOnError extends boolean = false>(options: Options<RebuildScheduleData, ThrowOnError>) => (options.client ?? client).post<RebuildScheduleResponses, RebuildScheduleErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/rebuild-schedule',
     ...options,
@@ -1898,7 +1898,7 @@ export const opRebuildSchedule = <ThrowOnError extends boolean = false>(options:
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opSetCloseTarget = <ThrowOnError extends boolean = false>(options: Options<OpSetCloseTargetData, ThrowOnError>) => (options.client ?? client).post<OpSetCloseTargetResponses, OpSetCloseTargetErrors, ThrowOnError>({
+export const setCloseTarget = <ThrowOnError extends boolean = false>(options: Options<SetCloseTargetData, ThrowOnError>) => (options.client ?? client).post<SetCloseTargetResponses, SetCloseTargetErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/set-close-target',
     ...options,
@@ -1915,7 +1915,7 @@ export const opSetCloseTarget = <ThrowOnError extends boolean = false>(options: 
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opClosePeriod = <ThrowOnError extends boolean = false>(options: Options<OpClosePeriodData, ThrowOnError>) => (options.client ?? client).post<OpClosePeriodResponses, OpClosePeriodErrors, ThrowOnError>({
+export const closePeriod = <ThrowOnError extends boolean = false>(options: Options<ClosePeriodData, ThrowOnError>) => (options.client ?? client).post<ClosePeriodResponses, ClosePeriodErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/close-period',
     ...options,
@@ -1932,7 +1932,7 @@ export const opClosePeriod = <ThrowOnError extends boolean = false>(options: Opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opReopenPeriod = <ThrowOnError extends boolean = false>(options: Options<OpReopenPeriodData, ThrowOnError>) => (options.client ?? client).post<OpReopenPeriodResponses, OpReopenPeriodErrors, ThrowOnError>({
+export const reopenPeriod = <ThrowOnError extends boolean = false>(options: Options<ReopenPeriodData, ThrowOnError>) => (options.client ?? client).post<ReopenPeriodResponses, ReopenPeriodErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/reopen-period',
     ...options,
@@ -1949,7 +1949,7 @@ export const opReopenPeriod = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateReport = <ThrowOnError extends boolean = false>(options: Options<OpCreateReportData, ThrowOnError>) => (options.client ?? client).post<OpCreateReportResponses, OpCreateReportErrors, ThrowOnError>({
+export const createReport = <ThrowOnError extends boolean = false>(options: Options<CreateReportData, ThrowOnError>) => (options.client ?? client).post<CreateReportResponses, CreateReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-report',
     ...options,
@@ -1966,7 +1966,7 @@ export const opCreateReport = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opRegenerateReport = <ThrowOnError extends boolean = false>(options: Options<OpRegenerateReportData, ThrowOnError>) => (options.client ?? client).post<OpRegenerateReportResponses, OpRegenerateReportErrors, ThrowOnError>({
+export const regenerateReport = <ThrowOnError extends boolean = false>(options: Options<RegenerateReportData, ThrowOnError>) => (options.client ?? client).post<RegenerateReportResponses, RegenerateReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/regenerate-report',
     ...options,
@@ -1983,7 +1983,7 @@ export const opRegenerateReport = <ThrowOnError extends boolean = false>(options
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteReport = <ThrowOnError extends boolean = false>(options: Options<OpDeleteReportData, ThrowOnError>) => (options.client ?? client).post<OpDeleteReportResponses, OpDeleteReportErrors, ThrowOnError>({
+export const deleteReport = <ThrowOnError extends boolean = false>(options: Options<DeleteReportData, ThrowOnError>) => (options.client ?? client).post<DeleteReportResponses, DeleteReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/delete-report',
     ...options,
@@ -2000,7 +2000,7 @@ export const opDeleteReport = <ThrowOnError extends boolean = false>(options: Op
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opShareReport = <ThrowOnError extends boolean = false>(options: Options<OpShareReportData, ThrowOnError>) => (options.client ?? client).post<OpShareReportResponses, OpShareReportErrors, ThrowOnError>({
+export const shareReport = <ThrowOnError extends boolean = false>(options: Options<ShareReportData, ThrowOnError>) => (options.client ?? client).post<ShareReportResponses, ShareReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/share-report',
     ...options,
@@ -2017,7 +2017,7 @@ export const opShareReport = <ThrowOnError extends boolean = false>(options: Opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opFileReport = <ThrowOnError extends boolean = false>(options: Options<OpFileReportData, ThrowOnError>) => (options.client ?? client).post<OpFileReportResponses, OpFileReportErrors, ThrowOnError>({
+export const fileReport = <ThrowOnError extends boolean = false>(options: Options<FileReportData, ThrowOnError>) => (options.client ?? client).post<FileReportResponses, FileReportErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/file-report',
     ...options,
@@ -2034,7 +2034,7 @@ export const opFileReport = <ThrowOnError extends boolean = false>(options: Opti
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opTransitionFilingStatus = <ThrowOnError extends boolean = false>(options: Options<OpTransitionFilingStatusData, ThrowOnError>) => (options.client ?? client).post<OpTransitionFilingStatusResponses, OpTransitionFilingStatusErrors, ThrowOnError>({
+export const transitionFilingStatus = <ThrowOnError extends boolean = false>(options: Options<TransitionFilingStatusData, ThrowOnError>) => (options.client ?? client).post<TransitionFilingStatusResponses, TransitionFilingStatusErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/transition-filing-status',
     ...options,
@@ -2051,7 +2051,7 @@ export const opTransitionFilingStatus = <ThrowOnError extends boolean = false>(o
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreatePublishList = <ThrowOnError extends boolean = false>(options: Options<OpCreatePublishListData, ThrowOnError>) => (options.client ?? client).post<OpCreatePublishListResponses, OpCreatePublishListErrors, ThrowOnError>({
+export const createPublishList = <ThrowOnError extends boolean = false>(options: Options<CreatePublishListData, ThrowOnError>) => (options.client ?? client).post<CreatePublishListResponses, CreatePublishListErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-publish-list',
     ...options,
@@ -2068,7 +2068,7 @@ export const opCreatePublishList = <ThrowOnError extends boolean = false>(option
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdatePublishList = <ThrowOnError extends boolean = false>(options: Options<OpUpdatePublishListData, ThrowOnError>) => (options.client ?? client).post<OpUpdatePublishListResponses, OpUpdatePublishListErrors, ThrowOnError>({
+export const updatePublishList = <ThrowOnError extends boolean = false>(options: Options<UpdatePublishListData, ThrowOnError>) => (options.client ?? client).post<UpdatePublishListResponses, UpdatePublishListErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/update-publish-list',
     ...options,
@@ -2085,7 +2085,7 @@ export const opUpdatePublishList = <ThrowOnError extends boolean = false>(option
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeletePublishList = <ThrowOnError extends boolean = false>(options: Options<OpDeletePublishListData, ThrowOnError>) => (options.client ?? client).post<OpDeletePublishListResponses, OpDeletePublishListErrors, ThrowOnError>({
+export const deletePublishList = <ThrowOnError extends boolean = false>(options: Options<DeletePublishListData, ThrowOnError>) => (options.client ?? client).post<DeletePublishListResponses, DeletePublishListErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/delete-publish-list',
     ...options,
@@ -2102,7 +2102,7 @@ export const opDeletePublishList = <ThrowOnError extends boolean = false>(option
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opAddPublishListMembers = <ThrowOnError extends boolean = false>(options: Options<OpAddPublishListMembersData, ThrowOnError>) => (options.client ?? client).post<OpAddPublishListMembersResponses, OpAddPublishListMembersErrors, ThrowOnError>({
+export const addPublishListMembers = <ThrowOnError extends boolean = false>(options: Options<AddPublishListMembersData, ThrowOnError>) => (options.client ?? client).post<AddPublishListMembersResponses, AddPublishListMembersErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/add-publish-list-members',
     ...options,
@@ -2119,7 +2119,7 @@ export const opAddPublishListMembers = <ThrowOnError extends boolean = false>(op
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opRemovePublishListMember = <ThrowOnError extends boolean = false>(options: Options<OpRemovePublishListMemberData, ThrowOnError>) => (options.client ?? client).post<OpRemovePublishListMemberResponses, OpRemovePublishListMemberErrors, ThrowOnError>({
+export const removePublishListMember = <ThrowOnError extends boolean = false>(options: Options<RemovePublishListMemberData, ThrowOnError>) => (options.client ?? client).post<RemovePublishListMemberResponses, RemovePublishListMemberErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/remove-publish-list-member',
     ...options,
@@ -2136,7 +2136,7 @@ export const opRemovePublishListMember = <ThrowOnError extends boolean = false>(
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opLiveFinancialStatement = <ThrowOnError extends boolean = false>(options: Options<OpLiveFinancialStatementData, ThrowOnError>) => (options.client ?? client).post<OpLiveFinancialStatementResponses, OpLiveFinancialStatementErrors, ThrowOnError>({
+export const liveFinancialStatement = <ThrowOnError extends boolean = false>(options: Options<LiveFinancialStatementData, ThrowOnError>) => (options.client ?? client).post<LiveFinancialStatementResponses, LiveFinancialStatementErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/live-financial-statement',
     ...options,
@@ -2153,7 +2153,7 @@ export const opLiveFinancialStatement = <ThrowOnError extends boolean = false>(o
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opBuildFactGrid = <ThrowOnError extends boolean = false>(options: Options<OpBuildFactGridData, ThrowOnError>) => (options.client ?? client).post<OpBuildFactGridResponses, OpBuildFactGridErrors, ThrowOnError>({
+export const buildFactGrid = <ThrowOnError extends boolean = false>(options: Options<BuildFactGridData, ThrowOnError>) => (options.client ?? client).post<BuildFactGridResponses, BuildFactGridErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/build-fact-grid',
     ...options,
@@ -2170,7 +2170,7 @@ export const opBuildFactGrid = <ThrowOnError extends boolean = false>(options: O
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opFinancialStatementAnalysis = <ThrowOnError extends boolean = false>(options: Options<OpFinancialStatementAnalysisData, ThrowOnError>) => (options.client ?? client).post<OpFinancialStatementAnalysisResponses, OpFinancialStatementAnalysisErrors, ThrowOnError>({
+export const financialStatementAnalysis = <ThrowOnError extends boolean = false>(options: Options<FinancialStatementAnalysisData, ThrowOnError>) => (options.client ?? client).post<FinancialStatementAnalysisResponses, FinancialStatementAnalysisErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/financial-statement-analysis',
     ...options,
@@ -2187,7 +2187,7 @@ export const opFinancialStatementAnalysis = <ThrowOnError extends boolean = fals
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreatePortfolioBlock = <ThrowOnError extends boolean = false>(options: Options<OpCreatePortfolioBlockData, ThrowOnError>) => (options.client ?? client).post<OpCreatePortfolioBlockResponses, OpCreatePortfolioBlockErrors, ThrowOnError>({
+export const createPortfolioBlock = <ThrowOnError extends boolean = false>(options: Options<CreatePortfolioBlockData, ThrowOnError>) => (options.client ?? client).post<CreatePortfolioBlockResponses, CreatePortfolioBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio-block',
     ...options,
@@ -2204,7 +2204,7 @@ export const opCreatePortfolioBlock = <ThrowOnError extends boolean = false>(opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdatePortfolioBlock = <ThrowOnError extends boolean = false>(options: Options<OpUpdatePortfolioBlockData, ThrowOnError>) => (options.client ?? client).post<OpUpdatePortfolioBlockResponses, OpUpdatePortfolioBlockErrors, ThrowOnError>({
+export const updatePortfolioBlock = <ThrowOnError extends boolean = false>(options: Options<UpdatePortfolioBlockData, ThrowOnError>) => (options.client ?? client).post<UpdatePortfolioBlockResponses, UpdatePortfolioBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboinvestor/{graph_id}/operations/update-portfolio-block',
     ...options,
@@ -2221,7 +2221,7 @@ export const opUpdatePortfolioBlock = <ThrowOnError extends boolean = false>(opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeletePortfolioBlock = <ThrowOnError extends boolean = false>(options: Options<OpDeletePortfolioBlockData, ThrowOnError>) => (options.client ?? client).post<OpDeletePortfolioBlockResponses, OpDeletePortfolioBlockErrors, ThrowOnError>({
+export const deletePortfolioBlock = <ThrowOnError extends boolean = false>(options: Options<DeletePortfolioBlockData, ThrowOnError>) => (options.client ?? client).post<DeletePortfolioBlockResponses, DeletePortfolioBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboinvestor/{graph_id}/operations/delete-portfolio-block',
     ...options,
@@ -2238,7 +2238,7 @@ export const opDeletePortfolioBlock = <ThrowOnError extends boolean = false>(opt
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opCreateSecurity = <ThrowOnError extends boolean = false>(options: Options<OpCreateSecurityData, ThrowOnError>) => (options.client ?? client).post<OpCreateSecurityResponses, OpCreateSecurityErrors, ThrowOnError>({
+export const createSecurity = <ThrowOnError extends boolean = false>(options: Options<CreateSecurityData, ThrowOnError>) => (options.client ?? client).post<CreateSecurityResponses, CreateSecurityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboinvestor/{graph_id}/operations/create-security',
     ...options,
@@ -2255,7 +2255,7 @@ export const opCreateSecurity = <ThrowOnError extends boolean = false>(options: 
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opUpdateSecurity = <ThrowOnError extends boolean = false>(options: Options<OpUpdateSecurityData, ThrowOnError>) => (options.client ?? client).post<OpUpdateSecurityResponses, OpUpdateSecurityErrors, ThrowOnError>({
+export const updateSecurity = <ThrowOnError extends boolean = false>(options: Options<UpdateSecurityData, ThrowOnError>) => (options.client ?? client).post<UpdateSecurityResponses, UpdateSecurityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboinvestor/{graph_id}/operations/update-security',
     ...options,
@@ -2272,7 +2272,7 @@ export const opUpdateSecurity = <ThrowOnError extends boolean = false>(options: 
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
-export const opDeleteSecurity = <ThrowOnError extends boolean = false>(options: Options<OpDeleteSecurityData, ThrowOnError>) => (options.client ?? client).post<OpDeleteSecurityResponses, OpDeleteSecurityErrors, ThrowOnError>({
+export const deleteSecurity = <ThrowOnError extends boolean = false>(options: Options<DeleteSecurityData, ThrowOnError>) => (options.client ?? client).post<DeleteSecurityResponses, DeleteSecurityErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboinvestor/{graph_id}/operations/delete-security',
     ...options,

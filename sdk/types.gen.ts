@@ -18690,7 +18690,7 @@ export type RecallMemoryResponses = {
 
 export type RecallMemoryResponse = RecallMemoryResponses[keyof RecallMemoryResponses];
 
-export type OpCreateSubgraphData = {
+export type CreateSubgraphData = {
     body: CreateSubgraphRequest;
     headers?: {
         /**
@@ -18708,7 +18708,7 @@ export type OpCreateSubgraphData = {
     url: '/v1/graphs/{graph_id}/operations/create-subgraph';
 };
 
-export type OpCreateSubgraphErrors = {
+export type CreateSubgraphErrors = {
     /**
      * Invalid request
      */
@@ -18743,18 +18743,18 @@ export type OpCreateSubgraphErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateSubgraphError = OpCreateSubgraphErrors[keyof OpCreateSubgraphErrors];
+export type CreateSubgraphError = CreateSubgraphErrors[keyof CreateSubgraphErrors];
 
-export type OpCreateSubgraphResponses = {
+export type CreateSubgraphResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpCreateSubgraphResponse = OpCreateSubgraphResponses[keyof OpCreateSubgraphResponses];
+export type CreateSubgraphResponse = CreateSubgraphResponses[keyof CreateSubgraphResponses];
 
-export type OpDeleteSubgraphData = {
+export type DeleteSubgraphData = {
     body: DeleteSubgraphOp;
     headers?: {
         /**
@@ -18772,7 +18772,7 @@ export type OpDeleteSubgraphData = {
     url: '/v1/graphs/{graph_id}/operations/delete-subgraph';
 };
 
-export type OpDeleteSubgraphErrors = {
+export type DeleteSubgraphErrors = {
     /**
      * Invalid request
      */
@@ -18807,18 +18807,18 @@ export type OpDeleteSubgraphErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteSubgraphError = OpDeleteSubgraphErrors[keyof OpDeleteSubgraphErrors];
+export type DeleteSubgraphError = DeleteSubgraphErrors[keyof DeleteSubgraphErrors];
 
-export type OpDeleteSubgraphResponses = {
+export type DeleteSubgraphResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpDeleteSubgraphResponse = OpDeleteSubgraphResponses[keyof OpDeleteSubgraphResponses];
+export type DeleteSubgraphResponse = DeleteSubgraphResponses[keyof DeleteSubgraphResponses];
 
-export type OpDeleteGraphData = {
+export type DeleteGraphData = {
     body: DeleteGraphOp;
     headers?: {
         /**
@@ -18836,7 +18836,7 @@ export type OpDeleteGraphData = {
     url: '/v1/graphs/{graph_id}/operations/delete-graph';
 };
 
-export type OpDeleteGraphErrors = {
+export type DeleteGraphErrors = {
     /**
      * Invalid request
      */
@@ -18871,18 +18871,18 @@ export type OpDeleteGraphErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteGraphError = OpDeleteGraphErrors[keyof OpDeleteGraphErrors];
+export type DeleteGraphError = DeleteGraphErrors[keyof DeleteGraphErrors];
 
-export type OpDeleteGraphResponses = {
+export type DeleteGraphResponses = {
     /**
      * Successful Response
      */
     202: OperationEnvelope;
 };
 
-export type OpDeleteGraphResponse = OpDeleteGraphResponses[keyof OpDeleteGraphResponses];
+export type DeleteGraphResponse = DeleteGraphResponses[keyof DeleteGraphResponses];
 
-export type OpCreateBackupData = {
+export type CreateBackupData = {
     body: BackupCreateRequest;
     headers?: {
         /**
@@ -18900,7 +18900,7 @@ export type OpCreateBackupData = {
     url: '/v1/graphs/{graph_id}/operations/create-backup';
 };
 
-export type OpCreateBackupErrors = {
+export type CreateBackupErrors = {
     /**
      * Invalid request
      */
@@ -18935,18 +18935,18 @@ export type OpCreateBackupErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateBackupError = OpCreateBackupErrors[keyof OpCreateBackupErrors];
+export type CreateBackupError = CreateBackupErrors[keyof CreateBackupErrors];
 
-export type OpCreateBackupResponses = {
+export type CreateBackupResponses = {
     /**
      * Successful Response
      */
     202: OperationEnvelope;
 };
 
-export type OpCreateBackupResponse = OpCreateBackupResponses[keyof OpCreateBackupResponses];
+export type CreateBackupResponse = CreateBackupResponses[keyof CreateBackupResponses];
 
-export type OpRestoreBackupData = {
+export type RestoreBackupData = {
     body: RestoreBackupOp;
     headers?: {
         /**
@@ -18964,7 +18964,7 @@ export type OpRestoreBackupData = {
     url: '/v1/graphs/{graph_id}/operations/restore-backup';
 };
 
-export type OpRestoreBackupErrors = {
+export type RestoreBackupErrors = {
     /**
      * Invalid request
      */
@@ -18999,18 +18999,18 @@ export type OpRestoreBackupErrors = {
     500: ErrorResponse;
 };
 
-export type OpRestoreBackupError = OpRestoreBackupErrors[keyof OpRestoreBackupErrors];
+export type RestoreBackupError = RestoreBackupErrors[keyof RestoreBackupErrors];
 
-export type OpRestoreBackupResponses = {
+export type RestoreBackupResponses = {
     /**
      * Successful Response
      */
     202: OperationEnvelope;
 };
 
-export type OpRestoreBackupResponse = OpRestoreBackupResponses[keyof OpRestoreBackupResponses];
+export type RestoreBackupResponse = RestoreBackupResponses[keyof RestoreBackupResponses];
 
-export type OpChangeTierData = {
+export type ChangeTierData = {
     body: ChangeTierOp;
     headers?: {
         /**
@@ -19028,7 +19028,7 @@ export type OpChangeTierData = {
     url: '/v1/graphs/{graph_id}/operations/change-tier';
 };
 
-export type OpChangeTierErrors = {
+export type ChangeTierErrors = {
     /**
      * Invalid request
      */
@@ -19063,18 +19063,18 @@ export type OpChangeTierErrors = {
     500: ErrorResponse;
 };
 
-export type OpChangeTierError = OpChangeTierErrors[keyof OpChangeTierErrors];
+export type ChangeTierError = ChangeTierErrors[keyof ChangeTierErrors];
 
-export type OpChangeTierResponses = {
+export type ChangeTierResponses = {
     /**
      * Successful Response
      */
     202: OperationEnvelope;
 };
 
-export type OpChangeTierResponse = OpChangeTierResponses[keyof OpChangeTierResponses];
+export type ChangeTierResponse = ChangeTierResponses[keyof ChangeTierResponses];
 
-export type OpMaterializeData = {
+export type MaterializeData = {
     body: MaterializeOp;
     headers?: {
         /**
@@ -19092,7 +19092,7 @@ export type OpMaterializeData = {
     url: '/v1/graphs/{graph_id}/operations/materialize';
 };
 
-export type OpMaterializeErrors = {
+export type MaterializeErrors = {
     /**
      * Invalid request
      */
@@ -19127,18 +19127,18 @@ export type OpMaterializeErrors = {
     500: ErrorResponse;
 };
 
-export type OpMaterializeError = OpMaterializeErrors[keyof OpMaterializeErrors];
+export type MaterializeError = MaterializeErrors[keyof MaterializeErrors];
 
-export type OpMaterializeResponses = {
+export type MaterializeResponses = {
     /**
      * Successful Response
      */
     202: OperationEnvelope;
 };
 
-export type OpMaterializeResponse = OpMaterializeResponses[keyof OpMaterializeResponses];
+export type MaterializeResponse = MaterializeResponses[keyof MaterializeResponses];
 
-export type OpRememberData = {
+export type RememberData = {
     body: RememberOp;
     headers?: {
         /**
@@ -19156,7 +19156,7 @@ export type OpRememberData = {
     url: '/v1/graphs/{graph_id}/operations/remember';
 };
 
-export type OpRememberErrors = {
+export type RememberErrors = {
     /**
      * Invalid request
      */
@@ -19191,18 +19191,18 @@ export type OpRememberErrors = {
     500: ErrorResponse;
 };
 
-export type OpRememberError = OpRememberErrors[keyof OpRememberErrors];
+export type RememberError = RememberErrors[keyof RememberErrors];
 
-export type OpRememberResponses = {
+export type RememberResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpRememberResponse = OpRememberResponses[keyof OpRememberResponses];
+export type RememberResponse = RememberResponses[keyof RememberResponses];
 
-export type OpForgetData = {
+export type ForgetData = {
     body: ForgetOp;
     headers?: {
         /**
@@ -19220,7 +19220,7 @@ export type OpForgetData = {
     url: '/v1/graphs/{graph_id}/operations/forget';
 };
 
-export type OpForgetErrors = {
+export type ForgetErrors = {
     /**
      * Invalid request
      */
@@ -19255,18 +19255,18 @@ export type OpForgetErrors = {
     500: ErrorResponse;
 };
 
-export type OpForgetError = OpForgetErrors[keyof OpForgetErrors];
+export type ForgetError = ForgetErrors[keyof ForgetErrors];
 
-export type OpForgetResponses = {
+export type ForgetResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpForgetResponse = OpForgetResponses[keyof OpForgetResponses];
+export type ForgetResponse = ForgetResponses[keyof ForgetResponses];
 
-export type OpUpdateMemoryData = {
+export type UpdateMemoryData = {
     body: UpdateMemoryOp;
     headers?: {
         /**
@@ -19284,7 +19284,7 @@ export type OpUpdateMemoryData = {
     url: '/v1/graphs/{graph_id}/operations/update-memory';
 };
 
-export type OpUpdateMemoryErrors = {
+export type UpdateMemoryErrors = {
     /**
      * Invalid request
      */
@@ -19319,18 +19319,18 @@ export type OpUpdateMemoryErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateMemoryError = OpUpdateMemoryErrors[keyof OpUpdateMemoryErrors];
+export type UpdateMemoryError = UpdateMemoryErrors[keyof UpdateMemoryErrors];
 
-export type OpUpdateMemoryResponses = {
+export type UpdateMemoryResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpUpdateMemoryResponse = OpUpdateMemoryResponses[keyof OpUpdateMemoryResponses];
+export type UpdateMemoryResponse = UpdateMemoryResponses[keyof UpdateMemoryResponses];
 
-export type OpIndexDocumentData = {
+export type IndexDocumentData = {
     body: IndexDocumentOp;
     headers?: {
         /**
@@ -19348,7 +19348,7 @@ export type OpIndexDocumentData = {
     url: '/v1/graphs/{graph_id}/operations/index-document';
 };
 
-export type OpIndexDocumentErrors = {
+export type IndexDocumentErrors = {
     /**
      * Invalid request
      */
@@ -19383,18 +19383,18 @@ export type OpIndexDocumentErrors = {
     500: ErrorResponse;
 };
 
-export type OpIndexDocumentError = OpIndexDocumentErrors[keyof OpIndexDocumentErrors];
+export type IndexDocumentError = IndexDocumentErrors[keyof IndexDocumentErrors];
 
-export type OpIndexDocumentResponses = {
+export type IndexDocumentResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpIndexDocumentResponse = OpIndexDocumentResponses[keyof OpIndexDocumentResponses];
+export type IndexDocumentResponse = IndexDocumentResponses[keyof IndexDocumentResponses];
 
-export type OpDeleteDocumentData = {
+export type DeleteDocumentData = {
     body: DeleteDocumentOp;
     headers?: {
         /**
@@ -19412,7 +19412,7 @@ export type OpDeleteDocumentData = {
     url: '/v1/graphs/{graph_id}/operations/delete-document';
 };
 
-export type OpDeleteDocumentErrors = {
+export type DeleteDocumentErrors = {
     /**
      * Invalid request
      */
@@ -19447,18 +19447,18 @@ export type OpDeleteDocumentErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteDocumentError = OpDeleteDocumentErrors[keyof OpDeleteDocumentErrors];
+export type DeleteDocumentError = DeleteDocumentErrors[keyof DeleteDocumentErrors];
 
-export type OpDeleteDocumentResponses = {
+export type DeleteDocumentResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpDeleteDocumentResponse = OpDeleteDocumentResponses[keyof OpDeleteDocumentResponses];
+export type DeleteDocumentResponse = DeleteDocumentResponses[keyof DeleteDocumentResponses];
 
-export type OpCreateFileUploadData = {
+export type CreateFileUploadData = {
     body: FileUploadRequest;
     headers?: {
         /**
@@ -19476,7 +19476,7 @@ export type OpCreateFileUploadData = {
     url: '/v1/graphs/{graph_id}/operations/create-file-upload';
 };
 
-export type OpCreateFileUploadErrors = {
+export type CreateFileUploadErrors = {
     /**
      * Invalid request
      */
@@ -19511,18 +19511,18 @@ export type OpCreateFileUploadErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateFileUploadError = OpCreateFileUploadErrors[keyof OpCreateFileUploadErrors];
+export type CreateFileUploadError = CreateFileUploadErrors[keyof CreateFileUploadErrors];
 
-export type OpCreateFileUploadResponses = {
+export type CreateFileUploadResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpCreateFileUploadResponse = OpCreateFileUploadResponses[keyof OpCreateFileUploadResponses];
+export type CreateFileUploadResponse = CreateFileUploadResponses[keyof CreateFileUploadResponses];
 
-export type OpIngestFileData = {
+export type IngestFileData = {
     body: IngestFileOp;
     headers?: {
         /**
@@ -19540,7 +19540,7 @@ export type OpIngestFileData = {
     url: '/v1/graphs/{graph_id}/operations/ingest-file';
 };
 
-export type OpIngestFileErrors = {
+export type IngestFileErrors = {
     /**
      * Invalid request
      */
@@ -19575,18 +19575,18 @@ export type OpIngestFileErrors = {
     500: ErrorResponse;
 };
 
-export type OpIngestFileError = OpIngestFileErrors[keyof OpIngestFileErrors];
+export type IngestFileError = IngestFileErrors[keyof IngestFileErrors];
 
-export type OpIngestFileResponses = {
+export type IngestFileResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpIngestFileResponse = OpIngestFileResponses[keyof OpIngestFileResponses];
+export type IngestFileResponse = IngestFileResponses[keyof IngestFileResponses];
 
-export type OpDeleteFileData = {
+export type DeleteFileData = {
     body: DeleteFileOp;
     headers?: {
         /**
@@ -19604,7 +19604,7 @@ export type OpDeleteFileData = {
     url: '/v1/graphs/{graph_id}/operations/delete-file';
 };
 
-export type OpDeleteFileErrors = {
+export type DeleteFileErrors = {
     /**
      * Invalid request
      */
@@ -19639,16 +19639,16 @@ export type OpDeleteFileErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteFileError = OpDeleteFileErrors[keyof OpDeleteFileErrors];
+export type DeleteFileError = DeleteFileErrors[keyof DeleteFileErrors];
 
-export type OpDeleteFileResponses = {
+export type DeleteFileResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpDeleteFileResponse = OpDeleteFileResponses[keyof OpDeleteFileResponses];
+export type DeleteFileResponse = DeleteFileResponses[keyof DeleteFileResponses];
 
 export type ListFilesData = {
     body?: never;
@@ -20937,7 +20937,7 @@ export type HandleHttpPostExtensionsGraphIdGraphqlPostResponses = {
     200: unknown;
 };
 
-export type OpInitializeLedgerData = {
+export type InitializeLedgerData = {
     body: InitializeLedgerRequest;
     headers?: {
         /**
@@ -20955,7 +20955,7 @@ export type OpInitializeLedgerData = {
     url: '/extensions/roboledger/{graph_id}/operations/initialize';
 };
 
-export type OpInitializeLedgerErrors = {
+export type InitializeLedgerErrors = {
     /**
      * Invalid request
      */
@@ -20990,18 +20990,18 @@ export type OpInitializeLedgerErrors = {
     500: ErrorResponse;
 };
 
-export type OpInitializeLedgerError = OpInitializeLedgerErrors[keyof OpInitializeLedgerErrors];
+export type InitializeLedgerError = InitializeLedgerErrors[keyof InitializeLedgerErrors];
 
-export type OpInitializeLedgerResponses = {
+export type InitializeLedgerResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeInitializeLedgerResponse;
 };
 
-export type OpInitializeLedgerResponse = OpInitializeLedgerResponses[keyof OpInitializeLedgerResponses];
+export type InitializeLedgerResponse2 = InitializeLedgerResponses[keyof InitializeLedgerResponses];
 
-export type OpUpdateEntityData = {
+export type UpdateEntityData = {
     body: UpdateEntityRequest;
     headers?: {
         /**
@@ -21019,7 +21019,7 @@ export type OpUpdateEntityData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-entity';
 };
 
-export type OpUpdateEntityErrors = {
+export type UpdateEntityErrors = {
     /**
      * Invalid request
      */
@@ -21054,18 +21054,18 @@ export type OpUpdateEntityErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateEntityError = OpUpdateEntityErrors[keyof OpUpdateEntityErrors];
+export type UpdateEntityError = UpdateEntityErrors[keyof UpdateEntityErrors];
 
-export type OpUpdateEntityResponses = {
+export type UpdateEntityResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeLedgerEntityResponse;
 };
 
-export type OpUpdateEntityResponse = OpUpdateEntityResponses[keyof OpUpdateEntityResponses];
+export type UpdateEntityResponse = UpdateEntityResponses[keyof UpdateEntityResponses];
 
-export type OpChangeReportingStyleData = {
+export type ChangeReportingStyleData = {
     body: ChangeReportingStyleRequest;
     headers?: {
         /**
@@ -21083,7 +21083,7 @@ export type OpChangeReportingStyleData = {
     url: '/extensions/roboledger/{graph_id}/operations/change-reporting-style';
 };
 
-export type OpChangeReportingStyleErrors = {
+export type ChangeReportingStyleErrors = {
     /**
      * Invalid request
      */
@@ -21118,18 +21118,18 @@ export type OpChangeReportingStyleErrors = {
     500: ErrorResponse;
 };
 
-export type OpChangeReportingStyleError = OpChangeReportingStyleErrors[keyof OpChangeReportingStyleErrors];
+export type ChangeReportingStyleError = ChangeReportingStyleErrors[keyof ChangeReportingStyleErrors];
 
-export type OpChangeReportingStyleResponses = {
+export type ChangeReportingStyleResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeChangeReportingStyleResponse;
 };
 
-export type OpChangeReportingStyleResponse = OpChangeReportingStyleResponses[keyof OpChangeReportingStyleResponses];
+export type ChangeReportingStyleResponse2 = ChangeReportingStyleResponses[keyof ChangeReportingStyleResponses];
 
-export type OpCreateTaxonomyBlockData = {
+export type CreateTaxonomyBlockData = {
     body: CreateTaxonomyBlockRequest;
     headers?: {
         /**
@@ -21147,7 +21147,7 @@ export type OpCreateTaxonomyBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-taxonomy-block';
 };
 
-export type OpCreateTaxonomyBlockErrors = {
+export type CreateTaxonomyBlockErrors = {
     /**
      * Invalid request
      */
@@ -21182,18 +21182,18 @@ export type OpCreateTaxonomyBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateTaxonomyBlockError = OpCreateTaxonomyBlockErrors[keyof OpCreateTaxonomyBlockErrors];
+export type CreateTaxonomyBlockError = CreateTaxonomyBlockErrors[keyof CreateTaxonomyBlockErrors];
 
-export type OpCreateTaxonomyBlockResponses = {
+export type CreateTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeTaxonomyBlockEnvelope;
 };
 
-export type OpCreateTaxonomyBlockResponse = OpCreateTaxonomyBlockResponses[keyof OpCreateTaxonomyBlockResponses];
+export type CreateTaxonomyBlockResponse = CreateTaxonomyBlockResponses[keyof CreateTaxonomyBlockResponses];
 
-export type OpUpdateTaxonomyBlockData = {
+export type UpdateTaxonomyBlockData = {
     body: UpdateTaxonomyBlockRequest;
     headers?: {
         /**
@@ -21211,7 +21211,7 @@ export type OpUpdateTaxonomyBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-taxonomy-block';
 };
 
-export type OpUpdateTaxonomyBlockErrors = {
+export type UpdateTaxonomyBlockErrors = {
     /**
      * Invalid request
      */
@@ -21246,18 +21246,18 @@ export type OpUpdateTaxonomyBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateTaxonomyBlockError = OpUpdateTaxonomyBlockErrors[keyof OpUpdateTaxonomyBlockErrors];
+export type UpdateTaxonomyBlockError = UpdateTaxonomyBlockErrors[keyof UpdateTaxonomyBlockErrors];
 
-export type OpUpdateTaxonomyBlockResponses = {
+export type UpdateTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeTaxonomyBlockEnvelope;
 };
 
-export type OpUpdateTaxonomyBlockResponse = OpUpdateTaxonomyBlockResponses[keyof OpUpdateTaxonomyBlockResponses];
+export type UpdateTaxonomyBlockResponse = UpdateTaxonomyBlockResponses[keyof UpdateTaxonomyBlockResponses];
 
-export type OpDeleteTaxonomyBlockData = {
+export type DeleteTaxonomyBlockData = {
     body: DeleteTaxonomyBlockRequest;
     headers?: {
         /**
@@ -21275,7 +21275,7 @@ export type OpDeleteTaxonomyBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/delete-taxonomy-block';
 };
 
-export type OpDeleteTaxonomyBlockErrors = {
+export type DeleteTaxonomyBlockErrors = {
     /**
      * Invalid request
      */
@@ -21310,18 +21310,18 @@ export type OpDeleteTaxonomyBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteTaxonomyBlockError = OpDeleteTaxonomyBlockErrors[keyof OpDeleteTaxonomyBlockErrors];
+export type DeleteTaxonomyBlockError = DeleteTaxonomyBlockErrors[keyof DeleteTaxonomyBlockErrors];
 
-export type OpDeleteTaxonomyBlockResponses = {
+export type DeleteTaxonomyBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteTaxonomyBlockResponse;
 };
 
-export type OpDeleteTaxonomyBlockResponse = OpDeleteTaxonomyBlockResponses[keyof OpDeleteTaxonomyBlockResponses];
+export type DeleteTaxonomyBlockResponse2 = DeleteTaxonomyBlockResponses[keyof DeleteTaxonomyBlockResponses];
 
-export type OpLinkEntityTaxonomyData = {
+export type LinkEntityTaxonomyData = {
     body: LinkEntityTaxonomyRequest;
     headers?: {
         /**
@@ -21339,7 +21339,7 @@ export type OpLinkEntityTaxonomyData = {
     url: '/extensions/roboledger/{graph_id}/operations/link-entity-taxonomy';
 };
 
-export type OpLinkEntityTaxonomyErrors = {
+export type LinkEntityTaxonomyErrors = {
     /**
      * Invalid request
      */
@@ -21374,18 +21374,18 @@ export type OpLinkEntityTaxonomyErrors = {
     500: ErrorResponse;
 };
 
-export type OpLinkEntityTaxonomyError = OpLinkEntityTaxonomyErrors[keyof OpLinkEntityTaxonomyErrors];
+export type LinkEntityTaxonomyError = LinkEntityTaxonomyErrors[keyof LinkEntityTaxonomyErrors];
 
-export type OpLinkEntityTaxonomyResponses = {
+export type LinkEntityTaxonomyResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeEntityTaxonomyResponse;
 };
 
-export type OpLinkEntityTaxonomyResponse = OpLinkEntityTaxonomyResponses[keyof OpLinkEntityTaxonomyResponses];
+export type LinkEntityTaxonomyResponse = LinkEntityTaxonomyResponses[keyof LinkEntityTaxonomyResponses];
 
-export type OpCreateMappingAssociationData = {
+export type CreateMappingAssociationData = {
     body: CreateMappingAssociationOperation;
     headers?: {
         /**
@@ -21403,7 +21403,7 @@ export type OpCreateMappingAssociationData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-mapping-association';
 };
 
-export type OpCreateMappingAssociationErrors = {
+export type CreateMappingAssociationErrors = {
     /**
      * Invalid request
      */
@@ -21438,18 +21438,18 @@ export type OpCreateMappingAssociationErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateMappingAssociationError = OpCreateMappingAssociationErrors[keyof OpCreateMappingAssociationErrors];
+export type CreateMappingAssociationError = CreateMappingAssociationErrors[keyof CreateMappingAssociationErrors];
 
-export type OpCreateMappingAssociationResponses = {
+export type CreateMappingAssociationResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeAssociationResponse;
 };
 
-export type OpCreateMappingAssociationResponse = OpCreateMappingAssociationResponses[keyof OpCreateMappingAssociationResponses];
+export type CreateMappingAssociationResponse = CreateMappingAssociationResponses[keyof CreateMappingAssociationResponses];
 
-export type OpDeleteMappingAssociationData = {
+export type DeleteMappingAssociationData = {
     body: DeleteMappingAssociationOperation;
     headers?: {
         /**
@@ -21467,7 +21467,7 @@ export type OpDeleteMappingAssociationData = {
     url: '/extensions/roboledger/{graph_id}/operations/delete-mapping-association';
 };
 
-export type OpDeleteMappingAssociationErrors = {
+export type DeleteMappingAssociationErrors = {
     /**
      * Invalid request
      */
@@ -21502,18 +21502,18 @@ export type OpDeleteMappingAssociationErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteMappingAssociationError = OpDeleteMappingAssociationErrors[keyof OpDeleteMappingAssociationErrors];
+export type DeleteMappingAssociationError = DeleteMappingAssociationErrors[keyof DeleteMappingAssociationErrors];
 
-export type OpDeleteMappingAssociationResponses = {
+export type DeleteMappingAssociationResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteResult;
 };
 
-export type OpDeleteMappingAssociationResponse = OpDeleteMappingAssociationResponses[keyof OpDeleteMappingAssociationResponses];
+export type DeleteMappingAssociationResponse = DeleteMappingAssociationResponses[keyof DeleteMappingAssociationResponses];
 
-export type OpAutoMapElementsData = {
+export type AutoMapElementsData = {
     body: AutoMapElementsOperation;
     headers?: {
         /**
@@ -21531,7 +21531,7 @@ export type OpAutoMapElementsData = {
     url: '/extensions/roboledger/{graph_id}/operations/auto-map-elements';
 };
 
-export type OpAutoMapElementsErrors = {
+export type AutoMapElementsErrors = {
     /**
      * Invalid request
      */
@@ -21566,18 +21566,18 @@ export type OpAutoMapElementsErrors = {
     500: ErrorResponse;
 };
 
-export type OpAutoMapElementsError = OpAutoMapElementsErrors[keyof OpAutoMapElementsErrors];
+export type AutoMapElementsError = AutoMapElementsErrors[keyof AutoMapElementsErrors];
 
-export type OpAutoMapElementsResponses = {
+export type AutoMapElementsResponses = {
     /**
      * Successful Response
      */
     202: OperationEnvelope;
 };
 
-export type OpAutoMapElementsResponse = OpAutoMapElementsResponses[keyof OpAutoMapElementsResponses];
+export type AutoMapElementsResponse = AutoMapElementsResponses[keyof AutoMapElementsResponses];
 
-export type OpCreateInformationBlockData = {
+export type CreateInformationBlockData = {
     body: CreateInformationBlockRequest;
     headers?: {
         /**
@@ -21595,7 +21595,7 @@ export type OpCreateInformationBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-information-block';
 };
 
-export type OpCreateInformationBlockErrors = {
+export type CreateInformationBlockErrors = {
     /**
      * Invalid request
      */
@@ -21630,18 +21630,18 @@ export type OpCreateInformationBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateInformationBlockError = OpCreateInformationBlockErrors[keyof OpCreateInformationBlockErrors];
+export type CreateInformationBlockError = CreateInformationBlockErrors[keyof CreateInformationBlockErrors];
 
-export type OpCreateInformationBlockResponses = {
+export type CreateInformationBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeInformationBlockEnvelope;
 };
 
-export type OpCreateInformationBlockResponse = OpCreateInformationBlockResponses[keyof OpCreateInformationBlockResponses];
+export type CreateInformationBlockResponse = CreateInformationBlockResponses[keyof CreateInformationBlockResponses];
 
-export type OpUpdateInformationBlockData = {
+export type UpdateInformationBlockData = {
     body: UpdateInformationBlockRequest;
     headers?: {
         /**
@@ -21659,7 +21659,7 @@ export type OpUpdateInformationBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-information-block';
 };
 
-export type OpUpdateInformationBlockErrors = {
+export type UpdateInformationBlockErrors = {
     /**
      * Invalid request
      */
@@ -21694,18 +21694,18 @@ export type OpUpdateInformationBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateInformationBlockError = OpUpdateInformationBlockErrors[keyof OpUpdateInformationBlockErrors];
+export type UpdateInformationBlockError = UpdateInformationBlockErrors[keyof UpdateInformationBlockErrors];
 
-export type OpUpdateInformationBlockResponses = {
+export type UpdateInformationBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeInformationBlockEnvelope;
 };
 
-export type OpUpdateInformationBlockResponse = OpUpdateInformationBlockResponses[keyof OpUpdateInformationBlockResponses];
+export type UpdateInformationBlockResponse = UpdateInformationBlockResponses[keyof UpdateInformationBlockResponses];
 
-export type OpDeleteInformationBlockData = {
+export type DeleteInformationBlockData = {
     body: DeleteInformationBlockRequest;
     headers?: {
         /**
@@ -21723,7 +21723,7 @@ export type OpDeleteInformationBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/delete-information-block';
 };
 
-export type OpDeleteInformationBlockErrors = {
+export type DeleteInformationBlockErrors = {
     /**
      * Invalid request
      */
@@ -21758,18 +21758,18 @@ export type OpDeleteInformationBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteInformationBlockError = OpDeleteInformationBlockErrors[keyof OpDeleteInformationBlockErrors];
+export type DeleteInformationBlockError = DeleteInformationBlockErrors[keyof DeleteInformationBlockErrors];
 
-export type OpDeleteInformationBlockResponses = {
+export type DeleteInformationBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteInformationBlockResponse;
 };
 
-export type OpDeleteInformationBlockResponse = OpDeleteInformationBlockResponses[keyof OpDeleteInformationBlockResponses];
+export type DeleteInformationBlockResponse2 = DeleteInformationBlockResponses[keyof DeleteInformationBlockResponses];
 
-export type OpEvaluateRulesData = {
+export type EvaluateRulesData = {
     body: EvaluateRulesRequest;
     headers?: {
         /**
@@ -21787,7 +21787,7 @@ export type OpEvaluateRulesData = {
     url: '/extensions/roboledger/{graph_id}/operations/evaluate-rules';
 };
 
-export type OpEvaluateRulesErrors = {
+export type EvaluateRulesErrors = {
     /**
      * Invalid request
      */
@@ -21822,18 +21822,18 @@ export type OpEvaluateRulesErrors = {
     500: ErrorResponse;
 };
 
-export type OpEvaluateRulesError = OpEvaluateRulesErrors[keyof OpEvaluateRulesErrors];
+export type EvaluateRulesError = EvaluateRulesErrors[keyof EvaluateRulesErrors];
 
-export type OpEvaluateRulesResponses = {
+export type EvaluateRulesResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeEvaluateRulesResponse;
 };
 
-export type OpEvaluateRulesResponse = OpEvaluateRulesResponses[keyof OpEvaluateRulesResponses];
+export type EvaluateRulesResponse2 = EvaluateRulesResponses[keyof EvaluateRulesResponses];
 
-export type OpCreateAgentData = {
+export type CreateAgentData = {
     body: CreateAgentRequest;
     headers?: {
         /**
@@ -21851,7 +21851,7 @@ export type OpCreateAgentData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-agent';
 };
 
-export type OpCreateAgentErrors = {
+export type CreateAgentErrors = {
     /**
      * Invalid request
      */
@@ -21886,18 +21886,18 @@ export type OpCreateAgentErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateAgentError = OpCreateAgentErrors[keyof OpCreateAgentErrors];
+export type CreateAgentError = CreateAgentErrors[keyof CreateAgentErrors];
 
-export type OpCreateAgentResponses = {
+export type CreateAgentResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeLedgerAgentResponse;
 };
 
-export type OpCreateAgentResponse = OpCreateAgentResponses[keyof OpCreateAgentResponses];
+export type CreateAgentResponse = CreateAgentResponses[keyof CreateAgentResponses];
 
-export type OpUpdateAgentData = {
+export type UpdateAgentData = {
     body: UpdateAgentRequest;
     headers?: {
         /**
@@ -21915,7 +21915,7 @@ export type OpUpdateAgentData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-agent';
 };
 
-export type OpUpdateAgentErrors = {
+export type UpdateAgentErrors = {
     /**
      * Invalid request
      */
@@ -21950,18 +21950,18 @@ export type OpUpdateAgentErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateAgentError = OpUpdateAgentErrors[keyof OpUpdateAgentErrors];
+export type UpdateAgentError = UpdateAgentErrors[keyof UpdateAgentErrors];
 
-export type OpUpdateAgentResponses = {
+export type UpdateAgentResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeLedgerAgentResponse;
 };
 
-export type OpUpdateAgentResponse = OpUpdateAgentResponses[keyof OpUpdateAgentResponses];
+export type UpdateAgentResponse = UpdateAgentResponses[keyof UpdateAgentResponses];
 
-export type OpCreateEventBlockData = {
+export type CreateEventBlockData = {
     body: CreateEventBlockRequest;
     headers?: {
         /**
@@ -21979,7 +21979,7 @@ export type OpCreateEventBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-event-block';
 };
 
-export type OpCreateEventBlockErrors = {
+export type CreateEventBlockErrors = {
     /**
      * Invalid request
      */
@@ -22014,18 +22014,18 @@ export type OpCreateEventBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateEventBlockError = OpCreateEventBlockErrors[keyof OpCreateEventBlockErrors];
+export type CreateEventBlockError = CreateEventBlockErrors[keyof CreateEventBlockErrors];
 
-export type OpCreateEventBlockResponses = {
+export type CreateEventBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeEventBlockEnvelope;
 };
 
-export type OpCreateEventBlockResponse = OpCreateEventBlockResponses[keyof OpCreateEventBlockResponses];
+export type CreateEventBlockResponse = CreateEventBlockResponses[keyof CreateEventBlockResponses];
 
-export type OpUpdateEventBlockData = {
+export type UpdateEventBlockData = {
     body: UpdateEventBlockRequest;
     headers?: {
         /**
@@ -22043,7 +22043,7 @@ export type OpUpdateEventBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-event-block';
 };
 
-export type OpUpdateEventBlockErrors = {
+export type UpdateEventBlockErrors = {
     /**
      * Invalid request
      */
@@ -22078,18 +22078,18 @@ export type OpUpdateEventBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateEventBlockError = OpUpdateEventBlockErrors[keyof OpUpdateEventBlockErrors];
+export type UpdateEventBlockError = UpdateEventBlockErrors[keyof UpdateEventBlockErrors];
 
-export type OpUpdateEventBlockResponses = {
+export type UpdateEventBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeEventBlockEnvelope;
 };
 
-export type OpUpdateEventBlockResponse = OpUpdateEventBlockResponses[keyof OpUpdateEventBlockResponses];
+export type UpdateEventBlockResponse = UpdateEventBlockResponses[keyof UpdateEventBlockResponses];
 
-export type OpExecuteEventBlockData = {
+export type ExecuteEventBlockData = {
     body: ExecuteEventBlockRequest;
     headers?: {
         /**
@@ -22107,7 +22107,7 @@ export type OpExecuteEventBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/execute-event-block';
 };
 
-export type OpExecuteEventBlockErrors = {
+export type ExecuteEventBlockErrors = {
     /**
      * Invalid request
      */
@@ -22142,18 +22142,18 @@ export type OpExecuteEventBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpExecuteEventBlockError = OpExecuteEventBlockErrors[keyof OpExecuteEventBlockErrors];
+export type ExecuteEventBlockError = ExecuteEventBlockErrors[keyof ExecuteEventBlockErrors];
 
-export type OpExecuteEventBlockResponses = {
+export type ExecuteEventBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeExecuteEventBlockResponse;
 };
 
-export type OpExecuteEventBlockResponse = OpExecuteEventBlockResponses[keyof OpExecuteEventBlockResponses];
+export type ExecuteEventBlockResponse2 = ExecuteEventBlockResponses[keyof ExecuteEventBlockResponses];
 
-export type OpCreateEventHandlerData = {
+export type CreateEventHandlerData = {
     body: CreateEventHandlerRequest;
     headers?: {
         /**
@@ -22171,7 +22171,7 @@ export type OpCreateEventHandlerData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-event-handler';
 };
 
-export type OpCreateEventHandlerErrors = {
+export type CreateEventHandlerErrors = {
     /**
      * Invalid request
      */
@@ -22206,18 +22206,18 @@ export type OpCreateEventHandlerErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateEventHandlerError = OpCreateEventHandlerErrors[keyof OpCreateEventHandlerErrors];
+export type CreateEventHandlerError = CreateEventHandlerErrors[keyof CreateEventHandlerErrors];
 
-export type OpCreateEventHandlerResponses = {
+export type CreateEventHandlerResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeEventHandlerResponse;
 };
 
-export type OpCreateEventHandlerResponse = OpCreateEventHandlerResponses[keyof OpCreateEventHandlerResponses];
+export type CreateEventHandlerResponse = CreateEventHandlerResponses[keyof CreateEventHandlerResponses];
 
-export type OpUpdateEventHandlerData = {
+export type UpdateEventHandlerData = {
     body: UpdateEventHandlerRequest;
     headers?: {
         /**
@@ -22235,7 +22235,7 @@ export type OpUpdateEventHandlerData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-event-handler';
 };
 
-export type OpUpdateEventHandlerErrors = {
+export type UpdateEventHandlerErrors = {
     /**
      * Invalid request
      */
@@ -22270,18 +22270,18 @@ export type OpUpdateEventHandlerErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateEventHandlerError = OpUpdateEventHandlerErrors[keyof OpUpdateEventHandlerErrors];
+export type UpdateEventHandlerError = UpdateEventHandlerErrors[keyof UpdateEventHandlerErrors];
 
-export type OpUpdateEventHandlerResponses = {
+export type UpdateEventHandlerResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeEventHandlerResponse;
 };
 
-export type OpUpdateEventHandlerResponse = OpUpdateEventHandlerResponses[keyof OpUpdateEventHandlerResponses];
+export type UpdateEventHandlerResponse = UpdateEventHandlerResponses[keyof UpdateEventHandlerResponses];
 
-export type OpPreviewEventBlockData = {
+export type PreviewEventBlockData = {
     body: CreateEventBlockRequest;
     headers?: {
         /**
@@ -22299,7 +22299,7 @@ export type OpPreviewEventBlockData = {
     url: '/extensions/roboledger/{graph_id}/operations/preview-event-block';
 };
 
-export type OpPreviewEventBlockErrors = {
+export type PreviewEventBlockErrors = {
     /**
      * Invalid request
      */
@@ -22334,18 +22334,18 @@ export type OpPreviewEventBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpPreviewEventBlockError = OpPreviewEventBlockErrors[keyof OpPreviewEventBlockErrors];
+export type PreviewEventBlockError = PreviewEventBlockErrors[keyof PreviewEventBlockErrors];
 
-export type OpPreviewEventBlockResponses = {
+export type PreviewEventBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopePreviewEventBlockResponse;
 };
 
-export type OpPreviewEventBlockResponse = OpPreviewEventBlockResponses[keyof OpPreviewEventBlockResponses];
+export type PreviewEventBlockResponse2 = PreviewEventBlockResponses[keyof PreviewEventBlockResponses];
 
-export type OpUpdateJournalEntryData = {
+export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;
     headers?: {
         /**
@@ -22363,7 +22363,7 @@ export type OpUpdateJournalEntryData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-journal-entry';
 };
 
-export type OpUpdateJournalEntryErrors = {
+export type UpdateJournalEntryErrors = {
     /**
      * Invalid request
      */
@@ -22398,18 +22398,18 @@ export type OpUpdateJournalEntryErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateJournalEntryError = OpUpdateJournalEntryErrors[keyof OpUpdateJournalEntryErrors];
+export type UpdateJournalEntryError = UpdateJournalEntryErrors[keyof UpdateJournalEntryErrors];
 
-export type OpUpdateJournalEntryResponses = {
+export type UpdateJournalEntryResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeJournalEntryResponse;
 };
 
-export type OpUpdateJournalEntryResponse = OpUpdateJournalEntryResponses[keyof OpUpdateJournalEntryResponses];
+export type UpdateJournalEntryResponse = UpdateJournalEntryResponses[keyof UpdateJournalEntryResponses];
 
-export type OpDeleteJournalEntryData = {
+export type DeleteJournalEntryData = {
     body: DeleteJournalEntryRequest;
     headers?: {
         /**
@@ -22427,7 +22427,7 @@ export type OpDeleteJournalEntryData = {
     url: '/extensions/roboledger/{graph_id}/operations/delete-journal-entry';
 };
 
-export type OpDeleteJournalEntryErrors = {
+export type DeleteJournalEntryErrors = {
     /**
      * Invalid request
      */
@@ -22462,18 +22462,18 @@ export type OpDeleteJournalEntryErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteJournalEntryError = OpDeleteJournalEntryErrors[keyof OpDeleteJournalEntryErrors];
+export type DeleteJournalEntryError = DeleteJournalEntryErrors[keyof DeleteJournalEntryErrors];
 
-export type OpDeleteJournalEntryResponses = {
+export type DeleteJournalEntryResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteResult;
 };
 
-export type OpDeleteJournalEntryResponse = OpDeleteJournalEntryResponses[keyof OpDeleteJournalEntryResponses];
+export type DeleteJournalEntryResponse = DeleteJournalEntryResponses[keyof DeleteJournalEntryResponses];
 
-export type OpPromoteObligationsData = {
+export type PromoteObligationsData = {
     body: PromoteObligationsRequest;
     headers?: {
         /**
@@ -22491,7 +22491,7 @@ export type OpPromoteObligationsData = {
     url: '/extensions/roboledger/{graph_id}/operations/promote-obligations';
 };
 
-export type OpPromoteObligationsErrors = {
+export type PromoteObligationsErrors = {
     /**
      * Invalid request
      */
@@ -22526,18 +22526,18 @@ export type OpPromoteObligationsErrors = {
     500: ErrorResponse;
 };
 
-export type OpPromoteObligationsError = OpPromoteObligationsErrors[keyof OpPromoteObligationsErrors];
+export type PromoteObligationsError = PromoteObligationsErrors[keyof PromoteObligationsErrors];
 
-export type OpPromoteObligationsResponses = {
+export type PromoteObligationsResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopePromoteObligationsResponse;
 };
 
-export type OpPromoteObligationsResponse = OpPromoteObligationsResponses[keyof OpPromoteObligationsResponses];
+export type PromoteObligationsResponse2 = PromoteObligationsResponses[keyof PromoteObligationsResponses];
 
-export type OpRebuildScheduleData = {
+export type RebuildScheduleData = {
     body: RebuildScheduleRequest;
     headers?: {
         /**
@@ -22555,7 +22555,7 @@ export type OpRebuildScheduleData = {
     url: '/extensions/roboledger/{graph_id}/operations/rebuild-schedule';
 };
 
-export type OpRebuildScheduleErrors = {
+export type RebuildScheduleErrors = {
     /**
      * Invalid request
      */
@@ -22590,18 +22590,18 @@ export type OpRebuildScheduleErrors = {
     500: ErrorResponse;
 };
 
-export type OpRebuildScheduleError = OpRebuildScheduleErrors[keyof OpRebuildScheduleErrors];
+export type RebuildScheduleError = RebuildScheduleErrors[keyof RebuildScheduleErrors];
 
-export type OpRebuildScheduleResponses = {
+export type RebuildScheduleResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeScheduleCreatedResponse;
 };
 
-export type OpRebuildScheduleResponse = OpRebuildScheduleResponses[keyof OpRebuildScheduleResponses];
+export type RebuildScheduleResponse = RebuildScheduleResponses[keyof RebuildScheduleResponses];
 
-export type OpSetCloseTargetData = {
+export type SetCloseTargetData = {
     body: SetCloseTargetOperation;
     headers?: {
         /**
@@ -22619,7 +22619,7 @@ export type OpSetCloseTargetData = {
     url: '/extensions/roboledger/{graph_id}/operations/set-close-target';
 };
 
-export type OpSetCloseTargetErrors = {
+export type SetCloseTargetErrors = {
     /**
      * Invalid request
      */
@@ -22654,18 +22654,18 @@ export type OpSetCloseTargetErrors = {
     500: ErrorResponse;
 };
 
-export type OpSetCloseTargetError = OpSetCloseTargetErrors[keyof OpSetCloseTargetErrors];
+export type SetCloseTargetError = SetCloseTargetErrors[keyof SetCloseTargetErrors];
 
-export type OpSetCloseTargetResponses = {
+export type SetCloseTargetResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeFiscalCalendarResponse;
 };
 
-export type OpSetCloseTargetResponse = OpSetCloseTargetResponses[keyof OpSetCloseTargetResponses];
+export type SetCloseTargetResponse = SetCloseTargetResponses[keyof SetCloseTargetResponses];
 
-export type OpClosePeriodData = {
+export type ClosePeriodData = {
     body: ClosePeriodOperation;
     headers?: {
         /**
@@ -22683,7 +22683,7 @@ export type OpClosePeriodData = {
     url: '/extensions/roboledger/{graph_id}/operations/close-period';
 };
 
-export type OpClosePeriodErrors = {
+export type ClosePeriodErrors = {
     /**
      * Invalid request
      */
@@ -22718,18 +22718,18 @@ export type OpClosePeriodErrors = {
     500: ErrorResponse;
 };
 
-export type OpClosePeriodError = OpClosePeriodErrors[keyof OpClosePeriodErrors];
+export type ClosePeriodError = ClosePeriodErrors[keyof ClosePeriodErrors];
 
-export type OpClosePeriodResponses = {
+export type ClosePeriodResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeClosePeriodResponse;
 };
 
-export type OpClosePeriodResponse = OpClosePeriodResponses[keyof OpClosePeriodResponses];
+export type ClosePeriodResponse2 = ClosePeriodResponses[keyof ClosePeriodResponses];
 
-export type OpReopenPeriodData = {
+export type ReopenPeriodData = {
     body: ReopenPeriodOperation;
     headers?: {
         /**
@@ -22747,7 +22747,7 @@ export type OpReopenPeriodData = {
     url: '/extensions/roboledger/{graph_id}/operations/reopen-period';
 };
 
-export type OpReopenPeriodErrors = {
+export type ReopenPeriodErrors = {
     /**
      * Invalid request
      */
@@ -22782,18 +22782,18 @@ export type OpReopenPeriodErrors = {
     500: ErrorResponse;
 };
 
-export type OpReopenPeriodError = OpReopenPeriodErrors[keyof OpReopenPeriodErrors];
+export type ReopenPeriodError = ReopenPeriodErrors[keyof ReopenPeriodErrors];
 
-export type OpReopenPeriodResponses = {
+export type ReopenPeriodResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeFiscalCalendarResponse;
 };
 
-export type OpReopenPeriodResponse = OpReopenPeriodResponses[keyof OpReopenPeriodResponses];
+export type ReopenPeriodResponse = ReopenPeriodResponses[keyof ReopenPeriodResponses];
 
-export type OpCreateReportData = {
+export type CreateReportData = {
     body: CreateReportRequest;
     headers?: {
         /**
@@ -22811,7 +22811,7 @@ export type OpCreateReportData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-report';
 };
 
-export type OpCreateReportErrors = {
+export type CreateReportErrors = {
     /**
      * Invalid request
      */
@@ -22846,18 +22846,18 @@ export type OpCreateReportErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateReportError = OpCreateReportErrors[keyof OpCreateReportErrors];
+export type CreateReportError = CreateReportErrors[keyof CreateReportErrors];
 
-export type OpCreateReportResponses = {
+export type CreateReportResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeReportResponse;
 };
 
-export type OpCreateReportResponse = OpCreateReportResponses[keyof OpCreateReportResponses];
+export type CreateReportResponse = CreateReportResponses[keyof CreateReportResponses];
 
-export type OpRegenerateReportData = {
+export type RegenerateReportData = {
     body: RegenerateReportOperation;
     headers?: {
         /**
@@ -22875,7 +22875,7 @@ export type OpRegenerateReportData = {
     url: '/extensions/roboledger/{graph_id}/operations/regenerate-report';
 };
 
-export type OpRegenerateReportErrors = {
+export type RegenerateReportErrors = {
     /**
      * Invalid request
      */
@@ -22910,18 +22910,18 @@ export type OpRegenerateReportErrors = {
     500: ErrorResponse;
 };
 
-export type OpRegenerateReportError = OpRegenerateReportErrors[keyof OpRegenerateReportErrors];
+export type RegenerateReportError = RegenerateReportErrors[keyof RegenerateReportErrors];
 
-export type OpRegenerateReportResponses = {
+export type RegenerateReportResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeReportResponse;
 };
 
-export type OpRegenerateReportResponse = OpRegenerateReportResponses[keyof OpRegenerateReportResponses];
+export type RegenerateReportResponse = RegenerateReportResponses[keyof RegenerateReportResponses];
 
-export type OpDeleteReportData = {
+export type DeleteReportData = {
     body: DeleteReportOperation;
     headers?: {
         /**
@@ -22939,7 +22939,7 @@ export type OpDeleteReportData = {
     url: '/extensions/roboledger/{graph_id}/operations/delete-report';
 };
 
-export type OpDeleteReportErrors = {
+export type DeleteReportErrors = {
     /**
      * Invalid request
      */
@@ -22974,18 +22974,18 @@ export type OpDeleteReportErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteReportError = OpDeleteReportErrors[keyof OpDeleteReportErrors];
+export type DeleteReportError = DeleteReportErrors[keyof DeleteReportErrors];
 
-export type OpDeleteReportResponses = {
+export type DeleteReportResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteResult;
 };
 
-export type OpDeleteReportResponse = OpDeleteReportResponses[keyof OpDeleteReportResponses];
+export type DeleteReportResponse = DeleteReportResponses[keyof DeleteReportResponses];
 
-export type OpShareReportData = {
+export type ShareReportData = {
     body: ShareReportOperation;
     headers?: {
         /**
@@ -23003,7 +23003,7 @@ export type OpShareReportData = {
     url: '/extensions/roboledger/{graph_id}/operations/share-report';
 };
 
-export type OpShareReportErrors = {
+export type ShareReportErrors = {
     /**
      * Invalid request
      */
@@ -23038,18 +23038,18 @@ export type OpShareReportErrors = {
     500: ErrorResponse;
 };
 
-export type OpShareReportError = OpShareReportErrors[keyof OpShareReportErrors];
+export type ShareReportError = ShareReportErrors[keyof ShareReportErrors];
 
-export type OpShareReportResponses = {
+export type ShareReportResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeShareReportResponse;
 };
 
-export type OpShareReportResponse = OpShareReportResponses[keyof OpShareReportResponses];
+export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
 
-export type OpFileReportData = {
+export type FileReportData = {
     body: FileReportRequest;
     headers?: {
         /**
@@ -23067,7 +23067,7 @@ export type OpFileReportData = {
     url: '/extensions/roboledger/{graph_id}/operations/file-report';
 };
 
-export type OpFileReportErrors = {
+export type FileReportErrors = {
     /**
      * Invalid request
      */
@@ -23102,18 +23102,18 @@ export type OpFileReportErrors = {
     500: ErrorResponse;
 };
 
-export type OpFileReportError = OpFileReportErrors[keyof OpFileReportErrors];
+export type FileReportError = FileReportErrors[keyof FileReportErrors];
 
-export type OpFileReportResponses = {
+export type FileReportResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeReportResponse;
 };
 
-export type OpFileReportResponse = OpFileReportResponses[keyof OpFileReportResponses];
+export type FileReportResponse = FileReportResponses[keyof FileReportResponses];
 
-export type OpTransitionFilingStatusData = {
+export type TransitionFilingStatusData = {
     body: TransitionFilingStatusRequest;
     headers?: {
         /**
@@ -23131,7 +23131,7 @@ export type OpTransitionFilingStatusData = {
     url: '/extensions/roboledger/{graph_id}/operations/transition-filing-status';
 };
 
-export type OpTransitionFilingStatusErrors = {
+export type TransitionFilingStatusErrors = {
     /**
      * Invalid request
      */
@@ -23166,18 +23166,18 @@ export type OpTransitionFilingStatusErrors = {
     500: ErrorResponse;
 };
 
-export type OpTransitionFilingStatusError = OpTransitionFilingStatusErrors[keyof OpTransitionFilingStatusErrors];
+export type TransitionFilingStatusError = TransitionFilingStatusErrors[keyof TransitionFilingStatusErrors];
 
-export type OpTransitionFilingStatusResponses = {
+export type TransitionFilingStatusResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeReportResponse;
 };
 
-export type OpTransitionFilingStatusResponse = OpTransitionFilingStatusResponses[keyof OpTransitionFilingStatusResponses];
+export type TransitionFilingStatusResponse = TransitionFilingStatusResponses[keyof TransitionFilingStatusResponses];
 
-export type OpCreatePublishListData = {
+export type CreatePublishListData = {
     body: CreatePublishListRequest;
     headers?: {
         /**
@@ -23195,7 +23195,7 @@ export type OpCreatePublishListData = {
     url: '/extensions/roboledger/{graph_id}/operations/create-publish-list';
 };
 
-export type OpCreatePublishListErrors = {
+export type CreatePublishListErrors = {
     /**
      * Invalid request
      */
@@ -23230,18 +23230,18 @@ export type OpCreatePublishListErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreatePublishListError = OpCreatePublishListErrors[keyof OpCreatePublishListErrors];
+export type CreatePublishListError = CreatePublishListErrors[keyof CreatePublishListErrors];
 
-export type OpCreatePublishListResponses = {
+export type CreatePublishListResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopePublishListResponse;
 };
 
-export type OpCreatePublishListResponse = OpCreatePublishListResponses[keyof OpCreatePublishListResponses];
+export type CreatePublishListResponse = CreatePublishListResponses[keyof CreatePublishListResponses];
 
-export type OpUpdatePublishListData = {
+export type UpdatePublishListData = {
     body: UpdatePublishListOperation;
     headers?: {
         /**
@@ -23259,7 +23259,7 @@ export type OpUpdatePublishListData = {
     url: '/extensions/roboledger/{graph_id}/operations/update-publish-list';
 };
 
-export type OpUpdatePublishListErrors = {
+export type UpdatePublishListErrors = {
     /**
      * Invalid request
      */
@@ -23294,18 +23294,18 @@ export type OpUpdatePublishListErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdatePublishListError = OpUpdatePublishListErrors[keyof OpUpdatePublishListErrors];
+export type UpdatePublishListError = UpdatePublishListErrors[keyof UpdatePublishListErrors];
 
-export type OpUpdatePublishListResponses = {
+export type UpdatePublishListResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopePublishListResponse;
 };
 
-export type OpUpdatePublishListResponse = OpUpdatePublishListResponses[keyof OpUpdatePublishListResponses];
+export type UpdatePublishListResponse = UpdatePublishListResponses[keyof UpdatePublishListResponses];
 
-export type OpDeletePublishListData = {
+export type DeletePublishListData = {
     body: DeletePublishListOperation;
     headers?: {
         /**
@@ -23323,7 +23323,7 @@ export type OpDeletePublishListData = {
     url: '/extensions/roboledger/{graph_id}/operations/delete-publish-list';
 };
 
-export type OpDeletePublishListErrors = {
+export type DeletePublishListErrors = {
     /**
      * Invalid request
      */
@@ -23358,18 +23358,18 @@ export type OpDeletePublishListErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeletePublishListError = OpDeletePublishListErrors[keyof OpDeletePublishListErrors];
+export type DeletePublishListError = DeletePublishListErrors[keyof DeletePublishListErrors];
 
-export type OpDeletePublishListResponses = {
+export type DeletePublishListResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteResult;
 };
 
-export type OpDeletePublishListResponse = OpDeletePublishListResponses[keyof OpDeletePublishListResponses];
+export type DeletePublishListResponse = DeletePublishListResponses[keyof DeletePublishListResponses];
 
-export type OpAddPublishListMembersData = {
+export type AddPublishListMembersData = {
     body: AddPublishListMembersOperation;
     headers?: {
         /**
@@ -23387,7 +23387,7 @@ export type OpAddPublishListMembersData = {
     url: '/extensions/roboledger/{graph_id}/operations/add-publish-list-members';
 };
 
-export type OpAddPublishListMembersErrors = {
+export type AddPublishListMembersErrors = {
     /**
      * Invalid request
      */
@@ -23422,18 +23422,18 @@ export type OpAddPublishListMembersErrors = {
     500: ErrorResponse;
 };
 
-export type OpAddPublishListMembersError = OpAddPublishListMembersErrors[keyof OpAddPublishListMembersErrors];
+export type AddPublishListMembersError = AddPublishListMembersErrors[keyof AddPublishListMembersErrors];
 
-export type OpAddPublishListMembersResponses = {
+export type AddPublishListMembersResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeListPublishListMemberResponse;
 };
 
-export type OpAddPublishListMembersResponse = OpAddPublishListMembersResponses[keyof OpAddPublishListMembersResponses];
+export type AddPublishListMembersResponse = AddPublishListMembersResponses[keyof AddPublishListMembersResponses];
 
-export type OpRemovePublishListMemberData = {
+export type RemovePublishListMemberData = {
     body: RemovePublishListMemberOperation;
     headers?: {
         /**
@@ -23451,7 +23451,7 @@ export type OpRemovePublishListMemberData = {
     url: '/extensions/roboledger/{graph_id}/operations/remove-publish-list-member';
 };
 
-export type OpRemovePublishListMemberErrors = {
+export type RemovePublishListMemberErrors = {
     /**
      * Invalid request
      */
@@ -23486,18 +23486,18 @@ export type OpRemovePublishListMemberErrors = {
     500: ErrorResponse;
 };
 
-export type OpRemovePublishListMemberError = OpRemovePublishListMemberErrors[keyof OpRemovePublishListMemberErrors];
+export type RemovePublishListMemberError = RemovePublishListMemberErrors[keyof RemovePublishListMemberErrors];
 
-export type OpRemovePublishListMemberResponses = {
+export type RemovePublishListMemberResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteResult;
 };
 
-export type OpRemovePublishListMemberResponse = OpRemovePublishListMemberResponses[keyof OpRemovePublishListMemberResponses];
+export type RemovePublishListMemberResponse = RemovePublishListMemberResponses[keyof RemovePublishListMemberResponses];
 
-export type OpLiveFinancialStatementData = {
+export type LiveFinancialStatementData = {
     body: LiveFinancialStatementRequest;
     headers?: {
         /**
@@ -23515,7 +23515,7 @@ export type OpLiveFinancialStatementData = {
     url: '/extensions/roboledger/{graph_id}/operations/live-financial-statement';
 };
 
-export type OpLiveFinancialStatementErrors = {
+export type LiveFinancialStatementErrors = {
     /**
      * Invalid request
      */
@@ -23550,18 +23550,18 @@ export type OpLiveFinancialStatementErrors = {
     500: ErrorResponse;
 };
 
-export type OpLiveFinancialStatementError = OpLiveFinancialStatementErrors[keyof OpLiveFinancialStatementErrors];
+export type LiveFinancialStatementError = LiveFinancialStatementErrors[keyof LiveFinancialStatementErrors];
 
-export type OpLiveFinancialStatementResponses = {
+export type LiveFinancialStatementResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpLiveFinancialStatementResponse = OpLiveFinancialStatementResponses[keyof OpLiveFinancialStatementResponses];
+export type LiveFinancialStatementResponse = LiveFinancialStatementResponses[keyof LiveFinancialStatementResponses];
 
-export type OpBuildFactGridData = {
+export type BuildFactGridData = {
     body: CreateViewRequest;
     headers?: {
         /**
@@ -23579,7 +23579,7 @@ export type OpBuildFactGridData = {
     url: '/extensions/roboledger/{graph_id}/operations/build-fact-grid';
 };
 
-export type OpBuildFactGridErrors = {
+export type BuildFactGridErrors = {
     /**
      * Invalid request
      */
@@ -23614,18 +23614,18 @@ export type OpBuildFactGridErrors = {
     500: ErrorResponse;
 };
 
-export type OpBuildFactGridError = OpBuildFactGridErrors[keyof OpBuildFactGridErrors];
+export type BuildFactGridError = BuildFactGridErrors[keyof BuildFactGridErrors];
 
-export type OpBuildFactGridResponses = {
+export type BuildFactGridResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpBuildFactGridResponse = OpBuildFactGridResponses[keyof OpBuildFactGridResponses];
+export type BuildFactGridResponse = BuildFactGridResponses[keyof BuildFactGridResponses];
 
-export type OpFinancialStatementAnalysisData = {
+export type FinancialStatementAnalysisData = {
     body: FinancialStatementAnalysisRequest;
     headers?: {
         /**
@@ -23643,7 +23643,7 @@ export type OpFinancialStatementAnalysisData = {
     url: '/extensions/roboledger/{graph_id}/operations/financial-statement-analysis';
 };
 
-export type OpFinancialStatementAnalysisErrors = {
+export type FinancialStatementAnalysisErrors = {
     /**
      * Invalid request
      */
@@ -23678,18 +23678,18 @@ export type OpFinancialStatementAnalysisErrors = {
     500: ErrorResponse;
 };
 
-export type OpFinancialStatementAnalysisError = OpFinancialStatementAnalysisErrors[keyof OpFinancialStatementAnalysisErrors];
+export type FinancialStatementAnalysisError = FinancialStatementAnalysisErrors[keyof FinancialStatementAnalysisErrors];
 
-export type OpFinancialStatementAnalysisResponses = {
+export type FinancialStatementAnalysisResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelope;
 };
 
-export type OpFinancialStatementAnalysisResponse = OpFinancialStatementAnalysisResponses[keyof OpFinancialStatementAnalysisResponses];
+export type FinancialStatementAnalysisResponse = FinancialStatementAnalysisResponses[keyof FinancialStatementAnalysisResponses];
 
-export type OpCreatePortfolioBlockData = {
+export type CreatePortfolioBlockData = {
     body: CreatePortfolioBlockRequest;
     headers?: {
         /**
@@ -23707,7 +23707,7 @@ export type OpCreatePortfolioBlockData = {
     url: '/extensions/roboinvestor/{graph_id}/operations/create-portfolio-block';
 };
 
-export type OpCreatePortfolioBlockErrors = {
+export type CreatePortfolioBlockErrors = {
     /**
      * Invalid request
      */
@@ -23742,18 +23742,18 @@ export type OpCreatePortfolioBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreatePortfolioBlockError = OpCreatePortfolioBlockErrors[keyof OpCreatePortfolioBlockErrors];
+export type CreatePortfolioBlockError = CreatePortfolioBlockErrors[keyof CreatePortfolioBlockErrors];
 
-export type OpCreatePortfolioBlockResponses = {
+export type CreatePortfolioBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopePortfolioBlockEnvelope;
 };
 
-export type OpCreatePortfolioBlockResponse = OpCreatePortfolioBlockResponses[keyof OpCreatePortfolioBlockResponses];
+export type CreatePortfolioBlockResponse = CreatePortfolioBlockResponses[keyof CreatePortfolioBlockResponses];
 
-export type OpUpdatePortfolioBlockData = {
+export type UpdatePortfolioBlockData = {
     body: UpdatePortfolioBlockOperation;
     headers?: {
         /**
@@ -23771,7 +23771,7 @@ export type OpUpdatePortfolioBlockData = {
     url: '/extensions/roboinvestor/{graph_id}/operations/update-portfolio-block';
 };
 
-export type OpUpdatePortfolioBlockErrors = {
+export type UpdatePortfolioBlockErrors = {
     /**
      * Invalid request
      */
@@ -23806,18 +23806,18 @@ export type OpUpdatePortfolioBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdatePortfolioBlockError = OpUpdatePortfolioBlockErrors[keyof OpUpdatePortfolioBlockErrors];
+export type UpdatePortfolioBlockError = UpdatePortfolioBlockErrors[keyof UpdatePortfolioBlockErrors];
 
-export type OpUpdatePortfolioBlockResponses = {
+export type UpdatePortfolioBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopePortfolioBlockEnvelope;
 };
 
-export type OpUpdatePortfolioBlockResponse = OpUpdatePortfolioBlockResponses[keyof OpUpdatePortfolioBlockResponses];
+export type UpdatePortfolioBlockResponse = UpdatePortfolioBlockResponses[keyof UpdatePortfolioBlockResponses];
 
-export type OpDeletePortfolioBlockData = {
+export type DeletePortfolioBlockData = {
     body: DeletePortfolioBlockOperation;
     headers?: {
         /**
@@ -23835,7 +23835,7 @@ export type OpDeletePortfolioBlockData = {
     url: '/extensions/roboinvestor/{graph_id}/operations/delete-portfolio-block';
 };
 
-export type OpDeletePortfolioBlockErrors = {
+export type DeletePortfolioBlockErrors = {
     /**
      * Invalid request
      */
@@ -23870,18 +23870,18 @@ export type OpDeletePortfolioBlockErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeletePortfolioBlockError = OpDeletePortfolioBlockErrors[keyof OpDeletePortfolioBlockErrors];
+export type DeletePortfolioBlockError = DeletePortfolioBlockErrors[keyof DeletePortfolioBlockErrors];
 
-export type OpDeletePortfolioBlockResponses = {
+export type DeletePortfolioBlockResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeletePortfolioBlockResponse;
 };
 
-export type OpDeletePortfolioBlockResponse = OpDeletePortfolioBlockResponses[keyof OpDeletePortfolioBlockResponses];
+export type DeletePortfolioBlockResponse2 = DeletePortfolioBlockResponses[keyof DeletePortfolioBlockResponses];
 
-export type OpCreateSecurityData = {
+export type CreateSecurityData = {
     body: CreateSecurityRequest;
     headers?: {
         /**
@@ -23899,7 +23899,7 @@ export type OpCreateSecurityData = {
     url: '/extensions/roboinvestor/{graph_id}/operations/create-security';
 };
 
-export type OpCreateSecurityErrors = {
+export type CreateSecurityErrors = {
     /**
      * Invalid request
      */
@@ -23934,18 +23934,18 @@ export type OpCreateSecurityErrors = {
     500: ErrorResponse;
 };
 
-export type OpCreateSecurityError = OpCreateSecurityErrors[keyof OpCreateSecurityErrors];
+export type CreateSecurityError = CreateSecurityErrors[keyof CreateSecurityErrors];
 
-export type OpCreateSecurityResponses = {
+export type CreateSecurityResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeSecurityResponse;
 };
 
-export type OpCreateSecurityResponse = OpCreateSecurityResponses[keyof OpCreateSecurityResponses];
+export type CreateSecurityResponse = CreateSecurityResponses[keyof CreateSecurityResponses];
 
-export type OpUpdateSecurityData = {
+export type UpdateSecurityData = {
     body: UpdateSecurityOperation;
     headers?: {
         /**
@@ -23963,7 +23963,7 @@ export type OpUpdateSecurityData = {
     url: '/extensions/roboinvestor/{graph_id}/operations/update-security';
 };
 
-export type OpUpdateSecurityErrors = {
+export type UpdateSecurityErrors = {
     /**
      * Invalid request
      */
@@ -23998,18 +23998,18 @@ export type OpUpdateSecurityErrors = {
     500: ErrorResponse;
 };
 
-export type OpUpdateSecurityError = OpUpdateSecurityErrors[keyof OpUpdateSecurityErrors];
+export type UpdateSecurityError = UpdateSecurityErrors[keyof UpdateSecurityErrors];
 
-export type OpUpdateSecurityResponses = {
+export type UpdateSecurityResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeSecurityResponse;
 };
 
-export type OpUpdateSecurityResponse = OpUpdateSecurityResponses[keyof OpUpdateSecurityResponses];
+export type UpdateSecurityResponse = UpdateSecurityResponses[keyof UpdateSecurityResponses];
 
-export type OpDeleteSecurityData = {
+export type DeleteSecurityData = {
     body: DeleteSecurityOperation;
     headers?: {
         /**
@@ -24027,7 +24027,7 @@ export type OpDeleteSecurityData = {
     url: '/extensions/roboinvestor/{graph_id}/operations/delete-security';
 };
 
-export type OpDeleteSecurityErrors = {
+export type DeleteSecurityErrors = {
     /**
      * Invalid request
      */
@@ -24062,13 +24062,13 @@ export type OpDeleteSecurityErrors = {
     500: ErrorResponse;
 };
 
-export type OpDeleteSecurityError = OpDeleteSecurityErrors[keyof OpDeleteSecurityErrors];
+export type DeleteSecurityError = DeleteSecurityErrors[keyof DeleteSecurityErrors];
 
-export type OpDeleteSecurityResponses = {
+export type DeleteSecurityResponses = {
     /**
      * Successful Response
      */
     200: OperationEnvelopeDeleteResult;
 };
 
-export type OpDeleteSecurityResponse = OpDeleteSecurityResponses[keyof OpDeleteSecurityResponses];
+export type DeleteSecurityResponse = DeleteSecurityResponses[keyof DeleteSecurityResponses];
