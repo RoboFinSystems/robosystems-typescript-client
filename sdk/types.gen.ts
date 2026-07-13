@@ -6712,12 +6712,6 @@ export type MaterializeOp = {
      */
     rebuild?: boolean;
     /**
-     * Ignore Errors
-     *
-     * Continue past non-fatal row errors
-     */
-    ignore_errors?: boolean;
-    /**
      * Dry Run
      *
      * Validate tables without writing to the graph
