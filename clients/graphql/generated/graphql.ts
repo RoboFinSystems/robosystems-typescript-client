@@ -525,18 +525,25 @@ export type InformationBlockElement = {
 
 /** Fact projection — just the values the envelope caller cares about. */
 export type InformationBlockFact = {
+  /** MIME type of text_value (e.g. 'text/markdown'). */
+  contentType: Maybe<Scalars['String']['output']>
   elementId: Scalars['String']['output']
   elementName: Maybe<Scalars['String']['output']>
   elementQname: Maybe<Scalars['String']['output']>
   /** historical | in_scope */
   factScope: Scalars['String']['output']
   factSetId: Maybe<Scalars['String']['output']>
+  /** Numeric | Nonnumeric */
+  factType: Scalars['String']['output']
   id: Scalars['String']['output']
   periodEnd: Scalars['Date']['output']
   periodStart: Maybe<Scalars['Date']['output']>
   periodType: Scalars['String']['output']
+  /** Text payload for Nonnumeric facts; null for numeric. */
+  textValue: Maybe<Scalars['String']['output']>
   unit: Scalars['String']['output']
-  value: Scalars['Float']['output']
+  /** Numeric value; null for Nonnumeric (text-block) facts. */
+  value: Maybe<Scalars['Float']['output']>
 }
 
 /**
@@ -549,7 +556,7 @@ export type InformationBlockFact = {
  */
 export type InformationBlockFactSet = {
   entityId: Scalars['String']['output']
-  /** 'report' | 'schedule' | 'custom'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint. */
+  /** 'report' | 'schedule' | 'custom' | 'disclosure'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint. */
   factsetType: Scalars['String']['output']
   id: Scalars['String']['output']
   periodEnd: Scalars['Date']['output']
@@ -602,6 +609,8 @@ export type InformationBlockRenderingRow = {
   elementName: Scalars['String']['output']
   elementQname: Maybe<Scalars['String']['output']>
   isSubtotal: Scalars['Boolean']['output']
+  /** Narrative payload for text-block disclosure rows (markdown); numeric rows carry values instead. */
+  textValue: Maybe<Scalars['String']['output']>
   values: Array<Maybe<Scalars['Float']['output']>>
 }
 
@@ -2872,7 +2881,7 @@ export type GetInformationBlockQuery = {
     facts: Array<{
       id: string
       elementId: string
-      value: number
+      value: number | null
       periodStart: any | null
       periodEnd: any
       periodType: string
@@ -2999,7 +3008,7 @@ export type ListInformationBlocksQuery = {
     facts: Array<{
       id: string
       elementId: string
-      value: number
+      value: number | null
       periodStart: any | null
       periodEnd: any
       periodType: string
@@ -3394,7 +3403,7 @@ export type GetLedgerReportPackageQuery = {
         facts: Array<{
           id: string
           elementId: string
-          value: number
+          value: number | null
           periodStart: any | null
           periodEnd: any
           periodType: string
