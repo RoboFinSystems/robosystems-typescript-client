@@ -736,6 +736,120 @@ export type BillingCustomer = {
 };
 
 /**
+ * BindTextBlockRequest
+ */
+export type BindTextBlockRequest = {
+    /**
+     * Document Id
+     *
+     * Platform Document to bind (see list-documents).
+     */
+    document_id: string;
+    /**
+     * Section Id
+     *
+     * Slugified heading id of one section to bind (the section ids search-documents returns); omit to bind the whole document.
+     */
+    section_id?: string | null;
+    /**
+     * Structure Id
+     *
+     * Disclosure Structure the text block belongs to — must be block_type='regulatory_disclosure' with a text-block concept_arrangement (text_block / levelN_textblock).
+     */
+    structure_id: string;
+    /**
+     * Element Id
+     *
+     * Disclosure element to tag the text to (id form).
+     */
+    element_id?: string | null;
+    /**
+     * Element Qname
+     *
+     * Disclosure element qname (e.g. 'acme:SignificantAccountingPoliciesTextBlock') — exactly one of element_id / element_qname.
+     */
+    element_qname?: string | null;
+    /**
+     * Period Start
+     *
+     * Reporting period start the narrative covers (duration fact).
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * Reporting period end.
+     */
+    period_end: string;
+    /**
+     * Entity Id
+     *
+     * Entity the fact belongs to; defaults to the primary entity.
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * BindTextBlockResponse
+ */
+export type BindTextBlockResponse = {
+    /**
+     * Fact Id
+     *
+     * The Nonnumeric Fact created.
+     */
+    fact_id: string;
+    /**
+     * Fact Set Id
+     *
+     * Standing 'disclosure' FactSet holding the fact.
+     */
+    fact_set_id: string;
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * Section Id
+     */
+    section_id?: string | null;
+    /**
+     * Content Hash
+     *
+     * Full sha256 hex of the bound text (drift signal).
+     */
+    content_hash: string;
+    /**
+     * Characters
+     *
+     * Length of the bound text.
+     */
+    characters: number;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Replaced
+     *
+     * True when a re-bind replaced this element's existing fact in the standing FactSet (content and provenance refreshed).
+     */
+    replaced: boolean;
+};
+
+/**
  * CancelSubscriptionRequest
  *
  * Request to cancel a subscription.
@@ -1799,7 +1913,7 @@ export type CreateInformationBlockRequest = ({
 } & CreateScheduleArm) | ({
     block_type: 'rollforward';
 } & CreateRollforwardArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
 } & CreateLegacyArm);
 
 /**
@@ -2853,7 +2967,7 @@ export type DeleteInformationBlockRequest = ({
 } & DeleteScheduleArm) | ({
     block_type: 'rollforward';
 } & DeleteRollforwardArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
 } & DeleteLegacyArm);
 
 /**
@@ -4169,8 +4283,28 @@ export type FactLite = {
     element_qname?: string | null;
     /**
      * Value
+     *
+     * Numeric value; null for Nonnumeric (text-block) facts.
      */
-    value: number;
+    value?: number | null;
+    /**
+     * Text Value
+     *
+     * Text payload for Nonnumeric facts; null for numeric.
+     */
+    text_value?: string | null;
+    /**
+     * Fact Type
+     *
+     * Numeric | Nonnumeric
+     */
+    fact_type?: string;
+    /**
+     * Content Type
+     *
+     * MIME type of text_value (e.g. 'text/markdown').
+     */
+    content_type?: string | null;
     /**
      * Period Start
      */
@@ -4229,7 +4363,7 @@ export type FactSetLite = {
     /**
      * Factset Type
      *
-     * 'report' | 'schedule' | 'custom'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint.
+     * 'report' | 'schedule' | 'custom' | 'disclosure'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint.
      */
     factset_type: string;
     /**
@@ -7175,6 +7309,52 @@ export type OperationEnvelopeAssociationResponse = {
      * Command-specific result payload
      */
     result?: AssociationResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[BindTextBlockResponse]
+ */
+export type OperationEnvelopeBindTextBlockResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: BindTextBlockResponse | null;
     /**
      * At
      *
@@ -10237,6 +10417,12 @@ export type RenderingRowLite = {
      */
     values?: Array<number | null>;
     /**
+     * Text Value
+     *
+     * Narrative payload for text-block disclosure rows (markdown); numeric rows carry values instead.
+     */
+    text_value?: string | null;
+    /**
      * Is Subtotal
      */
     is_subtotal?: boolean;
@@ -12695,9 +12881,15 @@ export type TaxonomyBlockStructureRequest = {
     /**
      * Block Type
      *
-     * DB ``structures.block_type`` enum. CoA blocks use ``chart_of_accounts``; reporting extensions use the statement family or ``custom``; custom ontology uses ``custom``.
+     * DB ``structures.block_type`` enum. CoA blocks use ``chart_of_accounts``; reporting extensions use the statement family, ``regulatory_disclosure`` (disclosure notes), or ``custom``; custom ontology uses ``custom``.
      */
-    block_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'rollforward' | 'reconciliation' | 'policy' | 'metric';
+    block_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'rollforward' | 'reconciliation' | 'policy' | 'metric' | 'regulatory_disclosure';
+    /**
+     * Concept Arrangement
+     *
+     * Concept Arrangement Pattern (CAP) — how the structure's concepts relate (mirrors the ``structures.concept_arrangement`` CHECK vocabulary). A disclosure note footing members to a total is ``roll_up``. Null leaves the pattern unset.
+     */
+    concept_arrangement?: 'set' | 'roll_up' | 'roll_forward' | 'roll_forward_info' | 'adjustment' | 'variance' | 'arithmetic' | 'text_block' | 'level1_textblock' | 'level2_textblock' | 'level3_textblock' | 'level4_detail' | 'table_equivalent_textblock' | 'grid' | 'compound_fact' | null;
     /**
      * Description
      */
@@ -13321,7 +13513,7 @@ export type UpdateInformationBlockRequest = ({
 } & UpdateScheduleArm) | ({
     block_type: 'rollforward';
 } & UpdateRollforwardArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
 } & UpdateLegacyArm);
 
 /**
@@ -14138,10 +14330,13 @@ export type ViewProjections = {
  *
  * Statement-family blocks (balance_sheet, income_statement,
  * cash_flow_statement, equity_statement, comprehensive_income) are
- * constructed via `create-report`, not this endpoint. Metric blocks
- * are recognized but their evaluator has not shipped. Calling this
- * endpoint with one of these block types returns HTTP 501 with a hint
- * pointing to the correct construction path.
+ * constructed via `create-report`, not this endpoint. Disclosure
+ * structures (regulatory_disclosure) are vocabulary, authored via
+ * `create-taxonomy-block`; their facts land when `create-report`
+ * picks them. Metric blocks are recognized but their evaluator has
+ * not shipped. Calling this endpoint with one of these block types
+ * returns HTTP 501 with a hint pointing to the correct construction
+ * path.
  */
 export type CreateLegacyArm = {
     /**
@@ -14149,7 +14344,7 @@ export type CreateLegacyArm = {
      *
      * Statement-family or metric block type. The endpoint returns 501 for these values — statements are constructed via `create-report`; metric construction is pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric';
     /**
      * Payload
      *
@@ -14219,7 +14414,7 @@ export type DeleteLegacyArm = {
      *
      * Statement-family or metric block type. Deletion returns 501 — statements are library-seeded (archive the underlying Report instead); metric deletion is pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric';
     /**
      * Payload
      *
@@ -14287,7 +14482,7 @@ export type UpdateLegacyArm = {
      *
      * Statement-family or metric block type. Updates return 501 — statement Structures are library-seeded; metric updates are pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric';
     /**
      * Payload
      *
@@ -21826,6 +22021,70 @@ export type EvaluateRulesResponses = {
 };
 
 export type EvaluateRulesResponse2 = EvaluateRulesResponses[keyof EvaluateRulesResponses];
+
+export type BindTextBlockData = {
+    body: BindTextBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/bind-text-block';
+};
+
+export type BindTextBlockErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type BindTextBlockError = BindTextBlockErrors[keyof BindTextBlockErrors];
+
+export type BindTextBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeBindTextBlockResponse;
+};
+
+export type BindTextBlockResponse2 = BindTextBlockResponses[keyof BindTextBlockResponses];
 
 export type CreateAgentData = {
     body: CreateAgentRequest;

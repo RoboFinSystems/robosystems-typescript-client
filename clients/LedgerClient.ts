@@ -27,6 +27,7 @@ import { ClientError } from 'graphql-request'
 import {
   addPublishListMembers,
   autoMapElements,
+  bindTextBlock,
   buildFactGrid,
   closePeriod,
   createAgent,
@@ -70,6 +71,8 @@ import type {
   AddPublishListMembersOperation,
   AssociationResponse,
   AutoMapElementsOperation,
+  BindTextBlockRequest,
+  BindTextBlockResponse,
   ClosePeriodOperation,
   CreateAgentRequest,
   CreateEventBlockRequest,
@@ -886,6 +889,25 @@ export class LedgerClient {
       deleteTaxonomyBlock({ path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as DeleteTaxonomyBlockResponse
+  }
+
+  /**
+   * Bind a platform Document (or one section) to a disclosure element as a
+   * Nonnumeric text-block fact in a standing 'disclosure' FactSet.
+   * Re-binding the same element and period replaces the fact
+   * (`replaced: true` in the response).
+   */
+  async bindTextBlock(
+    graphId: string,
+    body: BindTextBlockRequest,
+    idempotencyKey?: string
+  ): Promise<BindTextBlockResponse> {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
+    const envelope = await this.callOperation(
+      'Bind text block',
+      bindTextBlock({ path: { graph_id: graphId }, body, headers })
+    )
+    return this.requireResult('Bind text block', envelope.result)
   }
 
   /** List elements (CoA accounts, GAAP concepts, etc.) with filters. */
