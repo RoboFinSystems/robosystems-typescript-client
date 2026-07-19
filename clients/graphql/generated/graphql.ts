@@ -2882,6 +2882,9 @@ export type GetInformationBlockQuery = {
       id: string
       elementId: string
       value: number | null
+      textValue: string | null
+      factType: string
+      contentType: string | null
       periodStart: any | null
       periodEnd: any
       periodType: string
@@ -2947,6 +2950,7 @@ export type GetInformationBlockQuery = {
           classification: string | null
           balanceType: string | null
           values: Array<number | null>
+          textValue: string | null
           isSubtotal: boolean
           depth: number
         }>
@@ -3009,6 +3013,9 @@ export type ListInformationBlocksQuery = {
       id: string
       elementId: string
       value: number | null
+      textValue: string | null
+      factType: string
+      contentType: string | null
       periodStart: any | null
       periodEnd: any
       periodType: string
@@ -3074,6 +3081,7 @@ export type ListInformationBlocksQuery = {
           classification: string | null
           balanceType: string | null
           values: Array<number | null>
+          textValue: string | null
           isSubtotal: boolean
           depth: number
         }>
@@ -3404,6 +3412,9 @@ export type GetLedgerReportPackageQuery = {
           id: string
           elementId: string
           value: number | null
+          textValue: string | null
+          factType: string
+          contentType: string | null
           periodStart: any | null
           periodEnd: any
           periodType: string
@@ -3469,6 +3480,7 @@ export type GetLedgerReportPackageQuery = {
               classification: string | null
               balanceType: string | null
               values: Array<number | null>
+              textValue: string | null
               isSubtotal: boolean
               depth: number
             }>
@@ -5731,6 +5743,9 @@ export const GetInformationBlockDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'contentType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
@@ -5870,6 +5885,7 @@ export const GetInformationBlockDocument = {
                                   },
                                   { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'values' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
                                 ],
@@ -6049,6 +6065,9 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'contentType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
@@ -6188,6 +6207,7 @@ export const ListInformationBlocksDocument = {
                                   },
                                   { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'values' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
                                 ],
@@ -7135,6 +7155,9 @@ export const GetLedgerReportPackageDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'factType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'contentType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
@@ -7306,6 +7329,10 @@ export const GetLedgerReportPackageDocument = {
                                               {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'values' },
+                                              },
+                                              {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'textValue' },
                                               },
                                               {
                                                 kind: 'Field',

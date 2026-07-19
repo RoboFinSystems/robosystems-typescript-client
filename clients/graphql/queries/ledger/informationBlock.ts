@@ -51,6 +51,9 @@ export const GET_INFORMATION_BLOCK = gql`
         id
         elementId
         value
+        textValue
+        factType
+        contentType
         periodStart
         periodEnd
         periodType
@@ -121,6 +124,7 @@ export const GET_INFORMATION_BLOCK = gql`
             classification
             balanceType
             values
+            textValue
             isSubtotal
             depth
           }
@@ -192,6 +196,9 @@ export const LIST_INFORMATION_BLOCKS = gql`
         id
         elementId
         value
+        textValue
+        factType
+        contentType
         periodStart
         periodEnd
         periodType
@@ -262,6 +269,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
             classification
             balanceType
             values
+            textValue
             isSubtotal
             depth
           }
