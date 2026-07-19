@@ -80,6 +80,9 @@ export const GET_REPORT_PACKAGE = gql`
             id
             elementId
             value
+            textValue
+            factType
+            contentType
             periodStart
             periodEnd
             periodType
@@ -150,6 +153,7 @@ export const GET_REPORT_PACKAGE = gql`
                 classification
                 balanceType
                 values
+                textValue
                 isSubtotal
                 depth
               }
