@@ -1149,6 +1149,129 @@ export type ClosePeriodResponse = {
 };
 
 /**
+ * ComputeMetricsRequest
+ *
+ * Request body for the ``compute-metrics`` operation.
+ *
+ * Resolves the ``Derive`` rules scoped to the metric block, binds each
+ * rule's operands to the entity's most recent persisted report facts at
+ * ``period_end``, evaluates, and upserts the period's standing
+ * ``factset_type='metric'`` FactSet (re-running a period replaces its
+ * facts). One standing FactSet per (structure, entity, period_end) — the
+ * accumulating time series.
+ */
+export type ComputeMetricsRequest = {
+    /**
+     * Structure Id
+     *
+     * Metric block structure (block_type='metric') to compute.
+     */
+    structure_id: string;
+    /**
+     * Period End
+     *
+     * Period end to compute at. Operands bind to report facts whose period_end matches exactly (instant balances as of this date; durations ending on it).
+     */
+    period_end: string;
+    /**
+     * Period Start
+     *
+     * Optional lower bound for duration-operand binding and the standing FactSet's period_start.
+     */
+    period_start?: string | null;
+    /**
+     * Entity Id
+     *
+     * Entity to compute for. Defaults to the graph's earliest-created entity (the primary entity for single-entity graphs).
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * ComputeMetricsResponse
+ *
+ * Response for the ``compute-metrics`` operation.
+ */
+export type ComputeMetricsResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Entity Id
+     */
+    entity_id: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Fact Set Id
+     *
+     * Standing metric FactSet for the period — None when every metric was skipped and no prior set existed.
+     */
+    fact_set_id?: string | null;
+    /**
+     * Computed
+     */
+    computed?: Array<ComputedMetricLite>;
+    /**
+     * Skipped
+     */
+    skipped?: Array<SkippedMetricLite>;
+};
+
+/**
+ * ComputedMetricLite
+ *
+ * One metric computed by a ``compute-metrics`` run.
+ */
+export type ComputedMetricLite = {
+    /**
+     * Rule Id
+     *
+     * Derive rule that produced the value.
+     */
+    rule_id: string;
+    /**
+     * Element Id
+     *
+     * Metric element the fact was written for.
+     */
+    element_id: string;
+    /**
+     * Element Qname
+     *
+     * Metric element qname (e.g. rs-metric:CurrentRatio).
+     */
+    element_qname?: string | null;
+    /**
+     * Name
+     *
+     * Metric display name.
+     */
+    name: string;
+    /**
+     * Value
+     *
+     * Computed value.
+     */
+    value: number;
+    /**
+     * Unit
+     *
+     * Fact unit — 'USD' for monetary, else 'pure'.
+     */
+    unit: string;
+    /**
+     * Period Type
+     *
+     * 'instant' or 'duration'.
+     */
+    period_type: string;
+};
+
+/**
  * ConnectionLite
  *
  * Connection (= Association) projection.
@@ -7468,6 +7591,52 @@ export type OperationEnvelopeClosePeriodResponse = {
 };
 
 /**
+ * OperationEnvelope[ComputeMetricsResponse]
+ */
+export type OperationEnvelopeComputeMetricsResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ComputeMetricsResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[DeleteInformationBlockResponse]
  */
 export type OperationEnvelopeDeleteInformationBlockResponse = {
@@ -11832,6 +12001,42 @@ export type ShareResultItem = {
 };
 
 /**
+ * SkippedMetricLite
+ *
+ * One metric a ``compute-metrics`` run could not compute.
+ *
+ * Soft-fail by design: a missing operand fact (e.g. InterestExpense for a
+ * debt-free entity) or an undefined ratio (division by zero) skips the
+ * metric with a reason — it never errors the run.
+ */
+export type SkippedMetricLite = {
+    /**
+     * Rule Id
+     *
+     * Derive rule that was skipped.
+     */
+    rule_id: string;
+    /**
+     * Element Qname
+     *
+     * Metric element qname the rule targets.
+     */
+    element_qname?: string | null;
+    /**
+     * Reason
+     *
+     * Why the metric was skipped.
+     */
+    reason: string;
+    /**
+     * Missing
+     *
+     * Operand qnames with no bound fact at the period, when applicable.
+     */
+    missing?: Array<string>;
+};
+
+/**
  * SqlStatementRequest
  */
 export type SqlStatementRequest = {
@@ -12020,6 +12225,11 @@ export type StructureSummary = {
  * StructureUpdatePatch
  *
  * Partial-update patch for a single structure, keyed by structure_id.
+ *
+ * ``concept_arrangement`` makes a mis-CAP'd structure repairable in
+ * place (e.g. promoting a ``set`` note to ``roll_up`` so it gains a
+ * footing rule); ``block_type`` stays immutable — it drives block-type
+ * routing, so changing it is a re-create, not an edit.
  */
 export type StructureUpdatePatch = {
     /**
@@ -12040,6 +12250,10 @@ export type StructureUpdatePatch = {
      * Role Uri
      */
     role_uri?: string | null;
+    /**
+     * Concept Arrangement
+     */
+    concept_arrangement?: 'set' | 'roll_up' | 'roll_forward' | 'roll_forward_info' | 'adjustment' | 'variance' | 'arithmetic' | 'text_block' | 'level1_textblock' | 'level2_textblock' | 'level3_textblock' | 'level4_detail' | 'table_equivalent_textblock' | 'grid' | 'compound_fact' | null;
     /**
      * Metadata
      */
@@ -22021,6 +22235,70 @@ export type EvaluateRulesResponses = {
 };
 
 export type EvaluateRulesResponse2 = EvaluateRulesResponses[keyof EvaluateRulesResponses];
+
+export type ComputeMetricsData = {
+    body: ComputeMetricsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/compute-metrics';
+};
+
+export type ComputeMetricsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ComputeMetricsError = ComputeMetricsErrors[keyof ComputeMetricsErrors];
+
+export type ComputeMetricsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeComputeMetricsResponse;
+};
+
+export type ComputeMetricsResponse2 = ComputeMetricsResponses[keyof ComputeMetricsResponses];
 
 export type BindTextBlockData = {
     body: BindTextBlockRequest;

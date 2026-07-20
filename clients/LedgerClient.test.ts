@@ -1011,6 +1011,74 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('computeMetrics', () => {
+    it('returns the computed and skipped metrics from the envelope result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('compute-metrics', {
+          structure_id: 'str_metrics',
+          entity_id: 'ent_1',
+          period_end: '2025-12-31',
+          fact_set_id: 'fs_1',
+          computed: [{ element_qname: 'rs-metric:CurrentRatio', value: 3.27, unit: 'pure' }],
+          skipped: [
+            {
+              element_qname: 'rs-metric:InterestCoverage',
+              reason: 'missing operand facts',
+              missing: ['rs-gaap:InterestExpense'],
+            },
+          ],
+        })
+      )
+      const result = await client.computeMetrics('graph_1', {
+        structure_id: 'str_metrics',
+        period_end: '2025-12-31',
+      })
+      expect(result.fact_set_id).toBe('fs_1')
+      expect(result.computed).toHaveLength(1)
+      expect(result.skipped?.[0].reason).toBe('missing operand facts')
+    })
+
+    it('POSTs the request body to the compute-metrics URL', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('compute-metrics', {
+          structure_id: 'str_1',
+          entity_id: 'ent_1',
+          period_end: '2025-12-31',
+        })
+      )
+      await client.computeMetrics('graph_42', {
+        structure_id: 'str_1',
+        period_end: '2025-12-31',
+        entity_id: 'ent_1',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/compute-metrics'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.structure_id).toBe('str_1')
+      expect(body.period_end).toBe('2025-12-31')
+      expect(body.entity_id).toBe('ent_1')
+    })
+
+    it('forwards an Idempotency-Key header when provided', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('compute-metrics', {
+          structure_id: 'str_1',
+          entity_id: 'ent_1',
+          period_end: '2025-12-31',
+        })
+      )
+      await client.computeMetrics(
+        'graph_1',
+        { structure_id: 'str_1', period_end: '2025-12-31' },
+        { idempotencyKey: 'idem_456' }
+      )
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.headers.get('Idempotency-Key')).toBe('idem_456')
+    })
+  })
+
   // ── Journal entry writes ────────────────────────────────────────────
 
   describe('createJournalEntry', () => {
