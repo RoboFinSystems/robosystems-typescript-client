@@ -30,6 +30,7 @@ import {
   bindTextBlock,
   buildFactGrid,
   closePeriod,
+  computeMetrics,
   createAgent,
   createEventBlock,
   createEventHandler,
@@ -74,6 +75,8 @@ import type {
   BindTextBlockRequest,
   BindTextBlockResponse,
   ClosePeriodOperation,
+  ComputeMetricsRequest,
+  ComputeMetricsResponse,
   CreateAgentRequest,
   CreateEventBlockRequest,
   CreateEventHandlerRequest,
@@ -1346,6 +1349,32 @@ export class LedgerClient {
       evaluateRules({ path: { graph_id: graphId }, body })
     )
     return this.requireResult('Evaluate rules', envelope.result)
+  }
+
+  /**
+   * Compute a metric block's `Derive` rules for a period, upserting the
+   * standing `factset_type='metric'` FactSet (one per structure +
+   * entity + period_end; re-running a period replaces its facts).
+   * Operands bind to the entity's most recent persisted report facts at
+   * `period_end`. Unresolvable metrics come back in `skipped` with a
+   * reason rather than failing the run.
+   */
+  async computeMetrics(
+    graphId: string,
+    body: ComputeMetricsRequest,
+    options?: { idempotencyKey?: string }
+  ): Promise<ComputeMetricsResponse> {
+    const envelope = await this.callOperation(
+      'Compute metrics',
+      computeMetrics({
+        path: { graph_id: graphId },
+        body,
+        headers: options?.idempotencyKey
+          ? { 'Idempotency-Key': options.idempotencyKey }
+          : undefined,
+      })
+    )
+    return this.requireResult('Compute metrics', envelope.result)
   }
 
   // ── Period close ────────────────────────────────────────────────────
