@@ -8,8 +8,8 @@ import { gql } from 'graphql-request'
  * branch. See `local/docs/specs/information-block.md` §2.
  */
 export const GET_INFORMATION_BLOCK = gql`
-  query GetInformationBlock($id: ID!, $scenarioId: String) {
-    informationBlock(id: $id, scenarioId: $scenarioId) {
+  query GetInformationBlock($id: ID!, $scenarioId: String, $series: Boolean! = false) {
+    informationBlock(id: $id, scenarioId: $scenarioId, series: $series) {
       id
       blockType
       name
@@ -134,6 +134,7 @@ export const GET_INFORMATION_BLOCK = gql`
             start
             end
             label
+            forecast
           }
           validation {
             passed
@@ -305,6 +306,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
             start
             end
             label
+            forecast
           }
           validation {
             passed

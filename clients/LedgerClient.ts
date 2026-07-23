@@ -1085,16 +1085,26 @@ export class LedgerClient {
    * a forecast block's structure id = that scenario's parallel universe
    * (statement envelopes bind its latest computed month, metric
    * envelopes extend the series with "(forecast)"-labeled columns).
+   *
+   * `options.series` renders a statement block as its whole report-set
+   * time series — one column per period; combined with `scenarioId` the
+   * columns cross the actuals/forecast seam and forecast columns carry
+   * `periods[].forecast === true`. Non-statement block types ignore it
+   * (metric envelopes are always the full series).
    */
   async getInformationBlock(
     graphId: string,
     id: string,
-    options?: { scenarioId?: string }
+    options?: { scenarioId?: string; series?: boolean }
   ): Promise<InformationBlock | null> {
     const block = await this.gqlQuery(
       graphId,
       GetInformationBlockDocument,
-      { id, scenarioId: options?.scenarioId ?? null },
+      {
+        id,
+        scenarioId: options?.scenarioId ?? null,
+        series: options?.series ?? false,
+      },
       'Get information block',
       (data) => data.informationBlock ?? null
     )

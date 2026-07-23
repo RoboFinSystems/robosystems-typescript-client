@@ -163,6 +163,7 @@ export const GET_REPORT_PACKAGE = gql`
                 start
                 end
                 label
+                forecast
               }
               validation {
                 passed
