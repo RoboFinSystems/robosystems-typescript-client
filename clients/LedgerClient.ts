@@ -1080,12 +1080,21 @@ export class LedgerClient {
    * Fetch an Information Block envelope by id — the generic
    * cross-block-type read. Returns `null` when the block doesn't exist
    * (or its type isn't registered). See `information-block.md`.
+   *
+   * `options.scenarioId` selects the FactSet slice: omitted = actuals;
+   * a forecast block's structure id = that scenario's parallel universe
+   * (statement envelopes bind its latest computed month, metric
+   * envelopes extend the series with "(forecast)"-labeled columns).
    */
-  async getInformationBlock(graphId: string, id: string): Promise<InformationBlock | null> {
+  async getInformationBlock(
+    graphId: string,
+    id: string,
+    options?: { scenarioId?: string }
+  ): Promise<InformationBlock | null> {
     const block = await this.gqlQuery(
       graphId,
       GetInformationBlockDocument,
-      { id },
+      { id, scenarioId: options?.scenarioId ?? null },
       'Get information block',
       (data) => data.informationBlock ?? null
     )
@@ -1096,6 +1105,8 @@ export class LedgerClient {
    * List Information Block envelopes with optional block_type + category
    * filters. Replaces the old `listSchedules` method — callers use
    * `{blockType: 'schedule'}` to get the same set of blocks.
+   * `options.scenarioId` threads into each envelope's FactSet binding
+   * (the block list itself is scenario-independent).
    */
   async listInformationBlocks(
     graphId: string,
@@ -1104,6 +1115,7 @@ export class LedgerClient {
       category?: string
       limit?: number
       offset?: number
+      scenarioId?: string
     }
   ): Promise<InformationBlockList> {
     const blocks = await this.gqlQuery(
@@ -1114,6 +1126,7 @@ export class LedgerClient {
         category: options?.category ?? null,
         limit: options?.limit ?? null,
         offset: options?.offset ?? null,
+        scenarioId: options?.scenarioId ?? null,
       },
       'List information blocks',
       (data) => data.informationBlocks

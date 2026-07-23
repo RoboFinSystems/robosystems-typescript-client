@@ -8,8 +8,8 @@ import { gql } from 'graphql-request'
  * branch. See `local/docs/specs/information-block.md` §2.
  */
 export const GET_INFORMATION_BLOCK = gql`
-  query GetInformationBlock($id: ID!) {
-    informationBlock(id: $id) {
+  query GetInformationBlock($id: ID!, $scenarioId: String) {
+    informationBlock(id: $id, scenarioId: $scenarioId) {
       id
       blockType
       name
@@ -87,6 +87,7 @@ export const GET_INFORMATION_BLOCK = gql`
         factsetType
         entityId
         reportId
+        scenarioId
         provenance
       }
       verificationResults {
@@ -166,8 +167,20 @@ export const GET_INFORMATION_BLOCK = gql`
  * blocks.
  */
 export const LIST_INFORMATION_BLOCKS = gql`
-  query ListInformationBlocks($blockType: String, $category: String, $limit: Int, $offset: Int) {
-    informationBlocks(blockType: $blockType, category: $category, limit: $limit, offset: $offset) {
+  query ListInformationBlocks(
+    $blockType: String
+    $category: String
+    $limit: Int
+    $offset: Int
+    $scenarioId: String
+  ) {
+    informationBlocks(
+      blockType: $blockType
+      category: $category
+      limit: $limit
+      offset: $offset
+      scenarioId: $scenarioId
+    ) {
       id
       blockType
       name
@@ -245,6 +258,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
         factsetType
         entityId
         reportId
+        scenarioId
         provenance
       }
       verificationResults {

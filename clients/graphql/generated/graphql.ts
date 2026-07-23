@@ -605,7 +605,7 @@ export type InformationBlockFact = {
  */
 export type InformationBlockFactSet = {
   entityId: Scalars['String']['output']
-  /** 'report' | 'schedule' | 'custom' | 'disclosure'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint. */
+  /** 'report' | 'schedule' | 'custom' | 'disclosure' | 'metric'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint. */
   factsetType: Scalars['String']['output']
   id: Scalars['String']['output']
   periodEnd: Scalars['Date']['output']
@@ -614,6 +614,8 @@ export type InformationBlockFactSet = {
   provenance: Maybe<Scalars['JSON']['output']>
   /** Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands. */
   reportId: Maybe<Scalars['String']['output']>
+  /** Scenario axis (the forecast engine). NULL = actuals; non-NULL names the owning forecast block whose parallel universe this set belongs to. */
+  scenarioId: Maybe<Scalars['String']['output']>
   structureId: Maybe<Scalars['String']['output']>
 }
 
@@ -1681,6 +1683,7 @@ export type QueryHoldingsArgs = {
 
 export type QueryInformationBlockArgs = {
   id: Scalars['ID']['input']
+  scenarioId?: InputMaybe<Scalars['String']['input']>
 }
 
 export type QueryInformationBlocksArgs = {
@@ -1688,6 +1691,7 @@ export type QueryInformationBlocksArgs = {
   category?: InputMaybe<Scalars['String']['input']>
   limit?: InputMaybe<Scalars['Int']['input']>
   offset?: InputMaybe<Scalars['Int']['input']>
+  scenarioId?: InputMaybe<Scalars['String']['input']>
 }
 
 export type QueryLibraryElementArgs = {
@@ -2894,6 +2898,7 @@ export type GetLedgerFiscalCalendarQuery = {
 
 export type GetInformationBlockQueryVariables = Exact<{
   id: Scalars['ID']['input']
+  scenarioId: InputMaybe<Scalars['String']['input']>
 }>
 
 export type GetInformationBlockQuery = {
@@ -2966,6 +2971,7 @@ export type GetInformationBlockQuery = {
       factsetType: string
       entityId: string
       reportId: string | null
+      scenarioId: string | null
       provenance: any | null
     } | null
     verificationResults: Array<{
@@ -3034,6 +3040,7 @@ export type ListInformationBlocksQueryVariables = Exact<{
   category: InputMaybe<Scalars['String']['input']>
   limit: InputMaybe<Scalars['Int']['input']>
   offset: InputMaybe<Scalars['Int']['input']>
+  scenarioId: InputMaybe<Scalars['String']['input']>
 }>
 
 export type ListInformationBlocksQuery = {
@@ -3106,6 +3113,7 @@ export type ListInformationBlocksQuery = {
       factsetType: string
       entityId: string
       reportId: string | null
+      scenarioId: string | null
       provenance: any | null
     } | null
     verificationResults: Array<{
@@ -3514,6 +3522,7 @@ export type GetLedgerReportPackageQuery = {
           factsetType: string
           entityId: string
           reportId: string | null
+          scenarioId: string | null
           provenance: any | null
         } | null
         verificationResults: Array<{
@@ -5733,6 +5742,11 @@ export const GetInformationBlockDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -5745,6 +5759,11 @@ export const GetInformationBlockDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'id' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'scenarioId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
               },
             ],
             selectionSet: {
@@ -5888,6 +5907,7 @@ export const GetInformationBlockDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scenarioId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
                     ],
                   },
@@ -6077,6 +6097,11 @@ export const ListInformationBlocksDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -6104,6 +6129,11 @@ export const ListInformationBlocksDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'offset' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'scenarioId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
               },
             ],
             selectionSet: {
@@ -6247,6 +6277,7 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scenarioId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
                     ],
                   },
@@ -7389,6 +7420,7 @@ export const GetLedgerReportPackageDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'scenarioId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
                                 ],
                               },
