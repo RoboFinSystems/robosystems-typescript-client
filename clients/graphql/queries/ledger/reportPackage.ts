@@ -116,6 +116,7 @@ export const GET_REPORT_PACKAGE = gql`
             factsetType
             entityId
             reportId
+            scenarioId
             provenance
           }
           verificationResults {

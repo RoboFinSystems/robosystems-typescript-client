@@ -157,7 +157,9 @@ export type ArtifactResponse = {
         kind: 'metric';
     } & MetricMechanics) | ({
         kind: 'rollforward';
-    } & RollforwardMechanics);
+    } & RollforwardMechanics) | ({
+        kind: 'forecast';
+    } & ForecastMechanics);
 };
 
 /**
@@ -1231,6 +1233,83 @@ export type ClosePeriodResponse = {
 };
 
 /**
+ * ComputeForecastRequest
+ *
+ * Request body for the ``compute-forecast`` operation.
+ *
+ * Walks the scenario's driver cascade month-by-month forward from the
+ * forecast block's ``base_period``: lever-driven Derive rules in
+ * dependency order, carry-forward for unmodeled IS lines, calc-DAG
+ * subtotals — upserting one scenario IS FactSet (+ a working-capital BS
+ * set) per forward month, all keyed by the forecast block's
+ * ``scenario_id``. Re-running replaces each month's values (the
+ * compute-metrics drift semantics). Deterministic and non-AI — no
+ * credits consumed.
+ */
+export type ComputeForecastRequest = {
+    /**
+     * Structure Id
+     *
+     * Forecast block structure (block_type='forecast') to compute.
+     */
+    structure_id: string;
+    /**
+     * Months
+     *
+     * Forward months to compute — defaults to the block's full horizon_months; must not exceed it (lever assertions don't extend past the horizon).
+     */
+    months?: number | null;
+    /**
+     * Entity Id
+     *
+     * Entity to compute for. Defaults to the lever FactSet's entity (the entity the scenario was authored against).
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * ComputeForecastResponse
+ *
+ * Response for the ``compute-forecast`` operation.
+ */
+export type ComputeForecastResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Scenario Id
+     *
+     * The scenario key every emitted FactSet carries — the forecast block's own structure id.
+     */
+    scenario_id: string;
+    /**
+     * Entity Id
+     */
+    entity_id: string;
+    /**
+     * Base Period
+     *
+     * Seed month the walk projected from.
+     */
+    base_period: string;
+    /**
+     * Months
+     *
+     * Forward months requested.
+     */
+    months: number;
+    /**
+     * Months Computed
+     */
+    months_computed?: Array<ForecastMonthLite>;
+    /**
+     * Skipped
+     */
+    skipped?: Array<SkippedForecastLite>;
+};
+
+/**
  * ComputeMetricsRequest
  *
  * Request body for the ``compute-metrics`` operation.
@@ -1267,6 +1346,12 @@ export type ComputeMetricsRequest = {
      * Entity to compute for. Defaults to the graph's earliest-created entity (the primary entity for single-entity graphs).
      */
     entity_id?: string | null;
+    /**
+     * Scenario Id
+     *
+     * Compute on a scenario slice: operands bind that scenario's facts (actuals as the fallback across the seam) and the standing metric set is stamped with the scenario. None (the default) computes actuals only. Pass a forecast block's structure id after compute-forecast to extend the metric series into its forward months.
+     */
+    scenario_id?: string | null;
 };
 
 /**
@@ -2068,6 +2153,55 @@ export type CreateEventHandlerRequest = {
 };
 
 /**
+ * CreateForecastRequest
+ *
+ * Create a forecast block — the authored scenario container.
+ *
+ * ``base_period`` defaults to the fiscal calendar's
+ * ``closed_through_period`` (else the newest actual report month) —
+ * the walk projects forward from the last closed actuals. The resolved
+ * value is stored in the mechanics so recompute is deterministic.
+ */
+export type CreateForecastRequest = {
+    /**
+     * Name
+     *
+     * Human-readable scenario name.
+     */
+    name: string;
+    /**
+     * Scenario Kind
+     *
+     * What kind of scenario this is — metadata for display/filtering, not machinery. All kinds compute identically.
+     */
+    scenario_kind?: 'budget' | 'forecast' | 'projection';
+    /**
+     * Horizon Months
+     *
+     * Forward months to project past the base period.
+     */
+    horizon_months?: number;
+    /**
+     * Base Period
+     *
+     * Seed month (``YYYY-MM``) the walk projects forward from. Defaults to the fiscal calendar's closed-through period, else the newest actual report month. Resolved and stored at create time.
+     */
+    base_period?: string | null;
+    /**
+     * Levers
+     *
+     * Lever assertions — at least one.
+     */
+    levers: Array<LeverAssertionRequest>;
+    /**
+     * Entity Id
+     *
+     * Entity the scenario belongs to. Defaults to the graph's earliest-created entity (single-entity convention).
+     */
+    entity_id?: string | null;
+};
+
+/**
  * CreateGraphRequest
  *
  * Request model for creating a new graph.
@@ -2124,6 +2258,8 @@ export type CreateInformationBlockRequest = ({
 } & CreateScheduleArm) | ({
     block_type: 'rollforward';
 } & CreateRollforwardArm) | ({
+    block_type: 'forecast';
+} & CreateForecastArm) | ({
     block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
 } & CreateLegacyArm);
 
@@ -3133,6 +3269,24 @@ export type DeleteFileOp = {
 };
 
 /**
+ * DeleteForecastRequest
+ *
+ * Delete a forecast block.
+ *
+ * Removes the scenario's entire parallel universe: the lever FactSet
+ * AND every computed scenario FactSet (the forward statement/metric
+ * months keyed by this scenario). Actuals are never touched.
+ */
+export type DeleteForecastRequest = {
+    /**
+     * Structure Id
+     *
+     * Structure ID of the forecast block.
+     */
+    structure_id: string;
+};
+
+/**
  * DeleteGraphOp
  *
  * Body for the delete-graph operation.
@@ -3178,6 +3332,8 @@ export type DeleteInformationBlockRequest = ({
 } & DeleteScheduleArm) | ({
     block_type: 'rollforward';
 } & DeleteRollforwardArm) | ({
+    block_type: 'forecast';
+} & DeleteForecastArm) | ({
     block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
 } & DeleteLegacyArm);
 
@@ -4580,7 +4736,7 @@ export type FactSetLite = {
     /**
      * Factset Type
      *
-     * 'report' | 'schedule' | 'custom' | 'disclosure'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint.
+     * 'report' | 'schedule' | 'custom' | 'disclosure' | 'metric'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint.
      */
     factset_type: string;
     /**
@@ -4593,6 +4749,12 @@ export type FactSetLite = {
      * Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands.
      */
     report_id?: string | null;
+    /**
+     * Scenario Id
+     *
+     * Scenario axis (the forecast engine). NULL = actuals; non-NULL names the owning forecast block whose parallel universe this set belongs to.
+     */
+    scenario_id?: string | null;
     /**
      * Provenance
      *
@@ -4916,6 +5078,98 @@ export type FiscalPeriodSummary = {
      * Closed At
      */
     closed_at?: string | null;
+};
+
+/**
+ * ForecastMechanics
+ *
+ * Authored scenario container for ``block_type='forecast'`` (FP&A F-1).
+ *
+ * The block IS the scenario: its structure id is the ``scenario_id``
+ * every derived forward FactSet carries (NULL = actuals). The authored
+ * surface is exactly this — scenario identity, horizon, base period,
+ * lever assertions; everything downstream is derived by
+ * ``compute-forecast`` (levers → driven rs-gaap anchors via the
+ * rs-driver Derive rules → carry-forward for unmodeled IS lines →
+ * calc-DAG subtotals), landing in the EXISTING statement/metric block
+ * types stamped with the scenario. Reads directly from the typed
+ * ``structures.artifact_mechanics`` JSONB column.
+ */
+export type ForecastMechanics = {
+    /**
+     * Kind
+     */
+    kind?: 'forecast';
+    /**
+     * Scenario Kind
+     *
+     * Scenario kind — display/filter metadata, not machinery.
+     */
+    scenario_kind?: 'budget' | 'forecast' | 'projection';
+    /**
+     * Horizon Months
+     *
+     * Forward months projected past the base period.
+     */
+    horizon_months: number;
+    /**
+     * Base Period
+     *
+     * Seed month (``YYYY-MM``) the walk projects forward from — resolved at create time (request → fiscal calendar closed-through → newest actual report month) and stored so recompute is deterministic.
+     */
+    base_period: string;
+    /**
+     * Levers
+     *
+     * Expanded lever assertions (authoring order).
+     */
+    levers: Array<LeverAssertionLite>;
+    /**
+     * Computed Months
+     *
+     * Number of forward months with computed scenario FactSets. Runtime state filled at envelope-build time — 0 until the first compute-forecast run.
+     */
+    computed_months?: number;
+};
+
+/**
+ * ForecastMonthLite
+ *
+ * One computed forward month in a ``compute-forecast`` response.
+ */
+export type ForecastMonthLite = {
+    /**
+     * Period
+     *
+     * Month key (``YYYY-MM``).
+     */
+    period: string;
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Income Statement Fact Set Id
+     *
+     * Scenario IS FactSet upserted for the month.
+     */
+    income_statement_fact_set_id?: string | null;
+    /**
+     * Balance Sheet Fact Set Id
+     *
+     * Scenario BS FactSet upserted for the month (working-capital instants only in F-1 — the full BS roll is a later phase).
+     */
+    balance_sheet_fact_set_id?: string | null;
+    /**
+     * Computed Count
+     *
+     * Number of facts emitted for the month across both sets.
+     */
+    computed_count?: number;
 };
 
 /**
@@ -6765,6 +7019,87 @@ export type LedgerEntityResponse = {
 };
 
 /**
+ * LeverAssertionLite
+ *
+ * One lever's persisted assertion inside ``ForecastMechanics``.
+ *
+ * The create handler expands the wire-level assertion (uniform ``value``
+ * + per-month overrides) into the explicit ``values_by_period`` map so
+ * compute never interpolates — every asserted month is stated. The
+ * values are duplicated as authored facts in the scenario's lever
+ * FactSet (rules for mechanics, **facts for values** — the facts are
+ * what ``compute-forecast`` binds); this mechanics copy is the
+ * operator-legible round-trip shape.
+ */
+export type LeverAssertionLite = {
+    /**
+     * Qname
+     *
+     * rs-driver lever element qname.
+     */
+    qname: string;
+    /**
+     * Element Id
+     *
+     * Resolved tenant element id.
+     */
+    element_id: string;
+    /**
+     * Item Type
+     *
+     * Format family from the catalog (percent | days | ...).
+     */
+    item_type?: string | null;
+    /**
+     * Values By Period
+     *
+     * Expanded per-month assertions keyed by ``YYYY-MM``.
+     */
+    values_by_period: {
+        [key: string]: number;
+    };
+};
+
+/**
+ * LeverAssertionRequest
+ *
+ * One lever's asserted values for the scenario.
+ *
+ * ``qname`` must resolve to an ``rs-driver:*`` catalog element (the
+ * create handler rejects anything else). Value conventions follow the
+ * catalog: percent levers are decimals per month (0.03 = 3%/month),
+ * days levers are day counts.
+ *
+ * ``value`` is a uniform fill across the whole horizon;
+ * ``values_by_period`` overrides individual months (``"YYYY-MM"``
+ * keys). At least one of the two must be provided. Months covered by
+ * neither carry no assertion — the lever's rule is inactive for that
+ * month and its target falls to the engine's carry-forward default.
+ */
+export type LeverAssertionRequest = {
+    /**
+     * Qname
+     *
+     * QName of the rs-driver lever element (e.g. ``rs-driver:RevenueGrowthRate``).
+     */
+    qname: string;
+    /**
+     * Value
+     *
+     * Uniform value asserted for every month of the horizon.
+     */
+    value?: number | null;
+    /**
+     * Values By Period
+     *
+     * Per-month overrides keyed by ``YYYY-MM``. Wins over ``value`` for the months it names.
+     */
+    values_by_period?: {
+        [key: string]: number;
+    } | null;
+};
+
+/**
  * LineItemMetadataPredicate
  *
  * Filter ledger LineItems by flow concept.
@@ -7664,6 +7999,52 @@ export type OperationEnvelopeClosePeriodResponse = {
      * Command-specific result payload
      */
     result?: ClosePeriodResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ComputeForecastResponse]
+ */
+export type OperationEnvelopeComputeForecastResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ComputeForecastResponse | null;
     /**
      * At
      *
@@ -12101,6 +12482,39 @@ export type ShareResultItem = {
 };
 
 /**
+ * SkippedForecastLite
+ *
+ * One rule/month soft-skip in a ``compute-forecast`` response.
+ *
+ * A skipped rule never aborts the walk — its target falls back to the
+ * carry-forward value for that month (when a prior value exists).
+ */
+export type SkippedForecastLite = {
+    /**
+     * Rule Id
+     */
+    rule_id?: string | null;
+    /**
+     * Element Qname
+     */
+    element_qname?: string | null;
+    /**
+     * Period
+     *
+     * Month key (``YYYY-MM``) of the skip.
+     */
+    period: string;
+    /**
+     * Reason
+     */
+    reason: string;
+    /**
+     * Missing
+     */
+    missing?: Array<string>;
+};
+
+/**
  * SkippedMetricLite
  *
  * One metric a ``compute-metrics`` run could not compute.
@@ -13814,6 +14228,48 @@ export type UpdateEventHandlerRequest = {
 };
 
 /**
+ * UpdateForecastRequest
+ *
+ * Update a forecast block in place.
+ *
+ * Mutable: name, scenario_kind, horizon_months, base_period, levers.
+ * ``levers`` is a **full replace** when provided (partial lever edits
+ * would make the asserted set ambiguous). Updating does NOT recompute —
+ * previously computed scenario months go stale until the next
+ * ``compute-forecast`` run (the compute-metrics drift semantics).
+ */
+export type UpdateForecastRequest = {
+    /**
+     * Structure Id
+     *
+     * Structure ID of the forecast block.
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Scenario Kind
+     */
+    scenario_kind?: 'budget' | 'forecast' | 'projection' | null;
+    /**
+     * Horizon Months
+     */
+    horizon_months?: number | null;
+    /**
+     * Base Period
+     */
+    base_period?: string | null;
+    /**
+     * Levers
+     *
+     * Full replacement of the lever set when provided.
+     */
+    levers?: Array<LeverAssertionRequest> | null;
+};
+
+/**
  * UpdateInformationBlockRequest
  *
  * Update an Information Block. The body is a discriminated union on
@@ -13827,6 +14283,8 @@ export type UpdateInformationBlockRequest = ({
 } & UpdateScheduleArm) | ({
     block_type: 'rollforward';
 } & UpdateRollforwardArm) | ({
+    block_type: 'forecast';
+} & UpdateForecastArm) | ({
     block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
 } & UpdateLegacyArm);
 
@@ -14640,6 +15098,29 @@ export type ViewProjections = {
 };
 
 /**
+ * _CreateForecastArm
+ *
+ * Create-information-block body for ``block_type="forecast"``.
+ *
+ * Carries a typed forecast payload — the authored scenario container:
+ * scenario identity, horizon, base period, lever assertions on
+ * ``rs-driver:*`` catalog elements. Run ``compute-forecast`` after
+ * creating to derive the forward months.
+ */
+export type CreateForecastArm = {
+    /**
+     * Block Type
+     *
+     * Discriminator value selecting this arm.
+     */
+    block_type: 'forecast';
+    /**
+     * Forecast creation payload.
+     */
+    payload: CreateForecastRequest;
+};
+
+/**
  * _CreateLegacyArm
  *
  * Create-information-block body for block types that don't yet have
@@ -14716,6 +15197,27 @@ export type CreateScheduleArm = {
 };
 
 /**
+ * _DeleteForecastArm
+ *
+ * Delete-information-block body for ``block_type="forecast"``.
+ *
+ * Removes the scenario's entire parallel universe — the lever FactSet
+ * and every computed scenario FactSet. Actuals are never touched.
+ */
+export type DeleteForecastArm = {
+    /**
+     * Block Type
+     *
+     * Discriminator value selecting this arm.
+     */
+    block_type: 'forecast';
+    /**
+     * Forecast delete payload.
+     */
+    payload: DeleteForecastRequest;
+};
+
+/**
  * _DeleteLegacyArm
  *
  * Delete-information-block body for block types that don't yet have
@@ -14781,6 +15283,28 @@ export type DeleteScheduleArm = {
      * Schedule delete payload.
      */
     payload: DeleteScheduleRequest;
+};
+
+/**
+ * _UpdateForecastArm
+ *
+ * Update-information-block body for ``block_type="forecast"``.
+ *
+ * Mutable: name, scenario_kind, horizon_months, base_period, levers
+ * (full replace). Updating does not recompute — run ``compute-forecast``
+ * to refresh the scenario's derived months.
+ */
+export type UpdateForecastArm = {
+    /**
+     * Block Type
+     *
+     * Discriminator value selecting this arm.
+     */
+    block_type: 'forecast';
+    /**
+     * Forecast update payload.
+     */
+    payload: UpdateForecastRequest;
 };
 
 /**
@@ -22402,6 +22926,70 @@ export type ComputeMetricsResponses = {
 };
 
 export type ComputeMetricsResponse2 = ComputeMetricsResponses[keyof ComputeMetricsResponses];
+
+export type ComputeForecastData = {
+    body: ComputeForecastRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/compute-forecast';
+};
+
+export type ComputeForecastErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ComputeForecastError = ComputeForecastErrors[keyof ComputeForecastErrors];
+
+export type ComputeForecastResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeComputeForecastResponse;
+};
+
+export type ComputeForecastResponse2 = ComputeForecastResponses[keyof ComputeForecastResponses];
 
 export type BindTextBlockData = {
     body: BindTextBlockRequest;
