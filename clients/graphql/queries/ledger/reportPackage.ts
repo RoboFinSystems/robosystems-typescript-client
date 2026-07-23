@@ -152,6 +152,7 @@ export const GET_REPORT_PACKAGE = gql`
                 elementName
                 classification
                 balanceType
+                itemType
                 values
                 textValue
                 isSubtotal
@@ -169,6 +170,18 @@ export const GET_REPORT_PACKAGE = gql`
                 warnings
               }
               unmappedCount
+            }
+            chart {
+              panels {
+                label
+                itemType
+                kind
+                series {
+                  key
+                  elementId
+                  label
+                }
+              }
             }
           }
         }
