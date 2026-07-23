@@ -456,6 +456,53 @@ export type InformationBlock = {
 }
 
 /**
+ * Server-shaped chart projection — panel/series CONFIG, never values.
+ *
+ * The second real server-computed View arm (after ``rendering``). Values
+ * come from ``rendering.rows`` joined by ``element_id``; the x-axis is
+ * ``rendering.periods``. Renderers (report-components) turn one panel
+ * into one chart.
+ */
+export type InformationBlockChart = {
+  panels: Array<InformationBlockChartPanel>
+}
+
+/**
+ * One chart panel — series sharing a y-axis format family.
+ *
+ * Mixed-unit catalogs are unplottable on one axis, so the server groups
+ * rows into panels by ``item_type`` family (NULL falls back to
+ * ``is_monetary``). The x-axis is always ``rendering.periods``.
+ */
+export type InformationBlockChartPanel = {
+  /** Format family shared by the panel's series (monetary | ratio | percent | multiple | days); None for the untyped fallback panel. */
+  itemType: Maybe<Scalars['String']['output']>
+  /** Per-panel mark — 'line' or 'bar'. */
+  kind: Scalars['String']['output']
+  /** Panel heading — e.g. 'Monetary', 'Ratios'. */
+  label: Maybe<Scalars['String']['output']>
+  series: Array<InformationBlockChartSeries>
+}
+
+/**
+ * One plottable series in a chart panel.
+ *
+ * Carries structure and identity only — the values live in the sibling
+ * ``rendering.rows`` (join on ``element_id``), so the chart arm never
+ * duplicates the value matrix. ``key`` is the stable series identity for
+ * client state (colors, toggles); today it equals ``element_id``, and
+ * future axes (the forecast scenario) arrive as new fields on this
+ * model, never a new arm shape.
+ */
+export type InformationBlockChartSeries = {
+  elementId: Scalars['String']['output']
+  /** Stable series id — element_id today. */
+  key: Scalars['String']['output']
+  /** Display name for legends. */
+  label: Scalars['String']['output']
+}
+
+/**
  * Classification projection — one row per `association_classifications`
  * junction entry.
  *
@@ -518,6 +565,8 @@ export type InformationBlockElement = {
   id: Scalars['String']['output']
   isAbstract: Scalars['Boolean']['output']
   isMonetary: Scalars['Boolean']['output']
+  /** Value-domain vocabulary (monetary | ratio | percent | multiple | days | string | …). None means untyped; fall back to is_monetary. */
+  itemType: Maybe<Scalars['String']['output']>
   name: Scalars['String']['output']
   periodType: Maybe<Scalars['String']['output']>
   qname: Maybe<Scalars['String']['output']>
@@ -609,6 +658,8 @@ export type InformationBlockRenderingRow = {
   elementName: Scalars['String']['output']
   elementQname: Maybe<Scalars['String']['output']>
   isSubtotal: Scalars['Boolean']['output']
+  /** Value-domain format family from the element (monetary | ratio | percent | multiple | days | …). Drives per-row value formatting; None falls back to is_monetary on the element. */
+  itemType: Maybe<Scalars['String']['output']>
   /** Narrative payload for text-block disclosure rows (markdown); numeric rows carry values instead. */
   textValue: Maybe<Scalars['String']['output']>
   values: Array<Maybe<Scalars['Float']['output']>>
@@ -740,7 +791,9 @@ export type InformationBlockVerificationSummary = {
  * mode; missing projections (those still in backlog) render as empty
  * states without breaking the dispatcher.
  *
- * Today: ``rendering`` is computed for the statement family.
+ * Today: ``rendering`` is computed for the statement family, and
+ * ``chart`` (the 7th arm — panel/series config over the rendering's
+ * rows and periods) for metric blocks.
  * Other arms (``fact_table``, ``model_structure``, ``verification_results``,
  * ``report_elements``, ``business_rules``) come online as their backend
  * support lands; ``fact_table`` is trivially derivable from
@@ -748,6 +801,7 @@ export type InformationBlockVerificationSummary = {
  * projection.
  */
 export type InformationBlockViewProjections = {
+  chart: Maybe<InformationBlockChart>
   rendering: Maybe<InformationBlockRendering>
 }
 
@@ -1572,14 +1626,14 @@ export type QueryAccountRollupsArgs = {
 }
 
 export type QueryAccountTreeArgs = {
-  includeInactive?: Scalars['Boolean']['input']
+  includeInactive?: InputMaybe<Scalars['Boolean']['input']>
 }
 
 export type QueryAccountsArgs = {
   classification?: InputMaybe<Scalars['String']['input']>
   isActive?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
 }
 
 export type QueryAgentArgs = {
@@ -1589,16 +1643,16 @@ export type QueryAgentArgs = {
 export type QueryAgentsArgs = {
   agentType?: InputMaybe<Scalars['String']['input']>
   isActive?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   source?: InputMaybe<Scalars['String']['input']>
 }
 
 export type QueryElementsArgs = {
   classification?: InputMaybe<Scalars['String']['input']>
   isAbstract?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   source?: InputMaybe<Scalars['String']['input']>
   taxonomyId?: InputMaybe<Scalars['String']['input']>
 }
@@ -1615,8 +1669,8 @@ export type QueryEventBlocksArgs = {
   agentId?: InputMaybe<Scalars['String']['input']>
   eventCategory?: InputMaybe<Scalars['String']['input']>
   eventType?: InputMaybe<Scalars['String']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   source?: InputMaybe<Scalars['String']['input']>
   status?: InputMaybe<Scalars['String']['input']>
 }
@@ -1632,8 +1686,8 @@ export type QueryInformationBlockArgs = {
 export type QueryInformationBlocksArgs = {
   blockType?: InputMaybe<Scalars['String']['input']>
   category?: InputMaybe<Scalars['String']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
 }
 
 export type QueryLibraryElementArgs = {
@@ -1655,7 +1709,7 @@ export type QueryLibraryElementEquivalentsArgs = {
 
 export type QueryLibraryElementTreeArgs = {
   id: Scalars['ID']['input']
-  maxDepth?: Scalars['Int']['input']
+  maxDepth?: InputMaybe<Scalars['Int']['input']>
   structureId?: InputMaybe<Scalars['ID']['input']>
 }
 
@@ -1663,11 +1717,11 @@ export type QueryLibraryElementsArgs = {
   activityType?: InputMaybe<Scalars['String']['input']>
   classification?: InputMaybe<Scalars['String']['input']>
   elementType?: InputMaybe<Scalars['String']['input']>
-  includeLabels?: Scalars['Boolean']['input']
-  includeReferences?: Scalars['Boolean']['input']
+  includeLabels?: InputMaybe<Scalars['Boolean']['input']>
+  includeReferences?: InputMaybe<Scalars['Boolean']['input']>
   isAbstract?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   source?: InputMaybe<Scalars['String']['input']>
   taxonomyId?: InputMaybe<Scalars['ID']['input']>
 }
@@ -1682,13 +1736,13 @@ export type QueryLibraryStructuresArgs = {
 }
 
 export type QueryLibraryTaxonomiesArgs = {
-  includeElementCount?: Scalars['Boolean']['input']
+  includeElementCount?: InputMaybe<Scalars['Boolean']['input']>
   standard?: InputMaybe<Scalars['String']['input']>
 }
 
 export type QueryLibraryTaxonomyArgs = {
   id?: InputMaybe<Scalars['ID']['input']>
-  includeElementCount?: Scalars['Boolean']['input']
+  includeElementCount?: InputMaybe<Scalars['Boolean']['input']>
   standard?: InputMaybe<Scalars['String']['input']>
   version?: InputMaybe<Scalars['String']['input']>
 }
@@ -1701,8 +1755,8 @@ export type QueryLibraryTaxonomyArcCountArgs = {
 
 export type QueryLibraryTaxonomyArcsArgs = {
   associationType?: InputMaybe<Scalars['String']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   structureId?: InputMaybe<Scalars['ID']['input']>
   taxonomyId: Scalars['ID']['input']
 }
@@ -1739,8 +1793,8 @@ export type QueryPortfolioBlockArgs = {
 }
 
 export type QueryPortfoliosArgs = {
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
 }
 
 export type QueryPositionArgs = {
@@ -1748,8 +1802,8 @@ export type QueryPositionArgs = {
 }
 
 export type QueryPositionsArgs = {
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   portfolioId?: InputMaybe<Scalars['String']['input']>
   securityId?: InputMaybe<Scalars['String']['input']>
   status?: InputMaybe<Scalars['String']['input']>
@@ -1760,8 +1814,8 @@ export type QueryPublishListArgs = {
 }
 
 export type QueryPublishListsArgs = {
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
 }
 
 export type QueryReportArgs = {
@@ -1769,8 +1823,8 @@ export type QueryReportArgs = {
 }
 
 export type QueryReportDownloadUrlArgs = {
-  expiresIn?: Scalars['Int']['input']
-  format?: ReportDownloadFormat
+  expiresIn?: InputMaybe<Scalars['Int']['input']>
+  format?: InputMaybe<ReportDownloadFormat>
   reportId: Scalars['String']['input']
 }
 
@@ -1779,7 +1833,7 @@ export type QueryReportPackageArgs = {
 }
 
 export type QuerySearchLibraryElementsArgs = {
-  limit?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
   query: Scalars['String']['input']
   source?: InputMaybe<Scalars['String']['input']>
 }
@@ -1787,8 +1841,8 @@ export type QuerySearchLibraryElementsArgs = {
 export type QuerySecuritiesArgs = {
   entityId?: InputMaybe<Scalars['String']['input']>
   isActive?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   securityType?: InputMaybe<Scalars['String']['input']>
 }
 
@@ -1816,8 +1870,8 @@ export type QueryTaxonomyBlockArgs = {
 
 export type QueryTaxonomyBlocksArgs = {
   category?: InputMaybe<Scalars['String']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   parentTaxonomyId?: InputMaybe<Scalars['ID']['input']>
   taxonomyType?: InputMaybe<Scalars['String']['input']>
 }
@@ -1828,8 +1882,8 @@ export type QueryTransactionArgs = {
 
 export type QueryTransactionsArgs = {
   endDate?: InputMaybe<Scalars['Date']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
   startDate?: InputMaybe<Scalars['Date']['input']>
   type?: InputMaybe<Scalars['String']['input']>
 }
@@ -2949,6 +3003,7 @@ export type GetInformationBlockQuery = {
           elementName: string
           classification: string | null
           balanceType: string | null
+          itemType: string | null
           values: Array<number | null>
           textValue: string | null
           isSubtotal: boolean
@@ -2961,6 +3016,14 @@ export type GetInformationBlockQuery = {
           failures: Array<string>
           warnings: Array<string>
         } | null
+      } | null
+      chart: {
+        panels: Array<{
+          label: string | null
+          itemType: string | null
+          kind: string
+          series: Array<{ key: string; elementId: string; label: string }>
+        }>
       } | null
     }
   } | null
@@ -3080,6 +3143,7 @@ export type ListInformationBlocksQuery = {
           elementName: string
           classification: string | null
           balanceType: string | null
+          itemType: string | null
           values: Array<number | null>
           textValue: string | null
           isSubtotal: boolean
@@ -3092,6 +3156,14 @@ export type ListInformationBlocksQuery = {
           failures: Array<string>
           warnings: Array<string>
         } | null
+      } | null
+      chart: {
+        panels: Array<{
+          label: string | null
+          itemType: string | null
+          kind: string
+          series: Array<{ key: string; elementId: string; label: string }>
+        }>
       } | null
     }
   }>
@@ -5884,6 +5956,7 @@ export const GetInformationBlockDocument = {
                                     name: { kind: 'Name', value: 'classification' },
                                   },
                                   { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'itemType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'values' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
@@ -5917,6 +5990,42 @@ export const GetInformationBlockDocument = {
                               },
                             },
                             { kind: 'Field', name: { kind: 'Name', value: 'unmappedCount' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'chart' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'panels' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'itemType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'series' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'elementId' },
+                                        },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
                           ],
                         },
                       },
@@ -6206,6 +6315,7 @@ export const ListInformationBlocksDocument = {
                                     name: { kind: 'Name', value: 'classification' },
                                   },
                                   { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'itemType' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'values' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
@@ -6239,6 +6349,42 @@ export const ListInformationBlocksDocument = {
                               },
                             },
                             { kind: 'Field', name: { kind: 'Name', value: 'unmappedCount' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'chart' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'panels' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'itemType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'series' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'elementId' },
+                                        },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
                           ],
                         },
                       },

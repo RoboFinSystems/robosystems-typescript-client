@@ -1673,7 +1673,7 @@ export const deleteInformationBlock = <ThrowOnError extends boolean = false>(opt
 /**
  * Evaluate Rules for an Information Block
  *
- * Runs every rule targeting the given structure (plus element- and association-scoped rules for the structure's atoms), binds $Variable references to in-scope facts via qname lookup, writes one VerificationResult row per rule, and returns the results plus a status-keyed summary. Decoding mode, 5 patterns (EqualTo, RollUp, RollForward, Exists, CoExists).
+ * Runs every rule targeting the given structure (plus element- and association-scoped rules for the structure's atoms), binds $Variable references to in-scope facts via qname lookup, writes one VerificationResult row per rule, and returns the results plus a status-keyed summary. Decoding mode, 6 patterns (EqualTo, RollUp, RollForward, SumEquals, Exists, CoExists).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

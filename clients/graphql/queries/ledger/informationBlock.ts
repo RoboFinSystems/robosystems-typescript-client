@@ -123,6 +123,7 @@ export const GET_INFORMATION_BLOCK = gql`
             elementName
             classification
             balanceType
+            itemType
             values
             textValue
             isSubtotal
@@ -140,6 +141,18 @@ export const GET_INFORMATION_BLOCK = gql`
             warnings
           }
           unmappedCount
+        }
+        chart {
+          panels {
+            label
+            itemType
+            kind
+            series {
+              key
+              elementId
+              label
+            }
+          }
         }
       }
     }
@@ -268,6 +281,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
             elementName
             classification
             balanceType
+            itemType
             values
             textValue
             isSubtotal
@@ -285,6 +299,18 @@ export const LIST_INFORMATION_BLOCKS = gql`
             warnings
           }
           unmappedCount
+        }
+        chart {
+          panels {
+            label
+            itemType
+            kind
+            series {
+              key
+              elementId
+              label
+            }
+          }
         }
       }
     }
