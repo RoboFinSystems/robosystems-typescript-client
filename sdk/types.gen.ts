@@ -952,6 +952,88 @@ export type ChangeTierOp = {
 };
 
 /**
+ * ChartLite
+ *
+ * Server-shaped chart projection — panel/series CONFIG, never values.
+ *
+ * The second real server-computed View arm (after ``rendering``). Values
+ * come from ``rendering.rows`` joined by ``element_id``; the x-axis is
+ * ``rendering.periods``. Renderers (report-components) turn one panel
+ * into one chart.
+ */
+export type ChartLite = {
+    /**
+     * Panels
+     */
+    panels?: Array<ChartPanelLite>;
+};
+
+/**
+ * ChartPanelLite
+ *
+ * One chart panel — series sharing a y-axis format family.
+ *
+ * Mixed-unit catalogs are unplottable on one axis, so the server groups
+ * rows into panels by ``item_type`` family (NULL falls back to
+ * ``is_monetary``). The x-axis is always ``rendering.periods``.
+ */
+export type ChartPanelLite = {
+    /**
+     * Label
+     *
+     * Panel heading — e.g. 'Monetary', 'Ratios'.
+     */
+    label?: string | null;
+    /**
+     * Item Type
+     *
+     * Format family shared by the panel's series (monetary | ratio | percent | multiple | days); None for the untyped fallback panel.
+     */
+    item_type?: string | null;
+    /**
+     * Kind
+     *
+     * Per-panel mark — 'line' or 'bar'.
+     */
+    kind?: string;
+    /**
+     * Series
+     */
+    series?: Array<ChartSeriesLite>;
+};
+
+/**
+ * ChartSeriesLite
+ *
+ * One plottable series in a chart panel.
+ *
+ * Carries structure and identity only — the values live in the sibling
+ * ``rendering.rows`` (join on ``element_id``), so the chart arm never
+ * duplicates the value matrix. ``key`` is the stable series identity for
+ * client state (colors, toggles); today it equals ``element_id``, and
+ * future axes (the forecast scenario) arrive as new fields on this
+ * model, never a new arm shape.
+ */
+export type ChartSeriesLite = {
+    /**
+     * Key
+     *
+     * Stable series id — element_id today.
+     */
+    key: string;
+    /**
+     * Element Id
+     */
+    element_id: string;
+    /**
+     * Label
+     *
+     * Display name for legends.
+     */
+    label: string;
+};
+
+/**
  * CheckoutResponse
  *
  * Response from checkout session creation.
@@ -1260,7 +1342,7 @@ export type ComputedMetricLite = {
     /**
      * Unit
      *
-     * Fact unit — 'USD' for monetary, else 'pure'.
+     * Fact unit — 'USD' for monetary, 'days' for days, else 'pure'.
      */
     unit: string;
     /**
@@ -1269,6 +1351,12 @@ export type ComputedMetricLite = {
      * 'instant' or 'duration'.
      */
     period_type: string;
+    /**
+     * Item Type
+     *
+     * Format family from the metric element (monetary | ratio | percent | multiple | days). None means untyped; fall back to unit.
+     */
+    item_type?: string | null;
 };
 
 /**
@@ -3721,6 +3809,12 @@ export type ElementLite = {
      * Period Type
      */
     period_type?: string | null;
+    /**
+     * Item Type
+     *
+     * Value-domain vocabulary (monetary | ratio | percent | multiple | days | string | …). None means untyped; fall back to is_monetary.
+     */
+    item_type?: string | null;
 };
 
 /**
@@ -10582,6 +10676,12 @@ export type RenderingRowLite = {
      */
     balance_type?: string | null;
     /**
+     * Item Type
+     *
+     * Value-domain format family from the element (monetary | ratio | percent | multiple | days | …). Drives per-row value formatting; None falls back to is_monetary on the element.
+     */
+    item_type?: string | null;
+    /**
      * Values
      */
     values?: Array<number | null>;
@@ -13001,9 +13101,9 @@ export type TaxonomyBlockRuleRequest = {
     /**
      * Rule Pattern
      *
-     * One of 11 cm:BusinessRulePattern mechanisms.
+     * One of the cm:BusinessRulePattern mechanisms. 'Derive' rules COMPUTE a value from bound operand facts (compute-metrics) rather than verify one — the tenant-authored-metric pattern.
      */
-    rule_pattern: 'Adjustment' | 'CoExists' | 'EqualTo' | 'Exists' | 'GreaterThan' | 'GreaterThanOrEqualToZero' | 'LessThan' | 'RollForward' | 'RollUp' | 'SumEquals' | 'Variance';
+    rule_pattern: 'Adjustment' | 'CoExists' | 'Derive' | 'EqualTo' | 'Exists' | 'GreaterThan' | 'GreaterThanOrEqualToZero' | 'LessThan' | 'RollForward' | 'RollUp' | 'SumEquals' | 'Variance';
     /**
      * Expression
      *
@@ -14525,7 +14625,9 @@ export type ViewConfig = {
  * mode; missing projections (those still in backlog) render as empty
  * states without breaking the dispatcher.
  *
- * Today: ``rendering`` is computed for the statement family.
+ * Today: ``rendering`` is computed for the statement family, and
+ * ``chart`` (the 7th arm — panel/series config over the rendering's
+ * rows and periods) for metric blocks.
  * Other arms (``fact_table``, ``model_structure``, ``verification_results``,
  * ``report_elements``, ``business_rules``) come online as their backend
  * support lands; ``fact_table`` is trivially derivable from
@@ -14534,6 +14636,7 @@ export type ViewConfig = {
  */
 export type ViewProjections = {
     rendering?: RenderingLite | null;
+    chart?: ChartLite | null;
 };
 
 /**
