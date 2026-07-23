@@ -3551,6 +3551,7 @@ export type GetLedgerReportPackageQuery = {
               elementName: string
               classification: string | null
               balanceType: string | null
+              itemType: string | null
               values: Array<number | null>
               textValue: string | null
               isSubtotal: boolean
@@ -3563,6 +3564,14 @@ export type GetLedgerReportPackageQuery = {
               failures: Array<string>
               warnings: Array<string>
             } | null
+          } | null
+          chart: {
+            panels: Array<{
+              label: string | null
+              itemType: string | null
+              kind: string
+              series: Array<{ key: string; elementId: string; label: string }>
+            }>
           } | null
         }
       }
@@ -7474,6 +7483,10 @@ export const GetLedgerReportPackageDocument = {
                                               },
                                               {
                                                 kind: 'Field',
+                                                name: { kind: 'Name', value: 'itemType' },
+                                              },
+                                              {
+                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'values' },
                                               },
                                               {
@@ -7540,6 +7553,57 @@ export const GetLedgerReportPackageDocument = {
                                         {
                                           kind: 'Field',
                                           name: { kind: 'Name', value: 'unmappedCount' },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'chart' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'panels' },
+                                          selectionSet: {
+                                            kind: 'SelectionSet',
+                                            selections: [
+                                              {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'label' },
+                                              },
+                                              {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'itemType' },
+                                              },
+                                              {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'kind' },
+                                              },
+                                              {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'series' },
+                                                selectionSet: {
+                                                  kind: 'SelectionSet',
+                                                  selections: [
+                                                    {
+                                                      kind: 'Field',
+                                                      name: { kind: 'Name', value: 'key' },
+                                                    },
+                                                    {
+                                                      kind: 'Field',
+                                                      name: { kind: 'Name', value: 'elementId' },
+                                                    },
+                                                    {
+                                                      kind: 'Field',
+                                                      name: { kind: 'Name', value: 'label' },
+                                                    },
+                                                  ],
+                                                },
+                                              },
+                                            ],
+                                          },
                                         },
                                       ],
                                     },
