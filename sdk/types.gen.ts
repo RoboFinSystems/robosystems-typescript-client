@@ -1307,6 +1307,12 @@ export type ComputeForecastResponse = {
      * Skipped
      */
     skipped?: Array<SkippedForecastLite>;
+    /**
+     * Diagnostics
+     *
+     * Articulation notes — a missing cash/earnings anchor, schedule contributions with no base-set landing spot, an absent cash-flow structure. Informational; the walk still computed.
+     */
+    diagnostics?: Array<string>;
 };
 
 /**
@@ -5161,15 +5167,33 @@ export type ForecastMonthLite = {
     /**
      * Balance Sheet Fact Set Id
      *
-     * Scenario BS FactSet upserted for the month (working-capital instants only in F-1 — the full BS roll is a later phase).
+     * Scenario BS FactSet upserted for the month — the full roll: carry-forward, rule-driven working capital, schedule movements, RE roll, balancing cash (A = L + E by construction).
      */
     balance_sheet_fact_set_id?: string | null;
     /**
+     * Cash Flow Fact Set Id
+     *
+     * Scenario CF FactSet upserted for the month — indirect-method, derived from BS deltas + NI, reconciled to the balancing ΔCash.
+     */
+    cash_flow_fact_set_id?: string | null;
+    /**
      * Computed Count
      *
-     * Number of facts emitted for the month across both sets.
+     * Number of facts emitted for the month across all sets.
      */
     computed_count?: number;
+    /**
+     * Verification Passed
+     *
+     * Whether every rule evaluated against the month's scenario sets passed (None = no rules ran for the month).
+     */
+    verification_passed?: boolean | null;
+    /**
+     * Verification Failures
+     *
+     * Failed/errored rule messages for the month (capped).
+     */
+    verification_failures?: Array<string>;
 };
 
 /**
@@ -11020,6 +11044,12 @@ export type RenderingPeriodLite = {
      * Label
      */
     label?: string | null;
+    /**
+     * Forecast
+     *
+     * True when this column comes from a forecast scenario's FactSet — the machine-readable seam marker (labels also carry a '(forecast)' suffix, but consumers should key styling off this flag, not label parsing). None/absent = an actuals column.
+     */
+    forecast?: boolean | null;
 };
 
 /**

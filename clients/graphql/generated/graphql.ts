@@ -638,6 +638,8 @@ export type InformationBlockRendering = {
 /** One period column in a rendered statement. */
 export type InformationBlockRenderingPeriod = {
   end: Scalars['Date']['output']
+  /** True when this column comes from a forecast scenario's FactSet — the machine-readable seam marker (labels also carry a '(forecast)' suffix, but consumers should key styling off this flag, not label parsing). None/absent = an actuals column. */
+  forecast: Maybe<Scalars['Boolean']['output']>
   label: Maybe<Scalars['String']['output']>
   start: Scalars['Date']['output']
 }
@@ -1684,6 +1686,7 @@ export type QueryHoldingsArgs = {
 export type QueryInformationBlockArgs = {
   id: Scalars['ID']['input']
   scenarioId?: InputMaybe<Scalars['String']['input']>
+  series?: Scalars['Boolean']['input']
 }
 
 export type QueryInformationBlocksArgs = {
@@ -2899,6 +2902,7 @@ export type GetLedgerFiscalCalendarQuery = {
 export type GetInformationBlockQueryVariables = Exact<{
   id: Scalars['ID']['input']
   scenarioId: InputMaybe<Scalars['String']['input']>
+  series?: Scalars['Boolean']['input']
 }>
 
 export type GetInformationBlockQuery = {
@@ -3015,7 +3019,7 @@ export type GetInformationBlockQuery = {
           isSubtotal: boolean
           depth: number
         }>
-        periods: Array<{ start: any; end: any; label: string | null }>
+        periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
         validation: {
           passed: boolean
           checks: Array<string>
@@ -3157,7 +3161,7 @@ export type ListInformationBlocksQuery = {
           isSubtotal: boolean
           depth: number
         }>
-        periods: Array<{ start: any; end: any; label: string | null }>
+        periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
         validation: {
           passed: boolean
           checks: Array<string>
@@ -3566,7 +3570,7 @@ export type GetLedgerReportPackageQuery = {
               isSubtotal: boolean
               depth: number
             }>
-            periods: Array<{ start: any; end: any; label: string | null }>
+            periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
             validation: {
               passed: boolean
               checks: Array<string>
@@ -5747,6 +5751,15 @@ export const GetInformationBlockDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'series' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -5764,6 +5777,11 @@ export const GetInformationBlockDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'scenarioId' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'series' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'series' } },
               },
             ],
             selectionSet: {
@@ -6002,6 +6020,7 @@ export const GetInformationBlockDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'start' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'end' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'forecast' } },
                                 ],
                               },
                             },
@@ -6372,6 +6391,7 @@ export const ListInformationBlocksDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'start' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'end' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'forecast' } },
                                 ],
                               },
                             },
@@ -7553,6 +7573,10 @@ export const GetLedgerReportPackageDocument = {
                                               {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'label' },
+                                              },
+                                              {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'forecast' },
                                               },
                                             ],
                                           },
