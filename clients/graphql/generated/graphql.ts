@@ -560,6 +560,8 @@ export type InformationBlockConnection = {
 export type InformationBlockElement = {
   balanceType: Maybe<Scalars['String']['output']>
   code: Maybe<Scalars['String']['output']>
+  /** The element's documentation-role label — the catalog's authoritative value semantics (e.g. whether a percent driver is a growth rate or a rate-on-base fraction). None when the element carries no documentation label. */
+  documentation: Maybe<Scalars['String']['output']>
   /** concept | abstract | axis | member | hypercube */
   elementType: Scalars['String']['output']
   id: Scalars['String']['output']

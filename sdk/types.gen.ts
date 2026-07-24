@@ -1230,6 +1230,34 @@ export type ClosePeriodResponse = {
      * ids of schedule Structures whose rules were evaluated during the close. Pairs with rule_summary.
      */
     evaluated_structure_ids?: Array<string>;
+    /**
+     * Statements Stamped
+     *
+     * Whether the close stamped the period's canonical statement FactSets (the close-time pivot). False when the tenant hasn't set up reporting yet — see statement_stamp_note.
+     */
+    statements_stamped?: boolean;
+    /**
+     * Statement Stamp Note
+     *
+     * Soft-skip reason when statements_stamped is false: no_coa_mapping | no_entity | no_statement_structures | no_taxonomy.
+     */
+    statement_stamp_note?: string | null;
+    /**
+     * Stamped Statement Sets
+     *
+     * structure_id -> fact_set_id for every canonical statement FactSet minted by this close (report_id NULL; replaced on reclose).
+     */
+    stamped_statement_sets?: {
+        [key: string]: string;
+    };
+    /**
+     * Statement Rule Summary
+     *
+     * Aggregated statement-rule verification outcome across the stamped structures — keys: pass/fail/error/skipped. None when no statement rules exist. Distinct from rule_summary (the schedule-rule pass).
+     */
+    statement_rule_summary?: {
+        [key: string]: number;
+    } | null;
 };
 
 /**
@@ -3977,6 +4005,12 @@ export type ElementLite = {
      * Value-domain vocabulary (monetary | ratio | percent | multiple | days | string | …). None means untyped; fall back to is_monetary.
      */
     item_type?: string | null;
+    /**
+     * Documentation
+     *
+     * The element's documentation-role label — the catalog's authoritative value semantics (e.g. whether a percent driver is a growth rate or a rate-on-base fraction). None when the element carries no documentation label.
+     */
+    documentation?: string | null;
 };
 
 /**
@@ -7090,13 +7124,21 @@ export type LeverAssertionLite = {
  * One lever's asserted values for the scenario.
  *
  * ``qname`` must resolve to an ``rs-driver:*`` catalog element (the
- * create handler rejects anything else). Value conventions follow the
- * catalog: percent levers are decimals per month (0.03 = 3%/month),
- * days levers are day counts.
+ * create handler rejects anything else). Each lever's value semantics
+ * are defined by its catalog element's documentation — surfaced as
+ * ``documentation`` on the elements bundled in the forecast block's
+ * envelope (``get-information-block``). Percent levers are decimals but
+ * their *meaning* varies by lever: growth levers are month-over-month
+ * rates (``RevenueGrowthRate`` 0.03 = +3%/month, compounding), while
+ * rate-on-base levers are fractions of the same month's base
+ * (``CostOfRevenueRate`` 0.62 = cost of revenue at 62% of that month's
+ * revenues — not a growth rate). Days levers (``DaysSalesOutstanding``,
+ * ``DaysPayableOutstanding``) are day counts.
  *
  * ``value`` is a uniform fill across the whole horizon;
  * ``values_by_period`` overrides individual months (``"YYYY-MM"``
- * keys). At least one of the two must be provided. Months covered by
+ * keys) — e.g. a margin-compression ramp asserts a different rate each
+ * month. At least one of the two must be provided. Months covered by
  * neither carry no assertion — the lever's rule is inactive for that
  * month and its target falls to the engine's carry-forward default.
  */
@@ -15332,7 +15374,7 @@ export type UpdateForecastArm = {
      */
     block_type: 'forecast';
     /**
-     * Forecast update payload.
+     * Forecast update payload. Updating does NOT recompute — lever, horizon, or base-period changes leave the scenario's computed months stale until the next `compute-forecast` run.
      */
     payload: UpdateForecastRequest;
 };
