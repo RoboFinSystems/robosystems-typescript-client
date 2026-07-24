@@ -1962,7 +1962,7 @@ export const setCloseTarget = <ThrowOnError extends boolean = false>(options: Op
 /**
  * Close Fiscal Period
  *
- * Lock a single fiscal period. Posts draft entries, runs the balance-sheet equation check, advances `closed_through` by one, and auto-advances `close_target` if this close caught up to it. Period must be exactly `closed_through + 1` — sequence violations return 422 with structured `blockers`. Common blockers: `sync_stale` (override with `allow_stale_sync=true` after manual verification), `period_incomplete` (draft entries unbalanced), `sequence_violation` (out-of-order).
+ * Lock a single fiscal period. Posts draft entries, runs the balance-sheet equation check, advances `closed_through` by one, auto-advances `close_target` if this close caught up to it, and stamps the period's canonical statement FactSets from the posted ledger (`statements_stamped` / `stamped_statement_sets` in the response; soft-skipped with `statement_stamp_note` when reporting isn't set up). Period must be exactly `closed_through + 1` — sequence violations return 422 with structured `blockers`. Common blockers: `sync_stale` (override with `allow_stale_sync=true` after manual verification), `period_incomplete` (draft entries unbalanced), `sequence_violation` (out-of-order).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1979,7 +1979,7 @@ export const closePeriod = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Reopen Fiscal Period
  *
- * Decrement `closed_through` by one. Only the most recently closed period can be reopened (no reach-back). The required `reason` is captured in the audit log. Use sparingly — reopen invalidates downstream artifacts that trusted the closed state (reports, shared filings).
+ * Decrement `closed_through` by one. Only the most recently closed period can be reopened (no reach-back). Retracts the month's canonical statement FactSets (a reopened month is no longer a closed assertion; re-closing restamps them). The required `reason` is captured in the audit log. Use sparingly — reopen invalidates downstream artifacts that trusted the closed state (reports, shared filings).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
