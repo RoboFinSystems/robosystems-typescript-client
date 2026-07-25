@@ -380,6 +380,129 @@ export type AvailableGraphTiersResponse = {
 };
 
 /**
+ * BackfillPeriodOutcome
+ *
+ * Per-month result of a plan-history backfill pass.
+ */
+export type BackfillPeriodOutcome = {
+    /**
+     * Period
+     *
+     * The month, in YYYY-MM
+     */
+    period: string;
+    /**
+     * Status
+     *
+     * stamped: reopen → reclose completed. skipped_drafts: the month holds draft entries the backfill refuses to post — review via list-period-drafts, then close-period or re-run. failed: the reclose raised; processing halted (see detail).
+     */
+    status: string;
+    /**
+     * Statements Stamped
+     *
+     * Whether the reclose stamped canonical statement FactSets. False with a statement_stamp_note soft-skip when reporting isn't set up.
+     */
+    statements_stamped?: boolean;
+    /**
+     * Statement Stamp Note
+     *
+     * Soft-skip reason when statements_stamped is false
+     */
+    statement_stamp_note?: string | null;
+    /**
+     * Statement Rule Summary
+     *
+     * Statement-rule verification tally for the month's stamped sets (pass/fail/error/skipped); None when no rules ran.
+     */
+    statement_rule_summary?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Detail
+     *
+     * Human-readable detail for skipped/failed months
+     */
+    detail?: string | null;
+};
+
+/**
+ * BackfillPlanHistoryOperation
+ *
+ * Compile monthly statement history behind the close boundary.
+ */
+export type BackfillPlanHistoryOperation = {
+    /**
+     * Start Period
+     *
+     * YYYY-MM period to backfill from. Clamped to the earliest month with ledger data; defaults to that month when omitted. Must be on or before `closed_through`.
+     */
+    start_period?: string | null;
+    /**
+     * Max Periods
+     *
+     * Maximum months to restamp in this call. Each month runs a full reopen → reclose cycle; keep chunks modest and loop on `remaining_periods`.
+     */
+    max_periods?: number;
+    /**
+     * Allow Stale Sync
+     *
+     * Override the sync-currency gate on each reclose. Historical months predate the last sync in the normal case, so this is rarely needed.
+     */
+    allow_stale_sync?: boolean;
+    /**
+     * Note
+     *
+     * Free-form note attached to each close audit event
+     */
+    note?: string | null;
+};
+
+/**
+ * BackfillPlanHistoryResponse
+ *
+ * Response from one chunked plan-history backfill call.
+ */
+export type BackfillPlanHistoryResponse = {
+    fiscal_calendar: FiscalCalendarResponse;
+    /**
+     * Earliest Available Period
+     *
+     * First month with ledger data — the hard floor for backfill
+     */
+    earliest_available_period: string;
+    /**
+     * Effective Start Period
+     *
+     * The start actually used after clamping to earliest_available_period
+     */
+    effective_start_period: string;
+    /**
+     * Closed Through
+     *
+     * The close boundary the backfill runs up to (inclusive)
+     */
+    closed_through: string;
+    /**
+     * Period Rows Created
+     *
+     * FiscalPeriod rows seeded (baseline-closed) for months the calendar didn't cover yet
+     */
+    period_rows_created?: number;
+    /**
+     * Processed
+     *
+     * Months this call attempted, oldest first
+     */
+    processed?: Array<BackfillPeriodOutcome>;
+    /**
+     * Remaining Periods
+     *
+     * Months still lacking canonical statement sets that this call did not attempt (beyond max_periods, or after a failure halt). Loop until empty.
+     */
+    remaining_periods?: Array<string>;
+};
+
+/**
  * BackupCreateRequest
  *
  * Request model for creating a backup.
@@ -2227,6 +2350,12 @@ export type CreateForecastRequest = {
      * Lever assertions — at least one.
      */
     levers: Array<LeverAssertionRequest>;
+    /**
+     * Line Assertions
+     *
+     * Direct statement-line assertions (manual overrides). Each names a calc-DAG leaf and wins over driver rules and carry-forward for the months it asserts.
+     */
+    line_assertions?: Array<LineAssertionRequest>;
     /**
      * Entity Id
      *
@@ -5165,6 +5294,12 @@ export type ForecastMechanics = {
      */
     levers: Array<LeverAssertionLite>;
     /**
+     * Line Assertions
+     *
+     * Direct statement-line assertions (authoring order) — manual overrides that win over driver rules and carry-forward for the months they name.
+     */
+    line_assertions?: Array<LineAssertionLite>;
+    /**
      * Computed Months
      *
      * Number of forward months with computed scenario FactSets. Runtime state filled at envelope-build time — 0 until the first compute-forecast run.
@@ -7166,6 +7301,108 @@ export type LeverAssertionRequest = {
 };
 
 /**
+ * LineAssertionLite
+ *
+ * One statement line's persisted direct assertion inside
+ * ``ForecastMechanics``.
+ *
+ * The manual-override sibling of :class:`LeverAssertionLite`: a lever
+ * asserts a *driver* whose rule derives a line; a line assertion pins
+ * the **line itself** (a calc-DAG leaf) to typed values for the months
+ * it names — winning over driver rules and carry-forward for exactly
+ * those months (a displaced rule surfaces in the compute response's
+ * ``skipped`` list). Subtotals stay calc-DAG-derived, so a manual line
+ * still articulates through RollUps, RE, balancing cash, and derived
+ * CF, and stays verification-gated.
+ *
+ * Same persistence doctrine as levers: values are duplicated as
+ * authored facts in the scenario's lever FactSet (facts are what
+ * ``compute-forecast`` binds); this mechanics copy is the
+ * operator-legible round-trip shape.
+ */
+export type LineAssertionLite = {
+    /**
+     * Qname
+     *
+     * Asserted statement-leaf qname.
+     */
+    qname: string;
+    /**
+     * Element Id
+     *
+     * Resolved tenant element id.
+     */
+    element_id: string;
+    /**
+     * Item Type
+     *
+     * Format family from the element (monetary | ...).
+     */
+    item_type?: string | null;
+    /**
+     * Period Type
+     *
+     * The element's period type — duration assertions pin IS lines; instant assertions pin BS lines through the roll.
+     */
+    period_type?: string;
+    /**
+     * Values By Period
+     *
+     * Expanded per-month assertions keyed by ``YYYY-MM``.
+     */
+    values_by_period: {
+        [key: string]: number;
+    };
+};
+
+/**
+ * LineAssertionRequest
+ *
+ * One statement line's directly asserted values for the scenario.
+ *
+ * The manual-override half of the authored surface: where a lever
+ * asserts a *driver* (growth %, DSO) whose rule derives the line, a
+ * line assertion asserts the **line itself** — an rs-gaap (or tenant
+ * extension) statement leaf pinned to typed values for the months it
+ * names. Assertions win over driver rules and carry-forward for those
+ * months (a displaced rule lands in ``skipped``, legibly); months the
+ * assertion doesn't name keep the engine's normal derivation.
+ *
+ * **Leaves only** — subtotals stay calc-DAG-derived, so a manually set
+ * line still articulates through RollUps, RE, balancing cash, and the
+ * derived CF, and stays verification-gated (the whole pitch vs a
+ * spreadsheet cell). The create handler rejects calc-parent qnames.
+ *
+ * Value/period grammar is identical to levers: ``value`` is a uniform
+ * fill across the horizon, ``values_by_period`` overrides individual
+ * months. The canonical uses: zero out a base-month one-off so
+ * carry-forward stops replicating it, or hold a line at a known budget
+ * number no driver models.
+ */
+export type LineAssertionRequest = {
+    /**
+     * Qname
+     *
+     * QName of the statement leaf to assert (e.g. ``rs-gaap:NonoperatingIncomeExpense``). Must be a calc-DAG leaf; rs-driver concepts belong in ``levers``.
+     */
+    qname: string;
+    /**
+     * Value
+     *
+     * Uniform value asserted for every month of the horizon.
+     */
+    value?: number | null;
+    /**
+     * Values By Period
+     *
+     * Per-month overrides keyed by ``YYYY-MM``. Wins over ``value`` for the months it names.
+     */
+    values_by_period?: {
+        [key: string]: number;
+    } | null;
+};
+
+/**
  * LineItemMetadataPredicate
  *
  * Filter ledger LineItems by flow concept.
@@ -7927,6 +8164,52 @@ export type OperationEnvelopeAssociationResponse = {
      * Command-specific result payload
      */
     result?: AssociationResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[BackfillPlanHistoryResponse]
+ */
+export type OperationEnvelopeBackfillPlanHistoryResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: BackfillPlanHistoryResponse | null;
     /**
      * At
      *
@@ -14304,11 +14587,13 @@ export type UpdateEventHandlerRequest = {
  *
  * Update a forecast block in place.
  *
- * Mutable: name, scenario_kind, horizon_months, base_period, levers.
- * ``levers`` is a **full replace** when provided (partial lever edits
- * would make the asserted set ambiguous). Updating does NOT recompute —
- * previously computed scenario months go stale until the next
- * ``compute-forecast`` run (the compute-metrics drift semantics).
+ * Mutable: name, scenario_kind, horizon_months, base_period, levers,
+ * line_assertions. ``levers`` and ``line_assertions`` are each a
+ * **full replace** when provided (partial edits would make the asserted
+ * set ambiguous); replacing one leaves the other as stored. Updating
+ * does NOT recompute — previously computed scenario months go stale
+ * until the next ``compute-forecast`` run (the compute-metrics drift
+ * semantics).
  */
 export type UpdateForecastRequest = {
     /**
@@ -14339,6 +14624,12 @@ export type UpdateForecastRequest = {
      * Full replacement of the lever set when provided.
      */
     levers?: Array<LeverAssertionRequest> | null;
+    /**
+     * Line Assertions
+     *
+     * Full replacement of the line-assertion set when provided. Pass an empty list to clear every assertion.
+     */
+    line_assertions?: Array<LineAssertionRequest> | null;
 };
 
 /**
@@ -24086,6 +24377,70 @@ export type ReopenPeriodResponses = {
 };
 
 export type ReopenPeriodResponse = ReopenPeriodResponses[keyof ReopenPeriodResponses];
+
+export type BackfillPlanHistoryData = {
+    body: BackfillPlanHistoryOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/backfill-plan-history';
+};
+
+export type BackfillPlanHistoryErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type BackfillPlanHistoryError = BackfillPlanHistoryErrors[keyof BackfillPlanHistoryErrors];
+
+export type BackfillPlanHistoryResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeBackfillPlanHistoryResponse;
+};
+
+export type BackfillPlanHistoryResponse2 = BackfillPlanHistoryResponses[keyof BackfillPlanHistoryResponses];
 
 export type CreateReportData = {
     body: CreateReportRequest;
