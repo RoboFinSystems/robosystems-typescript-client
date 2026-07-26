@@ -5766,11 +5766,11 @@ export type GraphMetricsResponse = {
         [key: string]: number;
     };
     /**
-     * Estimated Size
+     * Storage
      *
-     * Database size estimates
+     * Measured on-disk storage: total_bytes/kb/mb/gb plus itemized `items` (graph, memory, subgraph, vectors, staging). Carries `error` instead if the instance could not be reached — the fields are absent rather than estimated.
      */
-    estimated_size: {
+    storage: {
         [key: string]: unknown;
     };
     /**
@@ -6677,6 +6677,12 @@ export type InstanceUsage = {
      * Per-database storage breakdown
      */
     databases?: Array<DatabaseStorageEntry>;
+    /**
+     * Items
+     *
+     * Itemized storage by type — graph, memory, subgraph, vectors, staging. Sums to total_storage_gb.
+     */
+    items?: Array<StorageItem>;
 };
 
 /**
@@ -13116,6 +13122,32 @@ export type StatementMechanics = {
      * Number of period columns to render in comparative mode: 1 = single-period, 2 = prior-period comparison, 3-4 = multi-year trailing view. Defaults to single-period; overridden by the template when one is attached.
      */
     period_comparisons?: number;
+};
+
+/**
+ * StorageItem
+ *
+ * One itemized piece of a graph's on-disk footprint.
+ */
+export type StorageItem = {
+    /**
+     * Type
+     *
+     * One of: graph, memory, subgraph, vectors, staging
+     */
+    type: string;
+    /**
+     * Id
+     *
+     * Database or index identifier
+     */
+    id: string;
+    /**
+     * Bytes
+     *
+     * Size in bytes
+     */
+    bytes: number;
 };
 
 /**
