@@ -450,6 +450,12 @@ export type BackfillPlanHistoryOperation = {
      */
     allow_stale_sync?: boolean;
     /**
+     * Restamp
+     *
+     * Also re-derive months that ALREADY have canonical statement sets (default: skip them). Use after an engine improvement changes what a stamp produces — each month reruns the full reopen → reclose cycle and replaces its sets. A restamp run is not self-resuming (every month in range stays a candidate); advance `start_period` between chunks.
+     */
+    restamp?: boolean;
+    /**
      * Note
      *
      * Free-form note attached to each close audit event
@@ -2357,6 +2363,12 @@ export type CreateForecastRequest = {
      */
     line_assertions?: Array<LineAssertionRequest>;
     /**
+     * Line Growth
+     *
+     * Per-line growth trajectories. Each names an income-statement leaf and grows it month-over-month at the asserted rate — the generic form of the revenue growth lever, for lines the catalog doesn't drive (opex trajectories, cost-cut ramps).
+     */
+    line_growth?: Array<LineGrowthRequest>;
+    /**
      * Entity Id
      *
      * Entity the scenario belongs to. Defaults to the graph's earliest-created entity (single-entity convention).
@@ -3232,9 +3244,27 @@ export type DatabaseHealthResponse = {
     /**
      * Memory Usage Mb
      *
-     * Memory usage in MB
+     * Instance memory in use, MB. Only populated for dedicated single-tenant instances; null on shared repositories and packed tiers.
      */
     memory_usage_mb?: number | null;
+    /**
+     * Memory Usage Percent
+     *
+     * Instance memory in use, percent. Expect high values during materialization — the engine deliberately boosts to near the whole instance while rebuilding. Read `resource_status` rather than this number alone. Dedicated instances only.
+     */
+    memory_usage_percent?: number | null;
+    /**
+     * Cpu Usage Percent
+     *
+     * Instance CPU in use, percent. Dedicated single-tenant instances only.
+     */
+    cpu_usage_percent?: number | null;
+    /**
+     * Resource Status
+     *
+     * Interpreted instance load: 'idle' (headroom), 'busy' (working normally — typical while materializing), 'constrained' (sustained pressure worth acting on). Null when resource metrics are not exposed.
+     */
+    resource_status?: string | null;
     /**
      * Storage Usage Mb
      *
@@ -5299,6 +5329,12 @@ export type ForecastMechanics = {
      * Direct statement-line assertions (authoring order) — manual overrides that win over driver rules and carry-forward for the months they name.
      */
     line_assertions?: Array<LineAssertionLite>;
+    /**
+     * Line Growth
+     *
+     * Per-line growth trajectories (authoring order) — each grows an income-statement leaf month-over-month at the asserted rate, compounding from the base month.
+     */
+    line_growth?: Array<LineGrowthLite>;
     /**
      * Computed Months
      *
@@ -7396,6 +7432,98 @@ export type LineAssertionRequest = {
      * Values By Period
      *
      * Per-month overrides keyed by ``YYYY-MM``. Wins over ``value`` for the months it names.
+     */
+    values_by_period?: {
+        [key: string]: number;
+    } | null;
+};
+
+/**
+ * LineGrowthLite
+ *
+ * One statement line's persisted growth trajectory inside
+ * ``ForecastMechanics``.
+ *
+ * The generic per-line form of the revenue growth lever: grows an
+ * income-statement leaf month-over-month at the asserted rate
+ * (``line[t] = line[t-1] * (1 + rate[t])``), compounding from the base
+ * month's value. Months without a rate keep the engine's carry-forward.
+ * Duration leaves only; disjoint from ``line_assertions`` and from any
+ * active catalog rule's target (one owner per line).
+ *
+ * Persistence deviates from levers/assertions deliberately: rates are
+ * NOT duplicated as facts in the scenario FactSet — a growth rate on a
+ * monetary statement element would be a unit-lying fact. This mechanics
+ * copy is the single authored store; ``compute-forecast`` binds rates
+ * from here.
+ */
+export type LineGrowthLite = {
+    /**
+     * Qname
+     *
+     * Grown statement-leaf qname.
+     */
+    qname: string;
+    /**
+     * Element Id
+     *
+     * Resolved tenant element id.
+     */
+    element_id: string;
+    /**
+     * Item Type
+     *
+     * Always 'percent' — the grid row renders rates, not values.
+     */
+    item_type?: string;
+    /**
+     * Values By Period
+     *
+     * Expanded per-month growth rates keyed by ``YYYY-MM``.
+     */
+    values_by_period: {
+        [key: string]: number;
+    };
+};
+
+/**
+ * LineGrowthRequest
+ *
+ * One statement line's asserted growth trajectory for the scenario.
+ *
+ * The generic per-line sibling of ``rs-driver:RevenueGrowthRate``: where
+ * the catalog lever grows *revenue* through its seeded rule, a line
+ * growth entry grows **any income-statement leaf** at a month-over-month
+ * rate — ``value`` -0.05 cuts the line 5% per month, compounding from
+ * the base month's value. This is what expense trajectories ("opex +2%/mo
+ * with inflation", "cut costs 5%/mo starting October") use; without it
+ * every unmodeled line just carries flat.
+ *
+ * Semantics per month: ``line[t] = line[t-1] * (1 + rate[t])``. Months
+ * the entry doesn't name keep the engine's carry-forward (grow-then-hold
+ * ramps fall out of ``values_by_period`` naturally). **Duration leaves
+ * only**: balance-sheet lines roll from the IS and the working-capital
+ * levers — grow the driving IS line instead. A line already driven by an
+ * active catalog rule (e.g. Revenues with ``RevenueGrowthRate`` set) or
+ * named by a ``line_assertions`` entry is rejected — one owner per line.
+ */
+export type LineGrowthRequest = {
+    /**
+     * Qname
+     *
+     * QName of the income-statement leaf to grow (e.g. ``rs-gaap:ResearchAndDevelopmentExpense``). Must be a calc-DAG duration leaf.
+     */
+    qname: string;
+    /**
+     * Value
+     *
+     * Uniform month-over-month growth rate for every month of the horizon (decimal: 0.02 = +2%/mo, -0.05 = -5%/mo).
+     */
+    value?: number | null;
+    /**
+     * Values By Period
+     *
+     * Per-month rate overrides keyed by ``YYYY-MM``. Wins over ``value`` for the months it names; months named by neither carry the line's prior value (rate 0).
      */
     values_by_period?: {
         [key: string]: number;
@@ -14630,6 +14758,12 @@ export type UpdateForecastRequest = {
      * Full replacement of the line-assertion set when provided. Pass an empty list to clear every assertion.
      */
     line_assertions?: Array<LineAssertionRequest> | null;
+    /**
+     * Line Growth
+     *
+     * Full replacement of the line-growth set when provided. Pass an empty list to clear every growth entry.
+     */
+    line_growth?: Array<LineGrowthRequest> | null;
 };
 
 /**
@@ -18491,7 +18625,7 @@ export type GetGraphMetricsData = {
         graph_id: string;
     };
     query?: never;
-    url: '/v1/graphs/{graph_id}/analytics';
+    url: '/v1/graphs/{graph_id}/metrics';
 };
 
 export type GetGraphMetricsErrors = {
@@ -18536,7 +18670,7 @@ export type GetGraphMetricsResponses = {
 
 export type GetGraphMetricsResponse = GetGraphMetricsResponses[keyof GetGraphMetricsResponses];
 
-export type GetGraphUsageAnalyticsData = {
+export type GetGraphUsageData = {
     body?: never;
     path: {
         /**
@@ -18576,10 +18710,10 @@ export type GetGraphUsageAnalyticsData = {
          */
         include_events?: boolean;
     };
-    url: '/v1/graphs/{graph_id}/analytics/usage';
+    url: '/v1/graphs/{graph_id}/usage';
 };
 
-export type GetGraphUsageAnalyticsErrors = {
+export type GetGraphUsageErrors = {
     /**
      * Invalid request
      */
@@ -18610,16 +18744,16 @@ export type GetGraphUsageAnalyticsErrors = {
     500: ErrorResponse;
 };
 
-export type GetGraphUsageAnalyticsError = GetGraphUsageAnalyticsErrors[keyof GetGraphUsageAnalyticsErrors];
+export type GetGraphUsageError = GetGraphUsageErrors[keyof GetGraphUsageErrors];
 
-export type GetGraphUsageAnalyticsResponses = {
+export type GetGraphUsageResponses = {
     /**
      * Successful Response
      */
     200: GraphUsageResponse;
 };
 
-export type GetGraphUsageAnalyticsResponse = GetGraphUsageAnalyticsResponses[keyof GetGraphUsageAnalyticsResponses];
+export type GetGraphUsageResponse = GetGraphUsageResponses[keyof GetGraphUsageResponses];
 
 export type ExecuteCypherData = {
     body: CypherStatementRequest;

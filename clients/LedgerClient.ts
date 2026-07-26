@@ -130,6 +130,7 @@ import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
 import {
   GetInformationBlockDocument,
+  GetInformationBlockWindowedDocument,
   GetLedgerAccountRollupsDocument,
   GetLedgerAccountTreeDocument,
   GetLedgerAgentDocument,
@@ -1091,23 +1092,51 @@ export class LedgerClient {
    * columns cross the actuals/forecast seam and forecast columns carry
    * `periods[].forecast === true`. Non-statement block types ignore it
    * (metric envelopes are always the full series).
+   *
+   * `options.seriesHistory` / `options.seriesForecast` window the series
+   * to its seam-adjacent columns — the last N actual columns and the
+   * first N forecast columns; omitted = unbounded. Passing either sends
+   * the windowed query document, which requires a backend that knows the
+   * window arguments — a pre-window server rejects it. Callers that
+   * never pass a window keep the un-windowed document and stay
+   * compatible with older backends.
    */
   async getInformationBlock(
     graphId: string,
     id: string,
-    options?: { scenarioId?: string; series?: boolean }
+    options?: {
+      scenarioId?: string
+      series?: boolean
+      seriesHistory?: number
+      seriesForecast?: number
+    }
   ): Promise<InformationBlock | null> {
-    const block = await this.gqlQuery(
-      graphId,
-      GetInformationBlockDocument,
-      {
-        id,
-        scenarioId: options?.scenarioId ?? null,
-        series: options?.series ?? false,
-      },
-      'Get information block',
-      (data) => data.informationBlock ?? null
-    )
+    const windowed = options?.seriesHistory !== undefined || options?.seriesForecast !== undefined
+    const block = windowed
+      ? await this.gqlQuery(
+          graphId,
+          GetInformationBlockWindowedDocument,
+          {
+            id,
+            scenarioId: options?.scenarioId ?? null,
+            series: options?.series ?? false,
+            seriesHistory: options?.seriesHistory ?? null,
+            seriesForecast: options?.seriesForecast ?? null,
+          },
+          'Get information block',
+          (data) => data.informationBlock ?? null
+        )
+      : await this.gqlQuery(
+          graphId,
+          GetInformationBlockDocument,
+          {
+            id,
+            scenarioId: options?.scenarioId ?? null,
+            series: options?.series ?? false,
+          },
+          'Get information block',
+          (data) => data.informationBlock ?? null
+        )
     return block ?? null
   }
 
