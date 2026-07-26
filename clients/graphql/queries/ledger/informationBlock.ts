@@ -162,6 +162,183 @@ export const GET_INFORMATION_BLOCK = gql`
 `
 
 /**
+ * The windowed variant of `GET_INFORMATION_BLOCK` — identical selection
+ * set plus the `seriesHistory` / `seriesForecast` window arguments
+ * (statement series only: last N actual + first N forecast columns).
+ *
+ * A SEPARATE document on purpose: a server that predates the window
+ * arguments rejects any query that names them, so the facade sends this
+ * document only when a caller actually passes a window — every existing
+ * call keeps the un-windowed document and stays compatible with older
+ * backends.
+ */
+export const GET_INFORMATION_BLOCK_WINDOWED = gql`
+  query GetInformationBlockWindowed(
+    $id: ID!
+    $scenarioId: String
+    $series: Boolean! = false
+    $seriesHistory: Int
+    $seriesForecast: Int
+  ) {
+    informationBlock(
+      id: $id
+      scenarioId: $scenarioId
+      series: $series
+      seriesHistory: $seriesHistory
+      seriesForecast: $seriesForecast
+    ) {
+      id
+      blockType
+      name
+      displayName
+      category
+      taxonomyId
+      taxonomyName
+      informationModel {
+        conceptArrangement
+        memberArrangement
+      }
+      artifact {
+        topic
+        rendererNote
+        template
+        mechanics
+      }
+      elements {
+        id
+        qname
+        name
+        code
+        elementType
+        isAbstract
+        isMonetary
+        balanceType
+        periodType
+      }
+      connections {
+        id
+        fromElementId
+        toElementId
+        associationType
+        arcrole
+        orderValue
+        weight
+      }
+      facts {
+        id
+        elementId
+        value
+        textValue
+        factType
+        contentType
+        periodStart
+        periodEnd
+        periodType
+        unit
+        factScope
+        factSetId
+      }
+      rules {
+        id
+        ruleCategory
+        rulePattern
+        ruleCheckKind
+        ruleExpression
+        ruleMessage
+        ruleSeverity
+        ruleOrigin
+        ruleTarget {
+          targetKind
+          targetRefId
+        }
+        ruleVariables {
+          variableName
+          variableQname
+        }
+      }
+      factSet {
+        id
+        structureId
+        periodStart
+        periodEnd
+        factsetType
+        entityId
+        reportId
+        scenarioId
+        provenance
+      }
+      verificationResults {
+        id
+        ruleId
+        structureId
+        factSetId
+        status
+        message
+        periodStart
+        periodEnd
+        evaluatedAt
+      }
+      verificationSummary {
+        total
+        passed
+        failed
+        errored
+        skipped
+        byCategory {
+          category
+          total
+          passed
+          failed
+          errored
+          skipped
+        }
+      }
+      view {
+        rendering {
+          rows {
+            elementId
+            elementQname
+            elementName
+            classification
+            balanceType
+            itemType
+            values
+            textValue
+            isSubtotal
+            depth
+          }
+          periods {
+            start
+            end
+            label
+            forecast
+          }
+          validation {
+            passed
+            checks
+            failures
+            warnings
+          }
+          unmappedCount
+        }
+        chart {
+          panels {
+            label
+            itemType
+            kind
+            series {
+              key
+              elementId
+              label
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+/**
  * List Information Block envelopes with optional block_type + category
  * filters. Each returned envelope has the same shape as the
  * single-block read, so callers can page through ready-to-render

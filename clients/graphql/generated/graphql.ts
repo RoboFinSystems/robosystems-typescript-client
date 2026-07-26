@@ -2907,6 +2907,16 @@ export type GetInformationBlockQueryVariables = Exact<{
   series?: Scalars['Boolean']['input']
 }>
 
+export type GetInformationBlockWindowedQueryVariables = Exact<{
+  id: Scalars['ID']['input']
+  scenarioId: InputMaybe<Scalars['String']['input']>
+  series?: Scalars['Boolean']['input']
+  seriesHistory: InputMaybe<Scalars['Int']['input']>
+  seriesForecast: InputMaybe<Scalars['Int']['input']>
+}>
+
+export type GetInformationBlockWindowedQuery = GetInformationBlockQuery
+
 export type GetInformationBlockQuery = {
   informationBlock: {
     id: string
@@ -6090,6 +6100,388 @@ export const GetInformationBlockDocument = {
     },
   ],
 } as unknown as DocumentNode<GetInformationBlockQuery, GetInformationBlockQueryVariables>
+
+export const GetInformationBlockWindowedDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetInformationBlockWindowed' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'series' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'seriesHistory' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'seriesForecast' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'informationBlock' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'scenarioId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'series' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'series' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'seriesHistory' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'seriesHistory' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'seriesForecast' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'seriesForecast' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'displayName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'informationModel' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'conceptArrangement' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'memberArrangement' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'artifact' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'topic' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'rendererNote' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'template' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'mechanics' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'elements' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isAbstract' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isMonetary' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'connections' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'fromElementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'toElementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'associationType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'arcrole' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'orderValue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'weight' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'facts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'contentType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'rules' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleCategory' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'rulePattern' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleCheckKind' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleExpression' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleMessage' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleSeverity' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleOrigin' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'ruleTarget' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'targetKind' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'targetRefId' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'ruleVariables' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'variableName' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'variableQname' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'factSet' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factsetType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scenarioId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'verificationResults' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ruleId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'message' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'evaluatedAt' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'verificationSummary' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'byCategory' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'failed' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'errored' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'skipped' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'view' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rendering' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'rows' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementQname' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'elementName' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'classification' },
+                                  },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'itemType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'values' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'textValue' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'isSubtotal' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'depth' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'periods' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'start' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'end' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'forecast' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'validation' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'passed' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'checks' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'failures' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'warnings' } },
+                                ],
+                              },
+                            },
+                            { kind: 'Field', name: { kind: 'Name', value: 'unmappedCount' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'chart' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'panels' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'itemType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'series' },
+                                    selectionSet: {
+                                      kind: 'SelectionSet',
+                                      selections: [
+                                        { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                                        {
+                                          kind: 'Field',
+                                          name: { kind: 'Name', value: 'elementId' },
+                                        },
+                                        { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  GetInformationBlockWindowedQuery,
+  GetInformationBlockWindowedQueryVariables
+>
 export const ListInformationBlocksDocument = {
   kind: 'Document',
   definitions: [
