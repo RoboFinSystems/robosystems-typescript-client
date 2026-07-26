@@ -1689,6 +1689,8 @@ export type QueryInformationBlockArgs = {
   id: Scalars['ID']['input']
   scenarioId?: InputMaybe<Scalars['String']['input']>
   series?: Scalars['Boolean']['input']
+  seriesForecast?: InputMaybe<Scalars['Int']['input']>
+  seriesHistory?: InputMaybe<Scalars['Int']['input']>
 }
 
 export type QueryInformationBlocksArgs = {
@@ -2907,6 +2909,140 @@ export type GetInformationBlockQueryVariables = Exact<{
   series?: Scalars['Boolean']['input']
 }>
 
+export type GetInformationBlockQuery = {
+  informationBlock: {
+    id: string
+    blockType: string
+    name: string
+    displayName: string
+    category: string
+    taxonomyId: string | null
+    taxonomyName: string | null
+    informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
+    artifact: {
+      topic: string | null
+      rendererNote: string | null
+      template: any | null
+      mechanics: any
+    }
+    elements: Array<{
+      id: string
+      qname: string | null
+      name: string
+      code: string | null
+      elementType: string
+      isAbstract: boolean
+      isMonetary: boolean
+      balanceType: string | null
+      periodType: string | null
+    }>
+    connections: Array<{
+      id: string
+      fromElementId: string
+      toElementId: string
+      associationType: string
+      arcrole: string | null
+      orderValue: number | null
+      weight: number | null
+    }>
+    facts: Array<{
+      id: string
+      elementId: string
+      value: number | null
+      textValue: string | null
+      factType: string
+      contentType: string | null
+      periodStart: any | null
+      periodEnd: any
+      periodType: string
+      unit: string
+      factScope: string
+      factSetId: string | null
+    }>
+    rules: Array<{
+      id: string
+      ruleCategory: string
+      rulePattern: string | null
+      ruleCheckKind: string | null
+      ruleExpression: string
+      ruleMessage: string | null
+      ruleSeverity: string
+      ruleOrigin: string
+      ruleTarget: { targetKind: string; targetRefId: string } | null
+      ruleVariables: Array<{ variableName: string; variableQname: string | null }>
+    }>
+    factSet: {
+      id: string
+      structureId: string | null
+      periodStart: any | null
+      periodEnd: any
+      factsetType: string
+      entityId: string
+      reportId: string | null
+      scenarioId: string | null
+      provenance: any | null
+    } | null
+    verificationResults: Array<{
+      id: string
+      ruleId: string
+      structureId: string | null
+      factSetId: string | null
+      status: string
+      message: string | null
+      periodStart: any | null
+      periodEnd: any | null
+      evaluatedAt: any | null
+    }>
+    verificationSummary: {
+      total: number
+      passed: number
+      failed: number
+      errored: number
+      skipped: number
+      byCategory: Array<{
+        category: string
+        total: number
+        passed: number
+        failed: number
+        errored: number
+        skipped: number
+      }>
+    } | null
+    view: {
+      rendering: {
+        unmappedCount: number
+        rows: Array<{
+          elementId: string
+          elementQname: string | null
+          elementName: string
+          classification: string | null
+          balanceType: string | null
+          itemType: string | null
+          values: Array<number | null>
+          textValue: string | null
+          isSubtotal: boolean
+          depth: number
+        }>
+        periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
+        validation: {
+          passed: boolean
+          checks: Array<string>
+          failures: Array<string>
+          warnings: Array<string>
+        } | null
+      } | null
+      chart: {
+        panels: Array<{
+          label: string | null
+          itemType: string | null
+          kind: string
+          series: Array<{ key: string; elementId: string; label: string }>
+        }>
+      } | null
+    }
+  } | null
+}
+
 export type GetInformationBlockWindowedQueryVariables = Exact<{
   id: Scalars['ID']['input']
   scenarioId: InputMaybe<Scalars['String']['input']>
@@ -2915,9 +3051,7 @@ export type GetInformationBlockWindowedQueryVariables = Exact<{
   seriesForecast: InputMaybe<Scalars['Int']['input']>
 }>
 
-export type GetInformationBlockWindowedQuery = GetInformationBlockQuery
-
-export type GetInformationBlockQuery = {
+export type GetInformationBlockWindowedQuery = {
   informationBlock: {
     id: string
     blockType: string
@@ -6100,7 +6234,6 @@ export const GetInformationBlockDocument = {
     },
   ],
 } as unknown as DocumentNode<GetInformationBlockQuery, GetInformationBlockQueryVariables>
-
 export const GetInformationBlockWindowedDocument = {
   kind: 'Document',
   definitions: [
