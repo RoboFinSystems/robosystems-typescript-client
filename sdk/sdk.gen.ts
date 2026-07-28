@@ -1979,7 +1979,7 @@ export const closePeriod = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Reopen Fiscal Period
  *
- * Decrement `closed_through` by one. Only the most recently closed period can be reopened (no reach-back). Retracts the month's canonical statement FactSets (a reopened month is no longer a closed assertion; re-closing restamps them). The required `reason` is captured in the audit log. Use sparingly — reopen invalidates downstream artifacts that trusted the closed state (reports, shared filings).
+ * Reopen a closed period for adjustment. Reopening the current `closed_through` decrements it by one; reopening an earlier period is a prior-period adjustment and leaves `closed_through` unchanged — re-closing it restores the period without advancing the pointer. Either way the period's entries become writable again. Retracts the month's canonical statement FactSets (a reopened month is no longer a closed assertion; re-closing restamps them). The required `reason` is captured in the audit log. Use sparingly — reopen invalidates downstream artifacts that trusted the closed state (reports, shared filings).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
