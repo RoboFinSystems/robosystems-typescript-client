@@ -5968,6 +5968,12 @@ export type GraphSubscriptionTier = {
      * Instance type
      */
     instance_type?: string | null;
+    /**
+     * Instance Storage Limit Gb
+     *
+     * Soft storage cap for the instance in GB
+     */
+    instance_storage_limit_gb?: number;
 };
 
 /**
@@ -11574,7 +11580,7 @@ export type RenderingRowLite = {
 /**
  * ReopenPeriodOperation
  *
- * Reopen the most recently closed fiscal period.
+ * Reopen a closed fiscal period.
  */
 export type ReopenPeriodOperation = {
     /**
@@ -11592,7 +11598,7 @@ export type ReopenPeriodOperation = {
     /**
      * Period
      *
-     * Period to reopen, in YYYY-MM. Must equal current `closed_through` — only the most recent close can be undone.
+     * Period to reopen, in YYYY-MM. Any closed period may be reopened. Reopening the current `closed_through` retreats it by one month; reopening an earlier period leaves `closed_through` where it is (a prior-period adjustment), and its re-close restores the period without moving the pointer.
      */
     period: string;
 };
