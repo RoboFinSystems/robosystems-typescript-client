@@ -815,13 +815,20 @@ describe('LedgerClient', () => {
 
   describe('createSchedule', () => {
     it('serializes options into snake_case body and converts the result', async () => {
+      // `create-information-block` returns an InformationBlockEnvelope. The
+      // previous mock invented a ScheduleCreatedResponse-shaped body that the
+      // server never sends, which is why the facade reading `structure_id`
+      // looked correct here while returning `structureId: undefined` in
+      // production.
       mockFetch.mockResolvedValueOnce(
         envelopeResponse('create-schedule', {
-          structure_id: 'str_1',
+          id: 'str_1',
+          block_type: 'schedule',
           name: 'Depreciation — Laptops',
+          display_name: 'Depreciation — Laptops',
+          category: 'schedule',
           taxonomy_id: 'tax_depreciation',
-          total_periods: 36,
-          total_facts: 36,
+          facts: new Array(36).fill({ id: 'fact' }),
         })
       )
       const result = await client.createSchedule('graph_1', {
@@ -835,8 +842,11 @@ describe('LedgerClient', () => {
           creditElementId: 'elem_accum_depr',
         },
       })
-      expect(result.totalPeriods).toBe(36)
+      // The block's own id IS the structure id — this is the assertion that
+      // would have caught the bug.
+      expect(result.structureId).toBe('str_1')
       expect(result.taxonomyId).toBe('tax_depreciation')
+      expect(result.totalFacts).toBe(36)
 
       const req = mockFetch.mock.calls[0][0] as Request
       const body = JSON.parse(await req.text())
