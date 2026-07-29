@@ -529,7 +529,7 @@ export type BackupCreateRequest = {
     /**
      * Retention Days
      *
-     * Retention period in days
+     * Retention period in days, further capped to the graph tier's maximum (7/30/90). 90 is the hard ceiling: the storage lifecycle expires backup objects then regardless of the requested value.
      */
     retention_days?: number;
     /**
@@ -5626,7 +5626,7 @@ export type GraphLimitsResponse = {
     /**
      * Subscription Tier
      *
-     * User's subscription tier
+     * Rate-limit tier enforced for requests to this graph
      */
     subscription_tier: string;
     /**
@@ -6173,7 +6173,7 @@ export type GraphTierInstance = {
     /**
      * Memory Mb
      *
-     * Memory allocated to your graph in megabytes
+     * LadybugDB memory budget for the whole instance in megabytes (below physical RAM after OS overhead; not a per-graph allocation)
      */
     memory_mb: number;
     /**
@@ -7649,7 +7649,7 @@ export type ListSubgraphsResponse = {
     /**
      * Subgraphs Enabled
      *
-     * Whether subgraphs are enabled for this tier (requires Large/XLarge tier)
+     * Whether subgraphs are enabled for this tier
      */
     subgraphs_enabled: boolean;
     /**
@@ -7756,6 +7756,74 @@ export type LiveFinancialStatementRequest = {
      * Max fact rows returned
      */
     limit?: number;
+};
+
+/**
+ * LiveFinancialStatementResponse
+ *
+ * Rendered OLTP-backed ad-hoc statement.
+ */
+export type LiveFinancialStatementResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Statement Type
+     */
+    statement_type: string;
+    /**
+     * Periods
+     */
+    periods: Array<PeriodSpec>;
+    /**
+     * Facts
+     */
+    facts: Array<LiveStatementFactRow>;
+    /**
+     * Fact Count
+     */
+    fact_count: number;
+    /**
+     * Unmapped Count
+     */
+    unmapped_count?: number;
+    /**
+     * Truncated
+     */
+    truncated?: boolean;
+};
+
+/**
+ * LiveStatementFactRow
+ *
+ * A single row of an OLTP-backed ad-hoc statement.
+ */
+export type LiveStatementFactRow = {
+    /**
+     * Qname
+     */
+    qname: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Trait
+     */
+    trait?: string | null;
+    /**
+     * Values
+     */
+    values: Array<number | null>;
+    /**
+     * Depth
+     */
+    depth?: number;
+    /**
+     * Is Subtotal
+     */
+    is_subtotal?: boolean;
 };
 
 /**
@@ -8047,6 +8115,38 @@ export type OAuthCallbackRequest = {
      * OAuth error details
      */
     error_description?: string | null;
+};
+
+/**
+ * OAuthCallbackResponse
+ *
+ * Result of completing an OAuth authorization flow.
+ */
+export type OAuthCallbackResponse = {
+    /**
+     * Success
+     *
+     * Whether the connection was established
+     */
+    success: boolean;
+    /**
+     * Message
+     *
+     * Human-readable outcome of the exchange
+     */
+    message: string;
+    /**
+     * Connection Id
+     *
+     * Connection the authorization was linked to
+     */
+    connection_id: string;
+    /**
+     * Auto Sync Task Id
+     *
+     * Task id of the initial sync started after connecting, or null when no sync was kicked off
+     */
+    auto_sync_task_id?: string | null;
 };
 
 /**
@@ -9270,6 +9370,52 @@ export type OperationEnvelopeLedgerEntityResponse = {
      * Command-specific result payload
      */
     result?: LedgerEntityResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[LiveFinancialStatementResponse]
+ */
+export type OperationEnvelopeLiveFinancialStatementResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: LiveFinancialStatementResponse | null;
     /**
      * At
      *
@@ -17662,8 +17808,10 @@ export type OauthCallbackResponses = {
     /**
      * Successful Response
      */
-    200: unknown;
+    200: OAuthCallbackResponse;
 };
+
+export type OauthCallbackResponse = OauthCallbackResponses[keyof OauthCallbackResponses];
 
 export type ListConnectionsData = {
     body?: never;
@@ -25377,10 +25525,10 @@ export type LiveFinancialStatementResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeLiveFinancialStatementResponse;
 };
 
-export type LiveFinancialStatementResponse = LiveFinancialStatementResponses[keyof LiveFinancialStatementResponses];
+export type LiveFinancialStatementResponse2 = LiveFinancialStatementResponses[keyof LiveFinancialStatementResponses];
 
 export type BuildFactGridData = {
     body: CreateViewRequest;
