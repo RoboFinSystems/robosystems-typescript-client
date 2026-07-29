@@ -121,6 +121,42 @@ export type AddPublishListMembersOperation = {
 };
 
 /**
+ * AnalyticalStatementFactRow
+ *
+ * A single fact row from the graph-backed statement analysis.
+ */
+export type AnalyticalStatementFactRow = {
+    /**
+     * Canonical Concept
+     */
+    canonical_concept?: string | null;
+    /**
+     * Qname
+     */
+    qname: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Value
+     */
+    value?: number | null;
+    /**
+     * End Date
+     */
+    end_date?: string | null;
+    /**
+     * Period Type
+     */
+    period_type?: string | null;
+    /**
+     * Duration Type
+     */
+    duration_type?: string | null;
+};
+
+/**
  * ArtifactResponse
  *
  * The block's producible-artifact envelope — topic, template, mechanics.
@@ -5148,6 +5184,39 @@ export type FinancialStatementAnalysisRequest = {
 };
 
 /**
+ * FinancialStatementAnalysisResponse
+ *
+ * Results of the financial-statement-analysis view op.
+ */
+export type FinancialStatementAnalysisResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Statement Type
+     */
+    statement_type: string;
+    /**
+     * Ticker
+     */
+    ticker?: string | null;
+    /**
+     * Report Id
+     */
+    report_id?: string | null;
+    resolved_report?: ResolvedReportInfo | null;
+    /**
+     * Facts
+     */
+    facts: Array<AnalyticalStatementFactRow>;
+    /**
+     * Fact Count
+     */
+    fact_count: number;
+};
+
+/**
  * FiscalCalendarResponse
  *
  * Current fiscal calendar state for a graph.
@@ -9115,6 +9184,52 @@ export type OperationEnvelopeExecuteEventBlockResponse = {
 };
 
 /**
+ * OperationEnvelope[FinancialStatementAnalysisResponse]
+ */
+export type OperationEnvelopeFinancialStatementAnalysisResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: FinancialStatementAnalysisResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[FiscalCalendarResponse]
  */
 export type OperationEnvelopeFiscalCalendarResponse = {
@@ -9830,6 +9945,52 @@ export type OperationEnvelopeTaxonomyBlockEnvelope = {
      * Command-specific result payload
      */
     result?: TaxonomyBlockEnvelope | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ViewResponse]
+ */
+export type OperationEnvelopeViewResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ViewResponse | null;
     /**
      * At
      *
@@ -12025,6 +12186,34 @@ export type ResetPasswordValidateResponse = {
      * Masked email address if token is valid
      */
     email?: string | null;
+};
+
+/**
+ * ResolvedReportInfo
+ *
+ * Information about the auto-resolved report.
+ */
+export type ResolvedReportInfo = {
+    /**
+     * Report Id
+     */
+    report_id: string;
+    /**
+     * Form
+     */
+    form?: string | null;
+    /**
+     * Filing Date
+     */
+    filing_date?: string | null;
+    /**
+     * Fiscal Year
+     */
+    fiscal_year?: number | null;
+    /**
+     * Fiscal Period
+     */
+    fiscal_period?: string | null;
 };
 
 /**
@@ -15754,6 +15943,48 @@ export type ViewConfig = {
 };
 
 /**
+ * ViewMetadata
+ */
+export type ViewMetadata = {
+    /**
+     * View Id
+     *
+     * Unique view identifier
+     */
+    view_id: string;
+    /**
+     * Facts Processed
+     *
+     * Number of facts processed
+     */
+    facts_processed: number;
+    /**
+     * Construction Time Ms
+     *
+     * Time to build view in milliseconds
+     */
+    construction_time_ms: number;
+    /**
+     * Source
+     *
+     * Data source type
+     */
+    source: string;
+    /**
+     * Period Start
+     *
+     * Period start date
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     *
+     * Period end date
+     */
+    period_end?: string | null;
+};
+
+/**
  * ViewProjections
  *
  * Charlie's six ``type-of View`` arms, surfaced at the envelope boundary.
@@ -15776,6 +16007,24 @@ export type ViewConfig = {
 export type ViewProjections = {
     rendering?: RenderingLite | null;
     chart?: ChartLite | null;
+};
+
+/**
+ * ViewResponse
+ */
+export type ViewResponse = {
+    /**
+     * View metadata
+     */
+    metadata: ViewMetadata;
+    /**
+     * Presentations
+     *
+     * Presentation formats (pivot_table, narrative, etc.)
+     */
+    presentations: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -25589,7 +25838,7 @@ export type BuildFactGridResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeViewResponse;
 };
 
 export type BuildFactGridResponse = BuildFactGridResponses[keyof BuildFactGridResponses];
@@ -25653,10 +25902,10 @@ export type FinancialStatementAnalysisResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelope;
+    200: OperationEnvelopeFinancialStatementAnalysisResponse;
 };
 
-export type FinancialStatementAnalysisResponse = FinancialStatementAnalysisResponses[keyof FinancialStatementAnalysisResponses];
+export type FinancialStatementAnalysisResponse2 = FinancialStatementAnalysisResponses[keyof FinancialStatementAnalysisResponses];
 
 export type CreatePortfolioBlockData = {
     body: CreatePortfolioBlockRequest;

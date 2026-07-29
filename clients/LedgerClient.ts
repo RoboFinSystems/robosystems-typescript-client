@@ -100,6 +100,7 @@ import type {
   EventHandlerResponse,
   FileReportRequest,
   FinancialStatementAnalysisRequest,
+  FinancialStatementAnalysisResponse,
   InformationBlockEnvelope,
   InitializeLedgerRequest,
   JournalEntryResponse,
@@ -127,6 +128,7 @@ import type {
   UpdateJournalEntryRequest,
   UpdatePublishListOperation,
   UpdateTaxonomyBlockRequest,
+  ViewResponse,
 } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache } from './graphql/client'
@@ -1888,12 +1890,12 @@ export class LedgerClient {
   async financialStatementAnalysis(
     graphId: string,
     body: FinancialStatementAnalysisRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<FinancialStatementAnalysisResponse> {
     const envelope = await this.callOperation(
       'Financial statement analysis',
       financialStatementAnalysis({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Financial statement analysis', envelope.result)
   }
 
   // ── Fact grid (graph-backed analytical query) ─────────────────────
@@ -1905,12 +1907,12 @@ export class LedgerClient {
    * a deduplicated pivot table of XBRL facts. Works for both roboledger
    * tenant graphs (after materialization) and the SEC shared repository.
    */
-  async buildFactGrid(graphId: string, body: CreateViewRequest): Promise<Record<string, unknown>> {
+  async buildFactGrid(graphId: string, body: CreateViewRequest): Promise<ViewResponse> {
     const envelope = await this.callOperation(
       'Build fact grid',
       buildFactGrid({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Build fact grid', envelope.result)
   }
 
   // ── Reports, statements, and publish lists ──────────────────────────────
