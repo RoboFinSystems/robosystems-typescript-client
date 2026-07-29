@@ -106,6 +106,7 @@ import type {
   LedgerAgentResponse,
   LinkEntityTaxonomyRequest,
   LiveFinancialStatementRequest,
+  LiveFinancialStatementResponse,
   OperationEnvelope,
   PreviewEventBlockResponse,
   PublishListMemberResponse,
@@ -1833,12 +1834,12 @@ export class LedgerClient {
   async liveFinancialStatement(
     graphId: string,
     body: LiveFinancialStatementRequest
-  ): Promise<Record<string, unknown>> {
+  ): Promise<LiveFinancialStatementResponse> {
     const envelope = await this.callOperation(
       'Live financial statement',
       liveFinancialStatement({ path: { graph_id: graphId }, body })
     )
-    return (envelope.result ?? {}) as Record<string, unknown>
+    return this.requireResult('Live financial statement', envelope.result)
   }
 
   /**
