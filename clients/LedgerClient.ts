@@ -104,6 +104,7 @@ import type {
   InitializeLedgerRequest,
   JournalEntryResponse,
   LedgerAgentResponse,
+  LedgerEntityResponse,
   LinkEntityTaxonomyRequest,
   LiveFinancialStatementRequest,
   LiveFinancialStatementResponse,
@@ -423,6 +424,26 @@ export interface ClosePeriodResult {
   evaluatedStructureIds: string[]
 }
 
+/**
+ * Result of `createSchedule`.
+ *
+ * Deliberately narrower than {@link ScheduleCreated}: `create-information-block`
+ * returns an InformationBlockEnvelope, which carries no period/rule rollup.
+ * This method previously advertised `totalPeriods` / `ruleSummary` and decoded
+ * a `structure_id` that isn't on the wire, so every one of those fields —
+ * including `structureId` — read `undefined` at runtime. Use
+ * {@link LedgerClient.rebuildSchedule} when you need the rebuild summary.
+ */
+export interface ScheduleBlockCreated {
+  /** The created block's id, which is the structure id. */
+  structureId: string
+  name: string
+  /** Null when the created block carries no taxonomy association. */
+  taxonomyId: string | null
+  /** Fact count on the created block; null when the response omitted facts. */
+  totalFacts: number | null
+}
+
 export interface ScheduleCreated {
   structureId: string
   name: string
@@ -572,7 +593,15 @@ export class LedgerClient {
         body: updates,
       })
     )
-    return envelope.result as unknown as LedgerEntity
+    // The REST envelope carries LedgerEntityResponse (snake_case); LedgerEntity
+    // is the GraphQL camelCase shape that getEntity returns. The old
+    // `as unknown as` cast asserted one was the other, so every multi-word
+    // field — parentEntityId, isParent, legalName, entityType … — read
+    // `undefined` on the object handed back after a save. Map instead, so the
+    // declared return type is true and updateEntity stays interchangeable with
+    // getEntity.
+    const raw = this.requireResult('Update entity', envelope.result)
+    return entityResponseToCamel(raw)
   }
 
   // ── Summary ────────────────────────────────────────────────────────
@@ -1236,7 +1265,10 @@ export class LedgerClient {
     return (envelope.result ?? { deleted: true }) as DeleteInformationBlockResponse
   }
 
-  async createSchedule(graphId: string, options: CreateScheduleOptions): Promise<ScheduleCreated> {
+  async createSchedule(
+    graphId: string,
+    options: CreateScheduleOptions
+  ): Promise<ScheduleBlockCreated> {
     const body: CreateInformationBlockRequest = {
       block_type: 'schedule',
       payload: {
@@ -1267,14 +1299,19 @@ export class LedgerClient {
       'Create schedule',
       createInformationBlock({ path: { graph_id: graphId }, body })
     )
-    const raw = envelope.result as unknown as RawScheduleCreatedResult
+    // `create-information-block` returns an InformationBlockEnvelope, not the
+    // ScheduleCreatedResponse shape this used to decode — there is no
+    // `structure_id` / `total_periods` / `total_facts` / `rule_summary` on the
+    // wire, so all four read `undefined` and callers got
+    // `structureId: undefined`. The block's own `id` is the structure id.
+    // `rebuildSchedule` below is unaffected: that route does return
+    // ScheduleCreatedResponse.
+    const block = this.requireResult('Create schedule', envelope.result)
     return {
-      structureId: raw.structure_id,
-      name: raw.name,
-      taxonomyId: raw.taxonomy_id,
-      totalPeriods: raw.total_periods,
-      totalFacts: raw.total_facts,
-      ruleSummary: raw.rule_summary ?? null,
+      structureId: block.id,
+      name: block.name,
+      taxonomyId: block.taxonomy_id ?? null,
+      totalFacts: block.facts?.length ?? null,
     }
   }
 
@@ -2365,4 +2402,46 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
       closedAt: p.closed_at ?? null,
     })),
   }
+}
+
+/**
+ * Map the REST `LedgerEntityResponse` (snake_case) onto the GraphQL
+ * `LedgerEntity` (camelCase) that `getEntity` returns, so callers can treat the
+ * result of a read and a write interchangeably.
+ */
+function entityResponseToCamel(raw: LedgerEntityResponse): LedgerEntity {
+  return {
+    id: raw.id,
+    name: raw.name,
+    legalName: raw.legal_name ?? null,
+    uri: raw.uri ?? null,
+    cik: raw.cik ?? null,
+    ticker: raw.ticker ?? null,
+    exchange: raw.exchange ?? null,
+    sic: raw.sic ?? null,
+    sicDescription: raw.sic_description ?? null,
+    category: raw.category ?? null,
+    stateOfIncorporation: raw.state_of_incorporation ?? null,
+    fiscalYearEnd: raw.fiscal_year_end ?? null,
+    taxId: raw.tax_id ?? null,
+    lei: raw.lei ?? null,
+    industry: raw.industry ?? null,
+    entityType: raw.entity_type ?? null,
+    phone: raw.phone ?? null,
+    website: raw.website ?? null,
+    status: raw.status ?? null,
+    isParent: raw.is_parent ?? null,
+    parentEntityId: raw.parent_entity_id ?? null,
+    source: raw.source ?? null,
+    sourceId: raw.source_id ?? null,
+    sourceGraphId: raw.source_graph_id ?? null,
+    connectionId: raw.connection_id ?? null,
+    addressLine1: raw.address_line1 ?? null,
+    addressCity: raw.address_city ?? null,
+    addressState: raw.address_state ?? null,
+    addressPostalCode: raw.address_postal_code ?? null,
+    addressCountry: raw.address_country ?? null,
+    createdAt: raw.created_at ?? null,
+    updatedAt: raw.updated_at ?? null,
+  } as LedgerEntity
 }
