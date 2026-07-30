@@ -1688,7 +1688,7 @@ export type QueryHoldingsArgs = {
 export type QueryInformationBlockArgs = {
   id: Scalars['ID']['input']
   scenarioId?: InputMaybe<Scalars['String']['input']>
-  series?: Scalars['Boolean']['input']
+  series?: InputMaybe<Scalars['Boolean']['input']>
   seriesForecast?: InputMaybe<Scalars['Int']['input']>
   seriesHistory?: InputMaybe<Scalars['Int']['input']>
 }

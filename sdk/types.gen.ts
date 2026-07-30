@@ -199,6 +199,154 @@ export type ArtifactResponse = {
 };
 
 /**
+ * AssertMetricsRequest
+ *
+ * Request body for the ``assert-metrics`` operation.
+ *
+ * The observation sibling of ``compute-metrics``: writes externally-
+ * observed values (usage counts, marketing numbers, hand-carried
+ * figures) into the period's standing ``factset_type='metric'`` FactSet
+ * with ``AssertedProvenance``. Re-asserting a period replaces its facts
+ * — one standing FactSet per (structure, entity, period_end), the
+ * accumulating time series.
+ *
+ * Structures carrying ``Derive`` rules are compute-owned
+ * (``compute-metrics``) and rejected — asserted and derived metric
+ * series keep disjoint structures. Asserted series are actuals; there
+ * is no scenario axis.
+ */
+export type AssertMetricsRequest = {
+    /**
+     * Structure Id
+     *
+     * Metric block structure (block_type='metric') to assert into.
+     */
+    structure_id: string;
+    /**
+     * Period End
+     *
+     * Period end the observations are for — instant concepts (a follower count at month end) land as of this date; duration concepts (monthly downloads) end on it.
+     */
+    period_end: string;
+    /**
+     * Period Start
+     *
+     * Window start for duration concepts and the standing FactSet's period_start. Instant concepts ignore it.
+     */
+    period_start?: string | null;
+    /**
+     * Entity Id
+     *
+     * Entity to assert for. Defaults to the graph's earliest-created entity (the primary entity for single-entity graphs).
+     */
+    entity_id?: string | null;
+    /**
+     * Source System
+     *
+     * Identifier of the asserting system (e.g. 'content-machine') — recorded as the AssertedProvenance source_system.
+     */
+    source_system: string;
+    /**
+     * Basis Note
+     *
+     * Free-text basis / source reference for the observations.
+     */
+    basis_note?: string | null;
+    /**
+     * Observations
+     *
+     * Observed values, one per metric concept — duplicates rejected.
+     */
+    observations: Array<MetricObservation>;
+};
+
+/**
+ * AssertMetricsResponse
+ *
+ * Response for the ``assert-metrics`` operation.
+ */
+export type AssertMetricsResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Entity Id
+     */
+    entity_id: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Fact Set Id
+     *
+     * Standing metric FactSet the observations were written to.
+     */
+    fact_set_id: string;
+    /**
+     * Asserted
+     */
+    asserted?: Array<AssertedMetricLite>;
+    /**
+     * Replaced
+     *
+     * True when a prior standing set existed for the period and its facts were replaced.
+     */
+    replaced?: boolean;
+};
+
+/**
+ * AssertedMetricLite
+ *
+ * One metric written by an ``assert-metrics`` run.
+ */
+export type AssertedMetricLite = {
+    /**
+     * Element Id
+     *
+     * Metric element the fact was written for.
+     */
+    element_id: string;
+    /**
+     * Element Qname
+     *
+     * Metric element qname.
+     */
+    element_qname: string;
+    /**
+     * Name
+     *
+     * Metric display name.
+     */
+    name: string;
+    /**
+     * Value
+     *
+     * Asserted value.
+     */
+    value: number;
+    /**
+     * Unit
+     *
+     * Fact unit — 'USD' for monetary, 'days' for days, else 'pure'.
+     */
+    unit: string;
+    /**
+     * Period Type
+     *
+     * 'instant' or 'duration'.
+     */
+    period_type: string;
+    /**
+     * Item Type
+     *
+     * Format family from the metric element (monetary | ratio | percent | multiple | days). None means untyped; fall back to unit.
+     */
+    item_type?: string | null;
+};
+
+/**
  * AssociationResponse
  *
  * One edge between two elements within a structure (parent/child
@@ -1721,7 +1869,7 @@ export type ConnectionProviderInfo = {
      *
      * Provider identifier
      */
-    provider: 'sec' | 'quickbooks';
+    provider: 'sec' | 'quickbooks' | 'external';
     /**
      * Display Name
      *
@@ -1844,6 +1992,12 @@ export type ConnectionResponse = {
      * Source-of-truth write policy: 'native' (RoboSystems is authoritative; no outbound write-back) or 'qb_authoritative' (QuickBooks is authoritative; RoboSystems-originated entries publish to QB). Set via the write-policy endpoint.
      */
     write_policy?: string | null;
+    /**
+     * Source Name
+     *
+     * External-provider registered source slug — the value the integration stamps on the events it emits. Null for platform providers.
+     */
+    source_name?: string | null;
     /**
      * Metadata
      *
@@ -2110,7 +2264,7 @@ export type CreateConnectionRequest = {
      *
      * Connection provider type
      */
-    provider: 'sec' | 'quickbooks';
+    provider: 'sec' | 'quickbooks' | 'external';
     /**
      * Entity Id
      *
@@ -2119,6 +2273,7 @@ export type CreateConnectionRequest = {
     entity_id?: string | null;
     sec_config?: SecConnectionConfig | null;
     quickbooks_config?: QuickBooksConnectionConfig | null;
+    external_config?: ExternalConnectionConfig | null;
 };
 
 /**
@@ -2184,7 +2339,7 @@ export type CreateEventBlockRequest = {
     /**
      * Source
      *
-     * 'manual' | 'system' | 'schedule' | 'quickbooks' | 'xero' | 'plaid'
+     * 'manual' | 'system' | 'schedule', a connected provider name (e.g. 'quickbooks'), or a source_name registered via an 'external' connection. Validated against the graph's registered connections.
      */
     source: string;
     /**
@@ -4598,7 +4753,7 @@ export type EventBlockEnvelope = {
     /**
      * Source
      *
-     * Capture source (`manual`, `system`, `schedule`, `quickbooks`, `xero`, `plaid`). Used for adapter routing.
+     * Capture source: `manual`, `system`, `schedule`, a connected provider name (e.g. `quickbooks`), or a registered external source_name. Used for adapter routing.
      */
     source: string;
     /**
@@ -4865,6 +5020,32 @@ export type ExecuteEventBlockResponse = {
     qb_error?: {
         [key: string]: unknown;
     } | null;
+};
+
+/**
+ * ExternalConnectionConfig
+ *
+ * External-integration connection configuration.
+ *
+ * Registers a source namespace for an integration the platform does not
+ * run: the connection is registration + telemetry, not execution config.
+ * The platform holds no credentials for the external source — the
+ * integration authenticates to its own source and writes here through
+ * the public API, stamping ``source_name`` on everything it emits.
+ */
+export type ExternalConnectionConfig = {
+    /**
+     * Source Name
+     *
+     * Source slug the integration stamps on the events it emits (lowercase letters, digits, '-', '_'; must start with a letter). Unique per graph among live connections.
+     */
+    source_name: string;
+    /**
+     * Display Name
+     *
+     * Human-readable label for the connections UI.
+     */
+    display_name?: string | null;
 };
 
 /**
@@ -7974,7 +8155,7 @@ export type MaterializeOp = {
     /**
      * Rebuild
      *
-     * Rebuild the graph from scratch, dropping existing data
+     * Rebuild the graph from scratch, dropping existing data. Required (staged source) when materializing new uploads into a graph that already contains materialized data — staging replays all uploaded files, so a non-rebuild pass would re-copy ingested rows (409).
      */
     rebuild?: boolean;
     /**
@@ -8146,6 +8327,26 @@ export type MetricMechanics = {
      * Output unit of the derived value — 'ratio', 'percent', 'USD', 'count', etc. Used by the renderer to format the metric badge.
      */
     unit?: string;
+};
+
+/**
+ * MetricObservation
+ *
+ * One externally-observed value in an ``assert-metrics`` request.
+ */
+export type MetricObservation = {
+    /**
+     * Qname
+     *
+     * Metric element qname (e.g. rsx:GithubStars). Must resolve to a concept on the structure's presentation catalog.
+     */
+    qname: string;
+    /**
+     * Value
+     *
+     * Observed value.
+     */
+    value: number;
 };
 
 /**
@@ -8427,6 +8628,52 @@ export type OperationEnvelope = {
      * Command-specific result payload
      */
     result?: unknown | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[AssertMetricsResponse]
+ */
+export type OperationEnvelopeAssertMetricsResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: AssertMetricsResponse | null;
     /**
      * At
      *
@@ -18082,7 +18329,7 @@ export type ListConnectionsData = {
          *
          * Filter by provider type
          */
-        provider?: 'sec' | 'quickbooks' | null;
+        provider?: 'sec' | 'quickbooks' | 'external' | null;
     };
     url: '/v1/graphs/{graph_id}/connections';
 };
@@ -23858,6 +24105,70 @@ export type ComputeMetricsResponses = {
 };
 
 export type ComputeMetricsResponse2 = ComputeMetricsResponses[keyof ComputeMetricsResponses];
+
+export type AssertMetricsData = {
+    body: AssertMetricsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/assert-metrics';
+};
+
+export type AssertMetricsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type AssertMetricsError = AssertMetricsErrors[keyof AssertMetricsErrors];
+
+export type AssertMetricsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeAssertMetricsResponse;
+};
+
+export type AssertMetricsResponse2 = AssertMetricsResponses[keyof AssertMetricsResponses];
 
 export type ComputeForecastData = {
     body: ComputeForecastRequest;
