@@ -3173,7 +3173,13 @@ export type CreateViewRequest = {
      */
     include_summary?: boolean;
     /**
-     * View/pivot configuration
+     * Limit
+     *
+     * Maximum facts to return. Applied after deduplication and sorting, so truncation keeps the most recent periods. Check `metadata.truncated` to see whether more facts matched.
+     */
+    limit?: number;
+    /**
+     * Aspect scoping configuration
      */
     view_config?: ViewConfig;
 };
@@ -4057,6 +4063,33 @@ export type DetailedTransactionsResponse = {
 };
 
 /**
+ * Dimension
+ */
+export type Dimension = {
+    /**
+     * Name
+     *
+     * Dimension name (e.g., 'Element', 'Period')
+     */
+    name: string;
+    /**
+     * Dimension type
+     */
+    type: DimensionType;
+    /**
+     * Members
+     *
+     * List of dimension members
+     */
+    members?: Array<string>;
+};
+
+/**
+ * DimensionType
+ */
+export type DimensionType = 'element' | 'period' | 'entity';
+
+/**
  * DocumentDetailResponse
  *
  * Full document detail with raw content.
@@ -4361,6 +4394,42 @@ export type ElementLite = {
      * The element's documentation-role label — the catalog's authoritative value semantics (e.g. whether a percent driver is a growth rate or a rate-on-base fraction). None when the element carries no documentation label.
      */
     documentation?: string | null;
+};
+
+/**
+ * ElementSummary
+ */
+export type ElementSummary = {
+    /**
+     * Count
+     *
+     * Number of facts for this element
+     */
+    count: number;
+    /**
+     * Total
+     *
+     * Sum of values across the returned facts
+     */
+    total: number;
+    /**
+     * Average
+     *
+     * Mean value across the returned facts
+     */
+    average: number;
+    /**
+     * Min
+     *
+     * Minimum value across the returned facts
+     */
+    min: number;
+    /**
+     * Max
+     *
+     * Maximum value across the returned facts
+     */
+    max: number;
 };
 
 /**
@@ -5120,6 +5189,54 @@ export type FactLite = {
      * Fact Set Id
      */
     fact_set_id?: string | null;
+};
+
+/**
+ * FactRecord
+ */
+export type FactRecord = {
+    /**
+     * Element Id
+     *
+     * Element qname (e.g., 'us-gaap:Assets')
+     */
+    element_id: string;
+    /**
+     * Element Name
+     *
+     * Element local name
+     */
+    element_name?: string | null;
+    /**
+     * Period End
+     *
+     * Period end date (YYYY-MM-DD)
+     */
+    period_end?: string | null;
+    /**
+     * Value
+     *
+     * Numeric fact value
+     */
+    value?: number | null;
+    /**
+     * Unit
+     *
+     * Unit of measure (e.g., 'USD')
+     */
+    unit?: string | null;
+    /**
+     * Entity Ticker
+     *
+     * Entity ticker; present only when an entity filter was applied
+     */
+    entity_ticker?: string | null;
+    /**
+     * Entity Name
+     *
+     * Entity name; present only when an entity filter was applied
+     */
+    entity_name?: string | null;
 };
 
 /**
@@ -16097,24 +16214,23 @@ export type VerificationSummary = {
 
 /**
  * ViewAxisConfig
+ *
+ * Scoping configuration for one aspect of the fact query.
+ *
+ * Filtering only. Ordering and labelling are presentation concerns and
+ * belong to the consumer that arranges the facts into a table.
  */
 export type ViewAxisConfig = {
     /**
      * Type
      *
-     * Axis type: 'element', 'period', 'dimension', 'entity'
+     * Axis type: 'element', 'period', 'entity'
      */
     type: string;
     /**
-     * Dimension Axis
-     *
-     * Dimension axis name for dimension-type axes
-     */
-    dimension_axis?: string | null;
-    /**
      * Include Null Dimension
      *
-     * Include facts where this dimension is NULL (default: false)
+     * Include facts where this aspect is absent (default: false)
      */
     include_null_dimension?: boolean;
     /**
@@ -16123,34 +16239,6 @@ export type ViewAxisConfig = {
      * Specific members to include (e.g., ['2024-12-31', '2023-12-31'])
      */
     selected_members?: Array<string> | null;
-    /**
-     * Member Order
-     *
-     * Explicit ordering of members (overrides default sort)
-     */
-    member_order?: Array<string> | null;
-    /**
-     * Member Labels
-     *
-     * Custom labels for members (e.g., {'2024-12-31': 'Current Year'})
-     */
-    member_labels?: {
-        [key: string]: string;
-    } | null;
-    /**
-     * Element Order
-     *
-     * Element ordering for hierarchy display (e.g., ['us-gaap:Assets', 'us-gaap:Cash', ...])
-     */
-    element_order?: Array<string> | null;
-    /**
-     * Element Labels
-     *
-     * Custom labels for elements (e.g., {'us-gaap:Cash': 'Cash and Cash Equivalents'})
-     */
-    element_labels?: {
-        [key: string]: string;
-    } | null;
 };
 
 /**
@@ -16169,24 +16257,6 @@ export type ViewConfig = {
      * Column axis configuration
      */
     columns?: Array<ViewAxisConfig>;
-    /**
-     * Values
-     *
-     * Field to use for values (default: numeric_value)
-     */
-    values?: string;
-    /**
-     * Aggregation Function
-     *
-     * Aggregation function: sum, average, count
-     */
-    aggregation_function?: string;
-    /**
-     * Fill Value
-     *
-     * Value to use for missing data
-     */
-    fill_value?: number;
 };
 
 /**
@@ -16229,6 +16299,12 @@ export type ViewMetadata = {
      * Period end date
      */
     period_end?: string | null;
+    /**
+     * Truncated
+     *
+     * True when more facts matched than `limit` allowed. The returned facts are the most recent by period; narrow the filters or raise `limit` to see the rest.
+     */
+    truncated?: boolean;
 };
 
 /**
@@ -16258,6 +16334,13 @@ export type ViewProjections = {
 
 /**
  * ViewResponse
+ *
+ * Flat, deduplicated facts plus the aspects they span.
+ *
+ * No server-side pivot: each fact is returned as its own record so the
+ * consumer can arrange cells on the full aspect signature. Summing across
+ * entities, units, or elements that merely share a local name is a
+ * presentation decision this endpoint refuses to make on the caller's behalf.
  */
 export type ViewResponse = {
     /**
@@ -16265,13 +16348,25 @@ export type ViewResponse = {
      */
     metadata: ViewMetadata;
     /**
-     * Presentations
+     * Dimensions
      *
-     * Presentation formats (pivot_table, narrative, etc.)
+     * Aspects spanned by the returned facts
      */
-    presentations: {
-        [key: string]: unknown;
-    };
+    dimensions?: Array<Dimension>;
+    /**
+     * Facts
+     *
+     * Deduplicated fact records
+     */
+    facts?: Array<FactRecord>;
+    /**
+     * Summary
+     *
+     * Per-element aggregates, only when include_summary=true. Note that `total` sums across every returned period, which is meaningful for duration facts and not for instants.
+     */
+    summary?: {
+        [key: string]: ElementSummary;
+    } | null;
 };
 
 /**
