@@ -101,6 +101,24 @@ export type AccountInfo = {
 };
 
 /**
+ * AddGraphMemberRequest
+ *
+ * Request to grant an org member access to a graph.
+ */
+export type AddGraphMemberRequest = {
+    /**
+     * User Id
+     *
+     * User to grant access to (must belong to the graph's organization)
+     */
+    user_id: string;
+    /**
+     * Graph role: viewer (read-only), member (read/write), admin (full control)
+     */
+    role?: GraphRole;
+};
+
+/**
  * AddPublishListMembersOperation
  *
  * Add recipient graphs to a publish list.
@@ -1187,6 +1205,12 @@ export type CancelSubscriptionRequest = {
      * Required when immediate=True. Must equal the subscription's resource_id (e.g. graph_id) to confirm intent.
      */
     confirm?: string | null;
+    /**
+     * User Id
+     *
+     * Organization member whose subscription to cancel. Defaults to the caller; canceling another member's requires org owner or admin.
+     */
+    user_id?: string | null;
 };
 
 /**
@@ -2628,6 +2652,19 @@ export type CreateInformationBlockRequest = ({
 } & CreateForecastArm) | ({
     block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
 } & CreateLegacyArm);
+
+/**
+ * CreateInvitationRequest
+ *
+ * Request to invite a new user to an organization by email.
+ */
+export type CreateInvitationRequest = {
+    /**
+     * Email
+     */
+    email: string;
+    role?: OrgRole;
+};
 
 /**
  * CreateMappingAssociationOperation
@@ -6043,6 +6080,59 @@ export type GraphLimitsResponse = {
 };
 
 /**
+ * GraphMemberListResponse
+ *
+ * All users with access to a graph.
+ */
+export type GraphMemberListResponse = {
+    /**
+     * Members
+     */
+    members: Array<GraphMemberResponse>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+};
+
+/**
+ * GraphMemberResponse
+ *
+ * A user with access to a graph.
+ */
+export type GraphMemberResponse = {
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email
+     */
+    email: string;
+    role: GraphRole;
+    /**
+     * Source
+     *
+     * 'explicit' for a direct grant; 'org_role' for implicit admin held by org owners/admins
+     */
+    source: 'explicit' | 'org_role';
+    /**
+     * Granted At
+     *
+     * When the explicit grant was created (null for implicit access)
+     */
+    granted_at?: string | null;
+};
+
+/**
  * GraphMetadata
  *
  * Metadata for graph creation.
@@ -6151,6 +6241,13 @@ export type GraphMetricsResponse = {
 };
 
 /**
+ * GraphRole
+ *
+ * Ordered per-graph roles: viewer < member < admin.
+ */
+export type GraphRole = 'viewer' | 'member' | 'admin';
+
+/**
  * GraphSubscriptionResponse
  *
  * Response for graph or repository subscription details.
@@ -6174,6 +6271,12 @@ export type GraphSubscriptionResponse = {
      * Resource identifier
      */
     resource_id: string;
+    /**
+     * User Id
+     *
+     * Organization member the subscription belongs to. Set for repository subscriptions, which are billed to the org but granted per user.
+     */
+    user_id?: string | null;
     /**
      * Plan Name
      *
@@ -7059,16 +7162,24 @@ export type InstanceUsage = {
 };
 
 /**
- * InviteMemberRequest
+ * InvitationPreviewResponse
  *
- * Request to invite a member to an organization.
+ * Public preview of an invitation, looked up by its token.
  */
-export type InviteMemberRequest = {
+export type InvitationPreviewResponse = {
+    /**
+     * Org Name
+     */
+    org_name: string;
     /**
      * Email
      */
     email: string;
-    role?: OrgRole | null;
+    role: OrgRole;
+    /**
+     * Expires At
+     */
+    expires_at: string;
 };
 
 /**
@@ -10799,6 +10910,71 @@ export type OrgDetailResponse = {
 };
 
 /**
+ * OrgInvitationListResponse
+ *
+ * List of pending organization invitations response.
+ */
+export type OrgInvitationListResponse = {
+    /**
+     * Invitations
+     */
+    invitations: Array<OrgInvitationResponse>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Org Id
+     */
+    org_id: string;
+};
+
+/**
+ * OrgInvitationResponse
+ *
+ * Organization invitation response.
+ */
+export type OrgInvitationResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Org Id
+     */
+    org_id: string;
+    /**
+     * Email
+     */
+    email: string;
+    role: OrgRole;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Invited By User Id
+     */
+    invited_by_user_id: string;
+    /**
+     * Invited By Name
+     */
+    invited_by_name: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Expires At
+     */
+    expires_at: string;
+    /**
+     * Is Expired
+     */
+    is_expired: boolean;
+};
+
+/**
  * OrgLimitsResponse
  *
  * Organization limits response.
@@ -12067,6 +12243,12 @@ export type RegisterRequest = {
      * CAPTCHA verification token (required in production)
      */
     captcha_token?: string | null;
+    /**
+     * Invite Token
+     *
+     * Org invitation token from an invitation email. When present, the new user joins the inviting organization at the invited role instead of receiving a personal organization.
+     */
+    invite_token?: string | null;
 };
 
 /**
@@ -15504,6 +15686,15 @@ export type UpdateForecastRequest = {
 };
 
 /**
+ * UpdateGraphMemberRoleRequest
+ *
+ * Request to change a graph member's role.
+ */
+export type UpdateGraphMemberRoleRequest = {
+    role: GraphRole;
+};
+
+/**
  * UpdateInformationBlockRequest
  *
  * Update an Information Block. The body is a discriminated union on
@@ -15968,6 +16159,12 @@ export type UpgradeSubscriptionRequest = {
      * New plan name to change to
      */
     new_plan_name: string;
+    /**
+     * User Id
+     *
+     * Organization member whose subscription to change. Defaults to the caller; targeting another member requires org owner or admin.
+     */
+    user_id?: string | null;
 };
 
 /**
@@ -16935,6 +17132,48 @@ export type VerifyEmailResponses = {
 
 export type VerifyEmailResponse = VerifyEmailResponses[keyof VerifyEmailResponses];
 
+export type GetInvitationPreviewData = {
+    body?: never;
+    path: {
+        /**
+         * Token
+         */
+        token: string;
+    };
+    query?: never;
+    url: '/v1/auth/invitations/{token}';
+};
+
+export type GetInvitationPreviewErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetInvitationPreviewError = GetInvitationPreviewErrors[keyof GetInvitationPreviewErrors];
+
+export type GetInvitationPreviewResponses = {
+    /**
+     * Successful Response
+     */
+    200: InvitationPreviewResponse;
+};
+
+export type GetInvitationPreviewResponse = GetInvitationPreviewResponses[keyof GetInvitationPreviewResponses];
+
 export type GetPasswordPolicyData = {
     body?: never;
     path?: never;
@@ -17875,64 +18114,6 @@ export type ListOrgMembersResponses = {
 
 export type ListOrgMembersResponse = ListOrgMembersResponses[keyof ListOrgMembersResponses];
 
-export type InviteOrgMemberData = {
-    body: InviteMemberRequest;
-    path: {
-        /**
-         * Org Id
-         */
-        org_id: string;
-    };
-    query?: never;
-    url: '/v1/orgs/{org_id}/members';
-};
-
-export type InviteOrgMemberErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-    /**
-     * Feature not enabled
-     */
-    501: ErrorResponse;
-};
-
-export type InviteOrgMemberError = InviteOrgMemberErrors[keyof InviteOrgMemberErrors];
-
-export type InviteOrgMemberResponses = {
-    /**
-     * Successful Response
-     */
-    201: OrgMemberResponse;
-};
-
-export type InviteOrgMemberResponse = InviteOrgMemberResponses[keyof InviteOrgMemberResponses];
-
 export type RemoveOrgMemberData = {
     body?: never;
     path: {
@@ -18048,6 +18229,242 @@ export type UpdateOrgMemberRoleResponses = {
 };
 
 export type UpdateOrgMemberRoleResponse = UpdateOrgMemberRoleResponses[keyof UpdateOrgMemberRoleResponses];
+
+export type ListOrgInvitationsData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/invitations';
+};
+
+export type ListOrgInvitationsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListOrgInvitationsError = ListOrgInvitationsErrors[keyof ListOrgInvitationsErrors];
+
+export type ListOrgInvitationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgInvitationListResponse;
+};
+
+export type ListOrgInvitationsResponse = ListOrgInvitationsResponses[keyof ListOrgInvitationsResponses];
+
+export type CreateOrgInvitationData = {
+    body: CreateInvitationRequest;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/invitations';
+};
+
+export type CreateOrgInvitationErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Email already registered or invited
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Feature not enabled
+     */
+    501: ErrorResponse;
+};
+
+export type CreateOrgInvitationError = CreateOrgInvitationErrors[keyof CreateOrgInvitationErrors];
+
+export type CreateOrgInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    201: OrgInvitationResponse;
+};
+
+export type CreateOrgInvitationResponse = CreateOrgInvitationResponses[keyof CreateOrgInvitationResponses];
+
+export type RevokeOrgInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+        /**
+         * Invitation Id
+         */
+        invitation_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/invitations/{invitation_id}';
+};
+
+export type RevokeOrgInvitationErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RevokeOrgInvitationError = RevokeOrgInvitationErrors[keyof RevokeOrgInvitationErrors];
+
+export type RevokeOrgInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type RevokeOrgInvitationResponse = RevokeOrgInvitationResponses[keyof RevokeOrgInvitationResponses];
+
+export type ResendOrgInvitationData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+        /**
+         * Invitation Id
+         */
+        invitation_id: string;
+    };
+    query?: never;
+    url: '/v1/orgs/{org_id}/invitations/{invitation_id}/resend';
+};
+
+export type ResendOrgInvitationErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Feature not enabled
+     */
+    501: ErrorResponse;
+};
+
+export type ResendOrgInvitationError = ResendOrgInvitationErrors[keyof ResendOrgInvitationErrors];
+
+export type ResendOrgInvitationResponses = {
+    /**
+     * Successful Response
+     */
+    200: OrgInvitationResponse;
+};
+
+export type ResendOrgInvitationResponse = ResendOrgInvitationResponses[keyof ResendOrgInvitationResponses];
 
 export type GetOrgLimitsData = {
     body?: never;
@@ -20111,6 +20528,238 @@ export type GetGraphLimitsResponses = {
 };
 
 export type GetGraphLimitsResponse = GetGraphLimitsResponses[keyof GetGraphLimitsResponses];
+
+export type ListGraphMembersData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/members';
+};
+
+export type ListGraphMembersErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListGraphMembersError = ListGraphMembersErrors[keyof ListGraphMembersErrors];
+
+export type ListGraphMembersResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphMemberListResponse;
+};
+
+export type ListGraphMembersResponse = ListGraphMembersResponses[keyof ListGraphMembersResponses];
+
+export type AddGraphMemberData = {
+    body: AddGraphMemberRequest;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/members';
+};
+
+export type AddGraphMemberErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type AddGraphMemberError = AddGraphMemberErrors[keyof AddGraphMemberErrors];
+
+export type AddGraphMemberResponses = {
+    /**
+     * Successful Response
+     */
+    201: GraphMemberResponse;
+};
+
+export type AddGraphMemberResponse = AddGraphMemberResponses[keyof AddGraphMemberResponses];
+
+export type RemoveGraphMemberData = {
+    body?: never;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/members/{user_id}';
+};
+
+export type RemoveGraphMemberErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RemoveGraphMemberError = RemoveGraphMemberErrors[keyof RemoveGraphMemberErrors];
+
+export type RemoveGraphMemberResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type RemoveGraphMemberResponse = RemoveGraphMemberResponses[keyof RemoveGraphMemberResponses];
+
+export type UpdateGraphMemberRoleData = {
+    body: UpdateGraphMemberRoleRequest;
+    path: {
+        /**
+         * User Id
+         */
+        user_id: string;
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/members/{user_id}';
+};
+
+export type UpdateGraphMemberRoleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type UpdateGraphMemberRoleError = UpdateGraphMemberRoleErrors[keyof UpdateGraphMemberRoleErrors];
+
+export type UpdateGraphMemberRoleResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphMemberResponse;
+};
+
+export type UpdateGraphMemberRoleResponse = UpdateGraphMemberRoleResponses[keyof UpdateGraphMemberRoleResponses];
 
 export type ListSubgraphsData = {
     body?: never;
