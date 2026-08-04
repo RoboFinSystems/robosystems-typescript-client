@@ -2851,6 +2851,12 @@ export type CreateRepositorySubscriptionRequest = {
      * Plan name for the repository subscription
      */
     plan_name: string;
+    /**
+     * User Id
+     *
+     * Subscribe this user instead of yourself. Org owners and admins only, and the target must belong to the same organization. Omit to subscribe yourself. Repository access is per-user while billing is org-level, so the subscriber is what determines who gets access.
+     */
+    user_id?: string | null;
 };
 
 /**
@@ -5245,11 +5251,23 @@ export type FactRecord = {
      */
     element_name?: string | null;
     /**
+     * Period Start
+     *
+     * Period start date (YYYY-MM-DD); null for instant facts. A duration fact is identified by (start, end) — two facts for the same element can share an end date and differ only here (e.g. a quarterly and a year-to-date figure from the same 10-Q).
+     */
+    period_start?: string | null;
+    /**
      * Period End
      *
      * Period end date (YYYY-MM-DD)
      */
     period_end?: string | null;
+    /**
+     * Duration Type
+     *
+     * Period duration classification (e.g. 'quarterly', 'nine_months', 'annual'); null for instant facts. Use with period_start to tell overlapping windows apart.
+     */
+    duration_type?: string | null;
     /**
      * Value
      *
@@ -16559,7 +16577,7 @@ export type ViewResponse = {
     /**
      * Summary
      *
-     * Per-element aggregates, only when include_summary=true. Note that `total` sums across every returned period, which is meaningful for duration facts and not for instants.
+     * Per-element aggregates, only when include_summary=true. Note that `total` sums across every returned period, which is meaningful for duration facts and not for instants. Overlapping duration windows sharing a period_end (quarter + year-to-date) contribute only the narrowest window, so a quarter is never double-counted inside its own YTD figure.
      */
     summary?: {
         [key: string]: ElementSummary;
