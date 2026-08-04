@@ -57,7 +57,7 @@ jobs:
         env:
           VERSION: ${{ steps.get-version.outputs.version }}
         run: |
-          if [ $(git tag -l "v${VERSION}") ]; then
+          if [ -n "$(git tag -l "v${VERSION}")" ]; then
             echo "tag_exists=true" >> $GITHUB_OUTPUT
             echo "Tag v${VERSION} already exists"
           else
@@ -87,13 +87,10 @@ jobs:
       - name: Analyze changes since last release
         if: steps.check-tag.outputs.tag_exists == 'false'
         id: analyze-changes
-        env:
-          VERSION: ${{ steps.get-version.outputs.version }}
         run: |
-          # Get the last release tag. The pattern is anchored at BOTH ends so
-          # only a plain vMAJOR.MINOR.PATCH tag can be selected; without the
-          # trailing anchor any tag merely starting with a version number
-          # would also match.
+          # Get the last release tag. The pattern is anchored at both ends so only
+          # a strict vMAJOR.MINOR.PATCH tag can be selected: LAST_TAG flows into
+          # later git commands and prompt text, so it must not carry trailing text.
           LAST_TAG=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -1)
 
           if [ -z "$LAST_TAG" ]; then
@@ -250,14 +247,13 @@ jobs:
               ]
             }')
 
-          # The credential is fed to curl through a stdin config file rather
-          # than a -H flag. Putting it in an env var and writing -H "...$VAR"
-          # would not help: the shell expands the variable before exec, so the
-          # literal value still ends up in the process argv, which is readable
-          # by any other process on the runner. printf is a bash builtin, so
-          # it does not create a process of its own either. curl parses the
-          # config into options at startup, so --retry re-sends the header
-          # even though stdin was consumed by the first attempt.
+            # The credential is fed to curl through a config file on stdin rather
+            # than an -H flag. Writing -H "x-api-key: $ANTHROPIC_API_KEY" would not
+            # help: the shell expands the variable before exec, so the literal key
+            # still lands in the curl process argv, which any other process on the
+            # runner can read. printf is a bash builtin, so it adds no process of
+            # its own, and curl parses the config at startup so --retry resends the
+            # header correctly.
           RESPONSE=$(printf 'header = "x-api-key: %s"\n' "$ANTHROPIC_API_KEY" \
             | curl -s --config - --max-time 60 --retry 3 --retry-delay 10 -X POST "https://api.anthropic.com/v1/messages" \
               -H "Content-Type: application/json" \
