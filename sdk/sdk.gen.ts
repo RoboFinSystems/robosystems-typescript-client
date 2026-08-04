@@ -901,7 +901,7 @@ export const changeSubscriptionPlan = <ThrowOnError extends boolean = false>(opt
 /**
  * Create Repository Subscription
  *
- * For shared repositories only (sec, industry, etc.). User graph subscriptions are created automatically during provisioning.
+ * For shared repositories only (sec, industry, etc.). User graph subscriptions are created automatically during provisioning. Subscribes the caller by default; org owners and admins may subscribe another member of their organization by passing `user_id`. Billing is charged to the organization either way — repository access is per-user, so the subscriber determines who receives access.
  */
 export const createRepositorySubscription = <ThrowOnError extends boolean = false>(options: Options<CreateRepositorySubscriptionData, ThrowOnError>) => (options.client ?? client).post<CreateRepositorySubscriptionResponses, CreateRepositorySubscriptionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
