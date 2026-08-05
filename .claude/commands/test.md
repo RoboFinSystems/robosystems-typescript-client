@@ -1,3 +1,8 @@
+---
+description: Run the full test and code-quality gate, fixing failures to green.
+argument-hint: '[test-file-or-path]'
+---
+
 Run `npm run test:all` and systematically fix all failures to achieve 100% completion.
 
 ## Timeouts
@@ -43,8 +48,9 @@ For single-layer commands (below), output is short enough that `| tail -30` alon
 ## Notes
 
 - Vitest uses `✓` for pass and `✗`/`×` for fail, plus a `FAIL` prefix for files containing failures.
-- The pre-commit hook runs check-only commands (`format:check`, `lint`, `typecheck`, `test`) — if the formatter would have changed a file, the hook fails. Run `npm run format` / `npm run lint:fix` then re-stage.
-- This is a generated SDK. After API changes, regenerate via `npm run generate` (or the equivalent) before expecting tests to reflect new endpoints.
+- **`test:all` mutates the working tree.** `validate` starts with `validate:fix` (`prettier --write` then `eslint --fix`), so a green run can still leave modified files. Check `git status` afterwards and stage what it rewrote — the pre-commit hook runs check-only commands (`format:check`, `lint`, `typecheck`, `test`) and fails on exactly those files.
+- **Never hand-fix a failure inside generated code.** If `tsc` fails on something under `sdk/` or `clients/graphql/generated`, the fix belongs in `scripts/fix-sdk-types.js` (that's what it exists for — stripping unused `@ts-expect-error`, simplifying `(string & {})`, collapsing redundant unions), in the generator config, or in the API's schema. An edit to the generated file is erased by the next `npm run generate`.
+- **Regeneration needs a reachable API.** `npm run generate` reads `ROBOSYSTEMS_API_URL` and fetches `/openapi.json` from it, so it can't run without a local or deployed API. After API changes, regenerate before expecting tests to reflect new endpoints — and treat a regeneration as a change to the public type surface, not a formatting pass.
 
 ## Goal
 
