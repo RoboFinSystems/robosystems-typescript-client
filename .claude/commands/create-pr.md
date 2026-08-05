@@ -51,12 +51,13 @@ This is the whole point — ground the description in what actually happened:
 
 - **Type** — derive from the branch prefix (`feature/` → feat, `bugfix/`/`fix/` → fix, `hotfix/` → fix, `chore/` → chore, `refactor/` → refactor). Default to `feat` if unprefixed.
 - **Title** — concise (~50–72 chars), conventional-commit style with a scope, matching `git log` (e.g. `feat(ledger): add report bundle download support`, `chore(sdk): regenerate against report-bundle endpoint`).
-- **Body** — markdown. This repo has no `PULL_REQUEST_TEMPLATE.md`, so follow the convention in recent merged PRs (`gh pr list --state merged --limit 10 --json title,body`):
+- **Body** — markdown. **Match the headings in `.github/PULL_REQUEST_TEMPLATE.md`**, because `--body-file` bypasses template prefill entirely and a hand-written body silently drops whatever sections it omits:
   - **Summary** — 1–3 sentences: what this PR does and why.
   - **Changes** — bullets grouped by area: regenerated SDK vs. hand-written extensions vs. tooling/packaging.
   - **Compatibility** — the section that matters most here. See below.
   - **Testing** — state truthfully what was run. The gate is `npm run test:all` (`validate` → `test` → `build`); `npm run validate`, `npm run test`, `npm run typecheck`, and `npm run build` run standalone. Regeneration needs a reachable API (`ROBOSYSTEMS_API_URL`), so it often isn't runnable in-session — if you couldn't, say so plainly. If nothing was run, say "Not run" — never claim passing tests that weren't executed.
-  - **Related Issues** — `Closes #123` / `Fixes #456`, or omit.
+
+  The template has no Related Issues section — put `Closes #123` / `Fixes #456` as the last line of the Summary. GitHub links it from anywhere in the body.
 
 - **Compatibility is a required judgment, not an optional section.** This package is post-1.0 with external integrators, so classify the change explicitly and say which it is:
   - **Breaking** — a removed or renamed export, a changed signature or return type, a narrowed input type, or changed runtime semantics. This forces a **major** and has to be coordinated with the API and with every consuming app. Say it plainly in the body; don't bury it in a bullet.
