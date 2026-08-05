@@ -21,7 +21,58 @@
  * from the query files in clients/graphql/queries/.
  */
 
-import { GraphQLClient } from 'graphql-request'
+import { ClientError, GraphQLClient } from 'graphql-request'
+
+/**
+ * Default request timeout for GraphQL calls, in milliseconds.
+ *
+ * Matches the Python client's httpx default (60 seconds). Without a
+ * timeout a hung backend hangs callers forever — every GraphQL request
+ * carries an `AbortSignal.timeout(...)` so transport stalls surface as
+ * an abort error instead of an eternal pending promise. Override
+ * per-client via `GraphQLClientConfig.timeout`.
+ */
+export const DEFAULT_GRAPHQL_TIMEOUT_MS = 60_000
+
+/**
+ * Structured error thrown by facade GraphQL reads.
+ *
+ * Mirrors the Python client's `GraphQLError` (message, `errors`,
+ * `status_code`): the message keeps the legacy
+ * `"<label> failed: <json>"` format so string-matching consumers keep
+ * working, while the raw GraphQL error objects and HTTP status are
+ * available as structured fields for programmatic handling.
+ */
+export class GraphQLError extends Error {
+  /** Raw GraphQL error objects from the response body (empty for HTTP-level failures). */
+  readonly errors: unknown[]
+  /** HTTP status code, when known. */
+  readonly statusCode?: number
+
+  constructor(message: string, options?: { errors?: unknown[]; statusCode?: number }) {
+    super(message)
+    this.name = 'GraphQLError'
+    this.errors = options?.errors ?? []
+    this.statusCode = options?.statusCode
+  }
+}
+
+/**
+ * Convert a graphql-request `ClientError` into the facade's structured
+ * {@link GraphQLError}, preserving the legacy message format
+ * (`"<label> failed: <json>"`). Shared by the LedgerClient /
+ * InvestorClient / LibraryClient `gqlQuery` catch paths.
+ */
+export function toGraphQLError(label: string, err: ClientError): GraphQLError {
+  const errors = err.response.errors ?? []
+  return new GraphQLError(
+    `${label} failed: ${JSON.stringify(err.response.errors ?? err.message)}`,
+    {
+      errors,
+      statusCode: err.response.status,
+    }
+  )
+}
 
 /**
  * Callback that returns the current auth credential on demand.
@@ -56,6 +107,39 @@ export interface GraphQLClientConfig {
   tokenProvider?: TokenProvider
   headers?: Record<string, string>
   credentials?: 'include' | 'same-origin' | 'omit'
+  /**
+   * Request timeout in milliseconds. Defaults to
+   * {@link DEFAULT_GRAPHQL_TIMEOUT_MS} (60s, matching the Python
+   * client). Applied per request via `AbortSignal.timeout(...)`.
+   */
+  timeout?: number
+}
+
+/**
+ * Wrap the global `fetch` so every request carries a timeout
+ * `AbortSignal`. If a signal is already present on the request we
+ * combine the two via `AbortSignal.any` (whichever aborts first wins);
+ * in environments without `AbortSignal.timeout` support the wrapper
+ * degrades to plain `fetch`.
+ *
+ * `fetch` is resolved from the global scope at call time (not
+ * captured at construction) so test harnesses that swap
+ * `globalThis.fetch` keep working.
+ */
+function createTimeoutFetch(timeoutMs: number): typeof fetch {
+  return (input, init) => {
+    if (typeof AbortSignal.timeout !== 'function') {
+      return fetch(input, init)
+    }
+    const timeoutSignal = AbortSignal.timeout(timeoutMs)
+    const signal =
+      init?.signal != null
+        ? typeof AbortSignal.any === 'function'
+          ? AbortSignal.any([init.signal, timeoutSignal])
+          : init.signal
+        : timeoutSignal
+    return fetch(input, { ...init, signal })
+  }
 }
 
 /**
@@ -91,6 +175,7 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
   const staticHeaders: Record<string, string> = {
     ...(config.headers ?? {}),
   }
+  const timeoutFetch = createTimeoutFetch(config.timeout ?? DEFAULT_GRAPHQL_TIMEOUT_MS)
 
   // Dynamic-token path: defer credential injection to a per-request
   // middleware so JWT refreshes are picked up without rebuilding or
@@ -101,24 +186,25 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
     return new GraphQLClient(url, {
       headers: staticHeaders,
       credentials: config.credentials,
+      fetch: timeoutFetch,
       requestMiddleware: async (request) => {
         let token: string | null | undefined
         try {
           token = await providerFn()
         } catch (err) {
-          // A provider failure shouldn't crash the request — fall
-          // through unauthenticated so the backend returns a clean
-          // 401, which is easier to diagnose than a thrown middleware.
-          // We still log a breadcrumb so the failure is visible in
-          // devtools/log aggregators instead of silently disappearing;
-          // silently swallowing provider bugs in production is worse
-          // than the noise.
-
-          console.warn(
-            '[RoboSystems SDK] tokenProvider threw — sending unauthenticated request:',
-            err
+          // Fail fast — a throwing provider means the caller *intended*
+          // to authenticate but couldn't produce a credential. Sending
+          // the request unauthenticated would surface as a confusing
+          // 401 far from the real failure. (Matches the Python client,
+          // which raises when its credential is missing.) A provider
+          // that deliberately has no credential should return `null`
+          // instead — that still sends an unauthenticated request.
+          const detail = err instanceof Error ? err.message : String(err)
+          throw new Error(
+            `RoboSystems SDK: tokenProvider threw while resolving the request credential (${detail}). ` +
+              'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
+              'returns the current token, or null to send an unauthenticated (cookie-based) request.'
           )
-          token = undefined
         }
         if (!token) {
           return request
@@ -142,6 +228,7 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
     return new GraphQLClient(url, {
       headers,
       credentials: config.credentials,
+      fetch: timeoutFetch,
     })
   }
 
@@ -150,6 +237,7 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
   return new GraphQLClient(url, {
     headers: staticHeaders,
     credentials: config.credentials,
+    fetch: timeoutFetch,
   })
 }
 

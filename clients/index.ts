@@ -20,6 +20,10 @@ import { SSEClient } from './SSEClient'
 // internal `./graphql/client` module path.
 export type { TokenProvider } from './graphql/client'
 
+// Structured GraphQL error thrown by facade reads (LedgerClient /
+// InvestorClient / LibraryClient), plus the default request timeout.
+export { DEFAULT_GRAPHQL_TIMEOUT_MS, GraphQLError } from './graphql/client'
+
 export interface RoboSystemsClientConfig {
   baseUrl?: string
   credentials?: 'include' | 'same-origin' | 'omit'
@@ -38,6 +42,11 @@ export interface RoboSystemsClientConfig {
   headers?: Record<string, string>
   maxRetries?: number
   retryDelay?: number
+  /**
+   * GraphQL request timeout in milliseconds. Defaults to 60s
+   * (matching the Python client's httpx default) when omitted.
+   */
+  timeout?: number
 }
 
 // Properly typed configuration interface
@@ -49,6 +58,7 @@ interface ResolvedConfig {
   headers?: Record<string, string>
   maxRetries: number
   retryDelay: number
+  timeout?: number
 }
 
 export class RoboSystemsClients {
@@ -85,6 +95,7 @@ export class RoboSystemsClients {
       headers: config.headers,
       maxRetries: config.maxRetries || 5,
       retryDelay: config.retryDelay || 1000,
+      timeout: config.timeout,
     }
 
     this.query = new QueryClient({
@@ -117,6 +128,7 @@ export class RoboSystemsClients {
       token: this.config.token,
       tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
+      timeout: this.config.timeout,
     })
 
     this.investor = new InvestorClient({
@@ -125,6 +137,7 @@ export class RoboSystemsClients {
       token: this.config.token,
       tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
+      timeout: this.config.timeout,
     })
 
     // Library uses GraphQL and accepts graphId per-call — pass either
@@ -136,6 +149,7 @@ export class RoboSystemsClients {
       token: this.config.token,
       tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
+      timeout: this.config.timeout,
     })
 
     // Reports consolidated into LedgerClient — alias for backward compat

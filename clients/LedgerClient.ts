@@ -131,7 +131,7 @@ import type {
   ViewResponse,
 } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
-import { GraphQLClientCache } from './graphql/client'
+import { GraphQLClientCache, toGraphQLError } from './graphql/client'
 import {
   GetInformationBlockDocument,
   GetInformationBlockWindowedDocument,
@@ -207,6 +207,10 @@ import {
   type MappingCandidatesQuery,
   type ReportDownloadFormat,
 } from './graphql/generated/graphql'
+
+// Re-export the structured GraphQL error type so consumers importing
+// from the `@robosystems/client/ledger` subpath can `instanceof` it.
+export { GraphQLError } from './graphql/client'
 
 // ── Friendly types derived from GraphQL codegen ────────────────────────
 //
@@ -332,19 +336,6 @@ export interface CreateReportOptions {
   periodType?: string
   comparative?: boolean
   periods?: PeriodSpecInput[]
-}
-
-/**
- * Wrapper returned by report write methods — pairs the audit-side
- * envelope fields (`operationId`, `status`) with the typed result
- * payload. Generic on ``T`` so each method advertises its specific
- * result type (e.g. ``ReportResponse`` for creates, ``DeleteResult``
- * for deletes).
- */
-export interface ReportOperationAck<T = unknown> {
-  operationId: string
-  status: OperationEnvelope['status']
-  result: T | null
 }
 
 // ── Write result shapes (envelope.result payloads) ─────────────────────
@@ -536,6 +527,8 @@ interface LedgerClientConfig {
    * request so refreshes flow through automatically.
    */
   tokenProvider?: TokenProvider
+  /** GraphQL request timeout in milliseconds (default 60s). */
+  timeout?: number
 }
 
 export class LedgerClient {
@@ -1941,7 +1934,7 @@ export class LedgerClient {
       return pick(data)
     } catch (err) {
       if (err instanceof ClientError) {
-        throw new Error(`${label} failed: ${JSON.stringify(err.response.errors ?? err.message)}`)
+        throw toGraphQLError(label, err)
       }
       throw err
     }
@@ -1950,13 +1943,11 @@ export class LedgerClient {
   // ── Reports ─────────────────────────────────────────────────────────
 
   /**
-   * Kick off report creation (async). Use the returned `operationId` to
-   * subscribe to progress via SSE, then call `getReport()` once finished.
+   * Generate report facts from the ledger and publish a Report
+   * definition. Synchronous — the backend materializes the report
+   * inline and this resolves with the published report header.
    */
-  async createReport(
-    graphId: string,
-    options: CreateReportOptions
-  ): Promise<ReportOperationAck<ReportResponse>> {
+  async createReport(graphId: string, options: CreateReportOptions): Promise<ReportResponse> {
     const body: CreateReportRequest = {
       name: options.name,
       mapping_id: options.mappingId,
@@ -1973,11 +1964,7 @@ export class LedgerClient {
       'Create report',
       createReport({ path: { graph_id: graphId }, body })
     )
-    return {
-      operationId: envelope.operationId,
-      status: envelope.status,
-      result: envelope.result ?? null,
-    }
+    return this.requireResult('Create report', envelope.result)
   }
 
   /** List all reports for a graph (includes received shared reports). */
@@ -2039,15 +2026,16 @@ export class LedgerClient {
   }
 
   /**
-   * Regenerate an existing report (async). Returns an operation id;
-   * subscribe via SSE for progress.
+   * Re-run fact generation for an existing Report against the latest
+   * ledger state. Synchronous — resolves with the regenerated report
+   * header.
    */
   async regenerateReport(
     graphId: string,
     reportId: string,
     periodStart?: string,
     periodEnd?: string
-  ): Promise<ReportOperationAck<ReportResponse>> {
+  ): Promise<ReportResponse> {
     const envelope = await this.callOperation(
       'Regenerate report',
       regenerateReport({
@@ -2059,11 +2047,7 @@ export class LedgerClient {
         } as Parameters<typeof regenerateReport>[0]['body'],
       })
     )
-    return {
-      operationId: envelope.operationId,
-      status: envelope.status,
-      result: envelope.result ?? null,
-    }
+    return this.requireResult('Regenerate report', envelope.result)
   }
 
   /** Delete a report and its generated facts. */
@@ -2132,12 +2116,14 @@ export class LedgerClient {
   /**
    * Share a published report to every member of a publish list. Each
    * target graph receives a snapshot copy of the report's facts.
+   * Synchronous — per-recipient outcomes appear in the response's
+   * `results` list.
    */
   async shareReport(
     graphId: string,
     reportId: string,
     publishListId: string
-  ): Promise<ReportOperationAck<ShareReportResponse>> {
+  ): Promise<ShareReportResponse> {
     const envelope = await this.callOperation(
       'Share report',
       shareReport({
@@ -2148,41 +2134,35 @@ export class LedgerClient {
         } as Parameters<typeof shareReport>[0]['body'],
       })
     )
-    return {
-      operationId: envelope.operationId,
-      status: envelope.status,
-      result: envelope.result ?? null,
-    }
+    return this.requireResult('Share report', envelope.result)
   }
 
   /**
    * Transition a Report's filing_status to 'filed' — locks the package.
    * Allowed from 'draft' or 'under_review'. Stamps filed_at + filed_by
-   * from the auth context + server clock.
+   * from the auth context + server clock. Synchronous — resolves with
+   * the updated report header.
    */
-  async fileReport(graphId: string, reportId: string): Promise<ReportOperationAck<ReportResponse>> {
+  async fileReport(graphId: string, reportId: string): Promise<ReportResponse> {
     const body: FileReportRequest = { report_id: reportId }
     const envelope = await this.callOperation(
       'File report',
       fileReport({ path: { graph_id: graphId }, body })
     )
-    return {
-      operationId: envelope.operationId,
-      status: envelope.status,
-      result: envelope.result ?? null,
-    }
+    return this.requireResult('File report', envelope.result)
   }
 
   /**
    * Move a Report along the non-file legs of the filing lifecycle
    * (draft ↔ under_review, filed → archived). Use ``fileReport`` to
-   * reach 'filed' so the audit fields land cleanly.
+   * reach 'filed' so the audit fields land cleanly. Synchronous —
+   * resolves with the updated report header.
    */
   async transitionFilingStatus(
     graphId: string,
     reportId: string,
     targetStatus: string
-  ): Promise<ReportOperationAck<ReportResponse>> {
+  ): Promise<ReportResponse> {
     const body: TransitionFilingStatusRequest = {
       report_id: reportId,
       target_status: targetStatus,
@@ -2191,11 +2171,7 @@ export class LedgerClient {
       'Transition filing status',
       transitionFilingStatus({ path: { graph_id: graphId }, body })
     )
-    return {
-      operationId: envelope.operationId,
-      status: envelope.status,
-      result: envelope.result ?? null,
-    }
+    return this.requireResult('Transition filing status', envelope.result)
   }
 
   /** Check if a report was received via sharing (vs locally created). */
@@ -2361,21 +2337,25 @@ export class LedgerClient {
    * calls. Mirrors the GraphQL client's behaviour — dynamic
    * ``tokenProvider`` is consulted first (so JWT rotation flows
    * naturally), then the static ``token`` config. Returns ``null``
-   * when no credential is configured; the caller decides whether to
-   * proceed anonymously or short-circuit with an error.
+   * when no credential is configured (cookie-based / anonymous flows).
+   * A ``tokenProvider`` that **throws** fails the call fast instead of
+   * silently proceeding unauthenticated — matching the Python client,
+   * which raises when its configured credential cannot be resolved.
    */
   private async resolveToken(): Promise<string | null> {
     if (this.config.tokenProvider) {
+      let token: string | null | undefined
       try {
-        const token = await this.config.tokenProvider()
-        return token ?? null
+        token = await this.config.tokenProvider()
       } catch (err) {
-        console.warn(
-          '[RoboSystems SDK] tokenProvider threw — sending unauthenticated request:',
-          err
+        const detail = err instanceof Error ? err.message : String(err)
+        throw new Error(
+          `RoboSystems SDK: tokenProvider threw while resolving the request credential (${detail}). ` +
+            'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
+            'returns the current token, or null to send an unauthenticated (cookie-based) request.'
         )
-        return null
       }
+      return token ?? null
     }
     return this.config.token ?? null
   }
