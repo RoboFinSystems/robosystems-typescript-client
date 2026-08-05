@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { LedgerClient } from './LedgerClient'
+import { GraphQLError, LedgerClient } from './LedgerClient'
 
 // ── Mock helpers ──────────────────────────────────────────────────────
 //
@@ -201,10 +201,15 @@ describe('LedgerClient', () => {
       expect(headers.get('Authorization')).toBeNull()
     })
 
-    it('tokenProvider that throws falls through unauthenticated', async () => {
-      // Same rationale as the null-return case — a throwing provider
-      // would otherwise crash the request before it even leaves the
-      // client, which is worse than a 401.
+    it('tokenProvider that throws fails the request fast', async () => {
+      // A throwing provider means the caller *intended* to authenticate
+      // but couldn't produce a credential. Sending the request
+      // unauthenticated would surface as a confusing 401 far from the
+      // real failure — instead the SDK fails fast with an error naming
+      // the tokenProvider and how to fix it (matching the Python
+      // client, which raises when its credential is missing). A
+      // provider that deliberately has no credential returns `null`
+      // (see the null-return test above) and still goes through.
       const brokenClient = new LedgerClient({
         baseUrl: 'http://localhost:8000',
         tokenProvider: () => {
@@ -212,11 +217,11 @@ describe('LedgerClient', () => {
         },
       })
       mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
-      await expect(brokenClient.getEntity('graph_1')).resolves.toBeNull()
-      const init = mockFetch.mock.calls[0][1] as RequestInit
-      const headers = new Headers(init.headers)
-      expect(headers.get('Authorization')).toBeNull()
-      expect(headers.get('X-API-Key')).toBeNull()
+      await expect(brokenClient.getEntity('graph_1')).rejects.toThrow(
+        /tokenProvider threw while resolving the request credential \(storage unavailable\)/
+      )
+      // The request never left the client.
+      expect(mockFetch).not.toHaveBeenCalled()
     })
 
     it('awaits an async tokenProvider before injecting the header', async () => {
@@ -903,6 +908,106 @@ describe('LedgerClient', () => {
       const ack = await client.autoMapElements('graph_1', { mapping_id: 'map_1' })
       expect(ack.status).toBe('pending')
       expect(ack.operationId).toMatch(/^op_/)
+    })
+  })
+
+  // ── Report writes (synchronous operations) ──────────────────────────
+  //
+  // The backend materializes reports inline (`execute_operation` runs
+  // the handler synchronously and returns a completed envelope), so
+  // every report write resolves with the bare typed result — there is
+  // no operationId/SSE handshake on this surface.
+
+  describe('createReport', () => {
+    it('returns the published report header from the envelope result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-report', {
+          id: 'rpt_1',
+          name: 'Q1 Report',
+          filing_status: 'draft',
+        })
+      )
+      const report = await client.createReport('graph_1', {
+        name: 'Q1 Report',
+        mappingId: 'map_1',
+        periodStart: '2026-01-01',
+        periodEnd: '2026-03-31',
+      })
+      expect(report).toMatchObject({ id: 'rpt_1', name: 'Q1 Report' })
+    })
+
+    it('POSTs snake_case body to the create-report operation URL', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-report', { id: 'rpt_1' }))
+      await client.createReport('graph_42', {
+        name: 'FY25',
+        mappingId: 'map_1',
+        periodStart: '2025-01-01',
+        periodEnd: '2025-12-31',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-report'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.mapping_id).toBe('map_1')
+      expect(body.period_start).toBe('2025-01-01')
+      expect(body.period_end).toBe('2025-12-31')
+    })
+
+    it('throws when the envelope carries no result', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-report', null))
+      await expect(
+        client.createReport('graph_1', {
+          name: 'Empty',
+          mappingId: 'map_1',
+          periodStart: '2026-01-01',
+          periodEnd: '2026-03-31',
+        })
+      ).rejects.toThrow(/Create report: operation envelope had no result/)
+    })
+  })
+
+  describe('regenerateReport', () => {
+    it('returns the regenerated report header', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('regenerate-report', { id: 'rpt_1', generation_status: 'completed' })
+      )
+      const report = await client.regenerateReport('graph_1', 'rpt_1')
+      expect(report).toMatchObject({ id: 'rpt_1', generation_status: 'completed' })
+    })
+  })
+
+  describe('shareReport', () => {
+    it('returns the per-recipient share results', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('share-report', {
+          report_id: 'rpt_1',
+          results: [{ target_graph_id: 'graph_2', status: 'shared' }],
+        })
+      )
+      const result = await client.shareReport('graph_1', 'rpt_1', 'pl_1')
+      expect(result.results).toHaveLength(1)
+      expect(result.results[0]).toMatchObject({ target_graph_id: 'graph_2' })
+    })
+  })
+
+  describe('fileReport', () => {
+    it('returns the filed report header', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('file-report', { id: 'rpt_1', filing_status: 'filed' })
+      )
+      const report = await client.fileReport('graph_1', 'rpt_1')
+      expect(report).toMatchObject({ id: 'rpt_1', filing_status: 'filed' })
+    })
+  })
+
+  describe('transitionFilingStatus', () => {
+    it('returns the transitioned report header', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('transition-filing-status', { id: 'rpt_1', filing_status: 'under_review' })
+      )
+      const report = await client.transitionFilingStatus('graph_1', 'rpt_1', 'under_review')
+      expect(report).toMatchObject({ filing_status: 'under_review' })
     })
   })
 
@@ -1690,6 +1795,63 @@ describe('LedgerClient', () => {
         headers: { 'X-Test': 'y' },
       })
       expect(c).toBeInstanceOf(LedgerClient)
+    })
+  })
+
+  // ── Structured GraphQL errors ───────────────────────────────────────
+
+  describe('GraphQLError', () => {
+    it('throws a GraphQLError carrying the raw errors and status code', async () => {
+      mockFetch.mockResolvedValueOnce(gqlErrorResponse('Access denied'))
+      let caught: unknown
+      try {
+        await client.getEntity('graph_1')
+      } catch (err) {
+        caught = err
+      }
+      expect(caught).toBeInstanceOf(GraphQLError)
+      const gqlErr = caught as GraphQLError
+      // Message format is unchanged from the pre-structured era so
+      // string-matching consumers keep working.
+      expect(gqlErr.message).toMatch(/^Get entity failed: /)
+      expect(gqlErr.errors).toHaveLength(1)
+      expect((gqlErr.errors[0] as { message: string }).message).toBe('Access denied')
+      expect(gqlErr.statusCode).toBe(200)
+    })
+
+    it('is still an Error for consumers catching generically', async () => {
+      mockFetch.mockResolvedValueOnce(gqlErrorResponse('Boom'))
+      await expect(client.getEntity('graph_1')).rejects.toBeInstanceOf(Error)
+    })
+  })
+
+  // ── GraphQL request timeout ─────────────────────────────────────────
+
+  describe('GraphQL timeout', () => {
+    it('attaches an AbortSignal to every GraphQL request', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await client.getEntity('graph_1')
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      expect(init.signal).toBeInstanceOf(AbortSignal)
+      expect(init.signal?.aborted).toBe(false)
+    })
+
+    it('honors a configured timeout by aborting the signal after it elapses', async () => {
+      // Real timers: happy-dom's AbortSignal.timeout schedules on the
+      // native clock, which vitest's fake timers don't intercept. A
+      // 5ms timeout keeps the wait negligible.
+      const quickClient = new LedgerClient({
+        baseUrl: 'http://localhost:8000',
+        token: 'rfs_test_api_key',
+        timeout: 5,
+      })
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await quickClient.getEntity('graph_1')
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const signal = init.signal as AbortSignal
+      expect(signal.aborted).toBe(false)
+      await new Promise((resolve) => setTimeout(resolve, 25))
+      expect(signal.aborted).toBe(true)
     })
   })
 })

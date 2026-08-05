@@ -42,7 +42,7 @@ import type {
   UpdateSecurityOperation,
 } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
-import { GraphQLClientCache } from './graphql/client'
+import { GraphQLClientCache, toGraphQLError } from './graphql/client'
 import {
   GetInvestorHoldingsDocument,
   GetInvestorPortfolioBlockDocument,
@@ -59,6 +59,10 @@ import {
   type ListInvestorPositionsQuery,
   type ListInvestorSecuritiesQuery,
 } from './graphql/generated/graphql'
+
+// Re-export the structured GraphQL error type so consumers importing
+// from the `@robosystems/client/investor` subpath can `instanceof` it.
+export { GraphQLError } from './graphql/client'
 
 // ── Friendly types derived from GraphQL codegen ────────────────────────
 
@@ -95,6 +99,8 @@ interface InvestorClientConfig {
    * request so refreshes flow through automatically.
    */
   tokenProvider?: TokenProvider
+  /** GraphQL request timeout in milliseconds (default 60s). */
+  timeout?: number
 }
 
 export class InvestorClient {
@@ -363,7 +369,7 @@ export class InvestorClient {
       return pick(data)
     } catch (err) {
       if (err instanceof ClientError) {
-        throw new Error(`${label} failed: ${JSON.stringify(err.response.errors ?? err.message)}`)
+        throw toGraphQLError(label, err)
       }
       throw err
     }

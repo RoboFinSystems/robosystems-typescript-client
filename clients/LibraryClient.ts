@@ -29,7 +29,7 @@
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
 import { ClientError } from 'graphql-request'
 import type { TokenProvider } from './graphql/client'
-import { GraphQLClientCache } from './graphql/client'
+import { GraphQLClientCache, toGraphQLError } from './graphql/client'
 import {
   GetLibraryElementArcsDocument,
   GetLibraryElementClassificationsDocument,
@@ -52,6 +52,10 @@ import {
   type ListLibraryTaxonomyArcsQuery,
   type SearchLibraryElementsQuery,
 } from './graphql/generated/graphql'
+
+// Re-export the structured GraphQL error type so consumers importing
+// from the `@robosystems/client/library` subpath can `instanceof` it.
+export { GraphQLError } from './graphql/client'
 
 // ── Friendly types derived from GraphQL codegen ────────────────────────
 //
@@ -144,6 +148,8 @@ interface LibraryClientConfig {
    * request so refreshes flow through automatically.
    */
   tokenProvider?: TokenProvider
+  /** GraphQL request timeout in milliseconds (default 60s). */
+  timeout?: number
 }
 
 export class LibraryClient {
@@ -388,7 +394,7 @@ export class LibraryClient {
       return pick(data)
     } catch (err) {
       if (err instanceof ClientError) {
-        throw new Error(`${label} failed: ${JSON.stringify(err.response.errors ?? err.message)}`)
+        throw toGraphQLError(label, err)
       }
       throw err
     }
