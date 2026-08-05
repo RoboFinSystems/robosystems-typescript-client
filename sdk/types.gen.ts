@@ -4193,6 +4193,32 @@ export type DocumentDetailResponse = {
 };
 
 /**
+ * DocumentLimits
+ *
+ * Knowledge-base document usage against the tier's cap.
+ */
+export type DocumentLimits = {
+    /**
+     * Current Count
+     *
+     * Uploaded documents currently stored for this graph
+     */
+    current_count: number;
+    /**
+     * Max Documents
+     *
+     * Maximum uploaded documents for this tier (null when uncapped)
+     */
+    max_documents?: number | null;
+    /**
+     * Approaching Limit
+     *
+     * Whether approaching document limit (>80%)
+     */
+    approaching_limit: boolean;
+};
+
+/**
  * DocumentListItem
  *
  * A document in the document list.
@@ -6087,6 +6113,10 @@ export type GraphLimitsResponse = {
      * AI credit limits (if applicable)
      */
     credits?: CreditLimits | null;
+    /**
+     * Knowledge-base document usage and tier cap (user graphs only)
+     */
+    documents?: DocumentLimits | null;
     /**
      * Per-operation materialization limits (if applicable)
      */
