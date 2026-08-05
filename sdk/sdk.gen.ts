@@ -653,7 +653,7 @@ export const listBackups = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Get temporary download URL for backup
  *
- * Generate a temporary download URL for a backup (unencrypted, compressed .lbug files only)
+ * Generate a temporary download URL for a backup (unencrypted backups only). The filename carries the extension listed as `download_extension` on the backup: `.lbug.zip` is a ZIP holding the LadybugDB database file `{graph_id}.lbug`; `.lbug.zst` (shared repository snapshots) is a single zstd-compressed database file. Decompress the latter with `zstd -d <file>.lbug.zst` (install zstd first: `brew install zstd`, `apt-get install zstd`, or `dnf install zstd`) — no `--long` flag is needed.
  */
 export const getBackupDownloadUrl = <ThrowOnError extends boolean = false>(options: Options<GetBackupDownloadUrlData, ThrowOnError>) => (options.client ?? client).get<GetBackupDownloadUrlResponses, GetBackupDownloadUrlErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],

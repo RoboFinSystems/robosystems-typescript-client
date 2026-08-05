@@ -58,6 +58,12 @@ export type ApiKeyInfo = {
      * Creation timestamp
      */
     created_at: string;
+    /**
+     * Graph Id
+     *
+     * Graph scope; null means account-wide
+     */
+    graph_id?: string | null;
 };
 
 /**
@@ -910,6 +916,12 @@ export type BackupResponse = {
      * Allow Export
      */
     allow_export: boolean;
+    /**
+     * Download Extension
+     *
+     * Extension the download will carry, and therefore how to unpack it: '.lbug.zip' is a ZIP holding the LadybugDB database file, '.lbug.zst' is zstd-compressed (`zstd -d`). Null when the backup is encrypted and so cannot be downloaded.
+     */
+    download_extension?: string | null;
     /**
      * Created At
      */
@@ -2126,6 +2138,12 @@ export type CreateApiKeyRequest = {
      * Optional expiration date in ISO format (e.g. 2024-12-31T23:59:59Z)
      */
     expires_at?: string | null;
+    /**
+     * Graph Id
+     *
+     * Optional graph scope. A scoped key works only for this graph (and its subgraphs) and is the only kind of key accepted in an MCP connector URL. Omit for an account-wide key.
+     */
+    graph_id?: string | null;
 };
 
 /**
