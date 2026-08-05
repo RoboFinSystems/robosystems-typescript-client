@@ -38,12 +38,6 @@
       "import": "./artifacts/LibraryClient.js",
       "default": "./artifacts/LibraryClient.js"
     },
-    "./agent": {
-      "types": "./artifacts/AgentClient.d.ts",
-      "require": "./artifacts/AgentClient.js",
-      "import": "./artifacts/AgentClient.js",
-      "default": "./artifacts/AgentClient.js"
-    },
     "./query": {
       "types": "./artifacts/QueryClient.d.ts",
       "require": "./artifacts/QueryClient.js",
@@ -138,7 +132,7 @@
   },
   "homepage": "https://github.com/RoboFinSystems/robosystems-typescript-client#readme",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

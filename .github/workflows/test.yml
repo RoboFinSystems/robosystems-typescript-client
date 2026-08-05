@@ -14,8 +14,7 @@ jobs:
 
     # 22 is the oldest Node still in support; 24 is the LTS the consuming
     # apps now run on. Testing only the newest would leave consumers on 22
-    # unverified. Node 18 is omitted despite engines.node — it went EOL in
-    # April 2025.
+    # unverified. engines.node (>=22) matches this matrix floor.
     strategy:
       fail-fast: false
       matrix:

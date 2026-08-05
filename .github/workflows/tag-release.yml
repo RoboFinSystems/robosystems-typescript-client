@@ -105,9 +105,6 @@ jobs:
             DELETIONS=$(git diff --shortstat "$EMPTY_TREE" HEAD | grep -oE '[0-9]+ deletions?' | grep -oE '[0-9]+' || echo "0")
             COMMIT_MESSAGES=$(git log --oneline --no-color HEAD | head -30)
             DETAILED_CHANGES=$(git diff --name-status --no-color "$EMPTY_TREE" HEAD | head -50)
-            COMPONENTS_CHANGED=$(git ls-files | grep -E '\.(tsx?|jsx?)$' | grep -v 'test\|spec' | wc -l || echo "0")
-            PAGES_CHANGED=$(git ls-files | grep -E 'pages/|app/' | wc -l || echo "0")
-            STYLES_CHANGED=$(git ls-files | grep -E '\.(css|scss|sass|less)$' | wc -l || echo "0")
             PR_REFS=$(git log --oneline --no-color HEAD | grep -oE '#[0-9]+' | sort -u | head -10 || echo "")
           else
             echo "Analyzing changes since last release: $LAST_TAG"
@@ -118,9 +115,6 @@ jobs:
             DELETIONS=$(git diff --shortstat "$LAST_TAG" HEAD | grep -oE '[0-9]+ deletions?' | grep -oE '[0-9]+' || echo "0")
             COMMIT_MESSAGES=$(git log --oneline --no-color "$LAST_TAG"..HEAD | head -30)
             DETAILED_CHANGES=$(git diff --name-status --no-color "$LAST_TAG" HEAD | head -50)
-            COMPONENTS_CHANGED=$(git diff --name-only "$LAST_TAG" HEAD | grep -E '\.(tsx?|jsx?)$' | grep -v 'test\|spec' | wc -l || echo "0")
-            PAGES_CHANGED=$(git diff --name-only "$LAST_TAG" HEAD | grep -E 'pages/|app/' | wc -l || echo "0")
-            STYLES_CHANGED=$(git diff --name-only "$LAST_TAG" HEAD | grep -E '\.(css|scss|sass|less)$' | wc -l || echo "0")
             PR_REFS=$(git log --oneline --no-color "$LAST_TAG"..HEAD | grep -oE '#[0-9]+' | sort -u | head -10 || echo "")
           fi
 
@@ -130,9 +124,6 @@ jobs:
           echo "commits_count=$COMMITS_COUNT" >> $GITHUB_OUTPUT
           echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
           echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
-          echo "components_changed=$COMPONENTS_CHANGED" >> $GITHUB_OUTPUT
-          echo "pages_changed=$PAGES_CHANGED" >> $GITHUB_OUTPUT
-          echo "styles_changed=$STYLES_CHANGED" >> $GITHUB_OUTPUT
 
           # Save multiline outputs
           {
@@ -169,28 +160,22 @@ jobs:
           COMMITS_COUNT: ${{ steps.analyze-changes.outputs.commits_count }}
           ADDITIONS: ${{ steps.analyze-changes.outputs.additions }}
           DELETIONS: ${{ steps.analyze-changes.outputs.deletions }}
-          COMPONENTS_CHANGED: ${{ steps.analyze-changes.outputs.components_changed }}
-          PAGES_CHANGED: ${{ steps.analyze-changes.outputs.pages_changed }}
-          STYLES_CHANGED: ${{ steps.analyze-changes.outputs.styles_changed }}
           COMMIT_MESSAGES: ${{ steps.analyze-changes.outputs.commit_messages }}
           DETAILED_CHANGES: ${{ steps.analyze-changes.outputs.detailed_changes }}
           PR_REFS: ${{ steps.analyze-changes.outputs.pr_refs }}
         run: |
           # Create analysis prompt for Claude
           cat > /tmp/changelog_prompt.txt << PROMPT_EOF
-          I need you to generate a concise but informative changelog for a Next.js SDK library release.
+          I need you to generate a concise but informative changelog for a software release.
 
           **Release Info:**
-          - App: RoboSystems (Comprehensive financial platform hub web application)
+          - Package: @robosystems/client — TypeScript client SDK for the RoboSystems API
           - Version: $VERSION
           - Previous Version: $LAST_TAG
           - Files Changed: $FILES_CHANGED
           - Commits: $COMMITS_COUNT
           - Lines Added: $ADDITIONS
           - Lines Deleted: $DELETIONS
-          - Components Changed: $COMPONENTS_CHANGED
-          - Pages Changed: $PAGES_CHANGED
-          - Styles Changed: $STYLES_CHANGED
 
           **Recent Commits:**
           $COMMIT_MESSAGES
@@ -201,22 +186,18 @@ jobs:
           **PR References:**
           $PR_REFS
 
-          Please generate a changelog for this Next.js SDK library that includes:
-          1. A brief 1-2 sentence summary focusing on user-facing improvements
-          2. Key features/improvements (bullet points) - focus on API changes
+          Please generate a changelog for this client SDK that includes:
+          1. A brief 1-2 sentence summary of this release
+          2. API surface changes (new typed endpoints, new or changed client methods)
           3. Breaking changes (if any) - clearly marked with ⚠️
-          4. Notable technical changes (performance, dependencies, build improvements)
-          5. Bug fixes affecting user experience
+          4. Bug fixes (if any)
+          5. Notable technical changes (dependency updates, build or tooling improvements)
 
-          Keep it user-focused since this is a SDK library. Highlight:
-          - Platform integration improvements
-          - Navigation and user experience enhancements
-          - Performance optimizations
-          - SDK features improvements
-          - Mobile/responsive design changes
-          - API integration improvements
-
+          Keep it concise but informative. Focus on what SDK consumers need to know.
           Use markdown formatting. Don't include a version header as that will be added separately.
+          If there are security improvements, highlight them.
+          If this appears to be a maintenance/infrastructure release, emphasize that.
+
           Format your response as clean markdown without any prefix text.
           PROMPT_EOF
 
@@ -264,7 +245,7 @@ jobs:
           if echo "$RESPONSE" | jq -e '.error' > /dev/null; then
             echo "❌ Claude API error: $(echo "$RESPONSE" | jq -r '.error.message')"
             echo "Using fallback changelog"
-            CHANGELOG="## What's Changed\n\n- ${{ steps.analyze-changes.outputs.commits_count }} commits with ${{ steps.analyze-changes.outputs.files_changed }} files changed\n- ${{ steps.analyze-changes.outputs.components_changed }} components and ${{ steps.analyze-changes.outputs.pages_changed }} pages updated\n- ${{ steps.analyze-changes.outputs.additions }} additions and ${{ steps.analyze-changes.outputs.deletions }} deletions\n\nSee commit history for detailed changes."
+            CHANGELOG="## What's Changed\n\n- ${{ steps.analyze-changes.outputs.commits_count }} commits with ${{ steps.analyze-changes.outputs.files_changed }} files changed\n- ${{ steps.analyze-changes.outputs.additions }} additions and ${{ steps.analyze-changes.outputs.deletions }} deletions\n\nSee commit history for detailed changes."
           else
             # Extract changelog from Claude's response
             CHANGELOG=$(echo "$RESPONSE" | jq -r '.content[0].text')
@@ -272,7 +253,7 @@ jobs:
             # Validate that Claude returned meaningful content
             if [ -z "$CHANGELOG" ] || [ "$CHANGELOG" = "null" ]; then
               echo "❌ Claude returned empty changelog, using fallback"
-              CHANGELOG="## What's Changed\n\n- ${{ steps.analyze-changes.outputs.commits_count }} commits with ${{ steps.analyze-changes.outputs.files_changed }} files changed\n- ${{ steps.analyze-changes.outputs.components_changed }} components and ${{ steps.analyze-changes.outputs.pages_changed }} pages updated\n- ${{ steps.analyze-changes.outputs.additions }} additions and ${{ steps.analyze-changes.outputs.deletions }} deletions\n\nSee commit history for detailed changes."
+              CHANGELOG="## What's Changed\n\n- ${{ steps.analyze-changes.outputs.commits_count }} commits with ${{ steps.analyze-changes.outputs.files_changed }} files changed\n- ${{ steps.analyze-changes.outputs.additions }} additions and ${{ steps.analyze-changes.outputs.deletions }} deletions\n\nSee commit history for detailed changes."
             else
               echo "✅ Claude changelog generated successfully"
             fi
@@ -298,9 +279,6 @@ jobs:
           LAST_TAG: ${{ steps.analyze-changes.outputs.last_tag }}
           COMMITS_COUNT: ${{ steps.analyze-changes.outputs.commits_count }}
           FILES_CHANGED: ${{ steps.analyze-changes.outputs.files_changed }}
-          COMPONENTS_CHANGED: ${{ steps.analyze-changes.outputs.components_changed }}
-          PAGES_CHANGED: ${{ steps.analyze-changes.outputs.pages_changed }}
-          STYLES_CHANGED: ${{ steps.analyze-changes.outputs.styles_changed }}
           ADDITIONS: ${{ steps.analyze-changes.outputs.additions }}
           DELETIONS: ${{ steps.analyze-changes.outputs.deletions }}
         run: |
@@ -311,7 +289,7 @@ jobs:
           fi
 
           {
-            echo "# RoboSystems SDK v${VERSION}"
+            echo "# RoboSystems TypeScript SDK v${VERSION}"
             echo ""
             cat /tmp/release_changelog.md
             echo ""
@@ -322,9 +300,6 @@ jobs:
               echo ""
               echo "- **Commits:** ${COMMITS_COUNT}"
               echo "- **Files Changed:** ${FILES_CHANGED}"
-              echo "- **Components Updated:** ${COMPONENTS_CHANGED}"
-              echo "- **Pages Updated:** ${PAGES_CHANGED}"
-              echo "- **Styles Updated:** ${STYLES_CHANGED}"
               echo "- **Lines Added:** ${ADDITIONS}"
               echo "- **Lines Deleted:** ${DELETIONS}"
               echo "- **Previous Release:** ${LAST_TAG}"
@@ -332,7 +307,7 @@ jobs:
             fi
             echo "## 🔗 Links"
             echo ""
-            echo "- **Live App:** [robosystems.ai](https://robosystems.ai)"
+            echo "- **npm Package:** [@robosystems/client](https://www.npmjs.com/package/@robosystems/client)"
             echo "- **Full Changelog:** [${LAST_TAG}...v${VERSION}](https://github.com/RoboFinSystems/robosystems-typescript-client/compare/${LAST_TAG}...v${VERSION})"
             echo "- **All Releases:** [View all releases](https://github.com/RoboFinSystems/robosystems-typescript-client/releases)"
             if [ "$CURATED_FOUND" != "true" ]; then
@@ -379,17 +354,16 @@ jobs:
           VERSION: ${{ steps.get-version.outputs.version }}
           LAST_TAG: ${{ steps.analyze-changes.outputs.last_tag }}
         run: |
-          echo "## 🚀 RoboSystems v$VERSION Released" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Release v$VERSION Created" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Release URL:** [v$VERSION](https://github.com/RoboFinSystems/robosystems-typescript-client/releases/tag/v$VERSION)" >> $GITHUB_STEP_SUMMARY
-          echo "**Live App:** [robosystems.ai](https://robosystems.ai)" >> $GITHUB_STEP_SUMMARY
+          echo "**npm Package:** [@robosystems/client](https://www.npmjs.com/package/@robosystems/client)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Frontend Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Statistics" >> $GITHUB_STEP_SUMMARY
           echo "- **Commits:** ${{ steps.analyze-changes.outputs.commits_count }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Files Changed:** ${{ steps.analyze-changes.outputs.files_changed }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Components Updated:** ${{ steps.analyze-changes.outputs.components_changed }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Pages Updated:** ${{ steps.analyze-changes.outputs.pages_changed }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Styles Updated:** ${{ steps.analyze-changes.outputs.styles_changed }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lines Added:** ${{ steps.analyze-changes.outputs.additions }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Lines Deleted:** ${{ steps.analyze-changes.outputs.deletions }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Previous Release:** ${LAST_TAG}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📝 Changelog" >> $GITHUB_STEP_SUMMARY

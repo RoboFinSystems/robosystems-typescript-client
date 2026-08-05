@@ -1,27 +1,27 @@
-# RoboSystems Typescript Client Extensions
+# RoboSystems TypeScript SDK Clients
 
-**Enhanced SSE and Real-time Features** for the RoboSystems Typescript Client
+**High-level clients with SSE support** for the RoboSystems TypeScript Client
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-The RoboSystems Typescript Client Extensions provide production-ready enhancements for real-time operations:
+The high-level clients wrap the generated OpenAPI SDK with production-ready enhancements:
 
 - **Server-Sent Events (SSE)** with automatic reconnection and event replay
-- **Smart Query Execution** with automatic queueing and progress monitoring
-- **Data Copy Operations** with S3 import and real-time progress tracking
-- **Operation Monitoring** for long-running tasks with real-time updates
-- **Connection Management** with rate limiting and circuit breaker patterns
-- **React Hooks** for seamless UI integration
-- **Full TypeScript Support** with comprehensive type definitions
+- **Smart query execution** with automatic queueing and progress monitoring
+- **Operation monitoring** for long-running tasks with real-time updates
+- **Domain clients** for RoboLedger, RoboInvestor, and the element library
+- **AI Operator** access for natural language analysis
+- **React hooks** for seamless UI integration
+- **Full TypeScript support** with comprehensive type definitions
 
 ## Quick Start
 
 ### Installation
 
-The extensions are included with the main SDK:
+The clients are included with the main SDK:
 
 ```bash
 npm install @robosystems/client
@@ -49,91 +49,63 @@ await sseClient.connect('operation-id-123')
 
 // Listen for events
 sseClient.on(EventType.OPERATION_PROGRESS, (data) => {
-  console.log(`Progress: ${data.message} (${data.percentage}%)`)
+  console.log('Progress:', data)
 })
 
 sseClient.on(EventType.DATA_CHUNK, (data) => {
-  console.log(`Received ${data.rows.length} rows`)
-  processRows(data.rows)
+  console.log('Received chunk:', data)
 })
 
 sseClient.on(EventType.OPERATION_COMPLETED, (data) => {
-  console.log('Operation completed:', data.result)
+  console.log('Operation completed:', data)
 })
 
 // Clean up when done
 sseClient.close()
 ```
 
-### Query Execution with Progress Monitoring
+### Query Execution
 
 ```typescript
 import { QueryClient } from '@robosystems/client/clients'
 
 const queryClient = new QueryClient({
   baseUrl: 'https://api.robosystems.ai',
-  apiKey: 'your-api-key',
+  token: 'your-jwt-token', // or `credentials: 'include'` for cookie auth
 })
 
-// Execute query with automatic SSE monitoring
-const result = await queryClient.executeWithProgress(
+// Simple query — auto mode handles sync, queued, and streamed execution
+const result = await queryClient.query(
   'your-graph-id',
-  'MATCH (c:Company) RETURN c.name, c.revenue ORDER BY c.revenue DESC',
+  'MATCH (c:Company) RETURN c.name, c.revenue ORDER BY c.revenue DESC LIMIT 10'
+)
+console.log(`${result.row_count} rows in ${result.execution_time_ms}ms`)
+
+// Full control — queue callbacks and execution mode
+const executed = await queryClient.executeQuery(
+  'your-graph-id',
+  { query: 'MATCH (c:Company) RETURN c.name' },
   {
-    onProgress: (progress) => {
-      console.log(`${progress.current}/${progress.total} rows processed`)
-    },
+    mode: 'auto',
     onQueueUpdate: (position, estimatedWait) => {
       console.log(`Queue position: ${position}, ETA: ${estimatedWait}s`)
     },
+    onProgress: (message) => console.log(message),
   }
 )
-
-console.log(`Query completed with ${result.rowCount} results`)
 ```
 
-### Table Ingestion with Progress Monitoring
+### Streaming Large Results
 
 ```typescript
-import { TableIngestClient } from '@robosystems/client/clients'
-
-const tableClient = new TableIngestClient({
-  baseUrl: 'https://api.robosystems.ai',
-  headers: { 'X-API-Key': 'your-api-key' },
-})
-
-// Upload Parquet file with real-time progress
-import { readFileSync } from 'fs'
-
-const fileBuffer = readFileSync('data/companies.parquet')
-const result = await tableClient.uploadParquetFile(
+// Stream rows without holding the full result set in memory
+for await (const row of queryClient.streamQuery(
   'your-graph-id',
-  'Company',
-  Buffer.from(fileBuffer),
-  {
-    onProgress: (message) => {
-      console.log(`Upload progress: ${message}`)
-    },
-  }
-)
-
-// Check results
-if (result.success) {
-  console.log(`Successfully uploaded ${result.rowCount} rows to ${result.tableName}`)
-  console.log(`File size: ${(result.fileSize / 1024 / 1024).toFixed(2)} MB`)
-
-  // Ingest the table into the graph
-  const ingestResult = await tableClient.ingestAllTables('your-graph-id', {
-    ignoreErrors: true,
-    rebuild: false,
-    onProgress: (msg) => console.log(`Ingest: ${msg}`),
-  })
-
-  if (ingestResult.success) {
-    console.log(`Ingestion started. Operation ID: ${ingestResult.operationId}`)
-  }
-} else {
-  console.error(`Upload failed: ${result.error}`)
+  'MATCH (t:Transaction) RETURN t',
+  undefined, // parameters
+  1000 // chunk size
+)) {
+  processRow(row)
 }
 ```
 
@@ -184,7 +156,7 @@ sseClient.on('reconnecting', ({ attempt, delay, lastEventId }) => {
 
 sseClient.on('max_retries_exceeded', (error) => {
   console.error('Failed to reconnect after maximum attempts')
-  // Fallback to polling or show error to user
+  // Fall back to polling or show error to user
 })
 ```
 
@@ -199,136 +171,7 @@ await sseClient.connect('operation-id', fromSequence)
 // The client tracks lastEventId automatically
 sseClient.on('event', (event) => {
   console.log(`Event ${event.id}: ${event.event}`)
-  // Events are guaranteed to be in sequence
 })
-```
-
-### Rate Limiting & Connection Management
-
-The SDK respects server-side rate limits:
-
-- **Maximum 5 concurrent SSE connections per user**
-- **10 new connections per minute rate limit**
-- **Automatic circuit breaker for Redis failures**
-
-```typescript
-// Handle rate limiting gracefully
-try {
-  await sseClient.connect('operation-id')
-} catch (error) {
-  if (error.status === 429) {
-    console.log('Rate limit exceeded - falling back to polling')
-    // Use polling fallback
-    const result = await pollOperation('operation-id')
-  } else if (error.status === 503) {
-    console.log('SSE temporarily unavailable - circuit breaker open')
-    // SSE system is degraded, use alternative method
-  }
-}
-```
-
-## Table Ingestion
-
-### TableIngestClient for Parquet File Uploads
-
-Upload Parquet files directly to staging tables with simplified API.
-
-```typescript
-import { TableIngestClient } from '@robosystems/client/clients'
-
-const tableClient = new TableIngestClient({
-  baseUrl: 'https://api.robosystems.ai',
-  headers: { 'X-API-Key': 'your-api-key' },
-})
-
-// Upload a Parquet file (Node.js with Buffer)
-import { readFileSync } from 'fs'
-
-const fileBuffer = readFileSync('data/entities.parquet')
-const result = await tableClient.uploadParquetFile('graph-id', 'Entity', Buffer.from(fileBuffer), {
-  onProgress: (msg) => console.log(msg),
-})
-
-if (result.success) {
-  console.log(`Uploaded ${result.rowCount} rows to ${result.tableName}`)
-} else {
-  console.error(`Upload failed: ${result.error}`)
-}
-```
-
-### Upload File in Browser
-
-```typescript
-// Browser with File object
-const handleFileUpload = async (file: File) => {
-  const result = await tableClient.uploadParquetFile('graph-id', 'Entity', file, {
-    onProgress: (msg) => console.log(msg),
-  })
-
-  if (result.success) {
-    console.log(`Uploaded ${result.rowCount} rows`)
-  }
-}
-
-// Usage in React component
-<input type="file" accept=".parquet" onChange={(e) => {
-  const file = e.target.files?.[0]
-  if (file) handleFileUpload(file)
-}} />
-```
-
-### Upload and Ingest in One Step
-
-```typescript
-// Upload a file and immediately ingest it into the graph
-const { upload, ingest } = await tableClient.uploadAndIngest(
-  'graph-id',
-  'Entity',
-  fileBuffer,
-  {
-    // Upload options
-    onProgress: (msg) => console.log(`Upload: ${msg}`),
-  },
-  {
-    // Ingest options
-    ignoreErrors: true,
-    rebuild: false,
-    onProgress: (msg) => console.log(`Ingest: ${msg}`),
-  }
-)
-
-if (upload.success && ingest?.success) {
-  console.log(`Operation ID: ${ingest.operationId}`)
-}
-```
-
-### List Staging Tables
-
-```typescript
-// List all staging tables in a graph
-const tables = await tableClient.listStagingTables('graph-id')
-
-tables.forEach((table) => {
-  console.log(`Table: ${table.tableName}`)
-  console.log(`  Rows: ${table.rowCount}`)
-  console.log(`  Files: ${table.fileCount}`)
-  console.log(`  Size: ${(table.totalSizeBytes / 1024 / 1024).toFixed(2)} MB`)
-})
-```
-
-### Ingest All Tables
-
-```typescript
-// Ingest all staging tables into the graph
-const result = await tableClient.ingestAllTables('graph-id', {
-  ignoreErrors: true, // Continue on errors
-  rebuild: false, // Don't rebuild existing data
-  onProgress: (msg) => console.log(msg),
-})
-
-if (result.success) {
-  console.log(`Ingestion started. Operation ID: ${result.operationId}`)
-}
 ```
 
 ## Operation Monitoring
@@ -336,151 +179,143 @@ if (result.success) {
 ### OperationClient for Long-Running Tasks
 
 ```typescript
-import { OperationClient, OperationStatus } from '@robosystems/client/clients'
+import { OperationClient } from '@robosystems/client/clients'
 
 const operationClient = new OperationClient({
   baseUrl: 'https://api.robosystems.ai',
-  apiKey: 'your-api-key',
+  token: 'your-jwt-token',
 })
 
 // Monitor any long-running operation
-const result = await operationClient.monitor('operation-id', {
+const result = await operationClient.monitorOperation('operation-id', {
   onProgress: (progress) => {
-    console.log(`Step ${progress.currentStep}/${progress.totalSteps}`)
-    console.log(`${progress.message} (${progress.percentage}%)`)
-    updateProgressBar(progress.percentage)
+    console.log(`${progress.message} (${progress.progressPercent ?? 0}%)`)
   },
-  onStatusChange: (status) => {
-    switch (status) {
-      case OperationStatus.QUEUED:
-        showMessage('Operation queued...')
-        break
-      case OperationStatus.RUNNING:
-        showMessage('Processing...')
-        break
-      case OperationStatus.COMPLETED:
-        showMessage('Success!')
-        break
-      case OperationStatus.FAILED:
-        showMessage('Operation failed')
-        break
-    }
+  onQueueUpdate: (position, estimatedWait) => {
+    console.log(`Queued at position ${position}, ~${estimatedWait}s`)
   },
-  maxWaitTime: 300000, // 5 minutes max wait
+  timeout: 300000, // 5 minutes max wait
 })
 
-if (result.status === OperationStatus.COMPLETED) {
-  processResults(result.data)
+if (result.success) {
+  console.log('Completed:', result.result)
+} else {
+  console.error('Failed:', result.error)
 }
 ```
 
-### Progress Tracking Patterns
+`OperationClient` also provides `getStatus(operationId)`, `cancelOperation(operationId)`,
+`waitForOperation(operationId, timeoutMs)` for fire-and-forget waits,
+`monitorMultiple(operationIds)` for concurrent monitoring, and `closeAll()` for cleanup.
+
+## Domain Clients
+
+Three high-level facade clients cover the RoboSystems product domains. Reads go
+through GraphQL at `/extensions/{graph_id}/graphql`; writes go through named
+command operations — the facades keep a stable method surface over that
+transport split.
+
+All three accept the same configuration: `baseUrl`, plus optional
+`credentials`, `headers`, a static `token`, or a `tokenProvider` callback that
+is consulted on every GraphQL request (use it when the JWT can rotate).
+
+### LedgerClient (RoboLedger)
+
+Entity, chart of accounts, transactions, event blocks, taxonomy + mappings,
+schedules, period close, reports, and publish lists.
 
 ```typescript
-// Create a reusable progress tracker
-class ProgressTracker {
-  private startTime = Date.now()
-  private lastUpdate = Date.now()
+import { LedgerClient } from '@robosystems/client/ledger'
 
-  onProgress = (progress: OperationProgress) => {
-    const elapsed = Date.now() - this.startTime
-    const rate = progress.rowsProcessed / (elapsed / 1000)
-    const eta = (progress.totalRows - progress.rowsProcessed) / rate
-
-    console.log(`Processing: ${progress.rowsProcessed}/${progress.totalRows} rows`)
-    console.log(`Rate: ${rate.toFixed(0)} rows/sec`)
-    console.log(`ETA: ${this.formatDuration(eta * 1000)}`)
-
-    // Update UI
-    this.updateUI(progress)
-  }
-
-  private formatDuration(ms: number): string {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const hours = Math.floor(minutes / 60)
-
-    if (hours > 0) return `${hours}h ${minutes % 60}m`
-    if (minutes > 0) return `${minutes}m ${seconds % 60}s`
-    return `${seconds}s`
-  }
-
-  private updateUI(progress: OperationProgress) {
-    // Update your UI components
-    document.querySelector('#progress-bar')?.setAttribute('value', progress.percentage.toString())
-    document.querySelector('#progress-text')?.textContent =
-      `${progress.message} (${progress.percentage}%)`
-  }
-}
-
-// Use the tracker
-const tracker = new ProgressTracker()
-await operationClient.monitor('operation-id', {
-  onProgress: tracker.onProgress,
+const ledger = new LedgerClient({
+  baseUrl: 'https://api.robosystems.ai',
+  token: 'your-jwt-token',
 })
+
+const transactions = await ledger.listTransactions('your-graph-id', {
+  startDate: '2026-01-01',
+  endDate: '2026-03-31',
+  limit: 50,
+})
+
+const trialBalance = await ledger.getTrialBalance('your-graph-id', {
+  startDate: '2026-01-01',
+  endDate: '2026-03-31',
+})
+```
+
+### InvestorClient (RoboInvestor)
+
+Portfolios, securities, positions, and holdings.
+
+```typescript
+import { InvestorClient } from '@robosystems/client/investor'
+
+const investor = new InvestorClient({
+  baseUrl: 'https://api.robosystems.ai',
+  token: 'your-jwt-token',
+})
+
+const portfolios = await investor.listPortfolios('your-graph-id', { limit: 25 })
+const holdings = await investor.getHoldings('your-graph-id', 'portfolio-id')
+```
+
+### LibraryClient (element library)
+
+Taxonomies, elements, structures, and search. Pass the `"library"` sentinel as
+the graph id for the canonical library, or a tenant graph id to also include
+that tenant's own chart of accounts and custom taxonomies.
+
+```typescript
+import { LibraryClient } from '@robosystems/client/library'
+
+const library = new LibraryClient({
+  baseUrl: 'https://api.robosystems.ai',
+  token: 'your-jwt-token',
+})
+
+const taxonomies = await library.listLibraryTaxonomies('library', {
+  includeElementCount: true,
+})
+
+const matches = await library.searchLibraryElements('library', 'revenue', {
+  limit: 20,
+})
+```
+
+## AI Operator
+
+```typescript
+import { OperatorClient } from '@robosystems/client/clients'
+
+const operator = new OperatorClient({
+  baseUrl: 'https://api.robosystems.ai',
+  token: 'your-jwt-token',
+})
+
+// Auto-selected operator for a natural language question
+const answer = await operator.query('your-graph-id', 'How did gross margin trend this year?')
+console.log(answer.content)
+
+// Specific operator types
+const analysis = await operator.analyzeFinancials('your-graph-id', 'Summarize Q1 performance')
 ```
 
 ## React Integration
 
-### useSSE Hook
+All hooks are exported from `@robosystems/client/clients` and pick up the
+global configuration set via `setSDKClientConfig`.
+
+### useQuery Hook
 
 ```typescript
-import { useSSE } from '@robosystems/client/clients/hooks'
-
-function OperationMonitor({ operationId }: { operationId: string }) {
-  const {
-    data,
-    progress,
-    status,
-    error,
-    isConnected
-  } = useSSE(operationId, {
-    onProgress: (p) => console.log('Progress:', p),
-    onDataChunk: (chunk) => console.log('Chunk:', chunk),
-  })
-
-  if (error) return <div>Error: {error.message}</div>
-  if (!isConnected) return <div>Connecting...</div>
-
-  return (
-    <div>
-      <h3>Operation Status: {status}</h3>
-      {progress && (
-        <div>
-          <progress value={progress.percentage} max="100" />
-          <p>{progress.message}</p>
-        </div>
-      )}
-      {data && (
-        <div>
-          <h4>Results:</h4>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
-        </div>
-      )}
-    </div>
-  )
-}
-```
-
-### useQueryWithSSE Hook
-
-```typescript
-import { useQueryWithSSE } from '@robosystems/client/clients/hooks'
+import { useQuery } from '@robosystems/client/clients'
 
 function QueryRunner() {
-  const {
-    execute,
-    loading,
-    data,
-    error,
-    progress,
-    queuePosition
-  } = useQueryWithSSE('your-graph-id')
+  const { execute, loading, error, data, queuePosition } = useQuery('your-graph-id')
 
   const runQuery = async () => {
-    const result = await execute(
-      'MATCH (c:Company) RETURN c.name, c.revenue LIMIT 100'
-    )
+    const result = await execute('MATCH (c:Company) RETURN c.name LIMIT 100')
     console.log('Query completed:', result)
   }
 
@@ -490,412 +325,186 @@ function QueryRunner() {
         Run Query
       </button>
 
-      {loading && (
-        <div>
-          {queuePosition > 0 && <p>Queue position: {queuePosition}</p>}
-          {progress && <p>Progress: {progress.percentage}%</p>}
-        </div>
-      )}
-
+      {loading && queuePosition !== null && <p>Queue position: {queuePosition}</p>}
       {error && <div className="error">{error.message}</div>}
-
-      {data && (
-        <table>
-          <tbody>
-            {data.rows.map((row, i) => (
-              <tr key={i}>
-                <td>{row['c.name']}</td>
-                <td>${row['c.revenue'].toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {data && <pre>{JSON.stringify(data.data, null, 2)}</pre>}
     </div>
   )
 }
 ```
 
-### useCopy Hook for Data Import
+### useStreamingQuery Hook
 
 ```typescript
-import { useCopy } from '@robosystems/client/clients/hooks'
+import { useStreamingQuery } from '@robosystems/client/clients'
 
-function DataImporter({ graphId }: { graphId: string }) {
-  const {
-    copyFromS3,
-    loading,
-    progress,
-    error,
-    result,
-    queuePosition
-  } = useCopy(graphId)
+function StreamRunner() {
+  const { stream, isStreaming, error, rowsReceived, cancel } = useStreamingQuery('your-graph-id')
 
-  const handleImport = async () => {
-    const importResult = await copyFromS3({
-      table_name: 'products',
-      source_type: 's3',
-      s3_path: 's3://data-bucket/products.csv',
-      s3_access_key_id: process.env.NEXT_PUBLIC_AWS_KEY!,
-      s3_secret_access_key: process.env.NEXT_PUBLIC_AWS_SECRET!,
-      file_format: 'csv',
-    })
-
-    if (importResult?.status === 'completed') {
-      alert(`Successfully imported ${importResult.rowsImported} products`)
+  const handleStream = async () => {
+    for await (const batch of stream('MATCH (t:Transaction) RETURN t', undefined, 100)) {
+      console.log(`Received batch of ${batch.length} rows`)
     }
   }
 
   return (
     <div>
-      <button onClick={handleImport} disabled={loading}>
-        {loading ? 'Importing...' : 'Import Products'}
+      <button onClick={handleStream} disabled={isStreaming}>
+        Stream Results
       </button>
-
-      {progress && (
-        <div>
-          <p>{progress.message}</p>
-          {progress.percent && (
-            <progress value={progress.percent} max={100} />
-          )}
-        </div>
-      )}
-
-      {queuePosition && (
-        <p>Queue position: {queuePosition}</p>
-      )}
-
-      {error && <p style={{ color: 'red' }}>Error: {error.message}</p>}
-
-      {result && result.status === 'completed' && (
-        <div style={{ color: 'green' }}>
-          <p>Successfully imported {result.rowsImported} rows</p>
-          <p>Execution time: {(result.executionTimeMs / 1000).toFixed(2)}s</p>
-        </div>
-      )}
+      {isStreaming && <p>{rowsReceived} rows received…</p>}
+      {error && <p>{error.message}</p>}
     </div>
   )
 }
 ```
 
-## Error Handling & Resilience
-
-### Circuit Breaker Pattern
-
-The SSE system includes automatic circuit breaker protection:
+### useOperation Hook
 
 ```typescript
-// The circuit breaker automatically opens after 3 Redis failures
-// It will close again after a cooldown period
+import { useOperation } from '@robosystems/client/clients'
 
-sseClient.on('circuit_breaker_open', () => {
-  console.log('SSE circuit breaker opened - falling back to polling')
-  // Automatically degrades to polling
-})
+function OperationMonitor({ operationId }: { operationId: string }) {
+  const { status, progress, error, result } = useOperation(operationId)
 
-sseClient.on('circuit_breaker_closed', () => {
-  console.log('SSE circuit breaker closed - resuming streaming')
-  // Automatically resumes SSE when healthy
-})
-```
+  if (error) return <div>Error: {error.message}</div>
 
-### Graceful Degradation
-
-```typescript
-import { QueryClient, FallbackStrategy } from '@robosystems/client/clients'
-
-const queryClient = new QueryClient({
-  baseUrl: 'https://api.robosystems.ai',
-  fallbackStrategy: FallbackStrategy.AUTO, // Automatically choose best strategy
-})
-
-// Automatically uses best available method:
-// 1. SSE streaming (preferred)
-// 2. NDJSON streaming (if SSE unavailable)
-// 3. Polling (if streaming unavailable)
-// 4. Direct response (for small queries)
-
-const result = await queryClient.execute('graph-id', 'MATCH (n) RETURN n', {
-  preferStreaming: true, // Hint to prefer streaming
-  onFallback: (from, to) => {
-    console.log(`Falling back from ${from} to ${to}`)
-  },
-})
-```
-
-### Connection Pool Management
-
-```typescript
-// SDK automatically manages SSE connection pooling
-const config = {
-  maxConnections: 5,        // Per-user limit enforced by server
-  connectionTimeout: 10000, // 10 second timeout
-  poolStrategy: 'FIFO',     // First-in-first-out recycling
+  return (
+    <div>
+      <h3>Status: {status}</h3>
+      {progress && (
+        <div>
+          <progress value={progress.progressPercent ?? 0} max="100" />
+          <p>{progress.message}</p>
+        </div>
+      )}
+      {result?.success && <pre>{JSON.stringify(result.result, null, 2)}</pre>}
+    </div>
+  )
 }
-
-// Connections are automatically recycled when limits are reached
-const operations = [
-  'operation-1',
-  'operation-2',
-  'operation-3',
-  'operation-4',
-  'operation-5',
-  'operation-6', // Will recycle oldest connection
-]
-
-// Monitor connection pool status
-sseClient.on('connection_recycled', ({ old, new }) => {
-  console.log(`Recycled connection from ${old} to ${new}`)
-})
 ```
+
+Also available: `useMultipleOperations()` for monitoring several operations
+concurrently, and `useSDKClients()` for direct access to configured
+`QueryClient` / `OperationClient` instances.
 
 ## Configuration
 
 ### Environment Variables
 
 ```bash
-# API Configuration
-NEXT_PUBLIC_ROBOSYSTEMS_API_URL=https://api.robosystems.ai
-ROBOSYSTEMS_API_KEY=your-api-key
-
-# SSE Configuration
-NEXT_PUBLIC_SSE_MAX_RETRIES=5
-NEXT_PUBLIC_SSE_RETRY_DELAY=1000
-NEXT_PUBLIC_SSE_HEARTBEAT_INTERVAL=30000
-
-# Feature Flags
-NEXT_PUBLIC_ENABLE_SSE=true
-NEXT_PUBLIC_PREFER_STREAMING=true
+# Default base URL for all clients (falls back to http://localhost:8000)
+NEXT_PUBLIC_API_URL=https://api.robosystems.ai
 ```
 
-### Custom Configuration
+### Global Configuration
 
 ```typescript
-import { RoboSystemsExtensions } from '@robosystems/client/clients'
+import { setSDKClientConfig } from '@robosystems/client/clients'
 
-const extensions = new RoboSystemsExtensions({
-  // API Configuration
-  baseUrl: process.env.NEXT_PUBLIC_ROBOSYSTEMS_API_URL,
+setSDKClientConfig({
+  baseUrl: 'https://api.robosystems.ai',
+  credentials: 'include', // For cookie auth
+  // token: 'your-jwt-token',        // static credential, or…
+  // tokenProvider: () => getJwt(),  // rotating credential (wins over token)
+})
+```
 
-  // Authentication
-  credentials: 'include', // For cookies
-  token: 'your-jwt-token', // Or use JWT token
-  headers: {
-    'X-API-Key': process.env.ROBOSYSTEMS_API_KEY,
-  },
+`configureWithJWT(token)` is a shorthand that sets the token and switches
+`credentials` to `'omit'`.
 
-  // Connection Settings
+### Aggregate Client
+
+`RoboSystemsClients` bundles all the clients behind one configuration:
+
+```typescript
+import { RoboSystemsClients } from '@robosystems/client/clients'
+
+const robo = new RoboSystemsClients({
+  baseUrl: 'https://api.robosystems.ai',
+  credentials: 'include',
+  token: 'your-jwt-token',
   maxRetries: 5,
   retryDelay: 1000,
-
-  // S3 Configuration (for local development with LocalStack)
-  s3EndpointUrl: process.env.S3_ENDPOINT_URL, // e.g., 'http://localhost:4566'
 })
+
+const count = await robo.query.query('your-graph-id', 'MATCH (n) RETURN count(n)')
+const trialBalance = await robo.ledger.getTrialBalance('your-graph-id')
+robo.close()
 ```
 
-#### Local Development with LocalStack
-
-For local development using LocalStack, configure the S3 endpoint URL:
+A lazily-created default instance is also exported as `clients`:
 
 ```typescript
-import { RoboSystemsExtensions } from '@robosystems/client/clients'
+import { clients } from '@robosystems/client/clients'
 
-const extensions = new RoboSystemsExtensions({
-  baseUrl: 'http://localhost:8000',
-  credentials: 'include',
-  // Override S3 endpoint for LocalStack
-  s3EndpointUrl: 'http://localhost:4566',
-})
-
-// File uploads will now use LocalStack instead of AWS S3
-const result = await extensions.files.upload('graph-id', 'TableName', fileBuffer, {
-  onProgress: (msg) => console.log(msg),
-})
+const result = await clients.query.query('your-graph-id', 'MATCH (n) RETURN count(n)')
 ```
 
-## Performance Optimization
+## Error Handling
 
-### Stream Processing for Large Datasets
-
-```typescript
-import { StreamProcessor } from '@robosystems/client/clients'
-
-const processor = new StreamProcessor({
-  batchSize: 1000,
-  concurrency: 3,
-})
-
-// Process large query results efficiently
-await processor.processStream('your-graph-id', 'MATCH (t:Transaction) RETURN t', {
-  onBatch: async (batch) => {
-    // Process batch of 1000 rows
-    await saveToDB(batch)
-    console.log(`Processed ${batch.length} transactions`)
-  },
-  onProgress: (processed, total) => {
-    const percentage = (processed / total) * 100
-    console.log(`Progress: ${percentage.toFixed(2)}%`)
-  },
-})
-```
-
-### Caching with SSE Updates
+Queries that land in the queue can be handled without waiting by passing
+`maxWait: 0`, which throws a typed `QueuedQueryError`:
 
 ```typescript
-import { CachedQueryClient } from '@robosystems/client/clients'
+import { QueuedQueryError } from '@robosystems/client/clients'
 
-const cachedClient = new CachedQueryClient({
-  ttl: 300000, // 5 minute cache
-  maxSize: 100, // Cache up to 100 queries
-})
-
-// First call hits the API
-const result1 = await cachedClient.execute('graph-id', 'MATCH (n) RETURN COUNT(n)')
-
-// Second call returns from cache
-const result2 = await cachedClient.execute('graph-id', 'MATCH (n) RETURN COUNT(n)')
-
-// SSE updates automatically invalidate relevant cache entries
-cachedClient.on('cache_invalidated', (query) => {
-  console.log('Cache invalidated for:', query)
-})
-```
-
-## Testing
-
-### Mock SSE for Testing
-
-```typescript
-import { MockSSEClient } from '@robosystems/client/clients/testing'
-
-describe('SSE Integration', () => {
-  it('should handle progress events', async () => {
-    const mockClient = new MockSSEClient()
-
-    // Set up mock events
-    mockClient.simulateEvents([
-      { event: EventType.OPERATION_STARTED, data: { message: 'Starting' } },
-      { event: EventType.OPERATION_PROGRESS, data: { percentage: 50 } },
-      { event: EventType.OPERATION_COMPLETED, data: { result: 'Success' } },
-    ])
-
-    // Test your component
-    const { getByText } = render(
-      <OperationMonitor
-        operationId="test-123"
-        sseClient={mockClient}
-      />
+try {
+  await queryClient.executeQuery('your-graph-id', { query: longQuery }, { maxWait: 0 })
+} catch (err) {
+  if (err instanceof QueuedQueryError) {
+    console.log(
+      `Queued as ${err.queueInfo.operation_id} at position ${err.queueInfo.queue_position}`
     )
-
-    await waitFor(() => {
-      expect(getByText('Starting')).toBeInTheDocument()
-      expect(getByText('50%')).toBeInTheDocument()
-      expect(getByText('Success')).toBeInTheDocument()
-    })
-  })
-})
+    // Monitor err.queueInfo.operation_id with OperationClient / SSEClient
+  }
+}
 ```
 
 ## API Reference
 
 ### Core Classes
 
+- **`RoboSystemsClients`** - Aggregate client bundling everything below
 - **`SSEClient`** - Server-Sent Events client with auto-reconnection
-- **`QueryClient`** - Enhanced query execution with SSE support
-- **`TableIngestClient`** - Parquet file uploads to staging tables with progress monitoring
+- **`QueryClient`** - Query execution with queueing and streaming support
 - **`OperationClient`** - Long-running operation monitoring
-- **`StreamProcessor`** - Efficient stream processing for large datasets
+- **`OperatorClient`** - AI operator queries (financial analysis, research, RAG)
+- **`LedgerClient`** - RoboLedger domain facade
+- **`InvestorClient`** - RoboInvestor domain facade
+- **`LibraryClient`** - Element library facade
 
-### Event Types
+### Types
 
 - **`EventType`** - Enum of all supported SSE event types
 - **`SSEEvent`** - Typed SSE event structure
-- **`OperationProgress`** - Progress update structure
-- **`OperationStatus`** - Operation status enum
+- **`QueryResult`** / **`QueuedQueryResponse`** / **`QueuedQueryError`** - Query results and queueing
+- **`OperationProgress`** / **`OperationResult`** - Operation monitoring structures
+- **`OperatorResult`** - AI operator responses
 
 ### React Hooks
 
-- **`useSSE`** - Hook for SSE connection management
-- **`useQueryWithSSE`** - Hook for queries with progress
-- **`useCopy`** - Hook for data copy operations with progress
-- **`useOperation`** - Hook for operation monitoring
+- **`useQuery`** - Cypher queries with loading/error/queue state
+- **`useStreamingQuery`** - Streaming large query results in batches
+- **`useOperation`** - Monitoring a long-running operation
+- **`useMultipleOperations`** - Monitoring several operations concurrently
+- **`useSDKClients`** - Direct access to configured clients
 
-### Utilities
+### Configuration
 
-- **`createSSEClient`** - Factory for configured SSE clients
-- **`formatDuration`** - Human-readable duration formatting
-- **`parseSSEEvent`** - SSE event parsing utility
-
-## Troubleshooting
-
-### Common Issues
-
-**Rate Limit Errors (429)**
-
-```typescript
-// Handle rate limiting gracefully
-if (error.status === 429) {
-  const retryAfter = error.headers['retry-after'] || 60
-  console.log(`Rate limited. Retry after ${retryAfter} seconds`)
-
-  // Use exponential backoff
-  await sleep(retryAfter * 1000)
-  await retry()
-}
-```
-
-**Connection Drops**
-
-```typescript
-// SSE automatically reconnects, but you can handle it manually
-sseClient.on('disconnected', () => {
-  showNotification('Connection lost. Reconnecting...')
-})
-
-sseClient.on('connected', () => {
-  showNotification('Connection restored')
-})
-```
-
-**Circuit Breaker Open (503)**
-
-```typescript
-// SSE system temporarily disabled
-if (error.status === 503) {
-  console.log('SSE system unavailable - using fallback')
-  // Automatically falls back to polling
-}
-```
-
-### Debug Mode
-
-```typescript
-// Enable debug logging
-const sseClient = new SSEClient({
-  baseUrl: 'https://api.robosystems.ai',
-  debug: true, // Enables detailed logging
-})
-
-// Monitor all events
-sseClient.on('*', (event, data) => {
-  console.log(`[SSE Debug] ${event}:`, data)
-})
-```
+- **`setSDKClientConfig`** / **`getSDKClientConfig`** / **`resetSDKClientConfig`** - Global client configuration
+- **`configureWithJWT`** - JWT auth shorthand
+- **`SDKClientConfig`** - Configuration shape
 
 ## License
 
-MIT License - see [LICENSE](../../LICENSE) file for details.
-
-## Contributing
-
-See the [Contributing Guide](../../CONTRIBUTING.md) for development setup and guidelines.
+MIT License - see [LICENSE](../LICENSE) file for details.
 
 ## Support
 
 - **API Reference**: [api.robosystems.ai/docs](https://api.robosystems.ai/docs)
-- **Discord**: [Join our community](https://discord.gg/V9vjcqstxX)
 - **Issues**: [GitHub Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)
 
 ---
 
-**RoboSystems Typescript Client Extensions** - Production-ready SSE streaming and real-time monitoring for financial knowledge graphs.
+**RoboSystems TypeScript SDK Clients** - Typed, streaming-aware access to financial knowledge graphs.
