@@ -425,7 +425,7 @@ export const getOrgUsage = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Sync Connection
  *
- * SEC: downloads latest EDGAR filings (5-10 min). QuickBooks: fetches transactions, balances, and chart of accounts. Returns an `OperationEnvelope` — monitor progress via SSE at `/v1/operations/{operation_id}/stream`. Supports `Idempotency-Key`.
+ * SEC: downloads latest EDGAR filings (5-10 min). QuickBooks: fetches transactions, balances, and chart of accounts. Async — returns an `OperationEnvelope` with the provider task id; completion is reflected in the connection's `last_sync` timestamp. Supports `Idempotency-Key`.
  */
 export const syncConnection = <ThrowOnError extends boolean = false>(options: Options<SyncConnectionData, ThrowOnError>) => (options.client ?? client).post<SyncConnectionResponses, SyncConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -781,7 +781,7 @@ export const getDatabaseInfo = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get Graph Operational Limits
  *
- * Limits vary by subscription tier (ladybug-standard, ladybug-large, ladybug-xlarge). Includes storage, query, backup, rate, credit, and instance usage limits.
+ * Limits vary by subscription tier (ladybug-standard, ladybug-large, ladybug-xlarge). Includes storage, query, backup, rate, credit, document, and instance usage limits.
  */
 export const getGraphLimits = <ThrowOnError extends boolean = false>(options: Options<GetGraphLimitsData, ThrowOnError>) => (options.client ?? client).get<GetGraphLimitsResponses, GetGraphLimitsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
