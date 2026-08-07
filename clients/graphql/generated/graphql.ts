@@ -538,8 +538,8 @@ export type InformationBlockClassification = {
 /**
  * Connection (= Association) projection.
  *
- * Renamed at the API boundary to match Charlie's ontology vocabulary.
- * The underlying storage table is still ``associations``.
+ * "Connection" is the ontology term used on the wire; the storage table is
+ * ``associations`` (``models/extensions/association.py``).
  */
 export type InformationBlockConnection = {
   arcrole: Maybe<Scalars['String']['output']>
@@ -605,10 +605,8 @@ export type InformationBlockFact = {
 /**
  * FactSet projection — period-specific instantiation of the Structure.
  *
- * The envelope carries one ``FactSetLite`` per block when a FactSet row
- * exists for the requested period; legacy writes that pre-date FactSet
- * stamping leave ``fact_set`` null until the expand pass starts
- * populating those rows.
+ * The envelope carries one ``FactSetLite`` per block when a FactSet row exists
+ * for the requested period, and leaves ``fact_set`` null when none does.
  */
 export type InformationBlockFactSet = {
   entityId: Scalars['String']['output']
@@ -617,9 +615,9 @@ export type InformationBlockFactSet = {
   id: Scalars['String']['output']
   periodEnd: Scalars['Date']['output']
   periodStart: Maybe<Scalars['Date']['output']>
-  /** Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null for pre-feature historical FactSets. */
+  /** Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor. */
   provenance: Maybe<Scalars['JSON']['output']>
-  /** Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands. */
+  /** Back-pointer to the parent row in ``reports``. Null when the FactSet does not belong to a report package. */
   reportId: Maybe<Scalars['String']['output']>
   /** Scenario axis (the forecast engine). NULL = actuals; non-NULL names the owning forecast block whose parallel universe this set belongs to. */
   scenarioId: Maybe<Scalars['String']['output']>
@@ -654,11 +652,10 @@ export type InformationBlockRenderingPeriod = {
 /**
  * One row of a server-side rendered statement.
  *
- * Mirrors :class:`FactRow` from the legacy
- * :mod:`robosystems.operations.roboledger.reports.fact_grid` but lives at
- * the API boundary so envelope consumers don't depend on the
- * fact-grid module. ``values`` is one entry per period column in
- * :class:`RenderingLite.periods`.
+ * Mirrors :class:`FactRow` in
+ * :mod:`robosystems.operations.roboledger.reports.fact_grid`, restated at the
+ * API boundary so envelope consumers don't depend on that module. ``values``
+ * holds one entry per period column in :class:`RenderingLite.periods`.
  */
 export type InformationBlockRenderingRow = {
   balanceType: Maybe<Scalars['String']['output']>

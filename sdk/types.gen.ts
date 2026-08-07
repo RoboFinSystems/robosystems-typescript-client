@@ -1810,8 +1810,8 @@ export type ComputedMetricLite = {
  *
  * Connection (= Association) projection.
  *
- * Renamed at the API boundary to match Charlie's ontology vocabulary.
- * The underlying storage table is still ``associations``.
+ * "Connection" is the ontology term used on the wire; the storage table is
+ * ``associations`` (``models/extensions/association.py``).
  */
 export type ConnectionLite = {
     /**
@@ -3338,11 +3338,11 @@ export type CreditSummaryResponse = {
 /**
  * CustomSchemaDefinition
  *
- * Custom schema definition for generic graphs.
+ * Custom node and relationship types for a generic graph.
  *
- * This model allows you to define custom node types, relationship types, and properties
- * for graphs that don't fit the standard entity-based schema. Perfect for domain-specific
- * applications like inventory systems, org charts, project management, etc.
+ * For graphs that don't fit the entity-based schema — inventory, org charts,
+ * project management. ``extends`` names a base schema to build on, or is
+ * omitted for a bare database.
  */
 export type CustomSchemaDefinition = {
     /**
@@ -3917,13 +3917,11 @@ export type DeleteReportOperation = {
  * Shared response shape for delete / soft-delete operations.
  *
  * ``deleted=True`` means the operation succeeded (a row was deleted or
- * flipped). The handler returns 404 instead when the row didn't exist
- * to begin with — the response shape is never used to communicate "not
- * found".
+ * flipped). A row that never existed gets a 404 — this shape never carries
+ * "not found".
  *
- * Defined once here to avoid OpenAPI components key collisions
- * between roboledger and roboinvestor (both surfaces produced
- * separate ``DeleteResult`` classes before consolidation).
+ * Defined once here, and used by both roboledger and roboinvestor, so the
+ * OpenAPI components key resolves to a single schema.
  */
 export type DeleteResult = {
     /**
@@ -4736,10 +4734,7 @@ export type EntryTemplateRequest = {
 /**
  * ErrorResponse
  *
- * Standard error response format used across all API endpoints.
- *
- * This model ensures consistent error responses for SDK generation
- * and client error handling.
+ * Error body returned by every endpoint.
  */
 export type ErrorResponse = {
     /**
@@ -5327,10 +5322,8 @@ export type FactRecord = {
  *
  * FactSet projection — period-specific instantiation of the Structure.
  *
- * The envelope carries one ``FactSetLite`` per block when a FactSet row
- * exists for the requested period; legacy writes that pre-date FactSet
- * stamping leave ``fact_set`` null until the expand pass starts
- * populating those rows.
+ * The envelope carries one ``FactSetLite`` per block when a FactSet row exists
+ * for the requested period, and leaves ``fact_set`` null when none does.
  */
 export type FactSetLite = {
     /**
@@ -5362,7 +5355,7 @@ export type FactSetLite = {
     /**
      * Report Id
      *
-     * Back-pointer to the ``reports`` table while ``report_id`` still lives on facts. Drops out once the retirement migration lands.
+     * Back-pointer to the parent row in ``reports``. Null when the FactSet does not belong to a report package.
      */
     report_id?: string | null;
     /**
@@ -5374,7 +5367,7 @@ export type FactSetLite = {
     /**
      * Provenance
      *
-     * Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null for pre-feature historical FactSets.
+     * Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor.
      */
     provenance?: {
         [key: string]: unknown;
@@ -5744,7 +5737,7 @@ export type FiscalPeriodSummary = {
 /**
  * ForecastMechanics
  *
- * Authored scenario container for ``block_type='forecast'`` (FP&A F-1).
+ * Authored scenario container for ``block_type='forecast'``.
  *
  * The block IS the scenario: its structure id is the ``scenario_id``
  * every derived forward FactSet carries (NULL = actuals). The authored
@@ -6076,7 +6069,7 @@ export type GraphInfo = {
 /**
  * GraphLimitsResponse
  *
- * Response model for comprehensive graph operational limits.
+ * Every operational limit that applies to a graph, and its usage.
  */
 export type GraphLimitsResponse = {
     /**
@@ -7179,8 +7172,7 @@ export type InitializeLedgerResponse = {
  *
  * Aggregate storage usage across the dedicated instance.
  *
- * Covers the parent graph, all subgraphs, DuckDB staging, and
- * future LanceDB vector indexes.
+ * Covers the parent graph, all subgraphs, DuckDB staging, and vector indexes.
  */
 export type InstanceUsage = {
     /**
@@ -8099,10 +8091,9 @@ export type LineGrowthRequest = {
  * FK; matched lines aggregate signed into the attributed fact for the
  * period.
  *
- * ``field`` is **legacy and ignored** — the flow tag used to live in
- * ``line_items.metadata[field]`` but has been promoted to the typed
- * ``flow_element_id`` FK. Retained for wire-compatibility; the engine no
- * longer reads it.
+ * ``field`` is accepted but ignored: the flow tag lives in the typed
+ * ``flow_element_id`` FK, not in JSONB metadata. It stays on the wire so
+ * existing request bodies keep validating.
  */
 export type LineItemMetadataPredicate = {
     /**
@@ -8114,7 +8105,7 @@ export type LineItemMetadataPredicate = {
     /**
      * Field
      *
-     * Legacy/ignored. The flow tag now lives in the typed ``flow_element_id`` FK, not JSONB metadata; the engine no longer reads this. Retained for wire-compatibility.
+     * Accepted but ignored. The flow tag lives in the typed ``flow_element_id`` FK, not JSONB metadata. Retained for wire-compatibility.
      */
     field?: string;
     /**
@@ -8872,36 +8863,20 @@ export type OperationCosts = {
  *
  * Uniform response shape for every operation endpoint.
  *
- * Every dispatch through an operation surface returns an envelope carrying
- * an ``op_<ULID>`` operation_id.  That id is the bridge to the platform's
- * monitoring surface: pass it to
+ * Every dispatch carries an ``op_<ULID>`` operation_id, which is the bridge
+ * to the monitoring surface: pass it to
  * ``GET /v1/operations/{operation_id}/stream`` (see ``routers/operations.py``)
- * to subscribe to SSE progress events.  Sync commands complete in the
- * envelope itself; async commands (``status: "pending"``, HTTP 202) hand
- * off to a background worker and stream their tail through the same SSE
- * endpoint until completion.  Failed dispatches still mint an
+ * to subscribe to SSE progress events. Sync commands complete in the envelope
+ * itself (``status: "completed"``, HTTP 200); async commands
+ * (``status: "pending"``, HTTP 202) hand off to a background worker and stream
+ * their tail through that SSE endpoint. Failed dispatches still mint an
  * ``operation_id`` so the audit log and any partial SSE events stay
  * correlatable.
  *
- * ``TResult`` parameterizes the ``result`` field so per-op response shapes
- * surface in OpenAPI. Operations that pin ``OperationSpec.result_type`` get
- * ``OperationEnvelope[YourEnvelope]`` as their response model; ops that
- * don't keep the default ``Any`` shape (`result: any | null` on the wire).
- *
- * Fields:
- * - ``operation``: kebab-case command name (e.g. ``close-period``)
- * - ``operation_id``: ``op_``-prefixed ULID; always present, usable for
- * audit correlation and — for async commands — SSE subscription via
- * ``/v1/operations/{operation_id}/stream``
- * - ``status``: ``"completed"`` (sync, HTTP 200), ``"pending"``
- * (async, HTTP 202), or ``"failed"`` (error responses)
- * - ``result``: the domain-specific payload (the original Pydantic
- * response) or ``None`` for async/failed cases
- * - ``at``: ISO-8601 UTC timestamp of when the envelope was minted
- * - ``created_by``: user ID of the caller who initiated this operation
- * - ``idempotent_replay``: ``True`` when the dispatcher returned this
- * envelope from the idempotency cache (the underlying command did NOT
- * execute again)
+ * ``TResult`` parameterizes ``result`` so per-op response shapes surface in
+ * OpenAPI. Operations that pin ``OperationSpec.result_type`` get
+ * ``OperationEnvelope[YourEnvelope]`` as their response model; the rest keep
+ * the default ``Any`` shape (``result: any | null`` on the wire).
  */
 export type OperationEnvelope = {
     /**
@@ -12381,11 +12356,10 @@ export type RenderingPeriodLite = {
  *
  * One row of a server-side rendered statement.
  *
- * Mirrors :class:`FactRow` from the legacy
- * :mod:`robosystems.operations.roboledger.reports.fact_grid` but lives at
- * the API boundary so envelope consumers don't depend on the
- * fact-grid module. ``values`` is one entry per period column in
- * :class:`RenderingLite.periods`.
+ * Mirrors :class:`FactRow` in
+ * :mod:`robosystems.operations.roboledger.reports.fact_grid`, restated at the
+ * API boundary so envelope consumers don't depend on that module. ``values``
+ * holds one entry per period column in :class:`RenderingLite.periods`.
  */
 export type RenderingRowLite = {
     /**
@@ -13119,12 +13093,10 @@ export type ScheduleCreatedResponse = {
  *
  * Closing-entry generator mechanics for ``block_type='schedule'``.
  *
- * Reads directly from the typed ``structures.artifact_mechanics`` JSONB
- * column. ``entry_template`` and ``schedule_metadata`` are typed
- * sub-models (reusing the wire-level request shapes so OpenAPI emits one
- * canonical type per concept); the envelope builder falls back to
- * ``structures.metadata_`` for legacy Schedule rows that the tenant
- * backfill hasn't yet migrated to the typed column.
+ * Reads the typed ``structures.artifact_mechanics`` JSONB column, falling back
+ * to ``structures.metadata_`` for Schedule rows that lack it.
+ * ``entry_template`` and ``schedule_metadata`` reuse the wire-level request
+ * shapes so OpenAPI emits one canonical type per concept.
  */
 export type ScheduleMechanics = {
     /**
@@ -14026,7 +13998,7 @@ export type StorageItem = {
     /**
      * Type
      *
-     * One of: graph, memory, subgraph, vectors, staging, transient (blue-green build artifact), orphan (a `{parent}_*` database, vector index, or staging file with no row in the graph registry — reclaimable leftover of a deleted subgraph)
+     * One of: graph, memory, subgraph, vectors, staging, transient (blue-green build artifact), orphan (a `{parent}_*` database, vector index, or staging file with no row in the graph registry — leftover of a deleted subgraph). Transient and orphan items are collected by the platform's daily storage-reclaim job.
      */
     type: string;
     /**
@@ -15916,18 +15888,16 @@ export type UpdatePublishListOperation = {
  * Update mutable fields on a rollforward block.
  *
  * Editable: name, default_change_tag_qname, attribution_filters,
- * validation_mode. The BS source is fixed once the block is created
- * (changing it would invalidate every previously rendered period); to
- * change BS source, delete and re-create.
+ * validation_mode. The BS source is fixed at creation — changing it would
+ * invalidate every period already rendered — so switching BS source means
+ * delete and re-create.
  *
- * **Partial-update semantics**: omitted (``None``) fields mean "leave
- * unchanged" — there is no wire-level way to *clear* a previously set
- * default change tag or empty the attribution_filters list via this
- * endpoint. To remove the default tag entirely, delete and re-create
- * the rollforward block. The asymmetry is deliberate: an explicit
- * clear-sentinel adds wire-shape complexity for a use case that rarely
- * arises in practice (default tags are typically set during initial
- * authoring and only swapped, not removed).
+ * **Partial-update semantics**: an omitted (``None``) field means "leave
+ * unchanged". There is no wire-level way to *clear* the default change tag or
+ * empty the attribution_filters list; delete and re-create the block instead.
+ * The asymmetry is deliberate — a clear-sentinel costs wire-shape complexity
+ * for a case that rarely arises, since default tags get swapped rather than
+ * removed.
  */
 export type UpdateRollforwardRequest = {
     /**
@@ -15943,7 +15913,7 @@ export type UpdateRollforwardRequest = {
     /**
      * Default Change Tag Qname
      *
-     * New default change tag qname. Pass a value to *change* the default; omit (``None``) to leave unchanged. There is no wire-level way to clear a previously set default — see the class docstring.
+     * New default change tag qname. Pass a value to *change* the default; omit (``None``) to leave unchanged. There is no wire-level way to clear the default — see the class docstring.
      */
     default_change_tag_qname?: string | null;
     /**
