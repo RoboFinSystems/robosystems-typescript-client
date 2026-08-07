@@ -615,7 +615,7 @@ export type InformationBlockFactSet = {
   id: Scalars['String']['output']
   periodEnd: Scalars['Date']['output']
   periodStart: Maybe<Scalars['Date']['output']>
-  /** Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor. */
+  /** Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted | document | forecast | filed) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor. */
   provenance: Maybe<Scalars['JSON']['output']>
   /** Back-pointer to the parent row in ``reports``. Null when the FactSet does not belong to a report package. */
   reportId: Maybe<Scalars['String']['output']>

@@ -5367,7 +5367,7 @@ export type FactSetLite = {
     /**
      * Provenance
      *
-     * Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor.
+     * Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted | document | forecast | filed) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor.
      */
     provenance?: {
         [key: string]: unknown;
