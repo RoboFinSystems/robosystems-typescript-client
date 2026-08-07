@@ -301,10 +301,10 @@ export type EventBlock = {
   externalId: Maybe<Scalars['String']['output']>
   externalUrl: Maybe<Scalars['String']['output']>
   id: Scalars['String']['output']
+  isReconcilingItem: Scalars['Boolean']['output']
   metadata: Scalars['JSON']['output']
   obligatedByEventId: Maybe<Scalars['String']['output']>
   occurredAt: Scalars['DateTime']['output']
-  payloadDrift: Scalars['Boolean']['output']
   replacedByEventId: Maybe<Scalars['String']['output']>
   replacesEventId: Maybe<Scalars['String']['output']>
   resourceElementId: Maybe<Scalars['String']['output']>
@@ -1680,9 +1680,9 @@ export type QueryEventBlocksArgs = {
   agentId?: InputMaybe<Scalars['String']['input']>
   eventCategory?: InputMaybe<Scalars['String']['input']>
   eventType?: InputMaybe<Scalars['String']['input']>
+  isReconcilingItem?: InputMaybe<Scalars['Boolean']['input']>
   limit?: InputMaybe<Scalars['Int']['input']>
   offset?: InputMaybe<Scalars['Int']['input']>
-  payloadDrift?: InputMaybe<Scalars['Boolean']['input']>
   source?: InputMaybe<Scalars['String']['input']>
   status?: InputMaybe<Scalars['String']['input']>
 }
@@ -2896,9 +2896,25 @@ export type GetLedgerFiscalCalendarQuery = {
     catchUpSequence: Array<string>
     closeableNow: boolean
     blockers: Array<string>
+    pendingObligationCount: number
+    earliestPendingPeriod: string | null
+    strandedObligationCount: number
+    syncStaleDays: number | null
     lastCloseAt: any | null
     initializedAt: any | null
     lastSyncAt: any | null
+    pendingObligationSample: Array<{
+      eventId: string
+      scheduleId: string | null
+      scheduleName: string | null
+      period: string
+    }>
+    strandedObligationSample: Array<{
+      eventId: string
+      scheduleId: string | null
+      scheduleName: string | null
+      period: string
+    }>
     periods: Array<{
       name: string
       startDate: any
@@ -5857,6 +5873,36 @@ export const GetLedgerFiscalCalendarDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'catchUpSequence' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'closeableNow' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'blockers' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'pendingObligationCount' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'pendingObligationSample' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scheduleId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scheduleName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'earliestPendingPeriod' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'strandedObligationCount' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'strandedObligationSample' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scheduleId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scheduleName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'syncStaleDays' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'lastCloseAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'initializedAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'lastSyncAt' } },

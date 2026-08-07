@@ -4929,11 +4929,11 @@ export type EventBlockEnvelope = {
         [key: string]: unknown;
     };
     /**
-     * Payload Drift
+     * Is Reconciling Item
      *
-     * True when a source re-sync surfaced a changed upstream payload for an event whose GL is already posted (committed/fulfilled are immutable to sync). The live payload and GL are untouched; the incoming payload is stashed in `metadata.drift_payload` with `metadata.drift_detected_at`. Drifted events need operator reconciliation — the local books no longer mirror the source.
+     * True when this event is a reconciling item: a source re-sync surfaced a changed upstream payload for an event whose GL is already posted (committed/fulfilled are immutable to sync) — the local books legitimately no longer mirror the source, and the difference awaits an explicit disposition (restate the affected months, or book a catch-up entry in the open period). The live payload and GL are untouched; the incoming payload is stashed in `metadata.drift_payload` with `metadata.drift_detected_at`.
      */
-    payload_drift?: boolean;
+    is_reconciling_item?: boolean;
     /**
      * Dimension Ids
      *
