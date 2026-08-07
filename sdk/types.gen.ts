@@ -658,6 +658,12 @@ export type BackfillPlanHistoryOperation = {
      */
     allow_stale_sync?: boolean;
     /**
+     * Allow Stranded Obligations
+     *
+     * Override the stranded-obligation gate on each reclose. Only needed when a matured classified obligation without a drafted entry exists inside the backfill window and you have decided not to draft or void it first.
+     */
+    allow_stranded_obligations?: boolean;
+    /**
      * Restamp
      *
      * Also re-derive months that ALREADY have canonical statement sets (default: skip them). Use after an engine improvement changes what a stamp produces — each month reruns the full reopen → reclose cycle and replaces its sets. A restamp run is not self-resuming (every month in range stays a candidate); advance `start_period` between chunks.
@@ -988,52 +994,6 @@ export type BackupStatsResponse = {
     backup_formats: {
         [key: string]: number;
     };
-};
-
-/**
- * BatchOperatorRequest
- *
- * Request for batch processing multiple queries.
- */
-export type BatchOperatorRequest = {
-    /**
-     * Queries
-     *
-     * List of queries to process (max 10)
-     */
-    queries: Array<OperatorRequest>;
-    /**
-     * Parallel
-     *
-     * Process queries in parallel
-     */
-    parallel?: boolean;
-};
-
-/**
- * BatchOperatorResponse
- *
- * Response for batch processing.
- */
-export type BatchOperatorResponse = {
-    /**
-     * Results
-     *
-     * List of operator responses (includes successes and failures)
-     */
-    results: Array<OperatorResponse>;
-    /**
-     * Total Execution Time
-     *
-     * Total execution time in seconds
-     */
-    total_execution_time: number;
-    /**
-     * Parallel Processed
-     *
-     * Whether queries were processed in parallel
-     */
-    parallel_processed: boolean;
 };
 
 /**
@@ -1535,6 +1495,12 @@ export type ClosePeriodOperation = {
      */
     allow_stale_sync?: boolean;
     /**
+     * Allow Stranded Obligations
+     *
+     * Override the stranded-obligation gate — close even though matured classified obligations have no drafted closing entry, knowingly omitting those adjusting entries from the period. Prefer running promote-obligations with dispatch_handlers=true (which drafts them) or voiding the obligations instead. The override is recorded in the close audit note.
+     */
+    allow_stranded_obligations?: boolean;
+    /**
      * Period
      *
      * Period to close, in YYYY-MM. Must be exactly `closed_through + 1` — close runs sequentially.
@@ -1556,9 +1522,21 @@ export type ClosePeriodResponse = {
     /**
      * Entries Posted
      *
-     * Number of draft entries transitioned to posted
+     * Total draft entries the close transitioned to posted, across both post paths (QB pre-publish + local bulk transition). See entries_published_to_qb / entries_posted_locally for the split.
      */
     entries_posted?: number;
+    /**
+     * Entries Published To Qb
+     *
+     * Drafts published to QuickBooks by the close's pre-publish step (each is promoted to posted at publish time).
+     */
+    entries_published_to_qb?: number;
+    /**
+     * Entries Posted Locally
+     *
+     * Drafts posted by the local bulk transition (entries that don't publish to QuickBooks, e.g. native-only graphs or local-only sources).
+     */
+    entries_posted_locally?: number;
     /**
      * Target Auto Advanced
      *
@@ -4951,6 +4929,12 @@ export type EventBlockEnvelope = {
         [key: string]: unknown;
     };
     /**
+     * Payload Drift
+     *
+     * True when a source re-sync surfaced a changed upstream payload for an event whose GL is already posted (committed/fulfilled are immutable to sync). The live payload and GL are untouched; the incoming payload is stashed in `metadata.drift_payload` with `metadata.drift_detected_at`. Drifted events need operator reconciliation — the local books no longer mirror the source.
+     */
+    payload_drift?: boolean;
+    /**
      * Dimension Ids
      *
      * Dimension-member IDs tagging this event (department, fund, project). Propagate to GL entries produced by the handler.
@@ -5660,7 +5644,7 @@ export type FiscalCalendarResponse = {
     /**
      * Blockers
      *
-     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations'
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations'
      */
     blockers?: Array<string>;
     /**
@@ -5687,6 +5671,18 @@ export type FiscalCalendarResponse = {
      * Days the most recent sync is stale relative to the period to close. Populated only when `sync_stale` is in `blockers` and last_sync_at exists (null when there's a connection but no sync has ever run).
      */
     sync_stale_days?: number | null;
+    /**
+     * Stranded Obligation Count
+     *
+     * Matured schedule_entry_due events already at 'classified' with no drafted closing entry for their (schedule, period) — adjusting entries a close would silently omit. Resolve by running promote-obligations with dispatch_handlers=true (which reaches them) or voiding the obligation.
+     */
+    stranded_obligation_count?: number;
+    /**
+     * Stranded Obligation Sample
+     *
+     * Sample of up to 5 stranded obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at.
+     */
+    stranded_obligation_sample?: Array<PendingObligationDetailResponse>;
     /**
      * Last Close At
      */
@@ -6135,6 +6131,10 @@ export type GraphLimitsResponse = {
      * Knowledge-base document usage and tier cap (user graphs only)
      */
     documents?: DocumentLimits | null;
+    /**
+     * Subgraph count and tier cap (parent user graphs only)
+     */
+    subgraphs?: SubgraphLimits | null;
     /**
      * Per-operation materialization limits (if applicable)
      */
@@ -10714,86 +10714,6 @@ export type OperatorMetadataResponse = {
 export type OperatorMode = 'quick' | 'standard' | 'extended' | 'streaming';
 
 /**
- * OperatorRecommendation
- *
- * Single operator recommendation.
- */
-export type OperatorRecommendation = {
-    /**
-     * Operator Type
-     *
-     * Operator type identifier
-     */
-    operator_type: string;
-    /**
-     * Operator Name
-     *
-     * Operator display name
-     */
-    operator_name: string;
-    /**
-     * Confidence
-     *
-     * Confidence score (0-1)
-     */
-    confidence: number;
-    /**
-     * Capabilities
-     *
-     * Operator capabilities
-     */
-    capabilities: Array<string>;
-    /**
-     * Reason
-     *
-     * Reason for recommendation
-     */
-    reason?: string | null;
-};
-
-/**
- * OperatorRecommendationRequest
- *
- * Request for operator recommendations.
- */
-export type OperatorRecommendationRequest = {
-    /**
-     * Query
-     *
-     * Query to analyze
-     */
-    query: string;
-    /**
-     * Context
-     *
-     * Additional context
-     */
-    context?: {
-        [key: string]: unknown;
-    } | null;
-};
-
-/**
- * OperatorRecommendationResponse
- *
- * Response for operator recommendations.
- */
-export type OperatorRecommendationResponse = {
-    /**
-     * Recommendations
-     *
-     * List of operator recommendations sorted by confidence
-     */
-    recommendations: Array<OperatorRecommendation>;
-    /**
-     * Query
-     *
-     * The analyzed query
-     */
-    query: string;
-};
-
-/**
  * OperatorRequest
  *
  * Request model for operator interactions.
@@ -11998,7 +11918,9 @@ export type PreviewEventBlockResponse = {
  * Flips matured ``pending`` ``schedule_entry_due`` events (period boundary
  * passed) to ``classified``; with ``dispatch_handlers`` it also drafts the
  * closing entries in the same transaction (idempotent — reconciles to an
- * existing draft).
+ * existing draft). The sweep also reaches *stranded* obligations —
+ * already ``classified`` (by an earlier flip-only sweep) but with no
+ * closing entry ever drafted — dispatching them in the same pass.
  */
 export type PromoteObligationsRequest = {
     /**
@@ -12034,9 +11956,21 @@ export type PromoteObligationsResponse = {
      */
     error_count: number;
     /**
+     * Stranded Count
+     *
+     * Matured obligations found already at 'classified' with no drafted closing entry. With dispatch_handlers=true they were drafted this run (included in dispatched_count); with dispatch_handlers=false they still have no draft — re-run with dispatch_handlers=true or void them.
+     */
+    stranded_count?: number;
+    /**
      * Classified Event Ids
      */
     classified_event_ids?: Array<string>;
+    /**
+     * Stranded Event Ids
+     *
+     * Event ids of the stranded obligations found this sweep.
+     */
+    stranded_event_ids?: Array<string>;
     /**
      * Errors
      *
@@ -14245,53 +14179,39 @@ export type StructureUpdatePatch = {
 };
 
 /**
- * SubgraphQuotaResponse
+ * SubgraphLimits
  *
- * Response model for subgraph quota information.
+ * Subgraph count against the parent graph tier's cap.
+ *
+ * Subgraphs are refused at the tier cap regardless of how small they are,
+ * so this is a count axis independent of the storage one — ``instance``
+ * already itemizes their footprint.
  */
-export type SubgraphQuotaResponse = {
-    /**
-     * Parent Graph Id
-     *
-     * Parent graph identifier
-     */
-    parent_graph_id: string;
-    /**
-     * Tier
-     *
-     * Graph tier
-     */
-    tier: string;
+export type SubgraphLimits = {
     /**
      * Current Count
      *
-     * Current number of subgraphs
+     * Subgraphs currently provisioned under this graph
      */
     current_count: number;
     /**
      * Max Allowed
      *
-     * Maximum allowed subgraphs (None = unlimited)
+     * Maximum subgraphs for this tier (null when uncapped)
      */
     max_allowed?: number | null;
     /**
      * Remaining
      *
-     * Remaining subgraphs that can be created
+     * Subgraphs that can still be created (null when uncapped)
      */
     remaining?: number | null;
     /**
-     * Total Size Mb
+     * Approaching Limit
      *
-     * Total size of all subgraphs
+     * Whether approaching subgraph limit (>80%)
      */
-    total_size_mb?: number | null;
-    /**
-     * Max Size Mb
-     *
-     * Maximum allowed total size
-     */
-    max_size_mb?: number | null;
+    approaching_limit: boolean;
 };
 
 /**
@@ -19457,118 +19377,6 @@ export type ExecuteSpecificOperatorResponses = {
 
 export type ExecuteSpecificOperatorResponse = ExecuteSpecificOperatorResponses[keyof ExecuteSpecificOperatorResponses];
 
-export type BatchProcessQueriesData = {
-    body: BatchOperatorRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/operator/batch';
-};
-
-export type BatchProcessQueriesErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Insufficient credits
-     */
-    402: unknown;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type BatchProcessQueriesError = BatchProcessQueriesErrors[keyof BatchProcessQueriesErrors];
-
-export type BatchProcessQueriesResponses = {
-    /**
-     * Successful Response
-     */
-    200: BatchOperatorResponse;
-};
-
-export type BatchProcessQueriesResponse = BatchProcessQueriesResponses[keyof BatchProcessQueriesResponses];
-
-export type RecommendOperatorData = {
-    body: OperatorRecommendationRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/operator/recommend';
-};
-
-export type RecommendOperatorErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type RecommendOperatorError = RecommendOperatorErrors[keyof RecommendOperatorErrors];
-
-export type RecommendOperatorResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperatorRecommendationResponse;
-};
-
-export type RecommendOperatorResponse = RecommendOperatorResponses[keyof RecommendOperatorResponses];
-
 export type ListMcpToolsData = {
     body?: never;
     path: {
@@ -20940,60 +20748,6 @@ export type GetSubgraphInfoResponses = {
 };
 
 export type GetSubgraphInfoResponse = GetSubgraphInfoResponses[keyof GetSubgraphInfoResponses];
-
-export type GetSubgraphQuotaData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/subgraphs/quota';
-};
-
-export type GetSubgraphQuotaErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type GetSubgraphQuotaError = GetSubgraphQuotaErrors[keyof GetSubgraphQuotaErrors];
-
-export type GetSubgraphQuotaResponses = {
-    /**
-     * Successful Response
-     */
-    200: SubgraphQuotaResponse;
-};
-
-export type GetSubgraphQuotaResponse = GetSubgraphQuotaResponses[keyof GetSubgraphQuotaResponses];
 
 export type GetGraphSubscriptionData = {
     body?: never;
