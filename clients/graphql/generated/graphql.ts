@@ -304,6 +304,7 @@ export type EventBlock = {
   metadata: Scalars['JSON']['output']
   obligatedByEventId: Maybe<Scalars['String']['output']>
   occurredAt: Scalars['DateTime']['output']
+  payloadDrift: Scalars['Boolean']['output']
   replacedByEventId: Maybe<Scalars['String']['output']>
   replacesEventId: Maybe<Scalars['String']['output']>
   resourceElementId: Maybe<Scalars['String']['output']>
@@ -337,7 +338,7 @@ export type FactRow = {
 
 /** Current fiscal calendar state for a graph. */
 export type FiscalCalendar = {
-  /** Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations' */
+  /** Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations' */
   blockers: Array<Scalars['String']['output']>
   /** Ordered list of periods that a close run would process */
   catchUpSequence: Array<Scalars['String']['output']>
@@ -363,6 +364,10 @@ export type FiscalCalendar = {
   pendingObligationSample: Array<PendingObligationDetail>
   /** Fiscal period rows for this graph */
   periods: Array<FiscalPeriodSummary>
+  /** Matured schedule_entry_due events already at 'classified' with no drafted closing entry for their (schedule, period) — adjusting entries a close would silently omit. Resolve by running promote-obligations with dispatch_handlers=true (which reaches them) or voiding the obligation. */
+  strandedObligationCount: Scalars['Int']['output']
+  /** Sample of up to 5 stranded obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at. */
+  strandedObligationSample: Array<PendingObligationDetail>
   /** Days the most recent sync is stale relative to the period to close. Populated only when `sync_stale` is in `blockers` and last_sync_at exists (null when there's a connection but no sync has ever run). */
   syncStaleDays: Maybe<Scalars['Int']['output']>
 }
@@ -1677,6 +1682,7 @@ export type QueryEventBlocksArgs = {
   eventType?: InputMaybe<Scalars['String']['input']>
   limit?: InputMaybe<Scalars['Int']['input']>
   offset?: InputMaybe<Scalars['Int']['input']>
+  payloadDrift?: InputMaybe<Scalars['Boolean']['input']>
   source?: InputMaybe<Scalars['String']['input']>
   status?: InputMaybe<Scalars['String']['input']>
 }
