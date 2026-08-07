@@ -6005,6 +6005,18 @@ export type GraphInfo = {
      */
     graphName: string;
     /**
+     * Description
+     *
+     * Free-form description ('' when unset)
+     */
+    description?: string;
+    /**
+     * Tags
+     *
+     * Organizational tags for the graph
+     */
+    tags?: Array<string>;
+    /**
      * Role
      *
      * User's role/access level
@@ -6221,6 +6233,44 @@ export type GraphMetadata = {
      * Tags for organizing graphs
      */
     tags?: Array<string>;
+};
+
+/**
+ * GraphMetadataResult
+ *
+ * Result payload for the update-graph-metadata operation.
+ */
+export type GraphMetadataResult = {
+    /**
+     * Graph Id
+     *
+     * Graph the metadata belongs to
+     */
+    graph_id: string;
+    /**
+     * Graph Name
+     *
+     * Display name after the update
+     */
+    graph_name: string;
+    /**
+     * Description
+     *
+     * Description after the update ('' when unset)
+     */
+    description?: string;
+    /**
+     * Tags
+     *
+     * Tags after the update (empty when unset)
+     */
+    tags?: Array<string>;
+    /**
+     * Updated Fields
+     *
+     * Fields this call actually changed. Empty when the submitted values already matched what was stored.
+     */
+    updated_fields?: Array<string>;
 };
 
 /**
@@ -9777,6 +9827,52 @@ export type OperationEnvelopeFiscalCalendarResponse = {
      * Command-specific result payload
      */
     result?: FiscalCalendarResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[GraphMetadataResult]
+ */
+export type OperationEnvelopeGraphMetadataResult = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: GraphMetadataResult | null;
     /**
      * At
      *
@@ -15668,6 +15764,43 @@ export type UpdateForecastRequest = {
  */
 export type UpdateGraphMemberRoleRequest = {
     role: GraphRole;
+};
+
+/**
+ * UpdateGraphMetadataOp
+ *
+ * Body for the update-graph-metadata operation.
+ *
+ * Partial update — only supplied (non-null) fields change, so a caller
+ * editing just the display name need not resend the description and tags.
+ * Because ``None`` means "leave alone", clearing a field uses its empty
+ * value instead: pass ``""`` to clear the description and ``[]`` to clear
+ * the tags. ``graph_name`` cannot be cleared; it is the graph's label
+ * everywhere it is listed.
+ *
+ * This is the platform-level label for the graph, independent of the
+ * entity name shown on financial statements — change that through
+ * ``POST /extensions/roboledger/{graph_id}/operations/update-entity``.
+ */
+export type UpdateGraphMetadataOp = {
+    /**
+     * Graph Name
+     *
+     * New display name. Omit to leave unchanged; cannot be cleared.
+     */
+    graph_name?: string | null;
+    /**
+     * Description
+     *
+     * New description. Omit to leave unchanged; pass '' to clear.
+     */
+    description?: string | null;
+    /**
+     * Tags
+     *
+     * Replaces the full tag list (not a merge). Omit to leave unchanged; pass [] to clear. Tags are trimmed, de-duplicated, and capped at 50 characters each.
+     */
+    tags?: Array<string> | null;
 };
 
 /**
@@ -21834,6 +21967,70 @@ export type ChangeTierResponses = {
 };
 
 export type ChangeTierResponse = ChangeTierResponses[keyof ChangeTierResponses];
+
+export type UpdateGraphMetadataData = {
+    body: UpdateGraphMetadataOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/update-graph-metadata';
+};
+
+export type UpdateGraphMetadataErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type UpdateGraphMetadataError = UpdateGraphMetadataErrors[keyof UpdateGraphMetadataErrors];
+
+export type UpdateGraphMetadataResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeGraphMetadataResult;
+};
+
+export type UpdateGraphMetadataResponse = UpdateGraphMetadataResponses[keyof UpdateGraphMetadataResponses];
 
 export type MaterializeData = {
     body: MaterializeOp;
