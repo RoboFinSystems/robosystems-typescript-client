@@ -7204,7 +7204,7 @@ export type InstanceUsage = {
     /**
      * Usage Percentage
      *
-     * Storage usage as percentage of limit (e.g. 105.2)
+     * Storage usage as percentage of limit (e.g. 105.2). Derived from the enforced figure — durable bytes only, excluding `transient` build artifacts — so it can read lower than total_storage_gb/limit_gb while a blue-green rebuild is in flight.
      */
     usage_percentage?: number | null;
     /**
@@ -7222,7 +7222,7 @@ export type InstanceUsage = {
     /**
      * Items
      *
-     * Itemized storage by type — graph, memory, subgraph, vectors, staging. Sums to total_storage_gb.
+     * Itemized storage by type — graph, memory, subgraph, vectors, staging, transient, orphan. Sums to total_storage_gb. Only `subgraph` items correspond to live subgraphs, so this is the type to sum when reconciling against the subgraph list.
      */
     items?: Array<StorageItem>;
 };
@@ -8208,6 +8208,12 @@ export type ListSubgraphsResponse = {
      * Maximum allowed subgraphs for this tier (None = unlimited)
      */
     max_subgraphs?: number | null;
+    /**
+     * Total Size Bytes
+     *
+     * Combined on-disk footprint of all subgraphs in bytes
+     */
+    total_size_bytes?: number | null;
     /**
      * Total Size Mb
      *
@@ -14020,7 +14026,7 @@ export type StorageItem = {
     /**
      * Type
      *
-     * One of: graph, memory, subgraph, vectors, staging
+     * One of: graph, memory, subgraph, vectors, staging, transient (blue-green build artifact), orphan (a `{parent}_*` database, vector index, or staging file with no row in the graph registry — reclaimable leftover of a deleted subgraph)
      */
     type: string;
     /**
@@ -14279,6 +14285,12 @@ export type SubgraphResponse = {
      */
     updated_at: string;
     /**
+     * Size Bytes
+     *
+     * On-disk footprint in bytes — the database, its write-ahead log, and its vector index. Prefer this over size_mb at subgraph scale.
+     */
+    size_bytes?: number | null;
+    /**
      * Size Mb
      *
      * Size of the subgraph database in megabytes
@@ -14347,9 +14359,15 @@ export type SubgraphSummary = {
      */
     status: string;
     /**
+     * Size Bytes
+     *
+     * On-disk footprint in bytes — the database, its write-ahead log, and its vector index. Prefer this over size_mb at subgraph scale.
+     */
+    size_bytes?: number | null;
+    /**
      * Size Mb
      *
-     * Size in megabytes
+     * Same footprint in megabytes. Derived from size_bytes; kept for callers that render MB directly.
      */
     size_mb?: number | null;
     /**
