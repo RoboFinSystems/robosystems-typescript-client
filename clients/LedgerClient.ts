@@ -345,6 +345,13 @@ export interface CreateReportOptions {
 // consumers; for simple ack/ack-with-id payloads we keep the raw shape.
 
 /** Snake-case shape returned in envelope.result for fiscal calendar writes. */
+interface RawObligationDetail {
+  event_id: string
+  schedule_id?: string | null
+  schedule_name?: string | null
+  period: string
+}
+
 interface RawFiscalCalendar {
   graph_id: string
   fiscal_year_start_month: number
@@ -354,6 +361,15 @@ interface RawFiscalCalendar {
   catch_up_sequence: string[]
   closeable_now: boolean
   blockers: string[]
+  // Detail for actionable blockers — the API populates each only when its
+  // corresponding code is in `blockers`, so a caller can name which
+  // schedules hold the close rather than just that something does.
+  pending_obligation_count?: number
+  pending_obligation_sample?: RawObligationDetail[]
+  earliest_pending_period?: string | null
+  stranded_obligation_count?: number
+  stranded_obligation_sample?: RawObligationDetail[]
+  sync_stale_days?: number | null
   last_close_at: string | null
   initialized_at: string | null
   last_sync_at: string | null
@@ -375,6 +391,8 @@ interface RawInitializeLedgerResult {
 interface RawClosePeriodResult {
   period: string
   entries_posted: number
+  entries_published_to_qb?: number
+  entries_posted_locally?: number
   target_auto_advanced: boolean
   fiscal_calendar: RawFiscalCalendar
   // §3.8 — auto-run rules on close. `null` when no schedules with facts
@@ -404,7 +422,17 @@ export interface InitializeLedgerResult {
 
 export interface ClosePeriodResult {
   period: string
+  /**
+   * Total drafts the close moved to posted, across both post paths. A close
+   * that published everything to QuickBooks used to report 0 here, because
+   * the pre-publish step promotes each draft before the local bulk
+   * transition counts it; both paths are summed now.
+   */
   entriesPosted: number
+  /** Drafts published to QuickBooks by the close's pre-publish step. */
+  entriesPublishedToQb: number
+  /** Drafts posted by the local bulk transition (never reach QuickBooks). */
+  entriesPostedLocally: number
   targetAutoAdvanced: boolean
   fiscalCalendar: LedgerFiscalCalendar
   /**
@@ -466,6 +494,13 @@ export interface InitializeLedgerOptions {
 export interface ClosePeriodOptions {
   note?: string | null
   allowStaleSync?: boolean
+  /**
+   * Close despite matured obligations that were never drafted, knowingly
+   * omitting those adjusting entries. Prefer re-running promotion with
+   * handler dispatch, or voiding the obligations. The override is recorded
+   * in the close audit note.
+   */
+  allowStrandedObligations?: boolean
 }
 
 export interface CreateScheduleOptions {
@@ -1603,6 +1638,7 @@ export class LedgerClient {
       period,
       note: options?.note ?? null,
       allow_stale_sync: options?.allowStaleSync,
+      allow_stranded_obligations: options?.allowStrandedObligations,
     }
     const envelope = await this.callOperation(
       'Close period',
@@ -1612,6 +1648,8 @@ export class LedgerClient {
     return {
       period: raw.period,
       entriesPosted: raw.entries_posted ?? 0,
+      entriesPublishedToQb: raw.entries_published_to_qb ?? 0,
+      entriesPostedLocally: raw.entries_posted_locally ?? 0,
       targetAutoAdvanced: raw.target_auto_advanced ?? false,
       fiscalCalendar: rawFiscalCalendarToCamel(raw.fiscal_calendar),
       ruleSummary: raw.rule_summary ?? null,
@@ -2363,6 +2401,15 @@ export class LedgerClient {
 
 // ── Module-private conversion helpers ─────────────────────────────────
 
+function rawObligationDetailToCamel(raw: RawObligationDetail) {
+  return {
+    eventId: raw.event_id,
+    scheduleId: raw.schedule_id ?? null,
+    scheduleName: raw.schedule_name ?? null,
+    period: raw.period,
+  }
+}
+
 function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar {
   return {
     graphId: raw.graph_id,
@@ -2373,6 +2420,14 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
     catchUpSequence: raw.catch_up_sequence ?? [],
     closeableNow: raw.closeable_now ?? false,
     blockers: raw.blockers ?? [],
+    pendingObligationCount: raw.pending_obligation_count ?? 0,
+    pendingObligationSample: (raw.pending_obligation_sample ?? []).map(rawObligationDetailToCamel),
+    earliestPendingPeriod: raw.earliest_pending_period ?? null,
+    strandedObligationCount: raw.stranded_obligation_count ?? 0,
+    strandedObligationSample: (raw.stranded_obligation_sample ?? []).map(
+      rawObligationDetailToCamel
+    ),
+    syncStaleDays: raw.sync_stale_days ?? null,
     lastCloseAt: raw.last_close_at ?? null,
     initializedAt: raw.initialized_at ?? null,
     lastSyncAt: raw.last_sync_at ?? null,
