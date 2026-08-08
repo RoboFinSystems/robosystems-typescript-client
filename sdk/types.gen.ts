@@ -851,7 +851,7 @@ export type BackupListResponse = {
     /**
      * Restore Supported
      *
-     * Whether backups on this graph can be restored. False for entity graphs, which are materialized from the extensions database (use the materialize operation instead), and for shared repositories, which are platform-managed and download-only.
+     * Whether backups on this graph can be restored. False for entity graphs, which are materialized from the extensions database (use the materialize operation instead), and for shared repositories, which are platform-managed and download-only. True for subgraphs of an entity graph: only the parent is materialized, so a subgraph has no other recovery path.
      */
     restore_supported?: boolean;
     /**
@@ -14144,7 +14144,7 @@ export type StorageSummary = {
     /**
      * Avg Storage Gb
      *
-     * Average storage in GB
+     * Time-weighted average storage in GB over the period
      */
     avg_storage_gb: number;
     /**
@@ -14159,12 +14159,6 @@ export type StorageSummary = {
      * Minimum storage in GB
      */
     min_storage_gb: number;
-    /**
-     * Total Gb Hours
-     *
-     * Total GB-hours for billing
-     */
-    total_gb_hours: number;
     /**
      * Measurement Count
      *

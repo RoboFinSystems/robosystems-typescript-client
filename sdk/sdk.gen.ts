@@ -1044,7 +1044,7 @@ export const createBackup = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Restore Backup
  *
- * Not allowed on entity graphs (use `materialize` instead) or shared repositories. Destructive: the existing database is snapshotted, then overwritten. Monitor progress via SSE at `/v1/operations/{operation_id}/stream`.
+ * Not allowed on entity graphs (use `materialize` instead) or shared repositories. Entity *subgraphs* are restorable — they are written directly and have no materialization path. Destructive: the existing database is snapshotted, then overwritten. Monitor progress via SSE at `/v1/operations/{operation_id}/stream`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
