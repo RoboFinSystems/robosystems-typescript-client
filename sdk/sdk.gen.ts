@@ -623,7 +623,7 @@ export const listBackups = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Get temporary download URL for backup
  *
- * Generate a temporary download URL for a backup (unencrypted backups only). The filename carries the extension listed as `download_extension` on the backup: `.lbug.zip` is a ZIP holding the LadybugDB database file `{graph_id}.lbug`; `.lbug.zst` (shared repository snapshots) is a single zstd-compressed database file. Decompress the latter with `zstd -d <file>.lbug.zst` (install zstd first: `brew install zstd`, `apt-get install zstd`, or `dnf install zstd`) — no `--long` flag is needed.
+ * Generate a temporary download URL for a backup. The filename carries the extension listed as `download_extension` on the backup: `.lbug.zip` is a ZIP holding the LadybugDB database file `{graph_id}.lbug`; `.lbug.zst` (shared repository snapshots) is a single zstd-compressed database file. Decompress the latter with `zstd -d <file>.lbug.zst` (install zstd first: `brew install zstd`, `apt-get install zstd`, or `dnf install zstd`) — no `--long` flag is needed.
  */
 export const getBackupDownloadUrl = <ThrowOnError extends boolean = false>(options: Options<GetBackupDownloadUrlData, ThrowOnError>) => (options.client ?? client).get<GetBackupDownloadUrlResponses, GetBackupDownloadUrlErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1044,7 +1044,7 @@ export const createBackup = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Restore Backup
  *
- * Only encrypted backups can be restored. Not allowed on entity graphs (use `materialize` instead) or shared repositories.
+ * Not allowed on entity graphs (use `materialize` instead) or shared repositories. Destructive: the existing database is snapshotted, then overwritten. Monitor progress via SSE at `/v1/operations/{operation_id}/stream`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

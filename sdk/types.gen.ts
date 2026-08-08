@@ -753,12 +753,6 @@ export type BackupCreateRequest = {
      */
     compression?: boolean;
     /**
-     * Encryption
-     *
-     * Enable encryption (encrypted backups cannot be downloaded)
-     */
-    encryption?: boolean;
-    /**
      * Schedule
      *
      * Optional cron schedule for automated backups
@@ -855,6 +849,12 @@ export type BackupListResponse = {
      */
     is_shared_repository?: boolean;
     /**
+     * Restore Supported
+     *
+     * Whether backups on this graph can be restored. False for entity graphs, which are materialized from the extensions database (use the materialize operation instead), and for shared repositories, which are platform-managed and download-only.
+     */
+    restore_supported?: boolean;
+    /**
      * Download quota for shared repositories
      */
     download_quota?: DownloadQuota | null;
@@ -911,21 +911,13 @@ export type BackupResponse = {
      */
     backup_duration_seconds: number;
     /**
-     * Encryption Enabled
-     */
-    encryption_enabled: boolean;
-    /**
      * Compression Enabled
      */
     compression_enabled: boolean;
     /**
-     * Allow Export
-     */
-    allow_export: boolean;
-    /**
      * Download Extension
      *
-     * Extension the download will carry, and therefore how to unpack it: '.lbug.zip' is a ZIP holding the LadybugDB database file, '.lbug.zst' is zstd-compressed (`zstd -d`). Null when the backup is encrypted and so cannot be downloaded.
+     * Extension the download will carry, and therefore how to unpack it: '.lbug.zip' is a ZIP holding the LadybugDB database file, '.lbug.zst' is zstd-compressed (`zstd -d`). Null only when the backup has no stored object yet.
      */
     download_extension?: string | null;
     /**
@@ -19723,7 +19715,7 @@ export type GetBackupDownloadUrlData = {
 
 export type GetBackupDownloadUrlErrors = {
     /**
-     * Access denied or backup is encrypted
+     * Access denied
      */
     403: unknown;
     /**
