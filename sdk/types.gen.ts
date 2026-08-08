@@ -1651,6 +1651,12 @@ export type ComputeForecastResponse = {
      */
     months_computed?: Array<ForecastMonthLite>;
     /**
+     * Halted At
+     *
+     * Month (``YYYY-MM``) where the walk stopped because verification failed, or null if it ran the full horizon. Each month's opening balances are the previous month's closing balances, so computing past a failure yields months derived from a known-wrong one rather than merely unverified months. When set, ``months_computed`` ends at this month and is shorter than ``months``; the failing month's facts are kept so the failure can be inspected.
+     */
+    halted_at?: string | null;
+    /**
      * Skipped
      */
     skipped?: Array<SkippedForecastLite>;
@@ -5837,7 +5843,7 @@ export type ForecastMonthLite = {
     /**
      * Verification Passed
      *
-     * Whether every rule evaluated against the month's scenario sets passed (None = no rules ran for the month).
+     * Whether every rule evaluated against the month's scenario sets passed. Three states, and the third is not the first: ``true`` = rules ran and all passed; ``false`` = at least one failed or errored, which halts the walk (see ``halted_at``); ``null`` = **no rules ran**, so the month is unverified rather than verified. Treat null as absence of evidence, never as a pass.
      */
     verification_passed?: boolean | null;
     /**
