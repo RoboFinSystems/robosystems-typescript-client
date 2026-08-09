@@ -849,12 +849,6 @@ export type BackupListResponse = {
      */
     is_shared_repository?: boolean;
     /**
-     * Restore Supported
-     *
-     * Whether backups on this graph can be restored. False for entity graphs, which are materialized from the extensions database (use the materialize operation instead), and for shared repositories, which are platform-managed and download-only. True for subgraphs of an entity graph: only the parent is materialized, so a subgraph has no other recovery path.
-     */
-    restore_supported?: boolean;
-    /**
      * Download quota for shared repositories
      */
     download_quota?: DownloadQuota | null;
@@ -882,6 +876,18 @@ export type BackupResponse = {
      * Backup Type
      */
     backup_type: string;
+    /**
+     * Initiated By
+     *
+     * Who started this backup. 'user' is one you requested and it counts against the tier's daily backup limit; 'scheduled' is taken nightly on your behalf and does not.
+     */
+    initiated_by?: string;
+    /**
+     * Memory Included
+     *
+     * Whether the archive carries this graph's semantic memory store. Null for backups taken before memory was included, which make no claim either way — distinct from false, which means the graph had none.
+     */
+    memory_included?: boolean | null;
     /**
      * Status
      */
@@ -12844,32 +12850,6 @@ export type ResolvedReportInfo = {
 export type ResponseMode = 'auto' | 'sync' | 'async' | 'stream';
 
 /**
- * RestoreBackupOp
- *
- * Body for the restore-backup operation.
- */
-export type RestoreBackupOp = {
-    /**
-     * Backup Id
-     *
-     * Backup identifier to restore from
-     */
-    backup_id: string;
-    /**
-     * Create System Backup
-     *
-     * Create a system backup of existing database before restore
-     */
-    create_system_backup?: boolean;
-    /**
-     * Verify After Restore
-     *
-     * Verify database integrity after restore
-     */
-    verify_after_restore?: boolean;
-};
-
-/**
  * RollforwardMechanics
  *
  * Filter-based attribution mechanics for ``block_type='rollforward'``.
@@ -21831,70 +21811,6 @@ export type CreateBackupResponses = {
 };
 
 export type CreateBackupResponse = CreateBackupResponses[keyof CreateBackupResponses];
-
-export type RestoreBackupData = {
-    body: RestoreBackupOp;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/operations/restore-backup';
-};
-
-export type RestoreBackupErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type RestoreBackupError = RestoreBackupErrors[keyof RestoreBackupErrors];
-
-export type RestoreBackupResponses = {
-    /**
-     * Successful Response
-     */
-    202: OperationEnvelope;
-};
-
-export type RestoreBackupResponse = RestoreBackupResponses[keyof RestoreBackupResponses];
 
 export type ChangeTierData = {
     body: ChangeTierOp;
