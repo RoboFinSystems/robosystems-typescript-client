@@ -28,6 +28,7 @@ import {
   addPublishListMembers,
   autoMapElements,
   bindTextBlock,
+  blockSourceGraph,
   buildFactGrid,
   closePeriod,
   computeMetrics,
@@ -56,9 +57,11 @@ import {
   regenerateReport,
   removePublishListMember,
   reopenPeriod,
+  revokeReportShare,
   setCloseTarget,
   shareReport,
   transitionFilingStatus,
+  unblockSourceGraph,
   updateAgent,
   updateEntity,
   updateEventBlock,
@@ -74,6 +77,8 @@ import type {
   AutoMapElementsOperation,
   BindTextBlockRequest,
   BindTextBlockResponse,
+  BlockedSourceGraphResponse,
+  BlockSourceGraphResult,
   ClosePeriodOperation,
   ComputeMetricsRequest,
   ComputeMetricsResponse,
@@ -116,6 +121,7 @@ import type {
   RebuildScheduleRequest,
   ReopenPeriodOperation,
   ReportResponse,
+  RevokeReportShareResponse,
   SetCloseTargetOperation,
   ShareReportResponse,
   TaxonomyBlockEnvelope,
@@ -159,6 +165,7 @@ import {
   ListInformationBlocksDocument,
   ListLedgerAccountsDocument,
   ListLedgerAgentsDocument,
+  ListLedgerBlockedSourceGraphsDocument,
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
   ListLedgerEventBlocksDocument,
@@ -194,6 +201,7 @@ import {
   type ListInformationBlocksQuery,
   type ListLedgerAccountsQuery,
   type ListLedgerAgentsQuery,
+  type ListLedgerBlockedSourceGraphsQuery,
   type ListLedgerElementsQuery,
   type ListLedgerEntitiesQuery,
   type ListLedgerEventBlocksQuery,
@@ -298,6 +306,10 @@ export type PublishList = NonNullable<
 >['publishLists'][number]
 export type PublishListDetail = NonNullable<GetLedgerPublishListQuery['publishList']>
 export type PublishListMember = PublishListDetail['members'][number]
+
+export type BlockedSourceGraph = NonNullable<
+  ListLedgerBlockedSourceGraphsQuery['blockedSourceGraphs']
+>['blockedSourceGraphs'][number]
 
 /**
  * Presigned-URL response for a Report bundle download.
@@ -2215,6 +2227,113 @@ export class LedgerClient {
   /** Check if a report was received via sharing (vs locally created). */
   isSharedReport(report: Report): boolean {
     return report.sourceGraphId !== null
+  }
+
+  /**
+   * Withdraw a report previously shared to one recipient graph.
+   *
+   * The sender's half of the share controls: deletes the copy from that
+   * recipient's schema and marks the share revoked. Scoped to a single
+   * recipient, so withdrawing a distribution to a whole publish list is
+   * one call per member.
+   *
+   * A recipient who already deleted the copy themselves is not an error —
+   * the share is still marked revoked and `copyDeleted` comes back false.
+   * The linked entity in the recipient's graph is left in place, so an
+   * investor's declared holding survives the withdrawal.
+   */
+  async revokeReportShare(
+    graphId: string,
+    reportId: string,
+    targetGraphId: string
+  ): Promise<RevokeReportShareResponse> {
+    const envelope = await this.callOperation(
+      'Revoke report share',
+      revokeReportShare({
+        path: { graph_id: graphId },
+        body: {
+          report_id: reportId,
+          target_graph_id: targetGraphId,
+        } as Parameters<typeof revokeReportShare>[0]['body'],
+      })
+    )
+    return this.requireResult('Revoke report share', envelope.result)
+  }
+
+  // ── Blocked source graphs ────────────────────────────────────────────
+  //
+  // Sharing is authorized capability-style — whoever holds this graph's id
+  // can copy a published report into it — so these are the recipient's exit.
+
+  /** List source graphs barred from sharing reports into this graph. */
+  async listBlockedSourceGraphs(
+    graphId: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<BlockedSourceGraph[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerBlockedSourceGraphsDocument,
+      {
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List blocked source graphs',
+      (data) => data.blockedSourceGraphs
+    )
+    return list?.blockedSourceGraphs ?? []
+  }
+
+  /**
+   * Bar a graph from sharing reports into this one.
+   *
+   * Read the sender's id off the `sourceGraphId` provenance field of a
+   * report that was shared to you. Blocking is idempotent: re-blocking
+   * returns `alreadyBlocked: true` and preserves the original `blockedAt`.
+   *
+   * With `purge`, every report already shared in from that source is
+   * deleted along with its fact sets and facts; reports this graph
+   * authored are never touched. `reason` is a note for your own records
+   * and is never disclosed to the sender.
+   */
+  async blockSourceGraph(
+    graphId: string,
+    sourceGraphId: string,
+    options?: { reason?: string; purge?: boolean }
+  ): Promise<BlockSourceGraphResult> {
+    const envelope = await this.callOperation(
+      'Block source graph',
+      blockSourceGraph({
+        path: { graph_id: graphId },
+        body: {
+          source_graph_id: sourceGraphId,
+          ...(options?.reason !== undefined ? { reason: options.reason } : {}),
+          purge: options?.purge ?? false,
+        } as Parameters<typeof blockSourceGraph>[0]['body'],
+      })
+    )
+    return this.requireResult('Block source graph', envelope.result)
+  }
+
+  /**
+   * Lift a block, allowing that source to share in again.
+   *
+   * Reports removed by an earlier purge are not restored — unblocking
+   * reopens the channel, it does not undo.
+   */
+  async unblockSourceGraph(
+    graphId: string,
+    sourceGraphId: string
+  ): Promise<BlockedSourceGraphResponse> {
+    const envelope = await this.callOperation(
+      'Unblock source graph',
+      unblockSourceGraph({
+        path: { graph_id: graphId },
+        body: {
+          source_graph_id: sourceGraphId,
+        } as Parameters<typeof unblockSourceGraph>[0]['body'],
+      })
+    )
+    return this.requireResult('Unblock source graph', envelope.result)
   }
 
   // ── Publish Lists ────────────────────────────────────────────────────
