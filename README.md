@@ -21,6 +21,16 @@ Official TypeScript Client for the RoboSystems Financial Knowledge Graph API. Ac
 npm install @robosystems/client
 ```
 
+## Versioning
+
+This client is `1.x` and follows semantic versioning, with one distinction worth knowing before you pin.
+
+The **stable surface** is the facade clients and their subpath exports (`/clients`, `/ledger`, `/investor`, `/library`, `/query`, `/operations`, `/client`), the React hooks, the error classes, the auth configuration, and the types those signatures expose through `/types`. It is frozen for the life of `1.x`; breaking any of it costs a major version.
+
+The **generated surface** — `/sdk`, which publishes the code generated from the platform's OpenAPI spec — tracks that spec. Operations there can be added, renamed, or removed on a minor release, and every such removal is named in that release's notes. `/sdk` is exported for convenience, not promised; anything that earns a compatibility promise is surfaced through a facade first.
+
+So `^1` is the right pin if you build on the facades. If you import from `/sdk`, either pin a minor range (`~1.7`) and read the release notes when you widen, or open an issue to have the operation surfaced through a facade.
+
 ## Resources
 
 - [RoboSystems Platform](https://robosystems.ai)
