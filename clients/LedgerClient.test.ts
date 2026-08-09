@@ -991,6 +991,131 @@ describe('LedgerClient', () => {
     })
   })
 
+  /** Read the JSON body of the first fetch call.
+   *
+   * REST operations go through the generated client, which calls
+   * `fetch(Request)`; the GraphQL path calls `fetch(url, init)`. Handle both
+   * so this doesn't silently pass against the wrong shape.
+   */
+  async function requestBody(index = 0): Promise<Record<string, unknown>> {
+    const [first, init] = mockFetch.mock.calls[index]
+    if (init && typeof (init as RequestInit).body === 'string') {
+      return JSON.parse((init as RequestInit).body as string)
+    }
+    return await (first as Request).clone().json()
+  }
+
+  // Cross-graph share controls. Sharing is authorized capability-style —
+  // whoever holds a graph's id can copy a published report into it — so the
+  // recipient's exit (block, purge) and the sender's (revoke) are what make
+  // the model sound.
+
+  describe('revokeReportShare', () => {
+    it('reports the withdrawn copy', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('revoke-report-share', {
+          report_id: 'rpt_1',
+          target_graph_id: 'graph_2',
+          revoked_at: '2026-08-09T12:00:00Z',
+          copy_deleted: true,
+        })
+      )
+      const result = await client.revokeReportShare('graph_1', 'rpt_1', 'graph_2')
+      expect(result).toMatchObject({ target_graph_id: 'graph_2', copy_deleted: true })
+    })
+
+    it('is not an error when the recipient already deleted the copy', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('revoke-report-share', {
+          report_id: 'rpt_1',
+          target_graph_id: 'graph_2',
+          revoked_at: '2026-08-09T12:00:00Z',
+          copy_deleted: false,
+        })
+      )
+      const result = await client.revokeReportShare('graph_1', 'rpt_1', 'graph_2')
+      expect(result.copy_deleted).toBe(false)
+    })
+  })
+
+  describe('blockSourceGraph', () => {
+    it('blocks a sender and reports nothing purged by default', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('block-source-graph', {
+          block: { id: 'blk_1', source_graph_id: 'graph_2' },
+          already_blocked: false,
+          purged_report_count: 0,
+        })
+      )
+      const result = await client.blockSourceGraph('graph_1', 'graph_2')
+      expect(result).toMatchObject({ already_blocked: false, purged_report_count: 0 })
+      const body = await requestBody()
+      expect(body).toMatchObject({ source_graph_id: 'graph_2', purge: false })
+      // An omitted reason must not be sent as an explicit null.
+      expect(body).not.toHaveProperty('reason')
+    })
+
+    it('forwards purge and reason', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('block-source-graph', {
+          block: { id: 'blk_1', source_graph_id: 'graph_2' },
+          already_blocked: true,
+          purged_report_count: 3,
+        })
+      )
+      const result = await client.blockSourceGraph('graph_1', 'graph_2', {
+        reason: 'No longer a shareholder.',
+        purge: true,
+      })
+      expect(result.purged_report_count).toBe(3)
+      const body = await requestBody()
+      expect(body).toMatchObject({ purge: true, reason: 'No longer a shareholder.' })
+    })
+  })
+
+  describe('unblockSourceGraph', () => {
+    it('returns the lifted block', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('unblock-source-graph', {
+          id: 'blk_1',
+          source_graph_id: 'graph_2',
+        })
+      )
+      const result = await client.unblockSourceGraph('graph_1', 'graph_2')
+      expect(result).toMatchObject({ source_graph_id: 'graph_2' })
+    })
+  })
+
+  describe('listBlockedSourceGraphs', () => {
+    it('unwraps the paginated list', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          blockedSourceGraphs: {
+            blockedSourceGraphs: [
+              {
+                id: 'blk_1',
+                sourceGraphId: 'graph_2',
+                sourceGraphName: 'Acme Inc',
+                blockedBy: 'usr_1',
+                blockedAt: '2026-08-09T12:00:00Z',
+                reason: null,
+              },
+            ],
+            pagination: { total: 1, limit: 100, offset: 0, hasMore: false },
+          },
+        })
+      )
+      const blocked = await client.listBlockedSourceGraphs('graph_1')
+      expect(blocked).toHaveLength(1)
+      expect(blocked[0]).toMatchObject({ sourceGraphId: 'graph_2' })
+    })
+
+    it('returns an empty list when nothing is blocked', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ blockedSourceGraphs: null }))
+      expect(await client.listBlockedSourceGraphs('graph_1')).toEqual([])
+    })
+  })
+
   describe('fileReport', () => {
     it('returns the filed report header', async () => {
       mockFetch.mockResolvedValueOnce(

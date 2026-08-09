@@ -168,6 +168,30 @@ export type Association = {
   weight: Maybe<Scalars['Float']['output']>
 }
 
+/** One blocked source graph. */
+export type BlockedSourceGraph = {
+  /** When the block was created. */
+  blockedAt: Scalars['DateTime']['output']
+  /** User ID that created the block. */
+  blockedBy: Scalars['String']['output']
+  /** Block row identifier (ULID). */
+  id: Scalars['String']['output']
+  /** Recipient's own note, if given. */
+  reason: Maybe<Scalars['String']['output']>
+  /** The blocked sender's graph ID. */
+  sourceGraphId: Scalars['String']['output']
+  /** Display name of the blocked graph (if known). */
+  sourceGraphName: Maybe<Scalars['String']['output']>
+}
+
+/** Paginated list of blocked source graphs. */
+export type BlockedSourceGraphList = {
+  /** Blocked source graphs. */
+  blockedSourceGraphs: Array<BlockedSourceGraph>
+  /** Pagination metadata. */
+  pagination: PaginationInfo
+}
+
 /**
  * A grouping of closing-book items shown as a sidebar section
  * (e.g. Statements, Account Rollups, Schedules, Period Close).
@@ -1567,6 +1591,7 @@ export type Query = {
   accounts: Maybe<AccountList>
   agent: Maybe<Agent>
   agents: Array<Agent>
+  blockedSourceGraphs: Maybe<BlockedSourceGraphList>
   closingBookStructures: Maybe<ClosingBookStructures>
   elements: Maybe<ElementList>
   entities: Array<LedgerEntity>
@@ -1654,6 +1679,11 @@ export type QueryAgentsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>
   offset?: InputMaybe<Scalars['Int']['input']>
   source?: InputMaybe<Scalars['String']['input']>
+}
+
+export type QueryBlockedSourceGraphsArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>
+  offset?: InputMaybe<Scalars['Int']['input']>
 }
 
 export type QueryElementsArgs = {
@@ -2689,6 +2719,25 @@ export type ListLedgerAgentsQuery = {
     updatedAt: any | null
     createdBy: string | null
   }>
+}
+
+export type ListLedgerBlockedSourceGraphsQueryVariables = Exact<{
+  limit?: Scalars['Int']['input']
+  offset?: Scalars['Int']['input']
+}>
+
+export type ListLedgerBlockedSourceGraphsQuery = {
+  blockedSourceGraphs: {
+    blockedSourceGraphs: Array<{
+      id: string
+      sourceGraphId: string
+      sourceGraphName: string | null
+      blockedBy: string
+      blockedAt: any
+      reason: string | null
+    }>
+    pagination: { total: number; limit: number; offset: number; hasMore: boolean }
+  } | null
 }
 
 export type GetLedgerClosingBookStructuresQueryVariables = Exact<{ [key: string]: never }>
@@ -5352,6 +5401,93 @@ export const ListLedgerAgentsDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerAgentsQuery, ListLedgerAgentsQueryVariables>
+export const ListLedgerBlockedSourceGraphsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerBlockedSourceGraphs' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '100' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'blockedSourceGraphs' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'blockedSourceGraphs' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'blockedBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'blockedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reason' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'pagination' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'limit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'offset' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'hasMore' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ListLedgerBlockedSourceGraphsQuery,
+  ListLedgerBlockedSourceGraphsQueryVariables
+>
 export const GetLedgerClosingBookStructuresDocument = {
   kind: 'Document',
   definitions: [

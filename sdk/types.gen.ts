@@ -1153,6 +1153,100 @@ export type BindTextBlockResponse = {
 };
 
 /**
+ * BlockSourceGraphOperation
+ *
+ * Bar a graph from sharing reports into this one.
+ */
+export type BlockSourceGraphOperation = {
+    /**
+     * Source Graph Id
+     *
+     * Graph ID to block. Read it off the `source_graph_id` provenance field of a report that was shared to you.
+     */
+    source_graph_id: string;
+    /**
+     * Reason
+     *
+     * Free-form note for your own records. Never disclosed to the sender.
+     */
+    reason?: string | null;
+    /**
+     * Purge
+     *
+     * Also delete every report already shared in from this source, with their fact sets and facts. Reports you authored are never touched.
+     */
+    purge?: boolean;
+};
+
+/**
+ * BlockSourceGraphResult
+ *
+ * Outcome of a block, including anything the purge removed.
+ */
+export type BlockSourceGraphResult = {
+    /**
+     * The block record.
+     */
+    block: BlockedSourceGraphResponse;
+    /**
+     * Already Blocked
+     *
+     * True when the source was already blocked and this call was a no-op apart from any purge.
+     */
+    already_blocked?: boolean;
+    /**
+     * Purged Report Count
+     *
+     * Number of previously-shared reports deleted from this graph. Zero unless `purge` was set.
+     */
+    purged_report_count?: number;
+};
+
+/**
+ * BlockedSourceGraphResponse
+ *
+ * One blocked source graph.
+ */
+export type BlockedSourceGraphResponse = {
+    /**
+     * Id
+     *
+     * Block row identifier (ULID).
+     */
+    id: string;
+    /**
+     * Source Graph Id
+     *
+     * The blocked sender's graph ID.
+     */
+    source_graph_id: string;
+    /**
+     * Source Graph Name
+     *
+     * Display name of the blocked graph (if known).
+     */
+    source_graph_name?: string | null;
+    /**
+     * Blocked By
+     *
+     * User ID that created the block.
+     */
+    blocked_by: string;
+    /**
+     * Blocked At
+     *
+     * When the block was created.
+     */
+    blocked_at: string;
+    /**
+     * Reason
+     *
+     * Recipient's own note, if given.
+     */
+    reason?: string | null;
+};
+
+/**
  * CancelSubscriptionRequest
  *
  * Request to cancel a subscription.
@@ -9162,6 +9256,98 @@ export type OperationEnvelopeBindTextBlockResponse = {
 };
 
 /**
+ * OperationEnvelope[BlockSourceGraphResult]
+ */
+export type OperationEnvelopeBlockSourceGraphResult = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: BlockSourceGraphResult | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[BlockedSourceGraphResponse]
+ */
+export type OperationEnvelopeBlockedSourceGraphResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: BlockedSourceGraphResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[ChangeReportingStyleResponse]
  */
 export type OperationEnvelopeChangeReportingStyleResponse = {
@@ -10404,6 +10590,52 @@ export type OperationEnvelopeReportResponse = {
 };
 
 /**
+ * OperationEnvelope[RevokeReportShareResponse]
+ */
+export type OperationEnvelopeRevokeReportShareResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: RevokeReportShareResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[ScheduleCreatedResponse]
  */
 export type OperationEnvelopeScheduleCreatedResponse = {
@@ -11236,33 +11468,17 @@ export type OrgUsageSummary = {
      */
     total_storage_gb: number;
     /**
-     * Total Api Calls
-     */
-    total_api_calls: number;
-    /**
      * Daily Avg Credits
      */
     daily_avg_credits: number;
-    /**
-     * Daily Avg Api Calls
-     */
-    daily_avg_api_calls: number;
     /**
      * Projected Monthly Credits
      */
     projected_monthly_credits: number;
     /**
-     * Projected Monthly Api Calls
-     */
-    projected_monthly_api_calls: number;
-    /**
      * Credits Limit
      */
     credits_limit: number | null;
-    /**
-     * Api Calls Limit
-     */
-    api_calls_limit: number | null;
     /**
      * Storage Limit Gb
      */
@@ -12848,6 +13064,58 @@ export type ResolvedReportInfo = {
  * Response modes for execution.
  */
 export type ResponseMode = 'auto' | 'sync' | 'async' | 'stream';
+
+/**
+ * RevokeReportShareOperation
+ *
+ * Withdraw a shared Report from one recipient graph.
+ */
+export type RevokeReportShareOperation = {
+    /**
+     * Target Graph Id
+     *
+     * Recipient graph whose copy should be withdrawn.
+     */
+    target_graph_id: string;
+    /**
+     * Report Id
+     *
+     * The Report whose share to withdraw.
+     */
+    report_id: string;
+};
+
+/**
+ * RevokeReportShareResponse
+ *
+ * Outcome of withdrawing a shared report from one recipient.
+ */
+export type RevokeReportShareResponse = {
+    /**
+     * Report Id
+     *
+     * The report whose share was revoked.
+     */
+    report_id: string;
+    /**
+     * Target Graph Id
+     *
+     * Recipient the copy was pulled from.
+     */
+    target_graph_id: string;
+    /**
+     * Revoked At
+     *
+     * When the share was revoked.
+     */
+    revoked_at: string;
+    /**
+     * Copy Deleted
+     *
+     * True when a copy was found and deleted in the recipient's schema. False when the recipient had already deleted it themselves — the share is still marked revoked.
+     */
+    copy_deleted: boolean;
+};
 
 /**
  * RollforwardMechanics
@@ -15283,6 +15551,20 @@ export type TransitionFilingStatusRequest = {
      * Target lifecycle state: `under_review` (submit a draft for review) or `archived` (supersede / retire a filed report). Reaching `filed` goes through `file-report` so audit fields land cleanly.
      */
     target_status: string;
+};
+
+/**
+ * UnblockSourceGraphOperation
+ *
+ * Lift a block on a source graph.
+ */
+export type UnblockSourceGraphOperation = {
+    /**
+     * Source Graph Id
+     *
+     * Graph ID to unblock.
+     */
+    source_graph_id: string;
 };
 
 /**
@@ -26235,6 +26517,70 @@ export type ShareReportResponses = {
 
 export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
 
+export type RevokeReportShareData = {
+    body: RevokeReportShareOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/revoke-report-share';
+};
+
+export type RevokeReportShareErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RevokeReportShareError = RevokeReportShareErrors[keyof RevokeReportShareErrors];
+
+export type RevokeReportShareResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeRevokeReportShareResponse;
+};
+
+export type RevokeReportShareResponse2 = RevokeReportShareResponses[keyof RevokeReportShareResponses];
+
 export type FileReportData = {
     body: FileReportRequest;
     headers?: {
@@ -26682,6 +27028,134 @@ export type RemovePublishListMemberResponses = {
 };
 
 export type RemovePublishListMemberResponse = RemovePublishListMemberResponses[keyof RemovePublishListMemberResponses];
+
+export type BlockSourceGraphData = {
+    body: BlockSourceGraphOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/block-source-graph';
+};
+
+export type BlockSourceGraphErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type BlockSourceGraphError = BlockSourceGraphErrors[keyof BlockSourceGraphErrors];
+
+export type BlockSourceGraphResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeBlockSourceGraphResult;
+};
+
+export type BlockSourceGraphResponse = BlockSourceGraphResponses[keyof BlockSourceGraphResponses];
+
+export type UnblockSourceGraphData = {
+    body: UnblockSourceGraphOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/unblock-source-graph';
+};
+
+export type UnblockSourceGraphErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type UnblockSourceGraphError = UnblockSourceGraphErrors[keyof UnblockSourceGraphErrors];
+
+export type UnblockSourceGraphResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeBlockedSourceGraphResponse;
+};
+
+export type UnblockSourceGraphResponse = UnblockSourceGraphResponses[keyof UnblockSourceGraphResponses];
 
 export type LiveFinancialStatementData = {
     body: LiveFinancialStatementRequest;
