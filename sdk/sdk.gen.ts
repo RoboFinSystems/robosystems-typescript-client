@@ -549,7 +549,7 @@ export const listOperators = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Auto-select Operator for Query
  *
- * Routes to the best operator for your query. Operators: `financial` (SEC, accounting), `research` (deep analysis), `rag` (knowledge base, free). Credit cost by mode: `quick` 5-10, `standard` 15-25, `extended` 30-75. Execution strategy (sync/SSE/async) auto-selected; override with `?mode=sync|async`.
+ * Routes to the best operator for your query. Operators: `cypher` (answers natural-language questions by querying the graph; supports `quick`, `standard`, `extended`) and `mapping` (autonomous Chart of Accounts → rs-gaap mapping; roboledger graphs only, `extended` only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. Credits are consumed by actual token usage, not a fixed price per mode. Execution strategy (sync/SSE/async) auto-selected; override with `?mode=sync|async`.
  */
 export const autoSelectOperator = <ThrowOnError extends boolean = false>(options: Options<AutoSelectOperatorData, ThrowOnError>) => (options.client ?? client).post<AutoSelectOperatorResponses, AutoSelectOperatorErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -573,7 +573,7 @@ export const getOperatorMetadata = <ThrowOnError extends boolean = false>(option
 /**
  * Execute Specific Operator
  *
- * Available: `financial` (SEC filings, accounting), `research` (deep analysis), `rag` (retrieval, no credits). Execution strategy auto-selected; override with `?mode=sync|async`.
+ * Available: `cypher` (natural-language questions answered by querying the graph; RAG retrieval is one of its capabilities, not a separate operator) and `mapping` (Chart of Accounts → rs-gaap mapping, roboledger graphs only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. Execution strategy auto-selected; override with `?mode=sync|async`.
  */
 export const executeSpecificOperator = <ThrowOnError extends boolean = false>(options: Options<ExecuteSpecificOperatorData, ThrowOnError>) => (options.client ?? client).post<ExecuteSpecificOperatorResponses, ExecuteSpecificOperatorErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
