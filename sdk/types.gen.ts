@@ -1200,6 +1200,12 @@ export type BlockSourceGraphResult = {
      * Number of previously-shared reports deleted from this graph. Zero unless `purge` was set.
      */
     purged_report_count?: number;
+    /**
+     * Purged Report Ids
+     *
+     * Ids of the previously-shared reports deleted from this graph. Empty unless `purge` was set.
+     */
+    purged_report_ids?: Array<string>;
 };
 
 /**
