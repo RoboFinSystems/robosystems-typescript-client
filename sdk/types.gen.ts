@@ -8412,7 +8412,7 @@ export type LiveFinancialStatementRequest = {
     /**
      * Statement Type
      *
-     * income_statement | balance_sheet | equity_statement
+     * income_statement | balance_sheet | cash_flow_statement | equity_statement
      */
     statement_type: string;
     /**
@@ -14259,9 +14259,11 @@ export type SqlStatementRequest = {
     /**
      * Parameters
      *
-     * Query parameters for safe value substitution. ALWAYS use parameters instead of string concatenation.
+     * Query parameters for safe value substitution. ALWAYS use parameters instead of string concatenation. Pass a list for positional placeholders (`?` or `$1`) and an object for named ones (`$param_name`) — the two forms cannot be mixed in one statement.
      */
-    parameters?: Array<unknown> | null;
+    parameters?: Array<unknown> | {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
