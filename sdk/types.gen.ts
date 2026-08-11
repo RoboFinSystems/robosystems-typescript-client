@@ -477,6 +477,39 @@ export type AttributionFilter = {
 };
 
 /**
+ * AuthProvidersResponse
+ *
+ * Auth posture response model.
+ *
+ * Describes which authentication methods this deployment offers so the
+ * login surface can render the correct posture from runtime configuration.
+ */
+export type AuthProvidersResponse = {
+    /**
+     * Password Auth
+     *
+     * Whether password authentication is available
+     */
+    password_auth: boolean;
+    /**
+     * OIDC SSO availability
+     */
+    oidc: OidcProviderInfo;
+    /**
+     * Registration
+     *
+     * Whether self-service registration is open
+     */
+    registration: boolean;
+    /**
+     * Passkeys
+     *
+     * Whether passkey authentication is available
+     */
+    passkeys: boolean;
+};
+
+/**
  * AuthResponse
  *
  * Authentication response model.
@@ -8916,6 +8949,26 @@ export type OAuthInitResponse = {
      * When this OAuth request expires
      */
     expires_at: string;
+};
+
+/**
+ * OIDCProviderInfo
+ *
+ * OIDC provider availability model.
+ */
+export type OidcProviderInfo = {
+    /**
+     * Enabled
+     *
+     * Whether OIDC SSO is available
+     */
+    enabled: boolean;
+    /**
+     * Provider Label
+     *
+     * Display label for the OIDC provider (e.g. 'Okta')
+     */
+    provider_label?: string | null;
 };
 
 /**
@@ -17876,6 +17929,39 @@ export type GetCaptchaConfigResponses = {
      */
     200: unknown;
 };
+
+export type GetAuthProvidersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/providers';
+};
+
+export type GetAuthProvidersErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetAuthProvidersError = GetAuthProvidersErrors[keyof GetAuthProvidersErrors];
+
+export type GetAuthProvidersResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthProvidersResponse;
+};
+
+export type GetAuthProvidersResponse = GetAuthProvidersResponses[keyof GetAuthProvidersResponses];
 
 export type GetServiceStatusData = {
     body?: never;
