@@ -538,6 +538,18 @@ export type AuthResponse = {
      */
     message: string;
     /**
+     * Status
+     *
+     * Login flow state: authenticated (token present), or a passkey MFA step is required before a session is issued (mfa_token present)
+     */
+    status?: 'authenticated' | 'mfa_required' | 'mfa_enrollment_required';
+    /**
+     * Mfa Token
+     *
+     * Short-lived token authorizing the MFA second step or forced enrollment; present only when status is not 'authenticated'
+     */
+    mfa_token?: string | null;
+    /**
      * Token
      *
      * JWT authentication token (optional for cookie-based auth)
@@ -1314,6 +1326,22 @@ export type CancelSubscriptionRequest = {
      * Organization member whose subscription to cancel. Defaults to the caller; canceling another member's requires org owner or admin.
      */
     user_id?: string | null;
+};
+
+/**
+ * CeremonyOptionsResponse
+ *
+ * WebAuthn options for the browser, verbatim from the RP library.
+ */
+export type CeremonyOptionsResponse = {
+    /**
+     * Options
+     *
+     * PublicKeyCredential options (browser JSON, opaque)
+     */
+    options: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -8828,6 +8856,74 @@ export type MetricObservation = {
 };
 
 /**
+ * MfaOptionsRequest
+ *
+ * Request assertion options for the second factor.
+ */
+export type MfaOptionsRequest = {
+    /**
+     * Mfa Token
+     *
+     * Token from a login that returned mfa_required
+     */
+    mfa_token: string;
+};
+
+/**
+ * MfaStatusResponse
+ *
+ * The user's MFA posture, for account settings.
+ */
+export type MfaStatusResponse = {
+    /**
+     * Passkey Count
+     *
+     * Enrolled passkey count
+     */
+    passkey_count: number;
+    /**
+     * Recovery Codes Remaining
+     *
+     * Unused recovery codes remaining
+     */
+    recovery_codes_remaining: number;
+    /**
+     * Enforcement Applies
+     *
+     * Whether the MFA requirement applies to this user's roles
+     */
+    enforcement_applies: boolean;
+};
+
+/**
+ * MfaVerifyRequest
+ *
+ * Complete the second factor with an assertion or a recovery code.
+ */
+export type MfaVerifyRequest = {
+    /**
+     * Mfa Token
+     *
+     * Token from a login that returned mfa_required
+     */
+    mfa_token: string;
+    /**
+     * Assertion
+     *
+     * WebAuthn assertion (browser JSON, opaque)
+     */
+    assertion?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Recovery Code
+     *
+     * Single-use recovery code
+     */
+    recovery_code?: string | null;
+};
+
+/**
  * OAuthCallbackRequest
  *
  * OAuth callback parameters.
@@ -11545,6 +11641,168 @@ export type OrgUsageSummary = {
 };
 
 /**
+ * PasskeyDeleteRequest
+ *
+ * Re-authentication proof for removing a passkey.
+ */
+export type PasskeyDeleteRequest = {
+    /**
+     * Password
+     *
+     * Current password (password-holding users)
+     */
+    password?: string | null;
+    /**
+     * Assertion
+     *
+     * Fresh WebAuthn assertion from the re-auth ceremony
+     */
+    assertion?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * PasskeyInfo
+ *
+ * One enrolled passkey, as listed in account settings.
+ */
+export type PasskeyInfo = {
+    /**
+     * Id
+     *
+     * Passkey identifier
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * User-facing label
+     */
+    name: string;
+    /**
+     * Created At
+     *
+     * Enrollment time (ISO 8601)
+     */
+    created_at: string;
+    /**
+     * Last Used At
+     *
+     * Last successful assertion time (ISO 8601)
+     */
+    last_used_at?: string | null;
+    /**
+     * Backup Eligible
+     *
+     * Whether the credential is synced (multi-device) capable
+     */
+    backup_eligible: boolean;
+    /**
+     * Backup State
+     *
+     * Whether the credential is currently backed up
+     */
+    backup_state: boolean;
+};
+
+/**
+ * PasskeyListResponse
+ *
+ * The user's enrolled passkeys.
+ */
+export type PasskeyListResponse = {
+    /**
+     * Passkeys
+     *
+     * Enrolled passkeys
+     */
+    passkeys: Array<PasskeyInfo>;
+};
+
+/**
+ * PasskeyLoginVerifyRequest
+ *
+ * Complete a passwordless login with a discoverable-credential assertion.
+ */
+export type PasskeyLoginVerifyRequest = {
+    /**
+     * Assertion
+     *
+     * WebAuthn assertion (browser JSON, opaque)
+     */
+    assertion: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * PasskeyRegisterOptionsRequest
+ *
+ * Begin enrollment. mfa_token is the forced-enrollment lane; omitted for
+ * an authenticated settings-flow enrollment.
+ */
+export type PasskeyRegisterOptionsRequest = {
+    /**
+     * Mfa Token
+     *
+     * Enrollment token from a login that returned mfa_enrollment_required
+     */
+    mfa_token?: string | null;
+};
+
+/**
+ * PasskeyRegisterVerifyRequest
+ *
+ * Finish enrollment with the authenticator's attestation response.
+ */
+export type PasskeyRegisterVerifyRequest = {
+    /**
+     * Credential
+     *
+     * WebAuthn registration credential (browser JSON, opaque)
+     */
+    credential: {
+        [key: string]: unknown;
+    };
+    /**
+     * Name
+     *
+     * User-facing label for this passkey
+     */
+    name?: string | null;
+    /**
+     * Mfa Token
+     *
+     * Enrollment token when finishing a forced enrollment
+     */
+    mfa_token?: string | null;
+};
+
+/**
+ * PasskeyRegisterVerifyResponse
+ *
+ * Enrollment result; the first passkey also carries recovery codes and,
+ * in the forced-enrollment lane, the completed login.
+ */
+export type PasskeyRegisterVerifyResponse = {
+    /**
+     * The newly enrolled passkey
+     */
+    passkey: PasskeyInfo;
+    /**
+     * Recovery Codes
+     *
+     * Single-use recovery codes — returned exactly once, at first enrollment
+     */
+    recovery_codes?: Array<string> | null;
+    /**
+     * Completed login (forced-enrollment lane only)
+     */
+    auth?: AuthResponse | null;
+};
+
+/**
  * PasswordCheckRequest
  *
  * Password strength check request model.
@@ -11790,7 +12048,13 @@ export type PortalSessionResponse = {
      *
      * Stripe Customer Portal URL where user can manage payment methods
      */
-    portal_url: string;
+    portal_url?: string | null;
+    /**
+     * Billing Disabled
+     *
+     * True when billing is disabled on this deployment (no portal exists)
+     */
+    billing_disabled?: boolean;
 };
 
 /**
@@ -12533,6 +12797,42 @@ export type RebuildScheduleRequest = {
      * The schedule structure to regenerate in place.
      */
     structure_id: string;
+};
+
+/**
+ * RecoveryCodesRequest
+ *
+ * Re-authentication proof for regenerating recovery codes.
+ */
+export type RecoveryCodesRequest = {
+    /**
+     * Password
+     *
+     * Current password (password-holding users)
+     */
+    password?: string | null;
+    /**
+     * Assertion
+     *
+     * Fresh WebAuthn assertion from the re-auth ceremony
+     */
+    assertion?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * RecoveryCodesResponse
+ *
+ * A fresh recovery-code set — shown exactly once.
+ */
+export type RecoveryCodesResponse = {
+    /**
+     * Codes
+     *
+     * Single-use recovery codes
+     */
+    codes: Array<string>;
 };
 
 /**
@@ -17898,6 +18198,434 @@ export type CompleteSsoAuthResponses = {
 };
 
 export type CompleteSsoAuthResponse = CompleteSsoAuthResponses[keyof CompleteSsoAuthResponses];
+
+export type GetPasskeyRegistrationOptionsData = {
+    body: PasskeyRegisterOptionsRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/passkeys/register/options';
+};
+
+export type GetPasskeyRegistrationOptionsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetPasskeyRegistrationOptionsError = GetPasskeyRegistrationOptionsErrors[keyof GetPasskeyRegistrationOptionsErrors];
+
+export type GetPasskeyRegistrationOptionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CeremonyOptionsResponse;
+};
+
+export type GetPasskeyRegistrationOptionsResponse = GetPasskeyRegistrationOptionsResponses[keyof GetPasskeyRegistrationOptionsResponses];
+
+export type VerifyPasskeyRegistrationData = {
+    body: PasskeyRegisterVerifyRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/passkeys/register/verify';
+};
+
+export type VerifyPasskeyRegistrationErrors = {
+    /**
+     * Registration failed
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type VerifyPasskeyRegistrationError = VerifyPasskeyRegistrationErrors[keyof VerifyPasskeyRegistrationErrors];
+
+export type VerifyPasskeyRegistrationResponses = {
+    /**
+     * Successful Response
+     */
+    200: PasskeyRegisterVerifyResponse;
+};
+
+export type VerifyPasskeyRegistrationResponse = VerifyPasskeyRegistrationResponses[keyof VerifyPasskeyRegistrationResponses];
+
+export type ListUserPasskeysData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/passkeys';
+};
+
+export type ListUserPasskeysErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListUserPasskeysError = ListUserPasskeysErrors[keyof ListUserPasskeysErrors];
+
+export type ListUserPasskeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: PasskeyListResponse;
+};
+
+export type ListUserPasskeysResponse = ListUserPasskeysResponses[keyof ListUserPasskeysResponses];
+
+export type GetPasskeyReauthOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/passkeys/reauth/options';
+};
+
+export type GetPasskeyReauthOptionsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetPasskeyReauthOptionsError = GetPasskeyReauthOptionsErrors[keyof GetPasskeyReauthOptionsErrors];
+
+export type GetPasskeyReauthOptionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CeremonyOptionsResponse;
+};
+
+export type GetPasskeyReauthOptionsResponse = GetPasskeyReauthOptionsResponses[keyof GetPasskeyReauthOptionsResponses];
+
+export type DeleteUserPasskeyData = {
+    body: PasskeyDeleteRequest;
+    path: {
+        /**
+         * Passkey Id
+         */
+        passkey_id: string;
+    };
+    query?: never;
+    url: '/v1/auth/passkeys/{passkey_id}';
+};
+
+export type DeleteUserPasskeyErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Re-authentication failed
+     */
+    401: ErrorResponse;
+    /**
+     * Last passkey of an MFA-required role
+     */
+    409: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type DeleteUserPasskeyError = DeleteUserPasskeyErrors[keyof DeleteUserPasskeyErrors];
+
+export type DeleteUserPasskeyResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponse;
+};
+
+export type DeleteUserPasskeyResponse = DeleteUserPasskeyResponses[keyof DeleteUserPasskeyResponses];
+
+export type GetPasskeyLoginOptionsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/passkeys/login/options';
+};
+
+export type GetPasskeyLoginOptionsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetPasskeyLoginOptionsError = GetPasskeyLoginOptionsErrors[keyof GetPasskeyLoginOptionsErrors];
+
+export type GetPasskeyLoginOptionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CeremonyOptionsResponse;
+};
+
+export type GetPasskeyLoginOptionsResponse = GetPasskeyLoginOptionsResponses[keyof GetPasskeyLoginOptionsResponses];
+
+export type VerifyPasskeyLoginData = {
+    body: PasskeyLoginVerifyRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/passkeys/login/verify';
+};
+
+export type VerifyPasskeyLoginErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Verification failed
+     */
+    401: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type VerifyPasskeyLoginError = VerifyPasskeyLoginErrors[keyof VerifyPasskeyLoginErrors];
+
+export type VerifyPasskeyLoginResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthResponse;
+};
+
+export type VerifyPasskeyLoginResponse = VerifyPasskeyLoginResponses[keyof VerifyPasskeyLoginResponses];
+
+export type GetMfaOptionsData = {
+    body: MfaOptionsRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/mfa/options';
+};
+
+export type GetMfaOptionsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Invalid or expired MFA token
+     */
+    401: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetMfaOptionsError = GetMfaOptionsErrors[keyof GetMfaOptionsErrors];
+
+export type GetMfaOptionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CeremonyOptionsResponse;
+};
+
+export type GetMfaOptionsResponse = GetMfaOptionsResponses[keyof GetMfaOptionsResponses];
+
+export type VerifyMfaData = {
+    body: MfaVerifyRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/mfa/verify';
+};
+
+export type VerifyMfaErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Verification failed
+     */
+    401: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type VerifyMfaError = VerifyMfaErrors[keyof VerifyMfaErrors];
+
+export type VerifyMfaResponses = {
+    /**
+     * Successful Response
+     */
+    200: AuthResponse;
+};
+
+export type VerifyMfaResponse = VerifyMfaResponses[keyof VerifyMfaResponses];
+
+export type GetMfaStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/mfa/status';
+};
+
+export type GetMfaStatusErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetMfaStatusError = GetMfaStatusErrors[keyof GetMfaStatusErrors];
+
+export type GetMfaStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: MfaStatusResponse;
+};
+
+export type GetMfaStatusResponse = GetMfaStatusResponses[keyof GetMfaStatusResponses];
+
+export type RegenerateMfaRecoveryCodesData = {
+    body: RecoveryCodesRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/auth/mfa/recovery-codes/regenerate';
+};
+
+export type RegenerateMfaRecoveryCodesErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Re-authentication failed
+     */
+    401: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RegenerateMfaRecoveryCodesError = RegenerateMfaRecoveryCodesErrors[keyof RegenerateMfaRecoveryCodesErrors];
+
+export type RegenerateMfaRecoveryCodesResponses = {
+    /**
+     * Successful Response
+     */
+    200: RecoveryCodesResponse;
+};
+
+export type RegenerateMfaRecoveryCodesResponse = RegenerateMfaRecoveryCodesResponses[keyof RegenerateMfaRecoveryCodesResponses];
 
 export type GetCaptchaConfigData = {
     body?: never;
