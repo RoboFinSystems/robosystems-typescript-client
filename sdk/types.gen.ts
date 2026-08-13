@@ -11432,6 +11432,12 @@ export type OrgInvitationResponse = {
      * Is Expired
      */
     is_expired: boolean;
+    /**
+     * Token
+     *
+     * Test-support only: the raw invite token. Populated ONLY when AUTH_INVITE_TOKEN_IN_RESPONSE is enabled in a non-production environment; always null in production. Lets automated authorization tests complete the invite -> register flow without email interception.
+     */
+    token?: string | null;
 };
 
 /**
