@@ -1568,7 +1568,7 @@ export type CheckoutStatusResponse = {
     /**
      * Operation Id
      *
-     * SSE operation ID for monitoring provisioning progress
+     * Always null. Webhook-driven provisioning passes no operation id (`_trigger_resource_provisioning` calls `run_graph_provisioning` with `operation_id=None`), so there is no SSE stream to follow — poll the status endpoint instead. Retained rather than removed because it is on a published response shape; wiring it is a feature, not a fix.
      */
     operation_id?: string | null;
     /**
@@ -5678,6 +5678,12 @@ export type FileUploadRequest = {
      * Table name to associate file with (required for first-class /files endpoint)
      */
     table_name?: string | null;
+    /**
+     * File Size Bytes
+     *
+     * Size of the file about to be uploaded, in bytes. Optional; when supplied, an over-limit file is rejected here instead of after it has been pushed to S3 and rejected by ingest-file. Advisory only — the authoritative check measures the object after upload.
+     */
+    file_size_bytes?: number | null;
 };
 
 /**
@@ -11739,8 +11745,13 @@ export type PasskeyLoginVerifyRequest = {
 /**
  * PasskeyRegisterOptionsRequest
  *
- * Begin enrollment. mfa_token is the forced-enrollment lane; omitted for
- * an authenticated settings-flow enrollment.
+ * Begin enrollment.
+ *
+ * Two disjoint lanes: ``mfa_token`` (forced enrollment — the token was minted
+ * seconds after a password verify, so it is its own freshness proof) or an
+ * authenticated settings-flow enrollment, which must carry a fresh re-auth
+ * proof — ``password``, or a ``reauth``-ceremony ``assertion`` when adding a
+ * passkey beside an existing one.
  */
 export type PasskeyRegisterOptionsRequest = {
     /**
@@ -11749,6 +11760,20 @@ export type PasskeyRegisterOptionsRequest = {
      * Enrollment token from a login that returned mfa_enrollment_required
      */
     mfa_token?: string | null;
+    /**
+     * Password
+     *
+     * Current password — settings-lane re-authentication
+     */
+    password?: string | null;
+    /**
+     * Assertion
+     *
+     * Fresh WebAuthn assertion from the re-auth ceremony (settings lane)
+     */
+    assertion?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**

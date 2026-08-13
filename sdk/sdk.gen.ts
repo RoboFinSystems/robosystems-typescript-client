@@ -181,10 +181,9 @@ export const completeSsoAuth = <ThrowOnError extends boolean = false>(options: O
 /**
  * Passkey Registration Options
  *
- * Begin a passkey enrollment ceremony.
+ * Begin a passkey enrollment ceremony. The settings lane requires a fresh re-auth proof (password or assertion); the forced lane presents its enrollment token.
  */
 export const getPasskeyRegistrationOptions = <ThrowOnError extends boolean = false>(options: Options<GetPasskeyRegistrationOptionsData, ThrowOnError>) => (options.client ?? client).post<GetPasskeyRegistrationOptionsResponses, GetPasskeyRegistrationOptionsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }],
     url: '/v1/auth/passkeys/register/options',
     ...options,
     headers: {
@@ -199,7 +198,6 @@ export const getPasskeyRegistrationOptions = <ThrowOnError extends boolean = fal
  * Finish enrollment. The first passkey returns recovery codes (once); the forced-enrollment lane also completes the login.
  */
 export const verifyPasskeyRegistration = <ThrowOnError extends boolean = false>(options: Options<VerifyPasskeyRegistrationData, ThrowOnError>) => (options.client ?? client).post<VerifyPasskeyRegistrationResponses, VerifyPasskeyRegistrationErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }],
     url: '/v1/auth/passkeys/register/verify',
     ...options,
     headers: {
@@ -1611,7 +1609,7 @@ export const createCheckoutSession = <ThrowOnError extends boolean = false>(opti
 /**
  * Get Checkout Session Status
  *
- * Poll after returning from Stripe Checkout. Status progresses: pending_payment → provisioning → active. When active, resource_id is populated; for graphs, operation_id tracks SSE provisioning progress.
+ * Poll after returning from Stripe Checkout. Status progresses: pending_payment → provisioning → active. When active, resource_id is populated. `operation_id` is always null for webhook-driven provisioning and cannot be used to follow progress — poll this endpoint instead.
  */
 export const getCheckoutStatus = <ThrowOnError extends boolean = false>(options: Options<GetCheckoutStatusData, ThrowOnError>) => (options.client ?? client).get<GetCheckoutStatusResponses, GetCheckoutStatusErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
