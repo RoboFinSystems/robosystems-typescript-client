@@ -9,6 +9,10 @@ const fs = require('fs')
 const path = require('path')
 const { execSync } = require('child_process')
 
+// `new RegExp` reads its input as a pattern, so a literal path has to have its
+// metacharacters escaped before being interpolated into one.
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 console.log('🚀 Preparing RoboSystems SDK for publishing...')
 
 // First, build the TypeScript
@@ -136,11 +140,11 @@ if (fs.existsSync(artifactsSourceDir)) {
         const upToSdk = '../'.repeat(depth) + 'sdk/'
         content = content
           .replace(
-            new RegExp(`require\\((['"])${upToSdk.replace(/\//g, '\\/')}`, 'g'),
+            new RegExp(`require\\((['"])${escapeRegExp(upToSdk)}`, 'g'),
             (_m, q) => `require(${q}${upOne}`
           )
           .replace(
-            new RegExp(`from (['"])${upToSdk.replace(/\//g, '\\/')}`, 'g'),
+            new RegExp(`from (['"])${escapeRegExp(upToSdk)}`, 'g'),
             (_m, q) => `from ${q}${upOne}`
           )
 
