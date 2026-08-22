@@ -167,6 +167,10 @@ export type AnalyticalStatementFactRow = {
      */
     value?: number | null;
     /**
+     * Start Date
+     */
+    start_date?: string | null;
+    /**
      * End Date
      */
     end_date?: string | null;
@@ -924,7 +928,7 @@ export type BackupResponse = {
     /**
      * Initiated By
      *
-     * Who started this backup. 'user' is one you requested and it counts against the tier's daily backup limit; 'scheduled' is taken nightly on your behalf and does not.
+     * Who started this backup. 'user' is one you requested and it counts against the tier's daily backup limit; 'scheduled' is taken nightly on your behalf and does not; 'final' is the copy taken when a graph is deprovisioned, so you can still retrieve your data afterwards.
      */
     initiated_by?: string;
     /**
@@ -1804,9 +1808,15 @@ export type ComputeForecastResponse = {
     /**
      * Base Period
      *
-     * Seed month the walk projected from.
+     * Origin month of the block's authored horizon window — where its levers are keyed from. Equal to ``anchor_period`` unless the walk re-anchored at the seam.
      */
     base_period: string;
+    /**
+     * Anchor Period
+     *
+     * Month the walk actually seeded its opening balances from. With ``base_anchor='seam'`` this advances to the newest closed month as periods close, so the first forward month rolls off real balances instead of a stale base; with ``'fixed'`` it always equals ``base_period``.
+     */
+    anchor_period: string;
     /**
      * Months
      *
@@ -2048,7 +2058,7 @@ export type ConnectionProviderInfo = {
      *
      * Provider identifier
      */
-    provider: 'sec' | 'quickbooks' | 'external';
+    provider: 'quickbooks' | 'external';
     /**
      * Display Name
      *
@@ -2449,14 +2459,13 @@ export type CreateConnectionRequest = {
      *
      * Connection provider type
      */
-    provider: 'sec' | 'quickbooks' | 'external';
+    provider: 'quickbooks' | 'external';
     /**
      * Entity Id
      *
-     * Entity identifier. Required for QuickBooks, optional for SEC (SEC creates the entity from filing data).
+     * Entity identifier. Required for QuickBooks.
      */
     entity_id?: string | null;
-    sec_config?: SecConnectionConfig | null;
     quickbooks_config?: QuickBooksConnectionConfig | null;
     external_config?: ExternalConnectionConfig | null;
 };
@@ -2723,9 +2732,15 @@ export type CreateForecastRequest = {
     /**
      * Base Period
      *
-     * Seed month (``YYYY-MM``) the walk projects forward from. Defaults to the fiscal calendar's closed-through period, else the newest actual report month. Resolved and stored at create time.
+     * Seed month (``YYYY-MM``) the walk projects forward from. Defaults to the fiscal calendar's closed-through period, else the newest actual report month. Resolved and stored at create time, and it never moves afterwards — every lever is keyed to a month inside ``base_period + 1 … + horizon_months``, so moving it would mean restating all of them. ``base_anchor`` decides whether the walk still *seeds* here once months close under it.
      */
     base_period?: string | null;
+    /**
+     * Base Anchor
+     *
+     * Where the walk takes its opening balances as periods close. ``seam`` (default) re-anchors on the newest closed month inside the horizon, so the scenario survives a close untouched and its first forward month rolls off real balances. ``fixed`` pins the walk to ``base_period`` — the deliberate counterfactual, whose balances are meant to diverge from actuals.
+     */
+    base_anchor?: 'seam' | 'fixed';
     /**
      * Levers
      *
@@ -3250,8 +3265,7 @@ export type CreateSubgraphRequest = {
  * extends a library taxonomy) and ignored otherwise.
  *
  * The library path (seeding ``reporting_standard`` rows) does NOT flow
- * through this envelope — it uses a dedicated library writer that bypasses
- * these caps and tenant scoping.
+ * through this envelope; library content is not tenant-writable here.
  */
 export type CreateTaxonomyBlockRequest = {
     /**
@@ -4122,9 +4136,11 @@ export type DeleteRollforwardRequest = {
  *
  * Hard deletes the Structure, all Facts tied to it, and all
  * Associations tied to it. This is a permanent, irreversible
- * operation. For ending a schedule early without removing history,
- * fire `create-event-block(event_type='asset_disposed')` instead — the
- * handler truncates the schedule + posts the disposal entry atomically.
+ * operation. For ending a schedule early without removing history, use
+ * `terminate-schedule` (no entry) or
+ * `create-event-block(event_type='asset_disposed')` (the handler voids
+ * the remaining obligation chain + posts the disposal entry atomically;
+ * recognized facts stay as history).
  */
 export type DeleteScheduleRequest = {
     /**
@@ -5903,6 +5919,12 @@ export type FiscalPeriodSummary = {
      * Closed At
      */
     closed_at?: string | null;
+    /**
+     * Has Close Receipt
+     *
+     * Whether this period carries a close receipt. A flag rather than the receipt itself keeps the calendar listing compact; fetch the receipt from `get-period-close-status` for the period. False on open periods and on periods closed before receipts shipped.
+     */
+    has_close_receipt?: boolean;
 };
 
 /**
@@ -5940,9 +5962,15 @@ export type ForecastMechanics = {
     /**
      * Base Period
      *
-     * Seed month (``YYYY-MM``) the walk projects forward from — resolved at create time (request → fiscal calendar closed-through → newest actual report month) and stored so recompute is deterministic.
+     * Origin month (``YYYY-MM``) of the authored horizon window — resolved at create time (request → fiscal calendar closed-through → newest actual report month) and stored so recompute is deterministic. Every lever, line assertion and growth rate is keyed to a month in ``base_period + 1 … base_period + horizon_months``, so this never moves on its own; ``base_anchor`` decides whether the *walk* still seeds here.
      */
     base_period: string;
+    /**
+     * Base Anchor
+     *
+     * Where the walk takes its opening balances. ``seam`` (default) re-anchors on the newest closed month at or after ``base_period``, so a scenario survives a period close without being rebuilt and its first forward month rolls off real balances. ``fixed`` pins the walk to ``base_period`` — the deliberate counterfactual (“if we had restarted in July”), whose balances diverge from actuals on purpose.
+     */
+    base_anchor?: 'seam' | 'fixed';
     /**
      * Levers
      *
@@ -10981,6 +11009,52 @@ export type OperationEnvelopeTaxonomyBlockEnvelope = {
 };
 
 /**
+ * OperationEnvelope[TerminateScheduleResponse]
+ */
+export type OperationEnvelopeTerminateScheduleResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: TerminateScheduleResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[ViewResponse]
  */
 export type OperationEnvelopeViewResponse = {
@@ -13675,20 +13749,6 @@ export type RuleVariableLite = {
 };
 
 /**
- * SECConnectionConfig
- *
- * SEC-specific connection configuration.
- */
-export type SecConnectionConfig = {
-    /**
-     * Cik
-     *
-     * SEC Central Index Key
-     */
-    cik: string;
-};
-
-/**
  * SSOCompleteRequest
  *
  * SSO completion request model.
@@ -15741,6 +15801,78 @@ export type TaxonomyBlockStructureRequest = {
 };
 
 /**
+ * TerminateScheduleRequest
+ *
+ * End a schedule early at a month-end cutoff — no entry is booked.
+ *
+ * The no-entry half of schedule retirement, for terminations whose GL
+ * effect is already booked (an asset transferred via a manual journal
+ * entry, a prepaid refunded in the source system) or where none is
+ * wanted. In one transaction: deletes forward facts past the cutoff,
+ * voids the remaining obligation chain past it (pending and classified
+ * rows), and rewrites the SumEquals rule to prove the truncated curve.
+ * History at or before the cutoff is untouched.
+ *
+ * When the derecognition entry still needs to be booked, use
+ * `create-event-block(event_type='asset_disposed')` instead — the
+ * disposal handler posts it atomically with the same obligation void.
+ */
+export type TerminateScheduleRequest = {
+    /**
+     * Structure Id
+     *
+     * The schedule structure to terminate.
+     */
+    structure_id: string;
+    /**
+     * New End Date
+     *
+     * Last date the schedule covers — must be the last day of a month (schedule facts are whole-month). Facts and obligations for periods starting after this date are removed/voided.
+     */
+    new_end_date: string;
+    /**
+     * Reason
+     *
+     * Why the schedule is ending early — captured in the audit log.
+     */
+    reason: string;
+};
+
+/**
+ * TerminateScheduleResponse
+ */
+export type TerminateScheduleResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * New End Date
+     */
+    new_end_date: string;
+    /**
+     * Facts Deleted
+     */
+    facts_deleted: number;
+    /**
+     * Obligations Voided
+     */
+    obligations_voided: number;
+    /**
+     * Rule Updated
+     */
+    rule_updated: boolean;
+    /**
+     * Reason
+     */
+    reason: string;
+};
+
+/**
  * TierCapacity
  *
  * Capacity status for a single tier.
@@ -15761,7 +15893,7 @@ export type TierCapacity = {
     /**
      * Status
      *
-     * Capacity status: ready, scalable, or at_capacity
+     * Capacity status: ready or at_capacity
      */
     status: string;
     /**
@@ -16384,6 +16516,12 @@ export type UpdateForecastRequest = {
      */
     base_period?: string | null;
     /**
+     * Base Anchor
+     *
+     * Switch the walk between seam-anchored (default) and pinned to ``base_period``. Changes nothing about the authored window, so unlike ``base_period`` it needs no levers re-supplied.
+     */
+    base_anchor?: 'seam' | 'fixed' | null;
+    /**
      * Levers
      *
      * Full replacement of the lever set when provided.
@@ -16714,9 +16852,11 @@ export type UpdateRollforwardRequest = {
  * Structure row / its metadata_ JSONB column).
  *
  * NOT editable via this op: period_start, period_end, monthly_amount.
- * Those require fact regeneration — fire an event block that terminates
- * the schedule (e.g., `asset_disposed`) and create a fresh schedule via
- * `create-information-block` (`block_type='schedule'`).
+ * Those require fact regeneration — end the schedule early via
+ * `terminate-schedule` (no entry) or
+ * `create-event-block(event_type='asset_disposed')` (with a disposal
+ * entry), then create a fresh schedule via `create-information-block`
+ * (`block_type='schedule'`).
  *
  * Omitted fields are left unchanged.
  */
@@ -16884,6 +17024,10 @@ export type UpdateTaxonomyBlockRequest = {
  * UpdateUserRequest
  *
  * Request model for updating user profile.
+ *
+ * Changing ``email`` re-authenticates: a fresh proof (password re-entry or a
+ * ``mgmt``-flow passkey assertion) must accompany the request, exactly as
+ * passkey enrollment and removal require. Name-only updates need no proof.
  */
 export type UpdateUserRequest = {
     /**
@@ -16898,6 +17042,20 @@ export type UpdateUserRequest = {
      * User's email address
      */
     email?: string | null;
+    /**
+     * Reauth Password
+     *
+     * Password re-entry, required to change email for a password-holding account
+     */
+    reauth_password?: string | null;
+    /**
+     * Reauth Assertion
+     *
+     * A fresh mgmt-flow passkey assertion, required to change email for a passkey-only account
+     */
+    reauth_assertion?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -20055,7 +20213,7 @@ export type ListConnectionsData = {
          *
          * Filter by provider type
          */
-        provider?: 'sec' | 'quickbooks' | 'external' | null;
+        provider?: 'quickbooks' | 'external' | null;
     };
     url: '/v1/graphs/{graph_id}/connections';
 };
@@ -20830,7 +20988,7 @@ export type GetBackupDownloadUrlData = {
 
 export type GetBackupDownloadUrlErrors = {
     /**
-     * Access denied
+     * Access denied — admin role on the graph, or an eligible repository subscription, is required
      */
     403: unknown;
     /**
@@ -26857,6 +27015,70 @@ export type RebuildScheduleResponses = {
 };
 
 export type RebuildScheduleResponse = RebuildScheduleResponses[keyof RebuildScheduleResponses];
+
+export type TerminateScheduleData = {
+    body: TerminateScheduleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/terminate-schedule';
+};
+
+export type TerminateScheduleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type TerminateScheduleError = TerminateScheduleErrors[keyof TerminateScheduleErrors];
+
+export type TerminateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeTerminateScheduleResponse;
+};
+
+export type TerminateScheduleResponse2 = TerminateScheduleResponses[keyof TerminateScheduleResponses];
 
 export type SetCloseTargetData = {
     body: SetCloseTargetOperation;

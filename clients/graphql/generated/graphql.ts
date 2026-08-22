@@ -193,6 +193,46 @@ export type BlockedSourceGraphList = {
 }
 
 /**
+ * What a close actually did, stamped on the period row that close locked.
+ *
+ * The close result used to exist only in the HTTP response, so a close
+ * that SUCCEEDED but whose transport failed left no record and the
+ * operator reconstructed it from separate state reads. This is that
+ * record. Written in the same transaction as the period's `status='closed'`
+ * flip, so a closed period and its receipt can never disagree.
+ *
+ * Typed rather than a free dict because it is a contract: the GraphQL
+ * schema and both SDKs derive from it, and an opaque blob would push the
+ * shape onto every reader to rediscover.
+ */
+export type CloseReceipt = {
+  /** 'user' for REST callers, 'agent' for MCP-driven closes */
+  actorType: Scalars['String']['output']
+  closedAt: Scalars['DateTime']['output']
+  /** Actor id that ran the close */
+  closedBy: Scalars['String']['output']
+  /** Total entries the close transitioned to posted, across both post paths — the sum of the two fields below */
+  entriesPosted: Scalars['Int']['output']
+  entriesPostedLocally: Scalars['Int']['output']
+  entriesPublishedToQb: Scalars['Int']['output']
+  evaluatedStructureIds: Array<Scalars['String']['output']>
+  /** Period this receipt is for (YYYY-MM) */
+  period: Scalars['String']['output']
+  /** Schedule rule outcomes: pass/fail/error/skipped counts */
+  ruleSummary: Maybe<Scalars['JSON']['output']>
+  /** structure_id -> minted fact_set_id */
+  stampedStatementSets: Scalars['JSON']['output']
+  statementRuleSummary: Maybe<Scalars['JSON']['output']>
+  statementStampNote: Maybe<Scalars['String']['output']>
+  statementsStamped: Scalars['Boolean']['output']
+  targetAutoAdvanced: Scalars['Boolean']['output']
+  /** Receipt schema version; 1 is the first shipped shape */
+  version: Scalars['Int']['output']
+  /** Whether this close re-closed a previously closed period */
+  wasReclose: Scalars['Boolean']['output']
+}
+
+/**
  * A grouping of closing-book items shown as a sidebar section
  * (e.g. Statements, Account Rollups, Schedules, Period Close).
  */
@@ -406,6 +446,8 @@ export type FiscalCalendar = {
 export type FiscalPeriodSummary = {
   closedAt: Maybe<Scalars['DateTime']['output']>
   endDate: Scalars['Date']['output']
+  /** Whether this period carries a close receipt. A flag rather than the receipt itself keeps the calendar listing compact; fetch the receipt from `get-period-close-status` for the period. False on open periods and on periods closed before receipts shipped. */
+  hasCloseReceipt: Scalars['Boolean']['output']
   /** Period name (YYYY-MM) */
   name: Scalars['String']['output']
   startDate: Scalars['Date']['output']
@@ -1312,6 +1354,8 @@ export type PeriodCloseItem = {
  * state for the period.
  */
 export type PeriodCloseStatus = {
+  /** Receipt stamped by the close that locked this period: entries_posted, the entries_published_to_qb / entries_posted_locally split, statement stamping and rule summaries, closed_at/closed_by. Null while the period is open, and null for periods closed before receipts shipped (a closed period without a receipt is not a failed close). This is the authoritative record of what a close did — read it rather than retrying when a close's response was lost in transport. */
+  closeReceipt: Maybe<CloseReceipt>
   fiscalPeriodEnd: Scalars['Date']['output']
   fiscalPeriodStart: Scalars['Date']['output']
   periodStatus: Scalars['String']['output']
