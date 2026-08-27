@@ -15,6 +15,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # The production environment's protection rules (required reviewer,
+    # deployment branches) gate every publish here.
+    environment: production
     
     permissions:
       contents: read
