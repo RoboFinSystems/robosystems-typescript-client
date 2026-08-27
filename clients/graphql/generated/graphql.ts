@@ -428,6 +428,10 @@ export type FiscalCalendar = {
   pendingObligationSample: Array<PendingObligationDetail>
   /** Fiscal period rows for this graph */
   periods: Array<FiscalPeriodSummary>
+  /** Posted events in or before this period whose source payload changed afterwards and that nobody has dispositioned — differences between the books and the source system. Resolve each with resolve-reconciling-item, or close over them knowingly with allow_reconciling_items. */
+  reconcilingItemCount: Scalars['Int']['output']
+  /** Source identifiers (or event ids) of up to 5 unresolved reconciling items, so the blocker names what is holding the close. */
+  reconcilingItemSample: Array<Scalars['String']['output']>
   /** Matured schedule_entry_due events already at 'classified' with no drafted closing entry for their (schedule, period) — adjusting entries a close would silently omit. Resolve by running promote-obligations with dispatch_handlers=true (which reaches them) or voiding the obligation. */
   strandedObligationCount: Scalars['Int']['output']
   /** Sample of up to 5 stranded obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at. */

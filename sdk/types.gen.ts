@@ -713,6 +713,12 @@ export type BackfillPlanHistoryOperation = {
      */
     allow_stranded_obligations?: boolean;
     /**
+     * Allow Reconciling Items
+     *
+     * Override the reconciling-item gate on each reclose. Only needed when an event inside the backfill window is still flagged as changed upstream and you have decided not to resolve it first.
+     */
+    allow_reconciling_items?: boolean;
+    /**
      * Restamp
      *
      * Also re-derive months that ALREADY have canonical statement sets (default: skip them). Use after an engine improvement changes what a stamp produces — each month reruns the full reopen → reclose cycle and replaces its sets. A restamp run is not self-resuming (every month in range stays a candidate); advance `start_period` between chunks.
@@ -1663,6 +1669,12 @@ export type ClosePeriodOperation = {
      * Override the stranded-obligation gate — close even though matured classified obligations have no drafted closing entry, knowingly omitting those adjusting entries from the period. Prefer running promote-obligations with dispatch_handlers=true (which drafts them) or voiding the obligations instead. The override is recorded in the close audit note.
      */
     allow_stranded_obligations?: boolean;
+    /**
+     * Allow Reconciling Items
+     *
+     * Override the reconciling-item gate — close even though posted events in the period are still flagged as changed in the source system, leaving those differences undecided. The next sync will still report them, and the statements stamped by this close may disagree with the source. Prefer resolve-reconciling-item on each first. The override is recorded in the close audit note.
+     */
+    allow_reconciling_items?: boolean;
     /**
      * Period
      *
@@ -4184,7 +4196,7 @@ export type DeleteSubgraphOp = {
     /**
      * Backup First
      *
-     * Create a backup before deleting
+     * Take a full backup of the subgraph before deleting it. The backup is registered on the parent graph's backup list, where it can be listed and downloaded after the subgraph is gone. If the backup fails the subgraph is not deleted.
      */
     backup_first?: boolean;
 };
@@ -5863,6 +5875,18 @@ export type FiscalCalendarResponse = {
      * Sample of up to 5 stranded obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at.
      */
     stranded_obligation_sample?: Array<PendingObligationDetailResponse>;
+    /**
+     * Reconciling Item Count
+     *
+     * Posted events in or before this period whose source payload changed afterwards and that nobody has dispositioned — differences between the books and the source system. Resolve each with resolve-reconciling-item, or close over them knowingly with allow_reconciling_items.
+     */
+    reconciling_item_count?: number;
+    /**
+     * Reconciling Item Sample
+     *
+     * Source identifiers (or event ids) of up to 5 unresolved reconciling items, so the blocker names what is holding the close.
+     */
+    reconciling_item_sample?: Array<string>;
     /**
      * Last Close At
      */
@@ -8637,50 +8661,6 @@ export type LoginRequest = {
 };
 
 /**
- * MCPToolCall
- *
- * Request model for MCP tool execution.
- */
-export type McpToolCall = {
-    /**
-     * Name
-     *
-     * Name of the MCP tool to execute
-     */
-    name: string;
-    /**
-     * Arguments
-     *
-     * Arguments to pass to the tool
-     */
-    arguments?: {
-        [key: string]: unknown;
-    };
-};
-
-/**
- * MCPToolsResponse
- *
- * Response model for MCP tools listing.
- */
-export type McpToolsResponse = {
-    /**
-     * Tools
-     *
-     * List of available MCP tools with their schemas
-     */
-    tools: Array<{
-        [key: string]: unknown;
-    }>;
-    /**
-     * Instructions
-     *
-     * Per-graph routing guidance for MCP clients, tailored to the graph's category and live tool set. Clients should pass this to the MCP server's `instructions` handshake field so it is always in the agent's context.
-     */
-    instructions?: string | null;
-};
-
-/**
  * MaterializeOp
  *
  * Body for the materialize operation.
@@ -9025,6 +9005,88 @@ export type OAuthCallbackResponse = {
      * Task id of the initial sync started after connecting, or null when no sync was kicked off
      */
     auto_sync_task_id?: string | null;
+};
+
+/**
+ * OAuthGrantInfo
+ *
+ * A connected app: one OAuth consent for one client on one graph.
+ */
+export type OAuthGrantInfo = {
+    /**
+     * Id
+     *
+     * Grant ID
+     */
+    id: string;
+    /**
+     * Client Name
+     *
+     * The connected client's display name
+     */
+    client_name: string;
+    /**
+     * Client Uri
+     *
+     * The client's homepage, if declared
+     */
+    client_uri?: string | null;
+    /**
+     * Client Is Trusted
+     *
+     * Whether the client is on the trusted list (pre-registered, or a known metadata-document host). Untrusted clients registered themselves.
+     */
+    client_is_trusted: boolean;
+    /**
+     * Graph Id
+     *
+     * The one graph this consent reaches
+     */
+    graph_id: string;
+    /**
+     * Graph Name
+     *
+     * The graph's display name, when the graph still exists
+     */
+    graph_name?: string | null;
+    /**
+     * Resource
+     *
+     * The MCP URL the grant's tokens are bound to (their audience)
+     */
+    resource: string;
+    /**
+     * Scope
+     *
+     * Granted scopes, space-separated
+     */
+    scope: string;
+    /**
+     * Created At
+     *
+     * When the user consented
+     */
+    created_at: string;
+    /**
+     * Last Used At
+     *
+     * Last token use, if any
+     */
+    last_used_at?: string | null;
+};
+
+/**
+ * OAuthGrantsResponse
+ *
+ * Response model for listing connected apps.
+ */
+export type OAuthGrantsResponse = {
+    /**
+     * Grants
+     *
+     * Active OAuth grants, newest first
+     */
+    grants: Array<OAuthGrantInfo>;
 };
 
 /**
@@ -10733,6 +10795,52 @@ export type OperationEnvelopePublishListResponse = {
 };
 
 /**
+ * OperationEnvelope[ReconcilingItemPlan]
+ */
+export type OperationEnvelopeReconcilingItemPlan = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ReconcilingItemPlan | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[ReportResponse]
  */
 export type OperationEnvelopeReportResponse = {
@@ -10758,6 +10866,52 @@ export type OperationEnvelopeReportResponse = {
      * Command-specific result payload
      */
     result?: ReportResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ResolveReconcilingItemResponse]
+ */
+export type OperationEnvelopeResolveReconcilingItemResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ResolveReconcilingItemResponse | null;
     /**
      * At
      *
@@ -12632,6 +12786,20 @@ export type PreviewEventBlockResponse = {
 };
 
 /**
+ * PreviewReconcilingItemRequest
+ *
+ * Read what changed on a reconciling item, and what resolving it would do.
+ */
+export type PreviewReconcilingItemRequest = {
+    /**
+     * Event Id
+     *
+     * Event id (evt_ prefixed) to inspect
+     */
+    event_id: string;
+};
+
+/**
  * PromoteObligationsRequest
  *
  * On-demand trigger for the obligation-promotion sweep.
@@ -12902,6 +13070,234 @@ export type RebuildScheduleRequest = {
      * The schedule structure to regenerate in place.
      */
     structure_id: string;
+};
+
+/**
+ * ReconcilingItemCatchUp
+ *
+ * The catch-up entry a resolution posted.
+ */
+export type ReconcilingItemCatchUp = {
+    /**
+     * Event Id
+     */
+    event_id: string;
+    /**
+     * Entry Id
+     */
+    entry_id?: string | null;
+    /**
+     * Transaction Id
+     */
+    transaction_id?: string | null;
+    /**
+     * Posting Date
+     */
+    posting_date: string;
+    /**
+     * Status
+     */
+    status: string;
+};
+
+/**
+ * ReconcilingItemDeltaLine
+ *
+ * One account's net change between the posted entries and the new payload.
+ *
+ * Amounts are signed minor units in debit-positive convention: a positive
+ * figure is a net debit, a negative one a net credit. ``delta`` is what a
+ * catch-up entry would post to bring the books level.
+ */
+export type ReconcilingItemDeltaLine = {
+    /**
+     * Element Id
+     *
+     * CoA element id; null when the account is unmapped
+     */
+    element_id?: string | null;
+    /**
+     * Element External Id
+     *
+     * Source-system account id, when the line carried one
+     */
+    element_external_id?: string | null;
+    /**
+     * Element Code
+     *
+     * Account code
+     */
+    element_code?: string | null;
+    /**
+     * Element Name
+     *
+     * Account name
+     */
+    element_name?: string | null;
+    /**
+     * Prior Net
+     *
+     * Net of the posted entries, debit-positive
+     */
+    prior_net: number;
+    /**
+     * Accepted Net
+     *
+     * Net of the new payload, debit-positive
+     */
+    accepted_net: number;
+    /**
+     * Delta
+     *
+     * accepted_net - prior_net
+     */
+    delta: number;
+};
+
+/**
+ * ReconcilingItemEntrySummary
+ *
+ * One entry on either side of the comparison.
+ */
+export type ReconcilingItemEntrySummary = {
+    /**
+     * Entry Id
+     *
+     * Entry id; null for the accepted side, which is not posted yet
+     */
+    entry_id?: string | null;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * Posting Date
+     */
+    posting_date?: string | null;
+    /**
+     * Memo
+     */
+    memo?: string | null;
+    /**
+     * Status
+     *
+     * Entry status; null on the accepted side
+     */
+    status?: string | null;
+    /**
+     * Total Debit
+     */
+    total_debit?: number;
+    /**
+     * Total Credit
+     */
+    total_credit?: number;
+};
+
+/**
+ * ReconcilingItemPlan
+ *
+ * What changed upstream, and what each disposition would do about it.
+ */
+export type ReconcilingItemPlan = {
+    /**
+     * Event Id
+     */
+    event_id: string;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * Source
+     */
+    source: string;
+    /**
+     * Event Type
+     */
+    event_type: string;
+    /**
+     * Event Status
+     */
+    event_status: string;
+    /**
+     * Drift Detected At
+     *
+     * When the sync first saw this difference
+     */
+    drift_detected_at?: string | null;
+    /**
+     * Default Disposition
+     *
+     * What resolve would do with no disposition given: restate while every affected period is open, catch_up once one is closed.
+     */
+    default_disposition: 'restate' | 'catch_up' | 'acknowledge';
+    /**
+     * Default Posting Date
+     *
+     * Where a catch-up entry would land by default
+     */
+    default_posting_date?: string | null;
+    /**
+     * Affected Posting Dates
+     *
+     * Posting dates of the event's entries
+     */
+    affected_posting_dates?: Array<string>;
+    /**
+     * Closed Periods
+     *
+     * Names of closed periods the event's entries sit in
+     */
+    closed_periods?: Array<string>;
+    /**
+     * Prior Entries
+     */
+    prior_entries?: Array<ReconcilingItemEntrySummary>;
+    /**
+     * Accepted Entries
+     */
+    accepted_entries?: Array<ReconcilingItemEntrySummary>;
+    /**
+     * Delta
+     *
+     * Per-account net change; empty when none
+     */
+    delta?: Array<ReconcilingItemDeltaLine>;
+    /**
+     * No Gl Effect
+     *
+     * The change moves no money — a memo or reference edit. catch_up posts nothing; restate still regenerates so the entries carry the new text.
+     */
+    no_gl_effect?: boolean;
+    /**
+     * Restate Blockers
+     *
+     * Why restate is unavailable, if it is: a closed period, an entry that was reversed or is not posted, or entries from elsewhere sharing this event's transaction.
+     */
+    restate_blockers?: Array<string>;
+    /**
+     * Unmapped Element External Ids
+     *
+     * Accounts in the new payload with no mapping in this graph. Both dispositions that write need them mapped first.
+     */
+    unmapped_element_external_ids?: Array<string>;
+};
+
+/**
+ * ReconcilingItemRegenerated
+ *
+ * The entries a restate rebuilt.
+ */
+export type ReconcilingItemRegenerated = {
+    /**
+     * Transaction Ids
+     */
+    transaction_ids?: Array<string>;
+    /**
+     * Entry Ids
+     */
+    entry_ids?: Array<string>;
 };
 
 /**
@@ -13492,6 +13888,102 @@ export type ResetPasswordValidateResponse = {
      * Masked email address if token is valid
      */
     email?: string | null;
+};
+
+/**
+ * ResolveReconcilingItemRequest
+ *
+ * Dispose of one reconciling item and clear its flag.
+ */
+export type ResolveReconcilingItemRequest = {
+    /**
+     * Event Id
+     *
+     * Event id (evt_ prefixed) to resolve
+     */
+    event_id: string;
+    /**
+     * Disposition
+     *
+     * How to dispose of the difference. Omit to take the default the preview reports: restate when every period the event touches is open, catch_up when any is closed.
+     */
+    disposition?: 'restate' | 'catch_up' | 'acknowledge' | null;
+    /**
+     * Posting Date
+     *
+     * catch_up only: when to post the catch-up entry. Defaults to the end of the earliest open period.
+     */
+    posting_date?: string | null;
+    /**
+     * Status
+     *
+     * catch_up only: whether the catch-up entry is drafted for review at close (default) or posted immediately. A draft appears in list-period-drafts and posts locally when the period closes.
+     */
+    status?: 'draft' | 'posted';
+    /**
+     * Note
+     *
+     * Why this disposition. Required for acknowledge, where it is the only record of what was done instead.
+     */
+    note?: string | null;
+    /**
+     * Reference Event Id
+     *
+     * acknowledge only: the event that already handled this difference (e.g. an alignment entry authored by hand), recorded on the trail.
+     */
+    reference_event_id?: string | null;
+};
+
+/**
+ * ResolveReconcilingItemResponse
+ *
+ * The outcome of resolving one reconciling item.
+ */
+export type ResolveReconcilingItemResponse = {
+    /**
+     * Event Id
+     */
+    event_id: string;
+    /**
+     * External Id
+     */
+    external_id?: string | null;
+    /**
+     * Disposition
+     */
+    disposition: 'restate' | 'catch_up' | 'acknowledge';
+    /**
+     * Delta
+     */
+    delta?: Array<ReconcilingItemDeltaLine>;
+    /**
+     * No Gl Effect
+     */
+    no_gl_effect?: boolean;
+    /**
+     * Present when the disposition posted a catch-up entry
+     */
+    catch_up?: ReconcilingItemCatchUp | null;
+    /**
+     * Present when the disposition rebuilt the event's entries
+     */
+    regenerated?: ReconcilingItemRegenerated | null;
+    /**
+     * Reference Event Id
+     */
+    reference_event_id?: string | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Resolved At
+     */
+    resolved_at: string;
+    /**
+     * Resolved By
+     */
+    resolved_by: string;
 };
 
 /**
@@ -19225,6 +19717,101 @@ export type UpdateUserApiKeyResponses = {
 
 export type UpdateUserApiKeyResponse = UpdateUserApiKeyResponses[keyof UpdateUserApiKeyResponses];
 
+export type ListUserOAuthGrantsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/user/oauth/grants';
+};
+
+export type ListUserOAuthGrantsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListUserOAuthGrantsError = ListUserOAuthGrantsErrors[keyof ListUserOAuthGrantsErrors];
+
+export type ListUserOAuthGrantsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OAuthGrantsResponse;
+};
+
+export type ListUserOAuthGrantsResponse = ListUserOAuthGrantsResponses[keyof ListUserOAuthGrantsResponses];
+
+export type RevokeUserOAuthGrantData = {
+    body?: never;
+    path: {
+        /**
+         * Grant Id
+         */
+        grant_id: string;
+    };
+    query?: never;
+    url: '/v1/user/oauth/grants/{grant_id}';
+};
+
+export type RevokeUserOAuthGrantErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RevokeUserOAuthGrantError = RevokeUserOAuthGrantErrors[keyof RevokeUserOAuthGrantErrors];
+
+export type RevokeUserOAuthGrantResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponse;
+};
+
+export type RevokeUserOAuthGrantResponse = RevokeUserOAuthGrantResponses[keyof RevokeUserOAuthGrantResponses];
+
 export type ListUserOrgsData = {
     body?: never;
     path?: never;
@@ -20762,137 +21349,6 @@ export type ExecuteSpecificOperatorResponses = {
 };
 
 export type ExecuteSpecificOperatorResponse = ExecuteSpecificOperatorResponses[keyof ExecuteSpecificOperatorResponses];
-
-export type ListMcpToolsData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/mcp/tools';
-};
-
-export type ListMcpToolsErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type ListMcpToolsError = ListMcpToolsErrors[keyof ListMcpToolsErrors];
-
-export type ListMcpToolsResponses = {
-    /**
-     * Successful Response
-     */
-    200: McpToolsResponse;
-};
-
-export type ListMcpToolsResponse = ListMcpToolsResponses[keyof ListMcpToolsResponses];
-
-export type CallMcpToolData = {
-    body: McpToolCall;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: {
-        /**
-         * Format
-         *
-         * Response format override (json, sse, ndjson)
-         */
-        format?: string | null;
-        /**
-         * Test Mode
-         *
-         * Enable test mode for debugging
-         */
-        test_mode?: boolean;
-    };
-    url: '/v1/graphs/{graph_id}/mcp/call-tool';
-};
-
-export type CallMcpToolErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Execution timeout
-     */
-    408: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-    /**
-     * Service unavailable
-     */
-    503: unknown;
-};
-
-export type CallMcpToolError = CallMcpToolErrors[keyof CallMcpToolErrors];
-
-export type CallMcpToolResponses = {
-    /**
-     * Successful Response
-     */
-    200: unknown;
-    /**
-     * Tool queued for execution
-     */
-    202: unknown;
-};
 
 export type ListBackupsData = {
     body?: never;
@@ -26759,6 +27215,134 @@ export type PreviewEventBlockResponses = {
 };
 
 export type PreviewEventBlockResponse2 = PreviewEventBlockResponses[keyof PreviewEventBlockResponses];
+
+export type PreviewReconcilingItemData = {
+    body: PreviewReconcilingItemRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/preview-reconciling-item';
+};
+
+export type PreviewReconcilingItemErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type PreviewReconcilingItemError = PreviewReconcilingItemErrors[keyof PreviewReconcilingItemErrors];
+
+export type PreviewReconcilingItemResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeReconcilingItemPlan;
+};
+
+export type PreviewReconcilingItemResponse = PreviewReconcilingItemResponses[keyof PreviewReconcilingItemResponses];
+
+export type ResolveReconcilingItemData = {
+    body: ResolveReconcilingItemRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/resolve-reconciling-item';
+};
+
+export type ResolveReconcilingItemErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ResolveReconcilingItemError = ResolveReconcilingItemErrors[keyof ResolveReconcilingItemErrors];
+
+export type ResolveReconcilingItemResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeResolveReconcilingItemResponse;
+};
+
+export type ResolveReconcilingItemResponse2 = ResolveReconcilingItemResponses[keyof ResolveReconcilingItemResponses];
 
 export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;
