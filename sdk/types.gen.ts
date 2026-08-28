@@ -4665,15 +4665,15 @@ export type ElementSummary = {
     /**
      * Total
      *
-     * Sum of values across the returned facts
+     * Sum of values across the returned facts. Duration elements only — a balance summed across periods is not a balance, so instants omit it.
      */
-    total: number;
+    total?: number | null;
     /**
      * Average
      *
-     * Mean value across the returned facts
+     * Mean value across the returned facts. Duration elements only; omitted for instants.
      */
-    average: number;
+    average?: number | null;
     /**
      * Min
      *
@@ -8537,7 +8537,7 @@ export type LiveFinancialStatementRequest = {
     /**
      * Statement Type
      *
-     * income_statement | balance_sheet | cash_flow_statement | equity_statement
+     * income_statement | balance_sheet | cash_flow_statement | equity_statement. ``equity_statement`` is provisional — equity balances, not a rollforward — and is not offered on the MCP surface until it articulates.
      */
     statement_type: string;
     /**
@@ -8567,7 +8567,7 @@ export type LiveFinancialStatementRequest = {
     /**
      * Limit
      *
-     * Max fact rows returned
+     * Max fact rows returned. Defaults to the ceiling so a statement is never cut mid-section — visible rows would stop footing to visible subtotals. Lower it only for a preview.
      */
     limit?: number;
 };
@@ -8588,6 +8588,8 @@ export type LiveFinancialStatementResponse = {
     statement_type: string;
     /**
      * Periods
+     *
+     * Rendered columns, aligned with each row's ``values``. Current and prior for income_statement and balance_sheet; current only for cash_flow_statement — the prior period is pivoted as the indirect-method delta basis and not rendered.
      */
     periods: Array<PeriodSpec>;
     /**
@@ -8598,6 +8600,10 @@ export type LiveFinancialStatementResponse = {
      * Fact Count
      */
     fact_count: number;
+    /**
+     * Guard-rail outcome for the rendered columns — accounting equation, net-income equation, totals footing, operating-plug size. Null only when no structure rendered.
+     */
+    validation?: ValidationCheckResponse | null;
     /**
      * Unmapped Count
      */
@@ -11303,6 +11309,22 @@ export type OperationEnvelopeListPublishListMemberResponse = {
 };
 
 /**
+ * OperationResumeRequest
+ *
+ * Answer for an operation paused at a checkpoint (`awaiting_input`).
+ */
+export type OperationResumeRequest = {
+    /**
+     * Input
+     *
+     * The decision the paused run asked for, in whatever shape its prompt described. Delivered to the task as `params['resume']['input']`.
+     */
+    input?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
  * OperatorListResponse
  *
  * Response for listing available operators.
@@ -11473,6 +11495,12 @@ export type OperatorRequest = {
      * Enable streaming response
      */
     stream?: boolean;
+    /**
+     * Max Credits
+     *
+     * Per-question credit ceiling. Once the run's consumed credits reach this number, no further tool step starts and the operator answers from what it has (the wrap-up itself may carry the total slightly past the ceiling). Omit for the mode's default step-bounded behavior.
+     */
+    max_credits?: number | null;
 };
 
 /**
@@ -17629,6 +17657,48 @@ export type UserResponse = {
 };
 
 /**
+ * ValidationCheckResponse
+ *
+ * Aggregate result of running reporting rules over a structure.
+ *
+ * Every rule runs once per rendered period column; on a multi-column
+ * statement each failure and warning is prefixed with the column it was
+ * found in (``[Prior] …``).
+ */
+export type ValidationCheckResponse = {
+    /**
+     * Passed
+     *
+     * True iff at least one rule ran and every rule produced zero failures on every rendered column. False when nothing was checked (`status == 'inconclusive'`).
+     */
+    passed: boolean;
+    /**
+     * Status
+     *
+     * `passed` — every rule ran on every column with zero failures; `failed` — at least one rule failed; `inconclusive` — no validation rules exist for this block type, so nothing was checked.
+     */
+    status: string;
+    /**
+     * Checks
+     *
+     * Names of rules that were evaluated.
+     */
+    checks: Array<string>;
+    /**
+     * Failures
+     *
+     * Human-readable descriptions of rule failures.
+     */
+    failures: Array<string>;
+    /**
+     * Warnings
+     *
+     * Non-blocking advisories from rule evaluation.
+     */
+    warnings: Array<string>;
+};
+
+/**
  * ValidationError
  */
 export type ValidationError = {
@@ -17671,6 +17741,10 @@ export type ValidationLite = {
      * Passed
      */
     passed?: boolean;
+    /**
+     * Status
+     */
+    status?: string;
     /**
      * Checks
      */
@@ -17962,7 +18036,7 @@ export type ViewResponse = {
     /**
      * Summary
      *
-     * Per-element aggregates, only when include_summary=true. Note that `total` sums across every returned period, which is meaningful for duration facts and not for instants. Overlapping duration windows sharing a period_end (quarter + year-to-date) contribute only the narrowest window, so a quarter is never double-counted inside its own YTD figure.
+     * Per-element aggregates, only when include_summary=true. `total` and `average` span every returned period, so they are present for duration elements only — instants omit both (a balance summed across periods is not a balance). Overlapping duration windows sharing a period_end (quarter + year-to-date) contribute only the narrowest window, so a quarter is never double-counted inside its own YTD figure.
      */
     summary?: {
         [key: string]: ElementSummary;
@@ -21160,7 +21234,7 @@ export type AutoSelectOperatorData = {
         /**
          * Mode
          *
-         * Override execution mode: sync, async, stream, or auto
+         * `sync` waits up to 50s for the answer and returns 200 with it (202 with the operation links if the worker is still busy). Anything else — `async`, `stream`, `auto` or unset — queues the run and returns 202; follow `_links.stream` for progress and the result.
          */
         mode?: ResponseMode | null;
     };
@@ -21210,7 +21284,7 @@ export type AutoSelectOperatorResponses = {
      */
     200: OperatorResponse;
     /**
-     * Query queued for async processing
+     * Run queued on the worker — follow `_links.stream`
      */
     202: unknown;
 };
@@ -21293,7 +21367,7 @@ export type ExecuteSpecificOperatorData = {
         /**
          * Mode
          *
-         * Override execution mode: sync, async, stream, or auto
+         * `sync` waits up to 50s for the answer and returns 200 with it (202 with the operation links if the worker is still busy). Anything else — `async`, `stream`, `auto` or unset — queues the run and returns 202; follow `_links.stream` for progress and the result.
          */
         mode?: ResponseMode | null;
     };
@@ -21343,7 +21417,7 @@ export type ExecuteSpecificOperatorResponses = {
      */
     200: OperatorResponse;
     /**
-     * Query queued for async processing
+     * Run queued on the worker — follow `_links.stream`
      */
     202: unknown;
 };
@@ -24967,6 +25041,70 @@ export type CancelOperationResponses = {
 };
 
 export type CancelOperationResponse = CancelOperationResponses[keyof CancelOperationResponses];
+
+export type ResumeOperationData = {
+    body: OperationResumeRequest;
+    path: {
+        /**
+         * Operation Id
+         *
+         * Operation identifier
+         */
+        operation_id: string;
+    };
+    query?: never;
+    url: '/v1/operations/{operation_id}/resume';
+};
+
+export type ResumeOperationErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Operation is not waiting for input
+     */
+    409: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ResumeOperationError = ResumeOperationErrors[keyof ResumeOperationErrors];
+
+export type ResumeOperationResponses = {
+    /**
+     * Response Resumeoperation
+     *
+     * Successful Response
+     */
+    202: {
+        [key: string]: unknown;
+    };
+};
+
+export type ResumeOperationResponse = ResumeOperationResponses[keyof ResumeOperationResponses];
 
 export type GetOrgBillingCustomerData = {
     body?: never;
