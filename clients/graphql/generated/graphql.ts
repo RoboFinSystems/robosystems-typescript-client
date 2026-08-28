@@ -800,6 +800,7 @@ export type InformationBlockValidation = {
   checks: Array<Scalars['String']['output']>
   failures: Array<Scalars['String']['output']>
   passed: Scalars['Boolean']['output']
+  status: Scalars['String']['output']
   warnings: Array<Scalars['String']['output']>
 }
 
@@ -2069,6 +2070,8 @@ export type ReportBundleDownload = {
   format: Scalars['String']['output']
   /** Bundle generation number stamped on the Report. */
   generationCount: Scalars['Int']['output']
+  /** Content the Report carries that this flavor does not. ``disclosure_notes``: the XBRL 2.1 zip ships statements only — tenant-authored disclosure notes render on screen and ride the JSON-LD and holon flavors, but are excluded from this file. */
+  omittedContent: Array<Scalars['String']['output']>
 }
 
 export type ReportDownloadFormat = 'HOLON_JSONLD' | 'JSONLD' | 'XBRL_2_1'
@@ -2384,14 +2387,22 @@ export type UnreachableMappingType = {
   targetQname: Maybe<Scalars['String']['output']>
 }
 
-/** Aggregate result of running reporting rules over a structure. */
+/**
+ * Aggregate result of running reporting rules over a structure.
+ *
+ * Every rule runs once per rendered period column; on a multi-column
+ * statement each failure and warning is prefixed with the column it was
+ * found in (``[Prior] …``).
+ */
 export type ValidationCheck = {
   /** Names of rules that were evaluated. */
   checks: Array<Scalars['String']['output']>
   /** Human-readable descriptions of rule failures. */
   failures: Array<Scalars['String']['output']>
-  /** True iff every rule produced zero failures. */
+  /** True iff at least one rule ran and every rule produced zero failures on every rendered column. False when nothing was checked (`status == 'inconclusive'`). */
   passed: Scalars['Boolean']['output']
+  /** `passed` — every rule ran on every column with zero failures; `failed` — at least one rule failed; `inconclusive` — no validation rules exist for this block type, so nothing was checked. */
+  status: Scalars['String']['output']
   /** Non-blocking advisories from rule evaluation. */
   warnings: Array<Scalars['String']['output']>
 }
