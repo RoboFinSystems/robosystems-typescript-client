@@ -298,57 +298,6 @@ describe('OperatorClient', () => {
     })
   })
 
-  describe('analyzeFinancials', () => {
-    it('should execute financial operator', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({
-          content: 'Financial analysis',
-          operator_used: 'financial',
-          mode_used: 'extended',
-        })
-      )
-
-      const result = await client.analyzeFinancials('graph_1', 'Analyze margins')
-
-      expect(result.content).toBe('Financial analysis')
-      expect(result.operator_used).toBe('financial')
-    })
-  })
-
-  describe('research', () => {
-    it('should execute research operator', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({
-          content: 'Research findings',
-          operator_used: 'research',
-          mode_used: 'extended',
-        })
-      )
-
-      const result = await client.research('graph_1', 'Industry trends')
-
-      expect(result.content).toBe('Research findings')
-      expect(result.operator_used).toBe('research')
-    })
-  })
-
-  describe('rag', () => {
-    it('should execute RAG operator', async () => {
-      mockFetch.mockResolvedValueOnce(
-        createMockResponse({
-          content: 'Retrieved document excerpt',
-          operator_used: 'rag',
-          mode_used: 'quick',
-        })
-      )
-
-      const result = await client.rag('graph_1', 'Find disclosure about goodwill')
-
-      expect(result.content).toBe('Retrieved document excerpt')
-      expect(result.operator_used).toBe('rag')
-    })
-  })
-
   // ── close ─────────────────────────────────────────────────────────────
 
   describe('close', () => {

@@ -271,6 +271,3 @@ export const streamQuery = (
 
 export const operatorQuery = (graphId: string, message: string, context?: Record<string, any>) =>
   getClients().operator.query(graphId, message, context)
-
-export const analyzeFinancials = (graphId: string, message: string) =>
-  getClients().operator.analyzeFinancials(graphId, message)

@@ -92,7 +92,6 @@ describe('RoboSystemsClients', () => {
       expect(typeof ext.query.executeQuery).toBe('function')
       expect(typeof ext.query.query).toBe('function')
       expect(typeof ext.operator.executeQuery).toBe('function')
-      expect(typeof ext.operator.analyzeFinancials).toBe('function')
       expect(typeof ext.operations.monitorOperation).toBe('function')
       expect(typeof ext.operations.closeAll).toBe('function')
       expect(typeof ext.ledger.listAccounts).toBe('function')
@@ -350,11 +349,6 @@ describe('convenience functions', () => {
   it('should export operatorQuery function', async () => {
     const { operatorQuery } = await import('./index')
     expect(typeof operatorQuery).toBe('function')
-  })
-
-  it('should export analyzeFinancials function', async () => {
-    const { analyzeFinancials } = await import('./index')
-    expect(typeof analyzeFinancials).toBe('function')
   })
 
   it('should export monitorOperation function', async () => {
