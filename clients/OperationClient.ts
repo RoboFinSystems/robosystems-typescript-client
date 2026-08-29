@@ -6,6 +6,7 @@
  */
 
 import { cancelOperation as cancelOperationSDK, getOperationStatus } from '../sdk/sdk.gen'
+import type { TokenProvider } from './graphql/client'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface OperationProgress {
@@ -35,6 +36,7 @@ export class OperationClient {
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
     token?: string // JWT token for authentication
+    tokenProvider?: TokenProvider // consulted on every SSE connect; wins over `token`
     maxRetries?: number
     retryDelay?: number
   }
@@ -46,6 +48,7 @@ export class OperationClient {
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
     token?: string // JWT token for authentication
+    tokenProvider?: TokenProvider // consulted on every SSE connect; wins over `token`
     maxRetries?: number
     retryDelay?: number
   }) {

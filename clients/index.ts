@@ -34,9 +34,12 @@ export interface RoboSystemsClientConfig {
    */
   token?: string
   /**
-   * Dynamic credential callback invoked on every GraphQL request.
-   * When set, JWT refreshes are picked up automatically — no need
-   * to rebuild or clear cached clients after a refresh.
+   * Dynamic credential callback invoked on every GraphQL request and
+   * every SSE connect. When set, JWT refreshes are picked up
+   * automatically — no need to rebuild or clear cached clients after a
+   * refresh. Browser sessions need this: the backend revokes the previous
+   * JWT on each refresh, so a static `token` captured at construction
+   * stops opening progress streams the moment the session rotates.
    */
   tokenProvider?: TokenProvider
   headers?: Record<string, string>
@@ -98,10 +101,14 @@ export class RoboSystemsClients {
       timeout: config.timeout,
     }
 
+    // Every client that opens an SSE stream gets the tokenProvider too:
+    // the stream endpoint authenticates the JWT from the URL, and a
+    // captured static token is dead after the first session refresh.
     this.query = new QueryClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
     })
 
@@ -109,6 +116,7 @@ export class RoboSystemsClients {
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
     })
 
@@ -116,12 +124,13 @@ export class RoboSystemsClients {
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
       maxRetries: this.config.maxRetries,
       retryDelay: this.config.retryDelay,
     })
 
-    // LedgerClient / InvestorClient use GraphQL internally, so they
-    // get the tokenProvider — REST-only clients do not.
+    // LedgerClient / InvestorClient / LibraryClient use GraphQL internally
+    // and consult the tokenProvider on every request.
     this.ledger = new LedgerClient({
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
@@ -171,6 +180,7 @@ export class RoboSystemsClients {
       baseUrl: this.config.baseUrl,
       credentials: this.config.credentials,
       token: this.config.token,
+      tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
       maxRetries: this.config.maxRetries,
       retryDelay: this.config.retryDelay,

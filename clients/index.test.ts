@@ -411,3 +411,18 @@ describe('re-exports', () => {
     expect(mod.EventType.OPERATION_PROGRESS).toBeDefined()
   })
 })
+
+describe('tokenProvider threading', () => {
+  it('reaches every client that opens an SSE stream', () => {
+    const tokenProvider = () => 'fresh-jwt'
+    const ext = new RoboSystemsClients({ baseUrl: 'https://api.test', tokenProvider })
+
+    // The stream endpoint authenticates the JWT from the URL, so the
+    // SSE-backed clients need the rotating credential just as much as the
+    // GraphQL facades do — a captured static token dies on the first refresh.
+    expect((ext.operator as any).config.tokenProvider).toBe(tokenProvider)
+    expect((ext.operations as any).config.tokenProvider).toBe(tokenProvider)
+    expect((ext.query as any).config.tokenProvider).toBe(tokenProvider)
+    expect((ext.createSSEClient() as any).config.tokenProvider).toBe(tokenProvider)
+  })
+})
