@@ -7,6 +7,7 @@
 
 import { executeCypher } from '../sdk/sdk.gen'
 import type { ExecuteCypherData } from '../sdk/types.gen'
+import type { TokenProvider } from './graphql/client'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface QueryRequest {
@@ -48,6 +49,7 @@ export class QueryClient {
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
     token?: string // JWT token for authentication
+    tokenProvider?: TokenProvider // consulted on every SSE connect; wins over `token`
   }
 
   constructor(config: {
@@ -55,6 +57,7 @@ export class QueryClient {
     credentials?: 'include' | 'same-origin' | 'omit'
     headers?: Record<string, string>
     token?: string // JWT token for authentication
+    tokenProvider?: TokenProvider // consulted on every SSE connect; wins over `token`
   }) {
     this.config = config
   }

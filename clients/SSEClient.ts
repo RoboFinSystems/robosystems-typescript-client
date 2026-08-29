@@ -16,13 +16,32 @@
  * - Implementing a WebSocket-based alternative
  * - Using short-lived tokens that expire quickly
  * - Ensuring all connections use HTTPS
+ *
+ * CREDENTIAL ROTATION: the stream endpoint authenticates the JWT it finds in
+ * the URL, and the backend revokes the previous JWT on every session refresh.
+ * A `token` captured once therefore goes dead the moment the session rotates
+ * (about every 25 minutes in the browser apps); pass a `tokenProvider` and it
+ * is consulted on every connect — including automatic reconnects — instead.
  */
+
+import type { TokenProvider } from './graphql/client'
 
 export interface SSEConfig {
   baseUrl: string
   credentials?: 'include' | 'same-origin' | 'omit'
   headers?: Record<string, string>
-  token?: string // JWT token for authentication
+  /**
+   * Static JWT captured at construction. Fine for long-lived API keys and
+   * server-side flows; browser sessions should use `tokenProvider`.
+   */
+  token?: string
+  /**
+   * Dynamic credential callback, consulted on every `connect()` and
+   * preferred over `token` when both are set. Return `null` to connect
+   * without a token. See the class documentation for why a static token
+   * is not enough in the browser.
+   */
+  tokenProvider?: TokenProvider
   maxRetries?: number
   retryDelay?: number
   heartbeatInterval?: number
@@ -66,14 +85,18 @@ export class SSEClient {
   }
 
   async connect(operationId: string, fromSequence: number = 0): Promise<void> {
+    // Resolved per attempt so a rotated JWT is picked up by every connect,
+    // not just the first one after construction.
+    const token = await this.resolveToken()
+
     return new Promise((resolve, reject) => {
       let url = `${this.config.baseUrl}/v1/operations/${operationId}/stream?from_sequence=${fromSequence}`
 
       // Add JWT token as query parameter if provided
       // WARNING: EventSource API doesn't support custom headers, so tokens are passed via query param
       // This has security implications - see class documentation
-      if (this.config.token) {
-        url += `&token=${encodeURIComponent(this.config.token)}`
+      if (token) {
+        url += `&token=${encodeURIComponent(token)}`
       }
 
       this.eventSource = new EventSource(url, {
@@ -133,6 +156,31 @@ export class SSEClient {
         })
       })
     })
+  }
+
+  /**
+   * Credential for one connect attempt: the `tokenProvider` result when one
+   * is configured (`null`/`undefined` connects unauthenticated), otherwise
+   * the static `token`. A throwing provider fails the connect — matching the
+   * GraphQL client — because the caller intended to authenticate, and a
+   * silent unauthenticated attempt would surface as an unrelated-looking 401.
+   */
+  private async resolveToken(): Promise<string | undefined> {
+    if (!this.config.tokenProvider) {
+      return this.config.token
+    }
+    let token: string | null | undefined
+    try {
+      token = await this.config.tokenProvider()
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err)
+      throw new Error(
+        `RoboSystems SDK: tokenProvider threw while resolving the SSE credential (${detail}). ` +
+          'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
+          'returns the current token, or null to connect without one.'
+      )
+    }
+    return token || undefined
   }
 
   private handleMessage(event: MessageEvent): void {

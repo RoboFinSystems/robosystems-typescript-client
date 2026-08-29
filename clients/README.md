@@ -219,6 +219,15 @@ All three accept the same configuration: `baseUrl`, plus optional
 `credentials`, `headers`, a static `token`, or a `tokenProvider` callback that
 is consulted on every GraphQL request (use it when the JWT can rotate).
 
+The SSE-backed clients (`OperatorClient`, `OperationClient`, `QueryClient`,
+`SSEClient`) take the same `tokenProvider` and consult it on every stream
+connect. In the browser this is required, not optional: the stream endpoint
+authenticates the JWT it finds in the URL, and the backend revokes the previous
+JWT on every session refresh, so a static `token` captured at construction
+stops opening streams the moment the session rotates. `OperatorClient` also
+follows a queued run over `/v1/operations/{id}/status` when it cannot open the
+stream at all, so the result of a run that is already executing is never lost.
+
 ### LedgerClient (RoboLedger)
 
 Entity, chart of accounts, transactions, event blocks, taxonomy + mappings,
@@ -408,7 +417,8 @@ setSDKClientConfig({
   baseUrl: 'https://api.robosystems.ai',
   credentials: 'include', // For cookie auth
   // token: 'your-jwt-token',        // static credential, or…
-  // tokenProvider: () => getJwt(),  // rotating credential (wins over token)
+  // tokenProvider: () => getJwt(),  // rotating credential (wins over token;
+  //                                 // used for GraphQL requests and SSE connects)
 })
 ```
 

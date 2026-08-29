@@ -18,13 +18,19 @@ vi.mock('../sdk/client.gen', () => ({
   },
 }))
 
+// The rotating credential the hooks must hand to every client they build.
+const { mockTokenProvider } = vi.hoisted(() => ({
+  mockTokenProvider: () => 'hook-jwt',
+}))
+
 // Mock the config module
 vi.mock('./config', () => ({
-  getSDKExtensionsConfig: vi.fn(() => ({
+  getSDKClientConfig: vi.fn(() => ({
     baseUrl: 'http://test-api.com',
     credentials: 'include',
     headers: {},
     token: 'test-token',
+    tokenProvider: mockTokenProvider,
     maxRetries: 3,
     retryDelay: 1000,
   })),
@@ -380,6 +386,20 @@ describe('useSDKClients', () => {
 
     expect(typeof result.current.query!.executeQuery).toBe('function')
     expect(typeof result.current.operations!.monitorOperation).toBe('function')
+  })
+
+  it('hands the global tokenProvider to both clients', async () => {
+    const { result } = renderHook(() => useSDKClients())
+
+    await waitFor(() => {
+      expect(result.current.query).not.toBeNull()
+    })
+
+    // Both clients open SSE streams, and the stream endpoint authenticates
+    // the JWT from the URL — a token captured at hook init would be dead
+    // after the first session refresh.
+    expect((result.current.query as any).config.tokenProvider).toBe(mockTokenProvider)
+    expect((result.current.operations as any).config.tokenProvider).toBe(mockTokenProvider)
   })
 
   it('should start with null clients', () => {

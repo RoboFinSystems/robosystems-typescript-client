@@ -371,3 +371,92 @@ describe('SSEClient', () => {
     })
   })
 })
+
+// ── tokenProvider ────────────────────────────────────────────────────────
+//
+// The stream endpoint authenticates the JWT from the URL and the backend
+// revokes the previous JWT on every session refresh, so the credential has
+// to be resolved per connect — a value captured at construction is dead
+// after the first rotation.
+
+class RecordingEventSource extends MockEventSource {
+  static instances: RecordingEventSource[] = []
+
+  constructor(url: string, options?: { withCredentials?: boolean }) {
+    super(url, options)
+    RecordingEventSource.instances.push(this)
+  }
+
+  static get last(): RecordingEventSource {
+    return RecordingEventSource.instances[RecordingEventSource.instances.length - 1]
+  }
+}
+
+const tokenParam = (url: string) => new URL(url).searchParams.get('token')
+
+describe('SSEClient tokenProvider', () => {
+  beforeEach(() => {
+    RecordingEventSource.instances = []
+    global.EventSource = RecordingEventSource as any
+  })
+
+  it('resolves the token from the provider on every connect', async () => {
+    let current = 'jwt-1'
+    const tokenProvider = vi.fn(async () => current)
+    const client = new SSEClient({ baseUrl: 'http://localhost:8000', tokenProvider })
+
+    await client.connect('op_123')
+    expect(tokenParam(RecordingEventSource.last.url)).toBe('jwt-1')
+
+    // Session refresh rotates the credential; the next connect must carry it.
+    current = 'jwt-2'
+    client.close()
+    await client.connect('op_123', 7)
+    expect(tokenParam(RecordingEventSource.last.url)).toBe('jwt-2')
+    expect(RecordingEventSource.last.url).toContain('from_sequence=7')
+    expect(tokenProvider).toHaveBeenCalledTimes(2)
+  })
+
+  it('prefers the provider over a static token', async () => {
+    const client = new SSEClient({
+      baseUrl: 'http://localhost:8000',
+      token: 'stale-static',
+      tokenProvider: () => 'fresh',
+    })
+
+    await client.connect('op_123')
+    expect(tokenParam(RecordingEventSource.last.url)).toBe('fresh')
+  })
+
+  it('uses the static token when no provider is configured', async () => {
+    const client = new SSEClient({ baseUrl: 'http://localhost:8000', token: 'static' })
+
+    await client.connect('op_123')
+    expect(tokenParam(RecordingEventSource.last.url)).toBe('static')
+  })
+
+  it('connects without a token when the provider returns null', async () => {
+    const client = new SSEClient({
+      baseUrl: 'http://localhost:8000',
+      token: 'stale-static',
+      tokenProvider: () => null,
+    })
+
+    await client.connect('op_123')
+    expect(tokenParam(RecordingEventSource.last.url)).toBeNull()
+  })
+
+  it('rejects the connect when the provider throws', async () => {
+    const client = new SSEClient({
+      baseUrl: 'http://localhost:8000',
+      tokenProvider: () => {
+        throw new Error('storage unavailable')
+      },
+    })
+
+    await expect(client.connect('op_123')).rejects.toThrow(
+      /tokenProvider threw while resolving the SSE credential \(storage unavailable\)/
+    )
+    expect(RecordingEventSource.instances).toHaveLength(0)
+  })
+})

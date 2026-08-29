@@ -46,6 +46,7 @@ export function useQuery(graphId: string) {
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
       token,
+      tokenProvider: sdkConfig.tokenProvider,
     })
 
     return () => {
@@ -143,6 +144,7 @@ export function useStreamingQuery(graphId: string) {
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
       token: sdkConfig.token,
+      tokenProvider: sdkConfig.tokenProvider,
     })
 
     return () => {
@@ -240,6 +242,7 @@ export function useOperation<T = any>(operationId?: string) {
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       token,
+      tokenProvider: sdkConfig.tokenProvider,
       maxRetries: sdkConfig.maxRetries,
       retryDelay: sdkConfig.retryDelay,
     })
@@ -353,6 +356,7 @@ export function useMultipleOperations<T = any>() {
       baseUrl: sdkConfig.baseUrl || clientConfig.baseUrl || 'http://localhost:8000',
       credentials: sdkConfig.credentials,
       token,
+      tokenProvider: sdkConfig.tokenProvider,
       maxRetries: sdkConfig.maxRetries,
       retryDelay: sdkConfig.retryDelay,
     })
@@ -439,6 +443,7 @@ export function useSDKClients() {
       credentials: sdkConfig.credentials,
       headers: sdkConfig.headers,
       token,
+      tokenProvider: sdkConfig.tokenProvider,
     }
 
     const queryClient = new QueryClient(baseConfig)
