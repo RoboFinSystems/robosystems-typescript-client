@@ -297,8 +297,10 @@ const operator = new OperatorClient({
 const answer = await operator.query('your-graph-id', 'How did gross margin trend this year?')
 console.log(answer.content)
 
-// Specific operator types
-const analysis = await operator.analyzeFinancials('your-graph-id', 'Summarize Q1 performance')
+// A named operator (`analyst`, `mapping`) with progress callbacks
+const analysis = await operator.executeOperator('your-graph-id', 'analyst', {
+  message: 'Summarize Q1 performance',
+})
 ```
 
 ## React Integration
@@ -469,7 +471,7 @@ try {
 - **`SSEClient`** - Server-Sent Events client with auto-reconnection
 - **`QueryClient`** - Query execution with queueing and streaming support
 - **`OperationClient`** - Long-running operation monitoring
-- **`OperatorClient`** - AI operator queries (financial analysis, research, RAG)
+- **`OperatorClient`** - AI operator queries (auto-selected, or a named operator via `executeOperator`)
 - **`LedgerClient`** - RoboLedger domain facade
 - **`InvestorClient`** - RoboInvestor domain facade
 - **`LibraryClient`** - Element library facade

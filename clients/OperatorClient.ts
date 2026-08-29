@@ -271,39 +271,6 @@ export class OperatorClient {
   }
 
   /**
-   * Execute financial agent for financial analysis
-   */
-  async analyzeFinancials(
-    graphId: string,
-    message: string,
-    options: OperatorOptions = {}
-  ): Promise<OperatorResult> {
-    return this.executeOperator(graphId, 'financial', { message }, options)
-  }
-
-  /**
-   * Execute research agent for deep research
-   */
-  async research(
-    graphId: string,
-    message: string,
-    options: OperatorOptions = {}
-  ): Promise<OperatorResult> {
-    return this.executeOperator(graphId, 'research', { message }, options)
-  }
-
-  /**
-   * Execute RAG agent for fast retrieval
-   */
-  async rag(
-    graphId: string,
-    message: string,
-    options: OperatorOptions = {}
-  ): Promise<OperatorResult> {
-    return this.executeOperator(graphId, 'rag', { message }, options)
-  }
-
-  /**
    * Cancel any active SSE connections
    */
   close(): void {
