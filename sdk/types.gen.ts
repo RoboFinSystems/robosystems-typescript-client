@@ -21301,7 +21301,7 @@ export type GetOperatorMetadataData = {
         /**
          * Operator Type
          *
-         * Operator type identifier (e.g., 'financial', 'research', 'rag')
+         * Operator type identifier (e.g., 'analyst', 'mapping')
          */
         operator_type: string;
     };
