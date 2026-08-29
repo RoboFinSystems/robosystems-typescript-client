@@ -720,7 +720,7 @@ export const listOperators = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Auto-select Operator for Query
  *
- * Routes to the best operator for your query. Operators: `cypher` (answers natural-language questions by querying the graph; supports `quick`, `standard`, `extended`) and `mapping` (autonomous Chart of Accounts → rs-gaap mapping; roboledger graphs only, `extended` only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. Credits are consumed by actual token usage, not a fixed price per mode. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
+ * Routes to the best operator for your query. Operators: `analyst` (answers natural-language questions over the graph — curated financial reads, documents, memory, and read-only Cypher; supports `quick`, `standard`, `extended`; `cypher` is accepted as its former name) and `mapping` (autonomous Chart of Accounts → rs-gaap mapping; roboledger graphs only, `extended` only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. Credits are consumed by actual token usage, not a fixed price per mode. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
  */
 export const autoSelectOperator = <ThrowOnError extends boolean = false>(options: Options<AutoSelectOperatorData, ThrowOnError>) => (options.client ?? client).post<AutoSelectOperatorResponses, AutoSelectOperatorErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -744,7 +744,7 @@ export const getOperatorMetadata = <ThrowOnError extends boolean = false>(option
 /**
  * Execute Specific Operator
  *
- * Available: `cypher` (natural-language questions answered by querying the graph; RAG retrieval is one of its capabilities, not a separate operator) and `mapping` (Chart of Accounts → rs-gaap mapping, roboledger graphs only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
+ * Available: `analyst` (natural-language questions over the graph — curated financial reads, documents, memory, and read-only Cypher; RAG retrieval is one of its capabilities, not a separate operator; `cypher` is accepted as its former name) and `mapping` (Chart of Accounts → rs-gaap mapping, roboledger graphs only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
  */
 export const executeSpecificOperator = <ThrowOnError extends boolean = false>(options: Options<ExecuteSpecificOperatorData, ThrowOnError>) => (options.client ?? client).post<ExecuteSpecificOperatorResponses, ExecuteSpecificOperatorErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
