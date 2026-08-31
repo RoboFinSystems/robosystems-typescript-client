@@ -23,6 +23,8 @@
 
 import { ClientError, GraphQLClient } from 'graphql-request'
 
+import { createRetryingFetch, DEFAULT_MAX_RETRIES, DEFAULT_RETRY_DELAY_MS } from '../retry'
+
 /**
  * Default request timeout for GraphQL calls, in milliseconds.
  *
@@ -113,6 +115,14 @@ export interface GraphQLClientConfig {
    * client). Applied per request via `AbortSignal.timeout(...)`.
    */
   timeout?: number
+  /**
+   * Replays of a rate-limited (429) request. Defaults to
+   * `DEFAULT_MAX_RETRIES`; set `0` to surface the rejection
+   * immediately. See `../retry`.
+   */
+  maxRetries?: number
+  /** Base of the retry backoff, in milliseconds. */
+  retryDelay?: number
 }
 
 /**
@@ -175,7 +185,13 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
   const staticHeaders: Record<string, string> = {
     ...(config.headers ?? {}),
   }
-  const timeoutFetch = createTimeoutFetch(config.timeout ?? DEFAULT_GRAPHQL_TIMEOUT_MS)
+  // Retry wraps timeout, not the other way round, so each replay gets
+  // its own full timeout rather than sharing one across attempts.
+  const timeoutFetch = createRetryingFetch({
+    fetch: createTimeoutFetch(config.timeout ?? DEFAULT_GRAPHQL_TIMEOUT_MS),
+    maxRetries: config.maxRetries ?? DEFAULT_MAX_RETRIES,
+    retryDelay: config.retryDelay ?? DEFAULT_RETRY_DELAY_MS,
+  })
 
   // Dynamic-token path: defer credential injection to a per-request
   // middleware so JWT refreshes are picked up without rebuilding or

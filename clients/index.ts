@@ -12,6 +12,7 @@ import { LibraryClient } from './LibraryClient'
 import { OperationClient } from './OperationClient'
 import { OperatorClient } from './OperatorClient'
 import { QueryClient } from './QueryClient'
+import { createRetryingFetch, DEFAULT_MAX_RETRIES, DEFAULT_RETRY_DELAY_MS } from './retry'
 import { SSEClient } from './SSEClient'
 
 // Re-export the `TokenProvider` type so consumers who want to type
@@ -23,6 +24,18 @@ export type { TokenProvider } from './graphql/client'
 // Structured GraphQL error thrown by facade reads (LedgerClient /
 // InvestorClient / LibraryClient), plus the default request timeout.
 export { DEFAULT_GRAPHQL_TIMEOUT_MS, GraphQLError } from './graphql/client'
+
+// A `fetch` that replays rate-limited (429) requests. The facade
+// clients install it themselves; export it so callers reaching for the
+// raw generated SDK can opt in with
+// `client.setConfig({ fetch: createRetryingFetch() })`.
+export {
+  createRetryingFetch,
+  DEFAULT_MAX_RETRIES,
+  DEFAULT_RETRY_DELAY_MS,
+  MAX_BACKOFF_MS,
+  type RetryOptions,
+} from './retry'
 
 export interface RoboSystemsClientConfig {
   baseUrl?: string
@@ -82,6 +95,19 @@ export class RoboSystemsClients {
     // Get base URL from SDK client config or use provided/default
     const sdkConfig = client.getConfig()
 
+    // Facade REST calls run through the generated ops, which share this
+    // module-level client — its `fetch` is the only interception point,
+    // since the ops take no per-call transport. A caller that already
+    // supplied one keeps it; we never override an explicit choice.
+    if (!sdkConfig.fetch) {
+      client.setConfig({
+        fetch: createRetryingFetch({
+          maxRetries: config.maxRetries ?? DEFAULT_MAX_RETRIES,
+          retryDelay: config.retryDelay ?? DEFAULT_RETRY_DELAY_MS,
+        }),
+      })
+    }
+
     // Extract JWT token using centralized logic
     const token = config.token || extractTokenFromSDKClient()
 
@@ -138,6 +164,8 @@ export class RoboSystemsClients {
       tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
       timeout: this.config.timeout,
+      maxRetries: this.config.maxRetries,
+      retryDelay: this.config.retryDelay,
     })
 
     this.investor = new InvestorClient({
@@ -147,6 +175,8 @@ export class RoboSystemsClients {
       tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
       timeout: this.config.timeout,
+      maxRetries: this.config.maxRetries,
+      retryDelay: this.config.retryDelay,
     })
 
     // Library uses GraphQL and accepts graphId per-call — pass either
@@ -159,6 +189,8 @@ export class RoboSystemsClients {
       tokenProvider: this.config.tokenProvider,
       headers: this.config.headers,
       timeout: this.config.timeout,
+      maxRetries: this.config.maxRetries,
+      retryDelay: this.config.retryDelay,
     })
 
     // Reports consolidated into LedgerClient — alias for backward compat

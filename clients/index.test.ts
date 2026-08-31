@@ -1,13 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { client } from '../sdk/client.gen'
 import { RoboSystemsClients } from './index'
 
-// Mock the SDK client
+// Mock the SDK client. `setConfig` is part of the real surface — the
+// constructor installs the retrying `fetch` through it, since the
+// generated ops share this module-level client and take no per-call
+// transport.
 vi.mock('../sdk/client.gen', () => ({
   client: {
     getConfig: vi.fn(() => ({
       baseUrl: 'http://mock-sdk.com',
       headers: {},
     })),
+    setConfig: vi.fn(),
   },
 }))
 
@@ -424,5 +429,52 @@ describe('tokenProvider threading', () => {
     expect((ext.operations as any).config.tokenProvider).toBe(tokenProvider)
     expect((ext.query as any).config.tokenProvider).toBe(tokenProvider)
     expect((ext.createSSEClient() as any).config.tokenProvider).toBe(tokenProvider)
+  })
+})
+
+describe('rate-limit retry threading', () => {
+  const mockClient = client as unknown as {
+    getConfig: ReturnType<typeof vi.fn>
+    setConfig: ReturnType<typeof vi.fn>
+  }
+
+  beforeEach(() => {
+    mockClient.getConfig.mockReturnValue({ baseUrl: 'http://mock-sdk.com', headers: {} })
+  })
+
+  it('installs a retrying fetch on the shared generated client', () => {
+    // Facade REST calls go through the generated ops, which share the
+    // module-level client and take no per-call transport — its `fetch` is
+    // the only interception point.
+    new RoboSystemsClients({ baseUrl: 'https://api.test' })
+
+    expect(mockClient.setConfig).toHaveBeenCalledTimes(1)
+    expect(typeof mockClient.setConfig.mock.calls[0][0].fetch).toBe('function')
+  })
+
+  it('never overrides a fetch the caller already supplied', () => {
+    const appFetch = vi.fn()
+    mockClient.getConfig.mockReturnValue({
+      baseUrl: 'http://mock-sdk.com',
+      headers: {},
+      fetch: appFetch,
+    })
+
+    new RoboSystemsClients({ baseUrl: 'https://api.test' })
+
+    expect(mockClient.setConfig).not.toHaveBeenCalled()
+  })
+
+  it('threads the retry budget to the GraphQL facades', () => {
+    const ext = new RoboSystemsClients({
+      baseUrl: 'https://api.test',
+      maxRetries: 2,
+      retryDelay: 250,
+    })
+
+    for (const facade of [ext.ledger, ext.investor, ext.library]) {
+      expect((facade as any).config.maxRetries).toBe(2)
+      expect((facade as any).config.retryDelay).toBe(250)
+    }
   })
 })
