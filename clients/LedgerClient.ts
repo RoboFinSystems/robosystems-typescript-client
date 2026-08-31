@@ -576,6 +576,13 @@ interface LedgerClientConfig {
   tokenProvider?: TokenProvider
   /** GraphQL request timeout in milliseconds (default 60s). */
   timeout?: number
+  /**
+   * Replays of a rate-limited (429) request. Defaults to
+   * `DEFAULT_MAX_RETRIES`; set `0` to surface the rejection immediately.
+   */
+  maxRetries?: number
+  /** Base of the retry backoff, in milliseconds. */
+  retryDelay?: number
 }
 
 export class LedgerClient {
