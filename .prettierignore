@@ -18,6 +18,7 @@ sdk/
 .cache/
 .tmp/
 *.log
+.pytest_cache/
 
 # IDE
 .vscode/
