@@ -139,7 +139,7 @@
     "@graphql-codegen/cli": "^6.3.0",
     "@graphql-codegen/typed-document-node": "^6.1.8",
     "@graphql-codegen/typescript": "^5.0.10",
-    "@graphql-codegen/typescript-operations": "^5.1.0",
+    "@graphql-codegen/typescript-operations": "^6.1.6",
     "@hey-api/openapi-ts": "^0.97.3",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^22.0.0",
