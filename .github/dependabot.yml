@@ -27,6 +27,26 @@ updates:
           - 'vitest'
           - '@vitejs/*'
           - '@vitest/*'
+      # The codegen toolchain moves as a unit: cli, typescript,
+      # typescript-operations and typed-document-node are released together and
+      # are only tested against matching majors. Dependabot proposed three of
+      # the four on 2026-09-01 and silently omitted @graphql-codegen/typescript,
+      # which would have left cli v7 driving typescript v5 — a combination
+      # nobody upstream tests. No update-types filter, so majors travel
+      # together.
+      graphql-codegen:
+        patterns:
+          - '@graphql-codegen/*'
+      # graphql and the packages that peer on it. graphql-request pins
+      # graphql "14 - 16", so a graphql major can only ever land alongside a
+      # graphql-request that accepts it. Grouping them means that day arrives
+      # as one resolvable PR instead of two that block each other. See the
+      # graphql ignore entry below for why nothing moves here yet.
+      graphql-core:
+        patterns:
+          - 'graphql'
+          - 'graphql-request'
+          - '@graphql-typed-document-node/*'
       npm-production:
         dependency-type: 'production'
         update-types:
@@ -38,6 +58,16 @@ updates:
           - 'minor'
           - 'patch'
     ignore:
+      # Blocked upstream, not by us: graphql-request (7.4.0, latest) peers
+      # graphql "14 - 16", and graphql-request is a production dependency here,
+      # so graphql 17 fails `npm install` with ERESOLVE and can never go green.
+      # Dependabot proposed it as #214 on 2026-09-01 and CI failed on exactly
+      # that. Drop this entry once graphql-request ships a release that accepts
+      # graphql 17 — the graphql-core group above will then carry both in one
+      # PR.
+      - dependency-name: 'graphql'
+        update-types:
+          - 'version-update:semver-major'
       # Blocked upstream: typescript-eslint v8 peers typescript
       # ">=4.8.4 <6.1.0". TypeScript 7 is also the native Go port, so it is a
       # migration to schedule rather than a bump to take. Drop this entry once
