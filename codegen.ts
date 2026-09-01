@@ -88,12 +88,13 @@ const config: CodegenConfig = {
   documents: ['clients/graphql/queries/**/*.ts'],
   generates: {
     'clients/graphql/generated/graphql.ts': {
-      plugins: ['typescript', 'typescript-operations', 'typed-document-node'],
+      plugins: ['typescript-operations', 'typed-document-node'],
       config: {
         useTypeImports: true,
         enumsAsTypes: true,
         avoidOptionals: true,
         skipTypename: true,
+        scalars: { Date: 'string', DateTime: 'string', JSON: 'unknown' },
       },
     },
   },
