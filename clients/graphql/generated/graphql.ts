@@ -1,2414 +1,13 @@
-import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core'
-export type Maybe<T> = T | null
-export type InputMaybe<T> = Maybe<T>
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] }
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> }
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> }
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = {
-  [_ in K]?: never
-}
+/** Internal type. DO NOT USE DIRECTLY. */
+type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] }
+/** Internal type. DO NOT USE DIRECTLY. */
 export type Incremental<T> =
   T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never }
-/** All built-in and custom scalars, mapped to their actual values */
-export type Scalars = {
-  ID: { input: string; output: string }
-  String: { input: string; output: string }
-  Boolean: { input: boolean; output: boolean }
-  Int: { input: number; output: number }
-  Float: { input: number; output: number }
-  Date: { input: any; output: any }
-  DateTime: { input: any; output: any }
-  JSON: { input: any; output: any }
-}
-
-/**
- * One CoA account (Element) — the basic chart-of-accounts row.
- *
- * ``trait`` carries the FASB classification (asset/liability/equity/
- * revenue/expense/etc.); ``balance_type`` is the natural side
- * ('debit' or 'credit'). ``account_type`` is a free-form sub-grouping
- * (e.g. 'cash', 'inventory') used by some integrations. Hierarchy is
- * expressed via ``parent_id`` + ``depth``.
- */
-export type Account = {
-  accountType: Maybe<Scalars['String']['output']>
-  balanceType: Scalars['String']['output']
-  code: Maybe<Scalars['String']['output']>
-  currency: Scalars['String']['output']
-  depth: Scalars['Int']['output']
-  description: Maybe<Scalars['String']['output']>
-  externalId: Maybe<Scalars['String']['output']>
-  externalSource: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  isActive: Scalars['Boolean']['output']
-  isPlaceholder: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  parentId: Maybe<Scalars['String']['output']>
-  subClassification: Maybe<Scalars['String']['output']>
-  trait: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Paginated chart-of-accounts listing — flat (use the tree endpoint
- * for parent/child structure).
- */
-export type AccountList = {
-  accounts: Array<Account>
-  pagination: PaginationInfo
-}
-
-/**
- * All CoA accounts that roll up into a single reporting concept,
- * with the group total and per-account contributions.
- */
-export type AccountRollupGroup = {
-  accounts: Array<AccountRollupRow>
-  balanceType: Scalars['String']['output']
-  reportingElementId: Scalars['String']['output']
-  reportingName: Scalars['String']['output']
-  reportingQname: Scalars['String']['output']
-  total: Scalars['Float']['output']
-  trait: Scalars['String']['output']
-}
-
-/** One CoA account contributing to a reporting concept's rollup. */
-export type AccountRollupRow = {
-  accountCode: Maybe<Scalars['String']['output']>
-  accountName: Scalars['String']['output']
-  elementId: Scalars['String']['output']
-  netBalance: Scalars['Float']['output']
-  totalCredits: Scalars['Float']['output']
-  totalDebits: Scalars['Float']['output']
-}
-
-/**
- * Mapping rendered as account rollups — every reporting concept the
- * mapping defines, with the CoA accounts that contribute to it and the
- * current balance for each. ``total_unmapped`` tracks gaps for UI.
- */
-export type AccountRollups = {
-  groups: Array<AccountRollupGroup>
-  mappingId: Scalars['String']['output']
-  mappingName: Scalars['String']['output']
-  totalMapped: Scalars['Int']['output']
-  totalUnmapped: Scalars['Int']['output']
-}
-
-export type AccountTree = {
-  roots: Array<AccountTreeNode>
-  totalAccounts: Scalars['Int']['output']
-}
-
-export type AccountTreeNode = {
-  accountType: Maybe<Scalars['String']['output']>
-  balanceType: Scalars['String']['output']
-  children: Array<AccountTreeNode>
-  code: Maybe<Scalars['String']['output']>
-  depth: Scalars['Int']['output']
-  id: Scalars['ID']['output']
-  isActive: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  trait: Maybe<Scalars['String']['output']>
-}
-
-export type Agent = {
-  address: Maybe<Scalars['JSON']['output']>
-  agentType: Scalars['String']['output']
-  createdAt: Maybe<Scalars['DateTime']['output']>
-  createdBy: Maybe<Scalars['String']['output']>
-  duns: Maybe<Scalars['String']['output']>
-  email: Maybe<Scalars['String']['output']>
-  externalId: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  is1099Recipient: Scalars['Boolean']['output']
-  isActive: Scalars['Boolean']['output']
-  legalName: Maybe<Scalars['String']['output']>
-  lei: Maybe<Scalars['String']['output']>
-  name: Scalars['String']['output']
-  openPayable: Maybe<OpenBalanceByAgent>
-  openReceivable: Maybe<OpenBalanceByAgent>
-  phone: Maybe<Scalars['String']['output']>
-  registrationNumber: Maybe<Scalars['String']['output']>
-  source: Scalars['String']['output']
-  taxId: Maybe<Scalars['String']['output']>
-  updatedAt: Maybe<Scalars['DateTime']['output']>
-}
-
-export type Artifact = {
-  mechanics: Scalars['JSON']['output']
-  rendererNote: Maybe<Scalars['String']['output']>
-  template: Maybe<Scalars['JSON']['output']>
-  topic: Maybe<Scalars['String']['output']>
-}
-
-/**
- * One edge between two elements within a structure (parent/child
- * presentation, calculation rollup, mapping, equivalence).
- *
- * ``association_type`` discriminates the edge semantics. Mapping edges
- * are the user-facing path (CoA → reporting concept); presentation /
- * calculation edges express structure layout and roll-ups.
- * ``confidence`` is set on AI-suggested mappings (≥0.90 auto-approved,
- * 0.70-0.89 flagged for review).
- */
-export type Association = {
-  approvedBy: Maybe<Scalars['String']['output']>
-  associationType: Scalars['String']['output']
-  confidence: Maybe<Scalars['Float']['output']>
-  fromElementId: Scalars['String']['output']
-  fromElementName: Maybe<Scalars['String']['output']>
-  fromElementQname: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  orderValue: Maybe<Scalars['Float']['output']>
-  structureId: Scalars['String']['output']
-  suggestedBy: Maybe<Scalars['String']['output']>
-  toElementId: Scalars['String']['output']
-  toElementName: Maybe<Scalars['String']['output']>
-  toElementQname: Maybe<Scalars['String']['output']>
-  weight: Maybe<Scalars['Float']['output']>
-}
-
-/** One blocked source graph. */
-export type BlockedSourceGraph = {
-  /** When the block was created. */
-  blockedAt: Scalars['DateTime']['output']
-  /** User ID that created the block. */
-  blockedBy: Scalars['String']['output']
-  /** Block row identifier (ULID). */
-  id: Scalars['String']['output']
-  /** Recipient's own note, if given. */
-  reason: Maybe<Scalars['String']['output']>
-  /** The blocked sender's graph ID. */
-  sourceGraphId: Scalars['String']['output']
-  /** Display name of the blocked graph (if known). */
-  sourceGraphName: Maybe<Scalars['String']['output']>
-}
-
-/** Paginated list of blocked source graphs. */
-export type BlockedSourceGraphList = {
-  /** Blocked source graphs. */
-  blockedSourceGraphs: Array<BlockedSourceGraph>
-  /** Pagination metadata. */
-  pagination: PaginationInfo
-}
-
-/**
- * What a close actually did, stamped on the period row that close locked.
- *
- * The close result used to exist only in the HTTP response, so a close
- * that SUCCEEDED but whose transport failed left no record and the
- * operator reconstructed it from separate state reads. This is that
- * record. Written in the same transaction as the period's `status='closed'`
- * flip, so a closed period and its receipt can never disagree.
- *
- * Typed rather than a free dict because it is a contract: the GraphQL
- * schema and both SDKs derive from it, and an opaque blob would push the
- * shape onto every reader to rediscover.
- */
-export type CloseReceipt = {
-  /** 'user' for REST callers, 'agent' for MCP-driven closes */
-  actorType: Scalars['String']['output']
-  closedAt: Scalars['DateTime']['output']
-  /** Actor id that ran the close */
-  closedBy: Scalars['String']['output']
-  /** Total entries the close transitioned to posted, across both post paths — the sum of the two fields below */
-  entriesPosted: Scalars['Int']['output']
-  entriesPostedLocally: Scalars['Int']['output']
-  entriesPublishedToQb: Scalars['Int']['output']
-  evaluatedStructureIds: Array<Scalars['String']['output']>
-  /** Period this receipt is for (YYYY-MM) */
-  period: Scalars['String']['output']
-  /** Schedule rule outcomes: pass/fail/error/skipped counts */
-  ruleSummary: Maybe<Scalars['JSON']['output']>
-  /** structure_id -> minted fact_set_id */
-  stampedStatementSets: Scalars['JSON']['output']
-  statementRuleSummary: Maybe<Scalars['JSON']['output']>
-  statementStampNote: Maybe<Scalars['String']['output']>
-  statementsStamped: Scalars['Boolean']['output']
-  targetAutoAdvanced: Scalars['Boolean']['output']
-  /** Receipt schema version; 1 is the first shipped shape */
-  version: Scalars['Int']['output']
-  /** Whether this close re-closed a previously closed period */
-  wasReclose: Scalars['Boolean']['output']
-}
-
-/**
- * A grouping of closing-book items shown as a sidebar section
- * (e.g. Statements, Account Rollups, Schedules, Period Close).
- */
-export type ClosingBookCategory = {
-  items: Array<ClosingBookItem>
-  label: Scalars['String']['output']
-}
-
-/**
- * One row in the closing book — a navigable artifact for the
- * period (statement, schedule, rollup, etc.).
- *
- * ``item_type`` discriminates: 'statement', 'schedule',
- * 'account_rollups', 'period_close', 'trial_balance'. Statement items
- * carry ``report_id`` to fetch the rendered facts; schedule items
- * carry ``status`` ('complete' | 'draft' | 'pending').
- */
-export type ClosingBookItem = {
-  blockType: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  itemType: Scalars['String']['output']
-  name: Scalars['String']['output']
-  reportId: Maybe<Scalars['String']['output']>
-  status: Maybe<Scalars['String']['output']>
-}
-
-/**
- * The closing book navigation tree — categories + items the UI
- * uses to render the period-close workspace. ``has_data=False`` when
- * the graph has no posted entries yet.
- */
-export type ClosingBookStructures = {
-  categories: Array<ClosingBookCategory>
-  hasData: Scalars['Boolean']['output']
-}
-
-/** A single draft entry with full line item detail for review. */
-export type DraftEntry = {
-  /** True if total_debit == total_credit */
-  balanced: Scalars['Boolean']['output']
-  entryId: Scalars['String']['output']
-  lineItems: Array<DraftLineItem>
-  memo: Maybe<Scalars['String']['output']>
-  postingDate: Scalars['Date']['output']
-  /** Where the entry came from (ENTRY_PROVENANCE_VALUES): source_sync, ai_generated, manual_entry, schedule_derived, system_computed, event_handler */
-  provenance: Maybe<Scalars['String']['output']>
-  /** Schedule structure that generated this entry (if any) */
-  sourceStructureId: Maybe<Scalars['String']['output']>
-  /** Human-readable name of the source schedule */
-  sourceStructureName: Maybe<Scalars['String']['output']>
-  /** Sum of credit amounts in cents */
-  totalCredit: Scalars['Int']['output']
-  /** Sum of debit amounts in cents */
-  totalDebit: Scalars['Int']['output']
-  /** Entry type (e.g., 'closing', 'adjusting') */
-  type: Scalars['String']['output']
-  /** True if closing the period will publish this draft to QuickBooks — i.e. the graph has a qb_authoritative/hybrid QB connection AND this is an RL-originated draft (schedule/manual) not already in QB. False means it posts locally only. */
-  willPublishToQb: Scalars['Boolean']['output']
-}
-
-/** A single line item within a draft entry. */
-export type DraftLineItem = {
-  /** Credit amount in cents */
-  creditAmount: Scalars['Int']['output']
-  /** Debit amount in cents */
-  debitAmount: Scalars['Int']['output']
-  description: Maybe<Scalars['String']['output']>
-  elementCode: Maybe<Scalars['String']['output']>
-  elementId: Scalars['String']['output']
-  elementName: Scalars['String']['output']
-  lineItemId: Scalars['String']['output']
-}
-
-/** Element with taxonomy context — extends AccountResponse. */
-export type Element = {
-  balanceType: Scalars['String']['output']
-  code: Maybe<Scalars['String']['output']>
-  depth: Scalars['Int']['output']
-  description: Maybe<Scalars['String']['output']>
-  elementType: Scalars['String']['output']
-  externalId: Maybe<Scalars['String']['output']>
-  externalSource: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  isAbstract: Scalars['Boolean']['output']
-  isActive: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  namespace: Maybe<Scalars['String']['output']>
-  parentId: Maybe<Scalars['String']['output']>
-  periodType: Scalars['String']['output']
-  qname: Maybe<Scalars['String']['output']>
-  source: Scalars['String']['output']
-  subClassification: Maybe<Scalars['String']['output']>
-  taxonomyId: Maybe<Scalars['String']['output']>
-  trait: Maybe<Scalars['String']['output']>
-}
-
-/** Paginated element listing with taxonomy context. */
-export type ElementList = {
-  elements: Array<Element>
-  pagination: PaginationInfo
-}
-
-/**
- * Lightweight entity projection for embedding in portfolio-block /
- * position envelopes. Carries identity-only fields; full entity data
- * lives behind the Master Data entity APIs.
- */
-export type EntityLite = {
-  /** Entity ID (`ent_*` ULID). */
-  id: Scalars['ID']['output']
-  /** Display name of the entity. */
-  name: Scalars['String']['output']
-  /** Tenant graph this entity is anchored to, when known. `null` for entities not yet linked to a graph. */
-  sourceGraphId: Maybe<Scalars['String']['output']>
-}
-
-export type EventBlock = {
-  agentId: Maybe<Scalars['String']['output']>
-  amount: Maybe<Scalars['Int']['output']>
-  createdAt: Scalars['DateTime']['output']
-  createdBy: Scalars['String']['output']
-  currency: Scalars['String']['output']
-  description: Maybe<Scalars['String']['output']>
-  dimensionIds: Array<Scalars['String']['output']>
-  dischargesEventId: Maybe<Scalars['String']['output']>
-  effectiveAt: Maybe<Scalars['DateTime']['output']>
-  eventCategory: Scalars['String']['output']
-  eventClass: Scalars['String']['output']
-  eventType: Scalars['String']['output']
-  externalId: Maybe<Scalars['String']['output']>
-  externalUrl: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  isReconcilingItem: Scalars['Boolean']['output']
-  metadata: Scalars['JSON']['output']
-  obligatedByEventId: Maybe<Scalars['String']['output']>
-  occurredAt: Scalars['DateTime']['output']
-  replacedByEventId: Maybe<Scalars['String']['output']>
-  replacesEventId: Maybe<Scalars['String']['output']>
-  resourceElementId: Maybe<Scalars['String']['output']>
-  resourceType: Maybe<Scalars['String']['output']>
-  source: Scalars['String']['output']
-  status: Scalars['String']['output']
-}
-
-/**
- * A single fact row inside a rendered statement.
- *
- * One row per concept, with one value per period column. Subtotals and
- * hierarchy depth come from the structure being projected.
- */
-export type FactRow = {
-  /** Indentation depth in the structure hierarchy (0 = root). */
-  depth: Scalars['Int']['output']
-  /** Internal element identifier. */
-  elementId: Scalars['String']['output']
-  /** Human-readable concept label. */
-  elementName: Scalars['String']['output']
-  /** QName of the reporting concept (e.g. 'us-gaap:Revenues'). */
-  elementQname: Scalars['String']['output']
-  /** True when the row should render as a subtotal line. */
-  isSubtotal: Scalars['Boolean']['output']
-  /** Concept trait flag from the structure (e.g. 'total', 'subtotal', 'header'). Drives presentation. */
-  trait: Maybe<Scalars['String']['output']>
-  /** One value per period column, in the same order as `periods`. Null when the concept had no facts in that window. */
-  values: Array<Maybe<Scalars['Float']['output']>>
-}
-
-/** Current fiscal calendar state for a graph. */
-export type FiscalCalendar = {
-  /** Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations' */
-  blockers: Array<Scalars['String']['output']>
-  /** Ordered list of periods that a close run would process */
-  catchUpSequence: Array<Scalars['String']['output']>
-  /** Target period the user wants closed through (YYYY-MM) */
-  closeTarget: Maybe<Scalars['String']['output']>
-  /** Whether the next period in the catch-up sequence passes all closeable gates */
-  closeableNow: Scalars['Boolean']['output']
-  /** Latest closed period (YYYY-MM), or null if nothing closed */
-  closedThrough: Maybe<Scalars['String']['output']>
-  /** Earliest period (YYYY-MM) with a pending obligation blocking close. Null when no pending_obligations blocker is active. */
-  earliestPendingPeriod: Maybe<Scalars['String']['output']>
-  fiscalYearStartMonth: Scalars['Int']['output']
-  /** Number of periods between closed_through and close_target (inclusive of close_target). 0 means caught up. */
-  gapPeriods: Scalars['Int']['output']
-  graphId: Scalars['String']['output']
-  initializedAt: Maybe<Scalars['DateTime']['output']>
-  lastCloseAt: Maybe<Scalars['DateTime']['output']>
-  /** Most recent QB sync timestamp (if connected) */
-  lastSyncAt: Maybe<Scalars['DateTime']['output']>
-  /** Number of pending schedule_entry_due events blocking close. Non-zero only when `pending_obligations` is in `blockers`. */
-  pendingObligationCount: Scalars['Int']['output']
-  /** Sample of up to 5 pending obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at. Use `list-event-blocks` with event_type=schedule_entry_due&status=pending for the full set. */
-  pendingObligationSample: Array<PendingObligationDetail>
-  /** Fiscal period rows for this graph */
-  periods: Array<FiscalPeriodSummary>
-  /** Posted events in or before this period whose source payload changed afterwards and that nobody has dispositioned — differences between the books and the source system. Resolve each with resolve-reconciling-item, or close over them knowingly with allow_reconciling_items. */
-  reconcilingItemCount: Scalars['Int']['output']
-  /** Source identifiers (or event ids) of up to 5 unresolved reconciling items, so the blocker names what is holding the close. */
-  reconcilingItemSample: Array<Scalars['String']['output']>
-  /** Matured schedule_entry_due events already at 'classified' with no drafted closing entry for their (schedule, period) — adjusting entries a close would silently omit. Resolve by running promote-obligations with dispatch_handlers=true (which reaches them) or voiding the obligation. */
-  strandedObligationCount: Scalars['Int']['output']
-  /** Sample of up to 5 stranded obligations (schedule_id, schedule_name, period, event_id) ordered by occurred_at. */
-  strandedObligationSample: Array<PendingObligationDetail>
-  /** Days the most recent sync is stale relative to the period to close. Populated only when `sync_stale` is in `blockers` and last_sync_at exists (null when there's a connection but no sync has ever run). */
-  syncStaleDays: Maybe<Scalars['Int']['output']>
-}
-
-/**
- * One fiscal period row — header view used in calendar listings.
- *
- * Status lifecycle: ``open`` → ``closing`` → ``closed``. ``closing``
- * is the transient state during a close run; ``closed_at`` stamps when
- * the lock landed.
- */
-export type FiscalPeriodSummary = {
-  closedAt: Maybe<Scalars['DateTime']['output']>
-  endDate: Scalars['Date']['output']
-  /** Whether this period carries a close receipt. A flag rather than the receipt itself keeps the calendar listing compact; fetch the receipt from `get-period-close-status` for the period. False on open periods and on periods closed before receipts shipped. */
-  hasCloseReceipt: Scalars['Boolean']['output']
-  /** Period name (YYYY-MM) */
-  name: Scalars['String']['output']
-  startDate: Scalars['Date']['output']
-  /** 'open' | 'closing' | 'closed' */
-  status: Scalars['String']['output']
-}
-
-/**
- * All securities held in a single entity, rolled up across the
- * caller's portfolios.
- */
-export type Holding = {
-  /** Issuing entity ID. */
-  entityId: Scalars['String']['output']
-  /** Display name of the entity. */
-  entityName: Scalars['String']['output']
-  /** Number of distinct active positions backing these holdings. */
-  positionCount: Scalars['Int']['output']
-  /** One row per security held in this entity. */
-  securities: Array<HoldingSecuritySummary>
-  /** Pre-association tenant graph, when set on the securities. */
-  sourceGraphId: Maybe<Scalars['String']['output']>
-  /** Sum of cost basis across all securities, in dollars. */
-  totalCostBasisDollars: Scalars['Float']['output']
-  /** Sum of current value across all securities, in dollars. `null` if any security lacks a mark. */
-  totalCurrentValueDollars: Maybe<Scalars['Float']['output']>
-}
-
-/** One security held by an entity, rolled up across portfolios. */
-export type HoldingSecuritySummary = {
-  /** Aggregate cost basis in dollars, summed across all positions. */
-  costBasisDollars: Scalars['Float']['output']
-  /** Aggregate current value in dollars, or `null` if any underlying position lacks a mark. */
-  currentValueDollars: Maybe<Scalars['Float']['output']>
-  /** Total quantity held in `quantity_type` units. */
-  quantity: Scalars['Float']['output']
-  /** Unit basis (`shares`, `units`, `principal`). */
-  quantityType: Scalars['String']['output']
-  /** Security ID. */
-  securityId: Scalars['String']['output']
-  /** Display name of the security. */
-  securityName: Scalars['String']['output']
-  /** Instrument family (e.g. `common_stock`, `warrant`). */
-  securityType: Scalars['String']['output']
-}
-
-/** Aggregated holdings across all of the caller's portfolios. */
-export type HoldingsList = {
-  /** One row per issuing entity. */
-  holdings: Array<Holding>
-  /** Count of entities represented. */
-  totalEntities: Scalars['Int']['output']
-  /** Total active positions backing these holdings. */
-  totalPositions: Scalars['Int']['output']
-}
-
-export type InformationBlock = {
-  artifact: Artifact
-  blockType: Scalars['String']['output']
-  category: Scalars['String']['output']
-  connections: Array<InformationBlockConnection>
-  dimensions: Array<Scalars['JSON']['output']>
-  disclosureId: Maybe<Scalars['String']['output']>
-  displayName: Scalars['String']['output']
-  elements: Array<InformationBlockElement>
-  factSet: Maybe<InformationBlockFactSet>
-  facts: Array<InformationBlockFact>
-  id: Scalars['ID']['output']
-  informationModel: InformationModel
-  name: Scalars['String']['output']
-  rules: Array<InformationBlockRule>
-  taxonomyId: Maybe<Scalars['String']['output']>
-  taxonomyName: Maybe<Scalars['String']['output']>
-  verificationResults: Array<InformationBlockVerificationResult>
-  verificationSummary: Maybe<InformationBlockVerificationSummary>
-  view: InformationBlockViewProjections
-}
-
-/**
- * Server-shaped chart projection — panel/series CONFIG, never values.
- *
- * The second real server-computed View arm (after ``rendering``). Values
- * come from ``rendering.rows`` joined by ``element_id``; the x-axis is
- * ``rendering.periods``. Renderers (report-components) turn one panel
- * into one chart.
- */
-export type InformationBlockChart = {
-  panels: Array<InformationBlockChartPanel>
-}
-
-/**
- * One chart panel — series sharing a y-axis format family.
- *
- * Mixed-unit catalogs are unplottable on one axis, so the server groups
- * rows into panels by ``item_type`` family (NULL falls back to
- * ``is_monetary``). The x-axis is always ``rendering.periods``.
- */
-export type InformationBlockChartPanel = {
-  /** Format family shared by the panel's series (monetary | ratio | percent | multiple | days); None for the untyped fallback panel. */
-  itemType: Maybe<Scalars['String']['output']>
-  /** Per-panel mark — 'line' or 'bar'. */
-  kind: Scalars['String']['output']
-  /** Panel heading — e.g. 'Monetary', 'Ratios'. */
-  label: Maybe<Scalars['String']['output']>
-  series: Array<InformationBlockChartSeries>
-}
-
-/**
- * One plottable series in a chart panel.
- *
- * Carries structure and identity only — the values live in the sibling
- * ``rendering.rows`` (join on ``element_id``), so the chart arm never
- * duplicates the value matrix. ``key`` is the stable series identity for
- * client state (colors, toggles); today it equals ``element_id``, and
- * future axes (the forecast scenario) arrive as new fields on this
- * model, never a new arm shape.
- */
-export type InformationBlockChartSeries = {
-  elementId: Scalars['String']['output']
-  /** Stable series id — element_id today. */
-  key: Scalars['String']['output']
-  /** Display name for legends. */
-  label: Scalars['String']['output']
-}
-
-/**
- * Classification projection — one row per `association_classifications`
- * junction entry.
- *
- * Association-side only: concept_arrangement, member_arrangement,
- * named_disclosure. Element-side FASB metamodel traits (asset, current,
- * operating, …) live in `TraitLite` via `element_traits`.
- *
- * Carries enough for the envelope caller to render / filter by category +
- * identifier without a follow-up lookup. The full `public.classifications`
- * vocabulary catalog (name / description / metadata) is available via the
- * library GraphQL surface when callers need the details.
- */
-export type InformationBlockClassification = {
-  /** One of the 3 association-level categories in the `public.classifications` CHECK constraint: 'concept_arrangement', 'member_arrangement', or 'named_disclosure'. */
-  category: Scalars['String']['output']
-  /** AI/adapter-supplied confidence (0.0-1.0). Null for deterministic library-seeded rows. */
-  confidence: Maybe<Scalars['Float']['output']>
-  /** Classification vocabulary row id. */
-  id: Scalars['String']['output']
-  /** Vocabulary identifier within the category — e.g. 'RollUp', 'whole_part', 'AssetsRollUp'. */
-  identifier: Scalars['String']['output']
-  /** Whether this is the canonical classification for the (association|element, category) pair. Non-primary rows capture alternates / AI suggestions alongside the chosen primary. */
-  isPrimary: Scalars['Boolean']['output']
-  /** Provenance — 'arcrole_analysis', 'disclosure_mechanics', 'fac-traits', adapter name, etc. */
-  source: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Connection (= Association) projection.
- *
- * "Connection" is the ontology term used on the wire; the storage table is
- * ``associations`` (``models/extensions/association.py``).
- */
-export type InformationBlockConnection = {
-  arcrole: Maybe<Scalars['String']['output']>
-  /** presentation | calculation | mapping | equivalence | general-special | essence-alias */
-  associationType: Scalars['String']['output']
-  /** Association-level classifications — concept_arrangement, member_arrangement, named_disclosure rows from the junction. Empty for library-seeded associations that haven't been classified yet. */
-  classifications: Array<InformationBlockClassification>
-  fromElementId: Scalars['String']['output']
-  id: Scalars['String']['output']
-  orderValue: Maybe<Scalars['Float']['output']>
-  toElementId: Scalars['String']['output']
-  weight: Maybe<Scalars['Float']['output']>
-}
-
-/**
- * Element projection for bundling inside an Information Block envelope.
- *
- * Narrower than :class:`LibraryElementResponse` — excludes the heavy fields
- * (labels, references, classifications) that library browsing needs but
- * block consumers don't. Agents + frontends ask for those on demand via
- * the full library GraphQL fields when they need them.
- */
-export type InformationBlockElement = {
-  balanceType: Maybe<Scalars['String']['output']>
-  code: Maybe<Scalars['String']['output']>
-  /** The element's documentation-role label — the catalog's authoritative value semantics (e.g. whether a percent driver is a growth rate or a rate-on-base fraction). None when the element carries no documentation label. */
-  documentation: Maybe<Scalars['String']['output']>
-  /** concept | abstract | axis | member | hypercube */
-  elementType: Scalars['String']['output']
-  id: Scalars['String']['output']
-  isAbstract: Scalars['Boolean']['output']
-  isMonetary: Scalars['Boolean']['output']
-  /** Value-domain vocabulary (monetary | ratio | percent | multiple | days | string | …). None means untyped; fall back to is_monetary. */
-  itemType: Maybe<Scalars['String']['output']>
-  name: Scalars['String']['output']
-  periodType: Maybe<Scalars['String']['output']>
-  qname: Maybe<Scalars['String']['output']>
-}
-
-/** Fact projection — just the values the envelope caller cares about. */
-export type InformationBlockFact = {
-  /** MIME type of text_value (e.g. 'text/markdown'). */
-  contentType: Maybe<Scalars['String']['output']>
-  elementId: Scalars['String']['output']
-  elementName: Maybe<Scalars['String']['output']>
-  elementQname: Maybe<Scalars['String']['output']>
-  /** historical | in_scope */
-  factScope: Scalars['String']['output']
-  factSetId: Maybe<Scalars['String']['output']>
-  /** Numeric | Nonnumeric */
-  factType: Scalars['String']['output']
-  id: Scalars['String']['output']
-  periodEnd: Scalars['Date']['output']
-  periodStart: Maybe<Scalars['Date']['output']>
-  periodType: Scalars['String']['output']
-  /** Text payload for Nonnumeric facts; null for numeric. */
-  textValue: Maybe<Scalars['String']['output']>
-  unit: Scalars['String']['output']
-  /** Numeric value; null for Nonnumeric (text-block) facts. */
-  value: Maybe<Scalars['Float']['output']>
-}
-
-/**
- * FactSet projection — period-specific instantiation of the Structure.
- *
- * The envelope carries one ``FactSetLite`` per block when a FactSet row exists
- * for the requested period, and leaves ``fact_set`` null when none does.
- */
-export type InformationBlockFactSet = {
-  entityId: Scalars['String']['output']
-  /** 'report' | 'schedule' | 'custom' | 'disclosure' | 'metric'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint. */
-  factsetType: Scalars['String']['output']
-  id: Scalars['String']['output']
-  periodEnd: Scalars['Date']['output']
-  periodStart: Maybe<Scalars['Date']['output']>
-  /** Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted | document | forecast | filed) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor. */
-  provenance: Maybe<Scalars['JSON']['output']>
-  /** Back-pointer to the parent row in ``reports``. Null when the FactSet does not belong to a report package. */
-  reportId: Maybe<Scalars['String']['output']>
-  /** Scenario axis (the forecast engine). NULL = actuals; non-NULL names the owning forecast block whose parallel universe this set belongs to. */
-  scenarioId: Maybe<Scalars['String']['output']>
-  structureId: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Pre-computed rendering projection of an Information Block.
- *
- * Computed server-side at envelope-build time for blocks where rendering
- * is deterministic (the statement family today; future block types add
- * their own rendering builders). The frontend's ``BlockView``
- * ``Rendering`` projection consumes this directly — no client-side
- * rollup, depth computation, or calculation walk needed.
- */
-export type InformationBlockRendering = {
-  periods: Array<InformationBlockRenderingPeriod>
-  rows: Array<InformationBlockRenderingRow>
-  unmappedCount: Scalars['Int']['output']
-  validation: Maybe<InformationBlockValidation>
-}
-
-/** One period column in a rendered statement. */
-export type InformationBlockRenderingPeriod = {
-  end: Scalars['Date']['output']
-  /** True when this column comes from a forecast scenario's FactSet — the machine-readable seam marker (labels also carry a '(forecast)' suffix, but consumers should key styling off this flag, not label parsing). None/absent = an actuals column. */
-  forecast: Maybe<Scalars['Boolean']['output']>
-  label: Maybe<Scalars['String']['output']>
-  start: Scalars['Date']['output']
-}
-
-/**
- * One row of a server-side rendered statement.
- *
- * Mirrors :class:`FactRow` in
- * :mod:`robosystems.operations.roboledger.reports.fact_grid`, restated at the
- * API boundary so envelope consumers don't depend on that module. ``values``
- * holds one entry per period column in :class:`RenderingLite.periods`.
- */
-export type InformationBlockRenderingRow = {
-  balanceType: Maybe<Scalars['String']['output']>
-  /** FASB elementsOfFinancialStatements trait identifier — 'asset', 'liability', 'equity', 'revenue', 'expense'. Surfaced so the viewer can color-code or group rows without a follow-up trait lookup. */
-  classification: Maybe<Scalars['String']['output']>
-  depth: Scalars['Int']['output']
-  elementId: Scalars['String']['output']
-  elementName: Scalars['String']['output']
-  elementQname: Maybe<Scalars['String']['output']>
-  isSubtotal: Scalars['Boolean']['output']
-  /** Value-domain format family from the element (monetary | ratio | percent | multiple | days | …). Drives per-row value formatting; None falls back to is_monetary on the element. */
-  itemType: Maybe<Scalars['String']['output']>
-  /** Narrative payload for text-block disclosure rows (markdown); numeric rows carry values instead. */
-  textValue: Maybe<Scalars['String']['output']>
-  values: Array<Maybe<Scalars['Float']['output']>>
-}
-
-/**
- * Rule projection for the Information Block envelope.
- *
- * One row per ``public.rules`` entry scoped to this block. The rule
- * engine consumes ``rule_expression`` + ``rule_variables`` to evaluate
- * against the in-scope fact set; the envelope surfaces the rules so
- * the UI can render them as a checklist alongside any persisted
- * verification results.
- */
-export type InformationBlockRule = {
-  id: Scalars['String']['output']
-  /** One of 8 cm:VerificationRule subclasses — AutomatedAccountingAndReportingChecks, FundamentalAccountingConceptRelation, PeerConsistencyRule, PriorPeriodConsistencyRule, ReportLevelModelStructureRule, ReportingSystemSpecificRule, ToDoManualTask, XBRLTechnicalSyntaxRule. */
-  ruleCategory: Scalars['String']['output']
-  /** Model-structure check kind evaluated over the association graph. One of 6 kinds — LeafHasClassification, LibraryOriginImmutability, NoCycles, NoOrphanArcs, ParentBeforeChild, UniqueQNameInTaxonomy. Null when the rule is an arithmetic pattern (see rule_pattern). Exactly one of rule_pattern / rule_check_kind is non-null per rule. */
-  ruleCheckKind: Maybe<Scalars['String']['output']>
-  ruleExpression: Scalars['String']['output']
-  ruleMessage: Maybe<Scalars['String']['output']>
-  /** Provenance — 'forked' (from an upstream artifact, e.g. Seattle Method) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the ``public.rules`` CHECK constraint. */
-  ruleOrigin: Scalars['String']['output']
-  /** Arithmetic / logical pattern evaluated over fact values. One of 11 cm:BusinessRulePattern mechanisms — Adjustment, CoExists, EqualTo, Exists, GreaterThan, GreaterThanOrEqualToZero, LessThan, RollForward, RollUp, SumEquals, Variance. Null when the rule is a structural check (see rule_check_kind). */
-  rulePattern: Maybe<Scalars['String']['output']>
-  /** Failure severity — 'info' | 'warning' | 'error'. Enum closure enforced by the ``public.rules`` CHECK constraint. */
-  ruleSeverity: Scalars['String']['output']
-  ruleTarget: Maybe<InformationBlockRuleTarget>
-  ruleVariables: Array<InformationBlockRuleVariable>
-}
-
-/** Polymorphic rule target — points at the atom the rule is scoped to. */
-export type InformationBlockRuleTarget = {
-  /** Which atom type the rule targets — 'structure' | 'element' | 'association' | 'taxonomy'. Enum closure enforced by the ``public.rules`` CHECK constraint. */
-  targetKind: Scalars['String']['output']
-  /** UUID of the target atom — structure_id, element_id, association_id, or taxonomy_id depending on ``target_kind``. */
-  targetRefId: Scalars['String']['output']
-}
-
-/** `$Variable` → concept qname binding for a rule expression. */
-export type InformationBlockRuleVariable = {
-  /** Element id the variable binds to directly. Set for schedule SumEquals rules over CoA-debit elements that have no qname; null otherwise. */
-  variableElementId: Maybe<Scalars['String']['output']>
-  /** Local name in the rule expression, e.g. 'Assets'. */
-  variableName: Scalars['String']['output']
-  /** Concept qname the variable resolves to, e.g. 'fac:Assets'. Null for tenant CoA elements (which key on `code`/`element_id`, not qname) — in that case the binding is carried by `variable_element_id`. */
-  variableQname: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Outcome of guard-rail validation on a rendered statement.
- *
- * Distinct from :class:`VerificationResultLite` (which surfaces the
- * rule-engine outcomes from ``public.verification_results``). This lite
- * type carries the synchronous guard-rail checks computed at
- * envelope-build time — accounting equation, totals foot, etc.
- */
-export type InformationBlockValidation = {
-  checks: Array<Scalars['String']['output']>
-  failures: Array<Scalars['String']['output']>
-  passed: Scalars['Boolean']['output']
-  status: Scalars['String']['output']
-  warnings: Array<Scalars['String']['output']>
-}
-
-/**
- * Pass/fail/skip counts for one ``rule_category`` within a block's
- * verification results.
- *
- * Drives the per-category accordions in the Verification Results panel.
- * ``category`` is the rule's ``rule_category``
- * (one of the cm:VerificationRule subclasses), resolved by joining each
- * result to its Rule.
- */
-export type InformationBlockVerificationCategorySummary = {
-  category: Scalars['String']['output']
-  errored: Scalars['Int']['output']
-  failed: Scalars['Int']['output']
-  passed: Scalars['Int']['output']
-  skipped: Scalars['Int']['output']
-  total: Scalars['Int']['output']
-}
-
-/**
- * Persisted outcome of one Rule evaluation.
- *
- * One row per ``public.verification_results`` entry the rule engine
- * writes. The envelope surfaces them so the block viewer's
- * "Verification Results" tab and MCP ``list-verification-failures``
- * tool can render + aggregate without a second round-trip.
- */
-export type InformationBlockVerificationResult = {
-  evaluatedAt: Maybe<Scalars['DateTime']['output']>
-  factSetId: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  message: Maybe<Scalars['String']['output']>
-  periodEnd: Maybe<Scalars['Date']['output']>
-  periodStart: Maybe<Scalars['Date']['output']>
-  ruleId: Scalars['String']['output']
-  /** 'pass' | 'fail' | 'error' | 'skipped'. Enum closure enforced by the ``public.verification_results`` CHECK constraint. */
-  status: Scalars['String']['output']
-  structureId: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Server-computed aggregate of a block's ``verification_results``.
- *
- * Overall counts plus a per-``rule_category`` breakdown, so the viewer
- * renders the grouped Verification Results panel
- * without a client-side results→rules join. Status closure is
- * ``pass | fail | error | skipped`` (the ``public.verification_results``
- * CHECK); ``total`` is their sum.
- */
-export type InformationBlockVerificationSummary = {
-  byCategory: Array<InformationBlockVerificationCategorySummary>
-  errored: Scalars['Int']['output']
-  failed: Scalars['Int']['output']
-  passed: Scalars['Int']['output']
-  skipped: Scalars['Int']['output']
-  total: Scalars['Int']['output']
-}
-
-/**
- * Charlie's six ``type-of View`` arms, surfaced at the envelope boundary.
- *
- * Each projection is computed server-side at envelope-build time when
- * its source data is available. The frontend's ``BlockView`` dispatcher
- * routes to the projection component matching the user's selected view
- * mode; missing projections (those still in backlog) render as empty
- * states without breaking the dispatcher.
- *
- * Today: ``rendering`` is computed for the statement family, and
- * ``chart`` (the 7th arm — panel/series config over the rendering's
- * rows and periods) for metric blocks.
- * Other arms (``fact_table``, ``model_structure``, ``verification_results``,
- * ``report_elements``, ``business_rules``) come online as their backend
- * support lands; ``fact_table`` is trivially derivable from
- * ``InformationBlockEnvelope.facts`` and may stay as a frontend-only
- * projection.
- */
-export type InformationBlockViewProjections = {
-  chart: Maybe<InformationBlockChart>
-  rendering: Maybe<InformationBlockRendering>
-}
-
-/** The block's intrinsic shape — concept + member arrangement patterns. */
-export type InformationModel = {
-  /** roll_up | roll_forward | variance | adjustment | set | arithmetic | textblock. Null for block types where the concept arrangement is implicit in their mechanics. */
-  conceptArrangement: Maybe<Scalars['String']['output']>
-  /** is_a | whole_part | nested_whole_part | two_dimension_aggregation | complex_aggregating_whole_part, or null if non-hypercube. */
-  memberArrangement: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Entity details from the extensions OLTP database.
- *
- * Returned by entity reads and `update-entity`. Identifiers
- * (CIK / ticker / SIC / LEI / tax_id) are present when sourced from
- * SEC or registry data; many are null for private companies. The
- * address fields are flattened (no nested object) to make them easy
- * to project into reporting forms.
- */
-export type LedgerEntity = {
-  addressCity: Maybe<Scalars['String']['output']>
-  addressCountry: Maybe<Scalars['String']['output']>
-  addressLine1: Maybe<Scalars['String']['output']>
-  addressPostalCode: Maybe<Scalars['String']['output']>
-  addressState: Maybe<Scalars['String']['output']>
-  /** Filer category (e.g. 'Large Accelerated Filer'). */
-  category: Maybe<Scalars['String']['output']>
-  /** SEC CIK (Central Index Key). */
-  cik: Maybe<Scalars['String']['output']>
-  /** Source connection that ingested this row. */
-  connectionId: Maybe<Scalars['String']['output']>
-  createdAt: Maybe<Scalars['String']['output']>
-  /** Legal form (e.g. 'corporation', 'llc', 'lp'). */
-  entityType: Maybe<Scalars['String']['output']>
-  /** Listing exchange (e.g. 'NASDAQ', 'NYSE'). */
-  exchange: Maybe<Scalars['String']['output']>
-  /** Fiscal year-end as MM-DD (e.g. '12-31', '06-30'). */
-  fiscalYearEnd: Maybe<Scalars['String']['output']>
-  /** Entity identifier (ULID). */
-  id: Scalars['String']['output']
-  /** Free-form industry label. */
-  industry: Maybe<Scalars['String']['output']>
-  /** True for top-level entities; False for subsidiaries. */
-  isParent: Scalars['Boolean']['output']
-  /** Full registered legal name (when different from `name`). */
-  legalName: Maybe<Scalars['String']['output']>
-  /** Legal Entity Identifier (ISO 17442). */
-  lei: Maybe<Scalars['String']['output']>
-  /** Display name shown in UI. */
-  name: Scalars['String']['output']
-  /** Parent entity ID for subsidiaries; null for top-level. */
-  parentEntityId: Maybe<Scalars['String']['output']>
-  phone: Maybe<Scalars['String']['output']>
-  /** Active Reporting Style (Structure id) governing this entity's statement layout. Change it via the change-reporting-style operation. */
-  reportingStyleId: Maybe<Scalars['String']['output']>
-  /** SIC industry code. */
-  sic: Maybe<Scalars['String']['output']>
-  /** SIC code description. */
-  sicDescription: Maybe<Scalars['String']['output']>
-  /** Provenance: 'native' | 'sec' | 'quickbooks' | 'xero' | 'plaid'. */
-  source: Scalars['String']['output']
-  /** Origin graph for received entities (cross-graph linking, e.g. RoboInvestor portfolio holdings). */
-  sourceGraphId: Maybe<Scalars['String']['output']>
-  /** Source-system primary key for sync reconciliation. */
-  sourceId: Maybe<Scalars['String']['output']>
-  /** US state or country of incorporation. */
-  stateOfIncorporation: Maybe<Scalars['String']['output']>
-  /** Operational status: 'active' | 'inactive' | 'dissolved'. */
-  status: Scalars['String']['output']
-  /** Tax ID (EIN / SSN). */
-  taxId: Maybe<Scalars['String']['output']>
-  /** Stock ticker symbol. */
-  ticker: Maybe<Scalars['String']['output']>
-  updatedAt: Maybe<Scalars['String']['output']>
-  /** Canonical URL / external identifier. */
-  uri: Maybe<Scalars['String']['output']>
-  website: Maybe<Scalars['String']['output']>
-}
-
-/**
- * A journal entry — accounting interpretation of a transaction.
- *
- * Each transaction has 1+ entries; each entry has 2+ line items that
- * must balance. ``status`` is the draft/posted/reversed lifecycle;
- * ``type`` is the entry classification ('standard' | 'adjusting' |
- * 'closing' | 'reversing').
- */
-export type LedgerEntry = {
-  id: Scalars['String']['output']
-  lineItems: Array<LedgerLineItem>
-  memo: Maybe<Scalars['String']['output']>
-  number: Maybe<Scalars['String']['output']>
-  postedAt: Maybe<Scalars['DateTime']['output']>
-  postingDate: Scalars['Date']['output']
-  status: Scalars['String']['output']
-  type: Scalars['String']['output']
-}
-
-/**
- * One debit/credit line within a journal entry. Always exactly one
- * side has a non-zero amount.
- */
-export type LedgerLineItem = {
-  accountCode: Maybe<Scalars['String']['output']>
-  accountId: Scalars['String']['output']
-  accountName: Maybe<Scalars['String']['output']>
-  creditAmount: Scalars['Float']['output']
-  debitAmount: Scalars['Float']['output']
-  description: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  lineOrder: Scalars['Int']['output']
-}
-
-/**
- * High-level rollup of a graph's ledger state — counts plus the
- * date-range bookends and integration sync timestamp.
- *
- * Used by dashboards and the onboarding wizard to answer "is this
- * graph populated yet?" without walking every transaction. ``connection_count``
- * reflects active integrations (QuickBooks / Plaid / etc.); a non-null
- * ``last_sync_at`` means at least one connection has run.
- */
-export type LedgerSummary = {
-  accountCount: Scalars['Int']['output']
-  connectionCount: Scalars['Int']['output']
-  earliestTransactionDate: Maybe<Scalars['Date']['output']>
-  entryCount: Scalars['Int']['output']
-  graphId: Scalars['String']['output']
-  lastSyncAt: Maybe<Scalars['DateTime']['output']>
-  latestTransactionDate: Maybe<Scalars['Date']['output']>
-  lineItemCount: Scalars['Int']['output']
-  transactionCount: Scalars['Int']['output']
-}
-
-/**
- * Full transaction detail — header + every journal entry + every
- * line item underneath. Used by the transaction detail page.
- */
-export type LedgerTransactionDetail = {
-  amount: Scalars['Float']['output']
-  category: Maybe<Scalars['String']['output']>
-  currency: Scalars['String']['output']
-  date: Scalars['Date']['output']
-  description: Maybe<Scalars['String']['output']>
-  dueDate: Maybe<Scalars['Date']['output']>
-  entries: Array<LedgerEntry>
-  id: Scalars['String']['output']
-  merchantName: Maybe<Scalars['String']['output']>
-  number: Maybe<Scalars['String']['output']>
-  postedAt: Maybe<Scalars['DateTime']['output']>
-  referenceNumber: Maybe<Scalars['String']['output']>
-  source: Scalars['String']['output']
-  sourceId: Maybe<Scalars['String']['output']>
-  status: Scalars['String']['output']
-  type: Scalars['String']['output']
-}
-
-/** Paginated transaction listing — header view. */
-export type LedgerTransactionList = {
-  pagination: PaginationInfo
-  transactions: Array<LedgerTransactionSummary>
-}
-
-/**
- * Transaction header — list/grid view without entries.
- *
- * Transaction is the business-event level (what happened in the real
- * world). Entries (journal entries) live one level down and are loaded
- * in the detail view. ``source`` distinguishes integration-imported
- * rows (quickbooks / xero / plaid) from native-created ones.
- */
-export type LedgerTransactionSummary = {
-  amount: Scalars['Float']['output']
-  category: Maybe<Scalars['String']['output']>
-  currency: Scalars['String']['output']
-  date: Scalars['Date']['output']
-  description: Maybe<Scalars['String']['output']>
-  dueDate: Maybe<Scalars['Date']['output']>
-  id: Scalars['String']['output']
-  merchantName: Maybe<Scalars['String']['output']>
-  number: Maybe<Scalars['String']['output']>
-  referenceNumber: Maybe<Scalars['String']['output']>
-  source: Scalars['String']['output']
-  status: Scalars['String']['output']
-  type: Scalars['String']['output']
-}
-
-/** An arc between two library elements (parent-child, equivalence, etc). */
-export type LibraryAssociation = {
-  arcrole: Maybe<Scalars['String']['output']>
-  /** presentation | calculation | mapping | equivalence | general-special | essence-alias */
-  associationType: Scalars['String']['output']
-  fromElementId: Scalars['String']['output']
-  fromElementIsAbstract: Maybe<Scalars['Boolean']['output']>
-  fromElementName: Maybe<Scalars['String']['output']>
-  fromElementQname: Maybe<Scalars['String']['output']>
-  /** Primary elementsOfFinancialStatements trait (for node coloring) */
-  fromElementTrait: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  orderValue: Maybe<Scalars['Float']['output']>
-  structureId: Scalars['String']['output']
-  structureName: Maybe<Scalars['String']['output']>
-  toElementId: Scalars['String']['output']
-  toElementIsAbstract: Maybe<Scalars['Boolean']['output']>
-  toElementName: Maybe<Scalars['String']['output']>
-  toElementQname: Maybe<Scalars['String']['output']>
-  /** Primary elementsOfFinancialStatements trait (for node coloring) */
-  toElementTrait: Maybe<Scalars['String']['output']>
-  weight: Maybe<Scalars['Float']['output']>
-}
-
-/** A library element (concept, abstract, axis, member, or hypercube). */
-export type LibraryElement = {
-  /** debit | credit */
-  balanceType: Scalars['String']['output']
-  /** concept | abstract | axis | member | hypercube */
-  elementType: Scalars['String']['output']
-  id: Scalars['String']['output']
-  isAbstract: Scalars['Boolean']['output']
-  isMonetary: Scalars['Boolean']['output']
-  labels: Array<LibraryLabel>
-  name: Scalars['String']['output']
-  namespace: Maybe<Scalars['String']['output']>
-  parentId: Maybe<Scalars['String']['output']>
-  /** instant | duration */
-  periodType: Scalars['String']['output']
-  /** Qualified name, e.g. 'fac:Assets' */
-  qname: Scalars['String']['output']
-  references: Array<LibraryReference>
-  /** fac | us-gaap | rs-gaap | … */
-  source: Scalars['String']['output']
-  taxonomyId: Maybe<Scalars['String']['output']>
-  /** FASB elementsOfFinancialStatements axis: asset | contraAsset | liability | contraLiability | equity | contraEquity | temporaryEquity | revenue | expense | expenseReversal | gain | loss | comprehensiveIncome | investmentByOwners | distributionToOwners | metric (derived subtotals, not SFAC 6 primary elements). Null for structural rows. */
-  trait: Maybe<Scalars['String']['output']>
-}
-
-/**
- * A mapping arc involving a specific element.
- *
- * Flat row view: one arc, oriented from the perspective of the element
- * being inspected. `peer` is the other end; `direction` says whether
- * this element is the source ('outgoing') or the target ('incoming').
- *
- * Scoped to arcs whose structure belongs to a `taxonomy_type='mapping'`
- * taxonomy — the cross-taxonomy bridges (equivalence, general-special,
- * rs-gaap-type-subtype). Hierarchical arcs inside a single reporting taxonomy
- * are out of scope.
- */
-export type LibraryElementArc = {
-  arcrole: Maybe<Scalars['String']['output']>
-  associationType: Scalars['String']['output']
-  /** 'outgoing' (this element is source) | 'incoming' (target) */
-  direction: Scalars['String']['output']
-  id: Scalars['String']['output']
-  peer: LibraryElement
-  structureId: Maybe<Scalars['String']['output']>
-  structureName: Maybe<Scalars['String']['output']>
-  taxonomyId: Maybe<Scalars['String']['output']>
-  taxonomyName: Maybe<Scalars['String']['output']>
-  taxonomyStandard: Maybe<Scalars['String']['output']>
-}
-
-/**
- * One FASB metamodel trait assigned to a library element.
- *
- * A single element can carry multiple traits across multiple categories
- * (e.g. elementsOfFinancialStatements=expense AND
- * operatingNonoperating=operating AND liquidity=current).
- */
-export type LibraryElementClassification = {
-  /** Trait axis (e.g. elementsOfFinancialStatements) */
-  category: Scalars['String']['output']
-  /** Value within the axis (e.g. expense) */
-  identifier: Scalars['String']['output']
-  /** True for the element's primary EFS trait assignment */
-  isPrimary: Scalars['Boolean']['output']
-  /** Human-readable name */
-  name: Maybe<Scalars['String']['output']>
-}
-
-export type LibraryElementTreeNode = {
-  children: Array<LibraryElementTreeNode>
-  element: LibraryElement
-}
-
-/**
- * An element and its equivalence peers.
- *
- * Answers "what other concepts mean the same thing as this one" — the
- * FAC→us-gaap collapse pattern rendered as an API shape.
- */
-export type LibraryEquivalence = {
-  element: LibraryElement
-  equivalents: Array<LibraryElement>
-}
-
-/** A label on a library element. */
-export type LibraryLabel = {
-  /** Language code */
-  language: Scalars['String']['output']
-  /** Label role: standard/documentation/verbose/… */
-  role: Scalars['String']['output']
-  /** Label text */
-  text: Scalars['String']['output']
-}
-
-/** A cross-reference on a library element (FASB ASC, SEC, etc). */
-export type LibraryReference = {
-  /** Full citation text */
-  citation: Scalars['String']['output']
-  /** 'ASC' | 'SEC' | 'SFAC' | 'IFRS' | 'Other' */
-  refType: Maybe<Scalars['String']['output']>
-  /** Dereferenceable URL if available */
-  uri: Maybe<Scalars['String']['output']>
-}
-
-/** A named structure (extended link role) within a library taxonomy. */
-export type LibraryStructure = {
-  /** balance_sheet | income_statement | cash_flow_statement | custom | … */
-  blockType: Scalars['String']['output']
-  id: Scalars['String']['output']
-  isActive: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  /** Original XBRL role URI if any */
-  roleUri: Maybe<Scalars['String']['output']>
-  taxonomyId: Scalars['String']['output']
-}
-
-/** A library taxonomy (fac, us-gaap, rs-gaap, …). */
-export type LibraryTaxonomy = {
-  description: Maybe<Scalars['String']['output']>
-  /** Total elements in this taxonomy (computed on demand) */
-  elementCount: Maybe<Scalars['Int']['output']>
-  id: Scalars['String']['output']
-  isActive: Scalars['Boolean']['output']
-  isLocked: Scalars['Boolean']['output']
-  isShared: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  namespaceUri: Maybe<Scalars['String']['output']>
-  /** fac | us-gaap | rs-gaap | ifrs */
-  standard: Maybe<Scalars['String']['output']>
-  /** chart_of_accounts | reporting | mapping | schedule */
-  taxonomyType: Scalars['String']['output']
-  version: Maybe<Scalars['String']['output']>
-}
-
-/** Trial balance rolled up to reporting concepts via mapping associations. */
-export type MappedTrialBalance = {
-  mappingId: Scalars['String']['output']
-  rows: Array<MappedTrialBalanceRow>
-}
-
-/** One reporting-concept row in the mapped trial balance. */
-export type MappedTrialBalanceRow = {
-  balanceType: Maybe<Scalars['String']['output']>
-  netBalance: Scalars['Float']['output']
-  qname: Scalars['String']['output']
-  reportingElementId: Scalars['String']['output']
-  reportingName: Scalars['String']['output']
-  totalCredits: Scalars['Float']['output']
-  totalDebits: Scalars['Float']['output']
-  trait: Maybe<Scalars['String']['output']>
-}
-
-/** Coverage stats for a mapping. */
-export type MappingCoverage = {
-  coveragePercent: Scalars['Float']['output']
-  highConfidence: Scalars['Int']['output']
-  lowConfidence: Scalars['Int']['output']
-  mappedCount: Scalars['Int']['output']
-  mappingId: Scalars['String']['output']
-  mediumConfidence: Scalars['Int']['output']
-  totalCoaElements: Scalars['Int']['output']
-  unmappedCount: Scalars['Int']['output']
-  unreachable: Array<UnreachableMappingType>
-  unreachableCount: Scalars['Int']['output']
-}
-
-/** A mapping structure with all its associations. */
-export type MappingDetail = {
-  associations: Array<Association>
-  blockType: Scalars['String']['output']
-  id: Scalars['String']['output']
-  name: Scalars['String']['output']
-  taxonomyId: Scalars['String']['output']
-  totalAssociations: Scalars['Int']['output']
-}
-
-/**
- * Graph-wide open AR or open AP aggregate.
- *
- * ``total_open_cents`` is the sum of unsettled originating-event
- * balances; ``counterparty_count`` is the number of distinct agents
- * with at least one open invoice or bill. The currency is uniform
- * per graph today (mixed-currency books would need a per-currency
- * breakdown — out of scope for v1).
- */
-export type OpenBalanceAggregate = {
-  /** Distinct agents with at least one open balance. */
-  counterpartyCount: Scalars['Int']['output']
-  /** Currency code (uniform per graph). */
-  currency: Scalars['String']['output']
-  /** Distinct originating events with a nonzero open balance. */
-  openEventCount: Scalars['Int']['output']
-  /** Sum of unsettled balances in minor currency units. */
-  totalOpenCents: Scalars['Int']['output']
-}
-
-/**
- * Per-agent open balance row.
- *
- * Used for both the aging-by-counterparty list and the per-Agent
- * GraphQL field. ``open_balance_cents`` reflects only the unsettled
- * remainder (sum of originating amounts minus sum of discharges) so
- * partial-payment chains net out correctly.
- */
-export type OpenBalanceByAgent = {
-  agentId: Scalars['String']['output']
-  currency: Scalars['String']['output']
-  /** Unsettled originating-event amounts minus discharges, in minor currency units. Positive for normal AR/AP; negative when overpaid. */
-  openBalanceCents: Scalars['Int']['output']
-  /** Number of originating events with nonzero balance for this agent. */
-  openEventCount: Scalars['Int']['output']
-}
-
-/** Pagination information for list responses. */
-export type PaginationInfo = {
-  /** Whether more items are available */
-  hasMore: Scalars['Boolean']['output']
-  /** Maximum number of items returned in this response */
-  limit: Scalars['Int']['output']
-  /** Number of items skipped */
-  offset: Scalars['Int']['output']
-  /** Total number of items available */
-  total: Scalars['Int']['output']
-}
-
-/**
- * One pending schedule-derived obligation blocking close.
- *
- * Surfaced on `FiscalCalendarResponse` when `pending_obligations` is in
- * the blockers list so callers can name which schedules to promote.
- */
-export type PendingObligationDetail = {
-  eventId: Scalars['String']['output']
-  /** Period in YYYY-MM format */
-  period: Scalars['String']['output']
-  scheduleId: Maybe<Scalars['String']['output']>
-  scheduleName: Maybe<Scalars['String']['output']>
-}
-
-/**
- * One schedule's contribution to a period close — drafted closing
- * entry plus its reversal (when ``auto_reverse=True``).
- *
- * ``status`` is the closing entry's draft/posted lifecycle. The
- * reversal mirrors the same shape with ``reversal_*`` fields.
- */
-export type PeriodCloseItem = {
-  amount: Scalars['Float']['output']
-  entryId: Maybe<Scalars['String']['output']>
-  reversalEntryId: Maybe<Scalars['String']['output']>
-  reversalStatus: Maybe<Scalars['String']['output']>
-  status: Scalars['String']['output']
-  structureId: Scalars['String']['output']
-  structureName: Scalars['String']['output']
-}
-
-/**
- * Period-close dashboard view — every schedule in scope for the
- * period plus drafted/posted entry totals.
- *
- * Use to drive the close-period UI: schedules with ``status='draft'``
- * are pending close; ``period_status`` reflects the calendar's lock
- * state for the period.
- */
-export type PeriodCloseStatus = {
-  /** Receipt stamped by the close that locked this period: entries_posted, the entries_published_to_qb / entries_posted_locally split, statement stamping and rule summaries, closed_at/closed_by. Null while the period is open, and null for periods closed before receipts shipped (a closed period without a receipt is not a failed close). This is the authoritative record of what a close did — read it rather than retrying when a close's response was lost in transport. */
-  closeReceipt: Maybe<CloseReceipt>
-  fiscalPeriodEnd: Scalars['Date']['output']
-  fiscalPeriodStart: Scalars['Date']['output']
-  periodStatus: Scalars['String']['output']
-  schedules: Array<PeriodCloseItem>
-  totalDraft: Scalars['Int']['output']
-  totalPosted: Scalars['Int']['output']
-}
-
-/** All draft entries for a fiscal period, ready for review before close. */
-export type PeriodDrafts = {
-  /** True if every draft entry has debit == credit */
-  allBalanced: Scalars['Boolean']['output']
-  draftCount: Scalars['Int']['output']
-  drafts: Array<DraftEntry>
-  /** Number of drafts that post locally only (no QB write-back). */
-  localOnlyCount: Scalars['Int']['output']
-  /** YYYY-MM period name */
-  period: Scalars['String']['output']
-  periodEnd: Scalars['Date']['output']
-  periodStart: Scalars['Date']['output']
-  /** Number of drafts that will publish to QuickBooks on close. */
-  qbPublishCount: Scalars['Int']['output']
-  /** write_policy of the publishing QB connection ('qb_authoritative' / 'hybrid'), or null when there is no write-back connection. */
-  qbWritePolicy: Maybe<Scalars['String']['output']>
-  /** Id of the QuickBooks connection these drafts publish to on close, or null when the graph has no qb_authoritative/hybrid QB connection (the drafts post locally only). */
-  qbWritebackConnectionId: Maybe<Scalars['String']['output']>
-  /** Sum across all drafts, in cents */
-  totalCredit: Scalars['Int']['output']
-  /** Sum across all drafts, in cents */
-  totalDebit: Scalars['Int']['output']
-}
-
-/**
- * A single reporting period column.
- *
- * Reports render facts in N period columns side-by-side. Each
- * ``PeriodSpec`` is one column — its ``start``/``end`` define the
- * window the report's facts roll up into; ``label`` is what the renderer
- * prints in the column header. For year-over-year statements, supply two
- * PeriodSpecs (current + comparative); for YTD by quarter, supply four.
- */
-export type PeriodSpec = {
-  /** Period end date (inclusive). Window the column rolls up. */
-  end: Scalars['Date']['output']
-  /** Column header label (e.g. 'FY2025 Q3', '2024', 'YTD'). */
-  label: Scalars['String']['output']
-  /** Period start date (inclusive). Window the column rolls up. */
-  start: Scalars['Date']['output']
-}
-
-/**
- * Read projection for a single portfolio — core fields only.
- *
- * Position-level holdings live on the dedicated portfolio-block envelope
- * (`PortfolioBlockEnvelope`) returned by molecular operations.
- */
-export type Portfolio = {
-  /** ISO 4217 currency code used for portfolio-level aggregates. */
-  baseCurrency: Scalars['String']['output']
-  /** Row creation timestamp (UTC). */
-  createdAt: Scalars['DateTime']['output']
-  /** Free-text description. */
-  description: Maybe<Scalars['String']['output']>
-  /** Portfolio ID (`port_*` ULID). */
-  id: Scalars['String']['output']
-  /** Date the portfolio was established (YYYY-MM-DD). */
-  inceptionDate: Maybe<Scalars['Date']['output']>
-  /** Display name. */
-  name: Scalars['String']['output']
-  /** Free-text strategy classification (e.g. `value`, `growth`, `income`). Open vocabulary. */
-  strategy: Maybe<Scalars['String']['output']>
-  /** Last-modified timestamp (UTC). */
-  updatedAt: Scalars['DateTime']['output']
-}
-
-/**
- * Molecular response shape for portfolio-block operations.
- *
- * Bundles the portfolio core, its embedded positions, and pre-computed
- * totals into a single payload — the contract for `create-portfolio-block`,
- * `update-portfolio-block`, and the read-side `get-portfolio-block`.
- * Cents-precision values aren't surfaced here; use `PositionResponse`
- * / `PortfolioResponse` for those.
- */
-export type PortfolioBlock = {
-  /** Count of positions with `status='active'`. */
-  activePositionCount: Scalars['Int']['output']
-  /** ISO 4217 currency code for portfolio aggregates. */
-  baseCurrency: Scalars['String']['output']
-  /** Row creation timestamp (UTC). */
-  createdAt: Scalars['DateTime']['output']
-  /** Free-text description. */
-  description: Maybe<Scalars['String']['output']>
-  /** Portfolio ID (`port_*` ULID). */
-  id: Scalars['ID']['output']
-  /** Date the portfolio was established. */
-  inceptionDate: Maybe<Scalars['Date']['output']>
-  /** Display name. */
-  name: Scalars['String']['output']
-  /** Embedded owning entity, when set. `null` for unattributed portfolios. */
-  owner: Maybe<EntityLite>
-  /** All positions in this portfolio, including disposed ones (filter by `status` for active-only display). */
-  positions: Array<PositionBlock>
-  /** Free-text strategy classification. */
-  strategy: Maybe<Scalars['String']['output']>
-  /** Sum of `cost_basis_dollars` across every position. */
-  totalCostBasisDollars: Scalars['Float']['output']
-  /** Sum of `current_value_dollars` across every position. `null` when any active position lacks a mark. */
-  totalCurrentValueDollars: Maybe<Scalars['Float']['output']>
-  /** Last-modified timestamp (UTC). */
-  updatedAt: Scalars['DateTime']['output']
-}
-
-/** Paginated list of portfolios. */
-export type PortfolioList = {
-  /** Pagination cursor and totals. */
-  pagination: PaginationInfo
-  /** Portfolios on this page. */
-  portfolios: Array<Portfolio>
-}
-
-/**
- * Read projection for a single position.
- *
- * Pairs cents-precision fields (`cost_basis`, `current_value`) with
- * pre-computed dollar floats (`*_dollars`) to spare clients the
- * conversion. The cents fields are authoritative.
- */
-export type Position = {
-  /** Date the position was acquired (YYYY-MM-DD). */
-  acquisitionDate: Maybe<Scalars['Date']['output']>
-  /** Cost basis in **cents** of `currency`. Authoritative. */
-  costBasis: Scalars['Int']['output']
-  /** Cost basis pre-converted to dollars (`cost_basis / 100`). Convenience for display; `cost_basis` is the source of truth. */
-  costBasisDollars: Scalars['Float']['output']
-  /** Row creation timestamp (UTC). */
-  createdAt: Scalars['DateTime']['output']
-  /** ISO 4217 currency code for `cost_basis` and `current_value`. */
-  currency: Scalars['String']['output']
-  /** Latest mark-to-market value in **cents**, or `null` if unmarked. */
-  currentValue: Maybe<Scalars['Int']['output']>
-  /** Current value in dollars (`current_value / 100`). `null` when `current_value` is null. */
-  currentValueDollars: Maybe<Scalars['Float']['output']>
-  /** Date the position was disposed, if `status='disposed'`. `null` for active positions. */
-  dispositionDate: Maybe<Scalars['Date']['output']>
-  /** Cached display name of the security's issuing entity. */
-  entityName: Maybe<Scalars['String']['output']>
-  /** Position ID (`pos_*` ULID). */
-  id: Scalars['String']['output']
-  /** Free-text notes attached to the position. */
-  notes: Maybe<Scalars['String']['output']>
-  /** Owning portfolio ID. */
-  portfolioId: Scalars['String']['output']
-  /** Quantity held in units defined by `quantity_type`. */
-  quantity: Scalars['Float']['output']
-  /** Unit basis (`shares`, `units`, `principal`). */
-  quantityType: Scalars['String']['output']
-  /** Held security ID. */
-  securityId: Scalars['String']['output']
-  /** Cached display name of the held security, denormalized for list rendering. May lag the security row's current name briefly. */
-  securityName: Maybe<Scalars['String']['output']>
-  /** Lifecycle state. One of: `active` (currently held), `disposed` (soft-deleted via `update-portfolio-block` dispose), `archived` (historical record only). */
-  status: Scalars['String']['output']
-  /** Last-modified timestamp (UTC). */
-  updatedAt: Scalars['DateTime']['output']
-  /** Date `current_value` was sourced (YYYY-MM-DD). */
-  valuationDate: Maybe<Scalars['Date']['output']>
-  /** Free-text source attribution for the current valuation. */
-  valuationSource: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Position projection embedded inside a `PortfolioBlockEnvelope`.
- *
- * Pre-converts cents fields to dollars (`cost_basis_dollars`,
- * `current_value_dollars`) for display; the cents-precision fields
- * live on the standalone `PositionResponse`. Embeds a `SecurityLite`
- * so callers can render the security name without a follow-up fetch.
- */
-export type PositionBlock = {
-  /** Date the position was acquired. */
-  acquisitionDate: Maybe<Scalars['Date']['output']>
-  /** Cost basis in dollars (pre-converted from cents). */
-  costBasisDollars: Scalars['Float']['output']
-  /** Latest mark-to-market value in dollars. `null` when the position has not been marked. */
-  currentValueDollars: Maybe<Scalars['Float']['output']>
-  /** Position ID (`pos_*` ULID). */
-  id: Scalars['ID']['output']
-  /** Free-text notes attached to the position. */
-  notes: Maybe<Scalars['String']['output']>
-  /** Quantity held in `quantity_type` units. */
-  quantity: Scalars['Float']['output']
-  /** Unit basis (`shares`, `units`, `principal`). */
-  quantityType: Scalars['String']['output']
-  /** Embedded security details — name, type, issuer. */
-  security: SecurityLite
-  /** Lifecycle state (`active`, `disposed`, `archived`). See `PositionResponse.status` for the full vocabulary. */
-  status: Scalars['String']['output']
-  /** Date the current value was sourced. */
-  valuationDate: Maybe<Scalars['Date']['output']>
-  /** Free-text source attribution for the valuation. */
-  valuationSource: Maybe<Scalars['String']['output']>
-}
-
-/** Paginated list of positions. */
-export type PositionList = {
-  /** Pagination cursor and totals. */
-  pagination: PaginationInfo
-  /** Positions on this page. */
-  positions: Array<Position>
-}
-
-/** Publish list summary — header metadata, no members. */
-export type PublishList = {
-  /** When the list was created. */
-  createdAt: Scalars['DateTime']['output']
-  /** User ID that created the list. */
-  createdBy: Scalars['String']['output']
-  /** Free-form description. */
-  description: Maybe<Scalars['String']['output']>
-  /** List identifier (ULID). */
-  id: Scalars['String']['output']
-  /** Number of recipient graphs currently on the list. */
-  memberCount: Scalars['Int']['output']
-  /** Human-readable list name. */
-  name: Scalars['String']['output']
-  /** Last metadata update (name/description). */
-  updatedAt: Scalars['DateTime']['output']
-}
-
-/** Full detail including members. */
-export type PublishListDetail = {
-  /** When the list was created. */
-  createdAt: Scalars['DateTime']['output']
-  /** User ID that created the list. */
-  createdBy: Scalars['String']['output']
-  /** Free-form description. */
-  description: Maybe<Scalars['String']['output']>
-  /** List identifier (ULID). */
-  id: Scalars['String']['output']
-  /** Number of recipient graphs currently on the list. */
-  memberCount: Scalars['Int']['output']
-  /** All recipient graphs on the list. */
-  members: Array<PublishListMember>
-  /** Human-readable list name. */
-  name: Scalars['String']['output']
-  /** Last metadata update (name/description). */
-  updatedAt: Scalars['DateTime']['output']
-}
-
-/** Paginated list of publish lists owned by the current graph. */
-export type PublishListList = {
-  pagination: PaginationInfo
-  /** Publish list summaries, newest first. */
-  publishLists: Array<PublishList>
-}
-
-/** One recipient graph in a publish list. */
-export type PublishListMember = {
-  /** When the member was added. */
-  addedAt: Scalars['DateTime']['output']
-  /** User ID that added this member. */
-  addedBy: Scalars['String']['output']
-  /** Membership row identifier (ULID). */
-  id: Scalars['String']['output']
-  /** Recipient graph ID. */
-  targetGraphId: Scalars['String']['output']
-  /** Display name of the recipient graph (if known). */
-  targetGraphName: Maybe<Scalars['String']['output']>
-  /** Display name of the org that owns the recipient graph. */
-  targetOrgName: Maybe<Scalars['String']['output']>
-}
-
-export type Query = {
-  accountRollups: Maybe<AccountRollups>
-  accountTree: Maybe<AccountTree>
-  accounts: Maybe<AccountList>
-  agent: Maybe<Agent>
-  agents: Array<Agent>
-  blockedSourceGraphs: Maybe<BlockedSourceGraphList>
-  closingBookStructures: Maybe<ClosingBookStructures>
-  elements: Maybe<ElementList>
-  entities: Array<LedgerEntity>
-  entity: Maybe<LedgerEntity>
-  eventBlock: Maybe<EventBlock>
-  eventBlocks: Array<EventBlock>
-  fiscalCalendar: Maybe<FiscalCalendar>
-  hello: Scalars['String']['output']
-  holdings: Maybe<HoldingsList>
-  informationBlock: Maybe<InformationBlock>
-  informationBlocks: Array<InformationBlock>
-  libraryElement: Maybe<LibraryElement>
-  libraryElementArcs: Array<LibraryElementArc>
-  libraryElementClassifications: Array<LibraryElementClassification>
-  libraryElementEquivalents: Maybe<LibraryEquivalence>
-  libraryElementTree: Maybe<LibraryElementTreeNode>
-  libraryElements: Array<LibraryElement>
-  libraryStructure: Maybe<LibraryStructure>
-  libraryStructures: Array<LibraryStructure>
-  libraryTaxonomies: Array<LibraryTaxonomy>
-  libraryTaxonomy: Maybe<LibraryTaxonomy>
-  libraryTaxonomyArcCount: Scalars['Int']['output']
-  libraryTaxonomyArcs: Array<LibraryAssociation>
-  mappedTrialBalance: Maybe<MappedTrialBalance>
-  mapping: Maybe<MappingDetail>
-  mappingCandidates: Array<Element>
-  mappingCoverage: Maybe<MappingCoverage>
-  mappings: Maybe<StructureList>
-  openPayables: OpenBalanceAggregate
-  openPayablesByAgent: Array<OpenBalanceByAgent>
-  openReceivables: OpenBalanceAggregate
-  openReceivablesByAgent: Array<OpenBalanceByAgent>
-  periodCloseStatus: Maybe<PeriodCloseStatus>
-  periodDrafts: Maybe<PeriodDrafts>
-  portfolioBlock: Maybe<PortfolioBlock>
-  portfolios: Maybe<PortfolioList>
-  position: Maybe<Position>
-  positions: Maybe<PositionList>
-  publishList: Maybe<PublishListDetail>
-  publishLists: Maybe<PublishListList>
-  report: Maybe<Report>
-  reportDownloadUrl: Maybe<ReportBundleDownload>
-  reportPackage: Maybe<ReportPackage>
-  reportingTaxonomy: Maybe<Taxonomy>
-  reports: Maybe<ReportList>
-  searchLibraryElements: Array<LibraryElement>
-  securities: Maybe<SecurityList>
-  security: Maybe<Security>
-  statement: Maybe<Statement>
-  structures: Maybe<StructureList>
-  summary: Maybe<LedgerSummary>
-  taxonomies: Maybe<TaxonomyList>
-  taxonomyBlock: Maybe<TaxonomyBlock>
-  taxonomyBlocks: Array<TaxonomyBlock>
-  transaction: Maybe<LedgerTransactionDetail>
-  transactions: Maybe<LedgerTransactionList>
-  trialBalance: Maybe<TrialBalance>
-  unmappedElements: Array<UnmappedElement>
-}
-
-export type QueryAccountRollupsArgs = {
-  endDate?: InputMaybe<Scalars['Date']['input']>
-  mappingId?: InputMaybe<Scalars['String']['input']>
-  startDate?: InputMaybe<Scalars['Date']['input']>
-}
-
-export type QueryAccountTreeArgs = {
-  includeInactive?: InputMaybe<Scalars['Boolean']['input']>
-}
-
-export type QueryAccountsArgs = {
-  classification?: InputMaybe<Scalars['String']['input']>
-  isActive?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-}
-
-export type QueryAgentArgs = {
-  id: Scalars['String']['input']
-}
-
-export type QueryAgentsArgs = {
-  agentType?: InputMaybe<Scalars['String']['input']>
-  isActive?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  source?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryBlockedSourceGraphsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-}
-
-export type QueryElementsArgs = {
-  classification?: InputMaybe<Scalars['String']['input']>
-  isAbstract?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  source?: InputMaybe<Scalars['String']['input']>
-  taxonomyId?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryEntitiesArgs = {
-  source?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryEventBlockArgs = {
-  id: Scalars['String']['input']
-}
-
-export type QueryEventBlocksArgs = {
-  agentId?: InputMaybe<Scalars['String']['input']>
-  eventCategory?: InputMaybe<Scalars['String']['input']>
-  eventType?: InputMaybe<Scalars['String']['input']>
-  isReconcilingItem?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  source?: InputMaybe<Scalars['String']['input']>
-  status?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryHoldingsArgs = {
-  portfolioId: Scalars['String']['input']
-}
-
-export type QueryInformationBlockArgs = {
-  id: Scalars['ID']['input']
-  scenarioId?: InputMaybe<Scalars['String']['input']>
-  series?: InputMaybe<Scalars['Boolean']['input']>
-  seriesForecast?: InputMaybe<Scalars['Int']['input']>
-  seriesHistory?: InputMaybe<Scalars['Int']['input']>
-}
-
-export type QueryInformationBlocksArgs = {
-  blockType?: InputMaybe<Scalars['String']['input']>
-  category?: InputMaybe<Scalars['String']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  scenarioId?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryLibraryElementArgs = {
-  id?: InputMaybe<Scalars['ID']['input']>
-  qname?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryLibraryElementArcsArgs = {
-  id: Scalars['ID']['input']
-}
-
-export type QueryLibraryElementClassificationsArgs = {
-  id: Scalars['ID']['input']
-}
-
-export type QueryLibraryElementEquivalentsArgs = {
-  id: Scalars['ID']['input']
-}
-
-export type QueryLibraryElementTreeArgs = {
-  id: Scalars['ID']['input']
-  maxDepth?: InputMaybe<Scalars['Int']['input']>
-  structureId?: InputMaybe<Scalars['ID']['input']>
-}
-
-export type QueryLibraryElementsArgs = {
-  activityType?: InputMaybe<Scalars['String']['input']>
-  classification?: InputMaybe<Scalars['String']['input']>
-  elementType?: InputMaybe<Scalars['String']['input']>
-  includeLabels?: InputMaybe<Scalars['Boolean']['input']>
-  includeReferences?: InputMaybe<Scalars['Boolean']['input']>
-  isAbstract?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  source?: InputMaybe<Scalars['String']['input']>
-  taxonomyId?: InputMaybe<Scalars['ID']['input']>
-}
-
-export type QueryLibraryStructureArgs = {
-  id: Scalars['ID']['input']
-}
-
-export type QueryLibraryStructuresArgs = {
-  blockType?: InputMaybe<Scalars['String']['input']>
-  taxonomyId?: InputMaybe<Scalars['ID']['input']>
-}
-
-export type QueryLibraryTaxonomiesArgs = {
-  includeElementCount?: InputMaybe<Scalars['Boolean']['input']>
-  standard?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryLibraryTaxonomyArgs = {
-  id?: InputMaybe<Scalars['ID']['input']>
-  includeElementCount?: InputMaybe<Scalars['Boolean']['input']>
-  standard?: InputMaybe<Scalars['String']['input']>
-  version?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryLibraryTaxonomyArcCountArgs = {
-  associationType?: InputMaybe<Scalars['String']['input']>
-  structureId?: InputMaybe<Scalars['ID']['input']>
-  taxonomyId: Scalars['ID']['input']
-}
-
-export type QueryLibraryTaxonomyArcsArgs = {
-  associationType?: InputMaybe<Scalars['String']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  structureId?: InputMaybe<Scalars['ID']['input']>
-  taxonomyId: Scalars['ID']['input']
-}
-
-export type QueryMappedTrialBalanceArgs = {
-  endDate?: InputMaybe<Scalars['Date']['input']>
-  mappingId: Scalars['String']['input']
-  startDate?: InputMaybe<Scalars['Date']['input']>
-}
-
-export type QueryMappingArgs = {
-  mappingId: Scalars['String']['input']
-}
-
-export type QueryMappingCandidatesArgs = {
-  classification: Scalars['String']['input']
-}
-
-export type QueryMappingCoverageArgs = {
-  mappingId: Scalars['String']['input']
-}
-
-export type QueryPeriodCloseStatusArgs = {
-  periodEnd: Scalars['Date']['input']
-  periodStart: Scalars['Date']['input']
-}
-
-export type QueryPeriodDraftsArgs = {
-  period: Scalars['String']['input']
-}
-
-export type QueryPortfolioBlockArgs = {
-  portfolioId: Scalars['String']['input']
-}
-
-export type QueryPortfoliosArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-}
-
-export type QueryPositionArgs = {
-  positionId: Scalars['String']['input']
-}
-
-export type QueryPositionsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  portfolioId?: InputMaybe<Scalars['String']['input']>
-  securityId?: InputMaybe<Scalars['String']['input']>
-  status?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryPublishListArgs = {
-  listId: Scalars['String']['input']
-}
-
-export type QueryPublishListsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-}
-
-export type QueryReportArgs = {
-  reportId: Scalars['String']['input']
-}
-
-export type QueryReportDownloadUrlArgs = {
-  expiresIn?: InputMaybe<Scalars['Int']['input']>
-  format?: InputMaybe<ReportDownloadFormat>
-  reportId: Scalars['String']['input']
-}
-
-export type QueryReportPackageArgs = {
-  reportId: Scalars['String']['input']
-}
-
-export type QuerySearchLibraryElementsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>
-  query: Scalars['String']['input']
-  source?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QuerySecuritiesArgs = {
-  entityId?: InputMaybe<Scalars['String']['input']>
-  isActive?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  securityType?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QuerySecurityArgs = {
-  securityId: Scalars['String']['input']
-}
-
-export type QueryStatementArgs = {
-  blockType: Scalars['String']['input']
-  reportId: Scalars['String']['input']
-}
-
-export type QueryStructuresArgs = {
-  blockType?: InputMaybe<Scalars['String']['input']>
-  taxonomyId?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryTaxonomiesArgs = {
-  taxonomyType?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryTaxonomyBlockArgs = {
-  id: Scalars['ID']['input']
-}
-
-export type QueryTaxonomyBlocksArgs = {
-  category?: InputMaybe<Scalars['String']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  parentTaxonomyId?: InputMaybe<Scalars['ID']['input']>
-  taxonomyType?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryTransactionArgs = {
-  transactionId: Scalars['String']['input']
-}
-
-export type QueryTransactionsArgs = {
-  endDate?: InputMaybe<Scalars['Date']['input']>
-  limit?: InputMaybe<Scalars['Int']['input']>
-  offset?: InputMaybe<Scalars['Int']['input']>
-  startDate?: InputMaybe<Scalars['Date']['input']>
-  type?: InputMaybe<Scalars['String']['input']>
-}
-
-export type QueryTrialBalanceArgs = {
-  endDate?: InputMaybe<Scalars['Date']['input']>
-  startDate?: InputMaybe<Scalars['Date']['input']>
-}
-
-export type QueryUnmappedElementsArgs = {
-  mappingId?: InputMaybe<Scalars['String']['input']>
-}
-
-/**
- * Report definition summary — header metadata, no facts.
- *
- * Returned by ``create-report``, ``regenerate-report``,
- * ``file-report``, and ``transition-filing-status``. Use the package
- * read endpoint to retrieve a Report rehydrated with its rendered
- * ``InformationBlockEnvelope`` items.
- */
-export type Report = {
-  /** True when the report was created by an AI agent rather than a user. */
-  aiGenerated: Scalars['Boolean']['output']
-  /** True when an auto-generated prior-period column is included. */
-  comparative: Scalars['Boolean']['output']
-  /** When the report row was created. */
-  createdAt: Scalars['DateTime']['output']
-  /** Display name of the primary entity the report is tagged to. */
-  entityName: Maybe<Scalars['String']['output']>
-  /** When the report was transitioned to `filed`. */
-  filedAt: Maybe<Scalars['DateTime']['output']>
-  /** User ID that transitioned the report to `filed`. */
-  filedBy: Maybe<Scalars['String']['output']>
-  /** Filing lifecycle (orthogonal to `generation_status`): `draft`, `under_review`, `filed`, `archived`. */
-  filingStatus: Scalars['String']['output']
-  /** Computation lifecycle: `generating`, `published`, `failed`. Orthogonal to `filing_status`. */
-  generationStatus: Scalars['String']['output']
-  /** Report identifier (ULID). */
-  id: Scalars['String']['output']
-  /** When the facts were last (re)generated. */
-  lastGenerated: Maybe<Scalars['DateTime']['output']>
-  /** CoA → taxonomy mapping the facts were rolled up through. */
-  mappingId: Maybe<Scalars['String']['output']>
-  /** Human-readable report name. */
-  name: Scalars['String']['output']
-  /** Current-period end. */
-  periodEnd: Maybe<Scalars['Date']['output']>
-  /** Current-period start. */
-  periodStart: Maybe<Scalars['Date']['output']>
-  /** Period cadence: `monthly`, `quarterly`, `annual`. */
-  periodType: Scalars['String']['output']
-  /** Explicit period columns when the report was created with a multi-period layout. */
-  periods: Maybe<Array<PeriodSpec>>
-  /** Counts by rule outcome (e.g. `{'passed': 12, 'failed': 1}`) from the most recent evaluation. Null until rules run. */
-  ruleSummary: Maybe<Scalars['JSON']['output']>
-  /** When the report was shared into this graph (recipient side). */
-  sharedAt: Maybe<Scalars['DateTime']['output']>
-  /** Origin graph for received (shared) reports — populated only on the recipient's copy. */
-  sourceGraphId: Maybe<Scalars['String']['output']>
-  /** Origin report ID for received (shared) reports — populated only on the recipient's copy. */
-  sourceReportId: Maybe<Scalars['String']['output']>
-  /** Structures available for this report's taxonomy — renderable sections (BS / IS / CF / Equity / Schedules). */
-  structures: Array<StructureSummary>
-  /** When this report has been restated, the successor's report ID. */
-  supersededById: Maybe<Scalars['String']['output']>
-  /** When this report restates an earlier filing, the predecessor's report ID. */
-  supersedesId: Maybe<Scalars['String']['output']>
-  /** Taxonomy this report renders against. */
-  taxonomyId: Scalars['String']['output']
-}
-
-/**
- * Presigned-URL response for a published Report's serialization bundle.
- *
- * Every flavor resolves to a short-lived presigned URL pointing at the
- * bundle in S3 — JSON-LD is stamped at publish time, XBRL is
- * materialized on first download and cached by ``generation_count``.
- * The client follows ``download_url`` to fetch the artifact directly
- * from S3 (the API never streams the bytes). Mirrors the
- * backup-download shape the frontend already consumes.
- */
-export type ReportBundleDownload = {
-  /** MIME type of the artifact behind the URL. */
-  contentType: Scalars['String']['output']
-  /** Presigned URL that streams the bundle directly from S3. */
-  downloadUrl: Scalars['String']['output']
-  /** UTC timestamp at which the presigned URL stops working. */
-  expiresAt: Scalars['DateTime']['output']
-  /** Serialization flavor delivered by this URL — one of the ``RdfFlavor`` / ``XbrlFlavor`` values (e.g. ``jsonld``, ``xbrl-2.1``). */
-  format: Scalars['String']['output']
-  /** Bundle generation number stamped on the Report. */
-  generationCount: Scalars['Int']['output']
-  /** Content the Report carries that this flavor does not. ``disclosure_notes``: the XBRL 2.1 zip ships statements only — tenant-authored disclosure notes render on screen and ride the JSON-LD and holon flavors, but are excluded from this file. */
-  omittedContent: Array<Scalars['String']['output']>
-}
-
+import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core'
 export type ReportDownloadFormat = 'HOLON_JSONLD' | 'JSONLD' | 'XBRL_2_1'
 
-/** List of report header summaries (used by report list reads). */
-export type ReportList = {
-  /** Report definitions, newest first. */
-  reports: Array<Report>
-}
-
-export type ReportPackage = {
-  aiGenerated: Scalars['Boolean']['output']
-  createdAt: Scalars['DateTime']['output']
-  createdBy: Scalars['String']['output']
-  description: Maybe<Scalars['String']['output']>
-  entityName: Maybe<Scalars['String']['output']>
-  filedAt: Maybe<Scalars['DateTime']['output']>
-  filedBy: Maybe<Scalars['String']['output']>
-  filingStatus: Scalars['String']['output']
-  generationStatus: Scalars['String']['output']
-  id: Scalars['ID']['output']
-  items: Array<ReportPackageItem>
-  lastGenerated: Maybe<Scalars['DateTime']['output']>
-  name: Scalars['String']['output']
-  periodEnd: Maybe<Scalars['Date']['output']>
-  periodStart: Maybe<Scalars['Date']['output']>
-  periodType: Scalars['String']['output']
-  sharedAt: Maybe<Scalars['DateTime']['output']>
-  sourceGraphId: Maybe<Scalars['String']['output']>
-  sourceReportId: Maybe<Scalars['String']['output']>
-  supersededById: Maybe<Scalars['String']['output']>
-  supersedesId: Maybe<Scalars['String']['output']>
-  taxonomyId: Scalars['String']['output']
-}
-
-export type ReportPackageItem = {
-  block: InformationBlock
-  displayOrder: Scalars['Int']['output']
-  factSetId: Scalars['String']['output']
-  structureId: Maybe<Scalars['String']['output']>
-}
-
-export type Security = {
-  authorizedShares: Maybe<Scalars['Int']['output']>
-  createdAt: Scalars['DateTime']['output']
-  entityId: Maybe<Scalars['String']['output']>
-  entityName: Maybe<Scalars['String']['output']>
-  id: Scalars['ID']['output']
-  isActive: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  outstandingShares: Maybe<Scalars['Int']['output']>
-  securitySubtype: Maybe<Scalars['String']['output']>
-  securityType: Scalars['String']['output']
-  sourceGraphId: Maybe<Scalars['String']['output']>
-  terms: Scalars['JSON']['output']
-  updatedAt: Scalars['DateTime']['output']
-}
-
-export type SecurityList = {
-  pagination: PaginationInfo
-  securities: Array<Security>
-}
-
-/**
- * Lightweight security projection for embedding in position
- * envelopes. Skips `terms`, `outstanding_shares`, etc. — fetch the
- * full `SecurityResponse` when those are needed.
- */
-export type SecurityLite = {
-  /** Security ID (`sec_*` ULID). */
-  id: Scalars['ID']['output']
-  /** `true` when the security is in active status. */
-  isActive: Scalars['Boolean']['output']
-  /** Embedded issuer entity, when one is linked. `null` for pre-issuer securities. */
-  issuer: Maybe<EntityLite>
-  /** Display name of the security. */
-  name: Scalars['String']['output']
-  /** Optional subtype refinement (e.g. `class_a`). */
-  securitySubtype: Maybe<Scalars['String']['output']>
-  /** Instrument family (e.g. `common_stock`, `preferred_stock`, `warrant`). */
-  securityType: Scalars['String']['output']
-  /** Tenant graph the security is pre-associated to, if any. */
-  sourceGraphId: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Rendered financial statement — facts viewed through a structure.
- *
- * Returned by report read endpoints when a single statement is
- * requested. The package mode endpoint returns a list of these
- * rehydrated as ``InformationBlockEnvelope`` items instead.
- */
-export type Statement = {
-  /** Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`. */
-  blockType: Scalars['String']['output']
-  /** Period columns rendered in this statement, in display order. */
-  periods: Array<PeriodSpec>
-  /** The Report this statement was rendered from. */
-  reportId: Scalars['String']['output']
-  /** One row per concept in the structure, in tree order. */
-  rows: Array<FactRow>
-  /** Structure projected for this statement. */
-  structureId: Scalars['String']['output']
-  /** Human-readable structure name. */
-  structureName: Scalars['String']['output']
-  /** Number of GL elements that fell through the mapping with no destination concept. Indicates mapping gaps. */
-  unmappedCount: Scalars['Int']['output']
-  /** Outcome of running reporting rules over this structure. Null when the structure has no rules attached. */
-  validation: Maybe<ValidationCheck>
-}
-
-/**
- * One structure header — a renderable section within a taxonomy
- * (balance sheet, income statement, schedule, etc.).
- *
- * ``block_type`` drives presentation: 'balance_sheet',
- * 'income_statement', 'cash_flow_statement', 'equity_statement',
- * 'schedule', 'chart_of_accounts', 'coa_mapping', 'rollforward', etc.
- */
-export type Structure = {
-  blockType: Scalars['String']['output']
-  description: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  isActive: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  taxonomyId: Scalars['String']['output']
-}
-
-/** Flat list of structures within a taxonomy. */
-export type StructureList = {
-  structures: Array<Structure>
-}
-
-/**
- * A structure available within this report's taxonomy.
- *
- * Each structure is a renderable section (Balance Sheet, Income
- * Statement, Cash Flow Statement, Equity, or a Schedule). The Report
- * row owns the facts; structures are the lenses that project them.
- */
-export type StructureSummary = {
-  /** Structure category: `balance_sheet`, `income_statement`, `cash_flow_statement`, `equity_statement`, `schedule`. */
-  blockType: Scalars['String']['output']
-  /** Structure identifier. */
-  id: Scalars['String']['output']
-  /** Human-readable structure name. */
-  name: Scalars['String']['output']
-}
-
-/** A suggested mapping target from the reporting taxonomy. */
-export type SuggestedTarget = {
-  confidence: Maybe<Scalars['Float']['output']>
-  elementId: Scalars['String']['output']
-  name: Scalars['String']['output']
-  qname: Scalars['String']['output']
-}
-
-/**
- * One taxonomy header — identity + lifecycle flags. Atoms
- * (elements, structures, associations, rules) are exposed via the
- * Taxonomy Block envelope.
- *
- * ``taxonomy_type`` discriminates: ``chart_of_accounts``,
- * ``reporting_standard``, ``reporting_extension``, ``custom_ontology``,
- * ``mapping``, ``schedule``. ``is_locked=True`` means library-origin
- * (immutable for tenants); ``is_shared=True`` means visible to multiple
- * graphs from a shared registry.
- */
-export type Taxonomy = {
-  description: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  isActive: Scalars['Boolean']['output']
-  isLocked: Scalars['Boolean']['output']
-  isShared: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  namespaceUri: Maybe<Scalars['String']['output']>
-  sourceTaxonomyId: Maybe<Scalars['String']['output']>
-  standard: Maybe<Scalars['String']['output']>
-  targetTaxonomyId: Maybe<Scalars['String']['output']>
-  taxonomyType: Scalars['String']['output']
-  version: Maybe<Scalars['String']['output']>
-}
-
-export type TaxonomyBlock = {
-  associationCount: Scalars['Int']['output']
-  associations: Array<TaxonomyBlockAssociation>
-  category: Scalars['String']['output']
-  displayName: Scalars['String']['output']
-  elementCount: Scalars['Int']['output']
-  elements: Array<TaxonomyBlockElement>
-  id: Scalars['ID']['output']
-  isLocked: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  namespaceUri: Maybe<Scalars['String']['output']>
-  parentTaxonomyId: Maybe<Scalars['String']['output']>
-  parentTaxonomyName: Maybe<Scalars['String']['output']>
-  rules: Array<TaxonomyBlockRule>
-  standard: Maybe<Scalars['String']['output']>
-  structureCount: Scalars['Int']['output']
-  structures: Array<TaxonomyBlockStructure>
-  taxonomyType: Scalars['String']['output']
-  verificationResults: Array<Scalars['JSON']['output']>
-  version: Maybe<Scalars['String']['output']>
-}
-
-export type TaxonomyBlockAssociation = {
-  arcrole: Maybe<Scalars['String']['output']>
-  associationType: Scalars['String']['output']
-  fromElementQname: Scalars['String']['output']
-  id: Scalars['String']['output']
-  orderValue: Maybe<Scalars['Float']['output']>
-  structureId: Scalars['String']['output']
-  toElementQname: Scalars['String']['output']
-  weight: Maybe<Scalars['Float']['output']>
-}
-
-export type TaxonomyBlockElement = {
-  balanceType: Maybe<Scalars['String']['output']>
-  depth: Maybe<Scalars['Int']['output']>
-  elementType: Scalars['String']['output']
-  id: Scalars['String']['output']
-  isMonetary: Scalars['Boolean']['output']
-  name: Scalars['String']['output']
-  origin: Scalars['String']['output']
-  parentQname: Maybe<Scalars['String']['output']>
-  periodType: Maybe<Scalars['String']['output']>
-  qname: Maybe<Scalars['String']['output']>
-  trait: Maybe<Scalars['String']['output']>
-}
-
-export type TaxonomyBlockRule = {
-  id: Scalars['String']['output']
-  name: Scalars['String']['output']
-  origin: Scalars['String']['output']
-  ruleCategory: Scalars['String']['output']
-  ruleExpression: Scalars['String']['output']
-  rulePattern: Scalars['String']['output']
-  severity: Scalars['String']['output']
-  targetKind: Maybe<Scalars['String']['output']>
-  targetRef: Maybe<Scalars['String']['output']>
-}
-
-export type TaxonomyBlockStructure = {
-  blockType: Scalars['String']['output']
-  description: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  name: Scalars['String']['output']
-  roleUri: Maybe<Scalars['String']['output']>
-}
-
-/** Flat list of taxonomy headers. Used by the catalog/picker UIs. */
-export type TaxonomyList = {
-  taxonomies: Array<Taxonomy>
-}
-
-/**
- * Trial balance for posted entries in a date range — every CoA
- * account that had activity, plus aggregate totals.
- *
- * Ledger is balanced when ``total_debits == total_credits``. Used as
- * a sanity check before close-period; failure means an unposted /
- * malformed entry slipped through.
- */
-export type TrialBalance = {
-  rows: Array<TrialBalanceRow>
-  totalCredits: Scalars['Float']['output']
-  totalDebits: Scalars['Float']['output']
-}
-
-/** One CoA account's debit/credit totals over the trial-balance window. */
-export type TrialBalanceRow = {
-  accountCode: Scalars['String']['output']
-  accountId: Scalars['String']['output']
-  accountName: Scalars['String']['output']
-  accountType: Maybe<Scalars['String']['output']>
-  netBalance: Scalars['Float']['output']
-  totalCredits: Scalars['Float']['output']
-  totalDebits: Scalars['Float']['output']
-  trait: Maybe<Scalars['String']['output']>
-}
-
-/** An element not yet mapped to the reporting taxonomy. */
-export type UnmappedElement = {
-  balanceType: Scalars['String']['output']
-  code: Maybe<Scalars['String']['output']>
-  externalSource: Maybe<Scalars['String']['output']>
-  id: Scalars['String']['output']
-  liquidity: Maybe<Scalars['String']['output']>
-  name: Scalars['String']['output']
-  suggestedTargets: Array<SuggestedTarget>
-  trait: Maybe<Scalars['String']['output']>
-}
-
-/**
- * A CoA→rs-gaap mapping whose target doesn't reach a Network root.
- *
- * The reporting layer is closed: every mapping target must trace upward
- * through the rs-gaap calc DAG to one of the canonical roots
- * (rs-gaap:Assets, rs-gaap:LiabilitiesAndStockholdersEquity,
- * rs-gaap:NetIncomeLoss, rs-gaap:CashAndCashEquivalentsPeriodIncreaseDecrease).
- * When it doesn't, the fact will land on a dead branch — visible in the
- * trial balance but invisible to any rendered statement. Surfacing
- * these as defects lets operators fix the mapping before the report is
- * filed.
- */
-export type UnreachableMappingType = {
-  coaCode: Maybe<Scalars['String']['output']>
-  coaElementId: Scalars['String']['output']
-  coaName: Maybe<Scalars['String']['output']>
-  coaQname: Maybe<Scalars['String']['output']>
-  targetElementId: Scalars['String']['output']
-  targetName: Maybe<Scalars['String']['output']>
-  targetQname: Maybe<Scalars['String']['output']>
-}
-
-/**
- * Aggregate result of running reporting rules over a structure.
- *
- * Every rule runs once per rendered period column; on a multi-column
- * statement each failure and warning is prefixed with the column it was
- * found in (``[Prior] …``).
- */
-export type ValidationCheck = {
-  /** Names of rules that were evaluated. */
-  checks: Array<Scalars['String']['output']>
-  /** Human-readable descriptions of rule failures. */
-  failures: Array<Scalars['String']['output']>
-  /** True iff at least one rule ran and every rule produced zero failures on every rendered column. False when nothing was checked (`status == 'inconclusive'`). */
-  passed: Scalars['Boolean']['output']
-  /** `passed` — every rule ran on every column with zero failures; `failed` — at least one rule failed; `inconclusive` — no validation rules exist for this block type, so nothing was checked. */
-  status: Scalars['String']['output']
-  /** Non-blocking advisories from rule evaluation. */
-  warnings: Array<Scalars['String']['output']>
-}
-
 export type GetInvestorHoldingsQueryVariables = Exact<{
-  portfolioId: Scalars['String']['input']
+  portfolioId: string
 }>
 
 export type GetInvestorHoldingsQuery = {
@@ -2436,7 +35,7 @@ export type GetInvestorHoldingsQuery = {
 }
 
 export type GetInvestorPortfolioBlockQueryVariables = Exact<{
-  portfolioId: Scalars['String']['input']
+  portfolioId: string
 }>
 
 export type GetInvestorPortfolioBlockQuery = {
@@ -2445,13 +44,13 @@ export type GetInvestorPortfolioBlockQuery = {
     name: string
     description: string | null
     strategy: string | null
-    inceptionDate: any | null
+    inceptionDate: string | null
     baseCurrency: string
     totalCostBasisDollars: number
     totalCurrentValueDollars: number | null
     activePositionCount: number
-    createdAt: any
-    updatedAt: any
+    createdAt: string
+    updatedAt: string
     owner: { id: string; name: string; sourceGraphId: string | null } | null
     positions: Array<{
       id: string
@@ -2459,9 +58,9 @@ export type GetInvestorPortfolioBlockQuery = {
       quantityType: string
       costBasisDollars: number
       currentValueDollars: number | null
-      valuationDate: any | null
+      valuationDate: string | null
       valuationSource: string | null
-      acquisitionDate: any | null
+      acquisitionDate: string | null
       status: string
       notes: string | null
       security: {
@@ -2478,8 +77,8 @@ export type GetInvestorPortfolioBlockQuery = {
 }
 
 export type ListInvestorPortfoliosQueryVariables = Exact<{
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: number
+  offset?: number
 }>
 
 export type ListInvestorPortfoliosQuery = {
@@ -2489,17 +88,17 @@ export type ListInvestorPortfoliosQuery = {
       name: string
       description: string | null
       strategy: string | null
-      inceptionDate: any | null
+      inceptionDate: string | null
       baseCurrency: string
-      createdAt: any
-      updatedAt: any
+      createdAt: string
+      updatedAt: string
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
   } | null
 }
 
 export type GetInvestorPositionQueryVariables = Exact<{
-  positionId: Scalars['String']['input']
+  positionId: string
 }>
 
 export type GetInvestorPositionQuery = {
@@ -2516,23 +115,23 @@ export type GetInvestorPositionQuery = {
     currency: string
     currentValue: number | null
     currentValueDollars: number | null
-    valuationDate: any | null
+    valuationDate: string | null
     valuationSource: string | null
-    acquisitionDate: any | null
-    dispositionDate: any | null
+    acquisitionDate: string | null
+    dispositionDate: string | null
     status: string
     notes: string | null
-    createdAt: any
-    updatedAt: any
+    createdAt: string
+    updatedAt: string
   } | null
 }
 
 export type ListInvestorPositionsQueryVariables = Exact<{
-  portfolioId: InputMaybe<Scalars['String']['input']>
-  securityId: InputMaybe<Scalars['String']['input']>
-  status: InputMaybe<Scalars['String']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  portfolioId: string | null | undefined
+  securityId: string | null | undefined
+  status: string | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListInvestorPositionsQuery = {
@@ -2550,25 +149,25 @@ export type ListInvestorPositionsQuery = {
       currency: string
       currentValue: number | null
       currentValueDollars: number | null
-      valuationDate: any | null
+      valuationDate: string | null
       valuationSource: string | null
-      acquisitionDate: any | null
-      dispositionDate: any | null
+      acquisitionDate: string | null
+      dispositionDate: string | null
       status: string
       notes: string | null
-      createdAt: any
-      updatedAt: any
+      createdAt: string
+      updatedAt: string
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
   } | null
 }
 
 export type ListInvestorSecuritiesQueryVariables = Exact<{
-  entityId: InputMaybe<Scalars['String']['input']>
-  securityType: InputMaybe<Scalars['String']['input']>
-  isActive: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  entityId: string | null | undefined
+  securityType: string | null | undefined
+  isActive: boolean | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListInvestorSecuritiesQuery = {
@@ -2581,19 +180,19 @@ export type ListInvestorSecuritiesQuery = {
       name: string
       securityType: string
       securitySubtype: string | null
-      terms: any
+      terms: unknown
       isActive: boolean
       authorizedShares: number | null
       outstandingShares: number | null
-      createdAt: any
-      updatedAt: any
+      createdAt: string
+      updatedAt: string
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
   } | null
 }
 
 export type GetInvestorSecurityQueryVariables = Exact<{
-  securityId: Scalars['String']['input']
+  securityId: string
 }>
 
 export type GetInvestorSecurityQuery = {
@@ -2605,19 +204,19 @@ export type GetInvestorSecurityQuery = {
     name: string
     securityType: string
     securitySubtype: string | null
-    terms: any
+    terms: unknown
     isActive: boolean
     authorizedShares: number | null
     outstandingShares: number | null
-    createdAt: any
-    updatedAt: any
+    createdAt: string
+    updatedAt: string
   } | null
 }
 
 export type GetLedgerAccountRollupsQueryVariables = Exact<{
-  mappingId: InputMaybe<Scalars['String']['input']>
-  startDate: InputMaybe<Scalars['Date']['input']>
-  endDate: InputMaybe<Scalars['Date']['input']>
+  mappingId: string | null | undefined
+  startDate: string | null | undefined
+  endDate: string | null | undefined
 }>
 
 export type GetLedgerAccountRollupsQuery = {
@@ -2694,10 +293,10 @@ export type GetLedgerAccountTreeQuery = {
 }
 
 export type ListLedgerAccountsQueryVariables = Exact<{
-  classification: InputMaybe<Scalars['String']['input']>
-  isActive: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  classification: string | null | undefined
+  isActive: boolean | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListLedgerAccountsQuery = {
@@ -2723,7 +322,7 @@ export type ListLedgerAccountsQuery = {
 }
 
 export type GetLedgerAgentQueryVariables = Exact<{
-  id: Scalars['String']['input']
+  id: string
 }>
 
 export type GetLedgerAgentQuery = {
@@ -2738,23 +337,23 @@ export type GetLedgerAgentQuery = {
     lei: string | null
     email: string | null
     phone: string | null
-    address: any | null
+    address: unknown
     source: string
     externalId: string | null
     isActive: boolean
     is1099Recipient: boolean
-    createdAt: any | null
-    updatedAt: any | null
+    createdAt: string | null
+    updatedAt: string | null
     createdBy: string | null
   } | null
 }
 
 export type ListLedgerAgentsQueryVariables = Exact<{
-  agentType: InputMaybe<Scalars['String']['input']>
-  source: InputMaybe<Scalars['String']['input']>
-  isActive?: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  agentType: string | null | undefined
+  source: string | null | undefined
+  isActive?: boolean | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListLedgerAgentsQuery = {
@@ -2769,20 +368,20 @@ export type ListLedgerAgentsQuery = {
     lei: string | null
     email: string | null
     phone: string | null
-    address: any | null
+    address: unknown
     source: string
     externalId: string | null
     isActive: boolean
     is1099Recipient: boolean
-    createdAt: any | null
-    updatedAt: any | null
+    createdAt: string | null
+    updatedAt: string | null
     createdBy: string | null
   }>
 }
 
 export type ListLedgerBlockedSourceGraphsQueryVariables = Exact<{
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: number
+  offset?: number
 }>
 
 export type ListLedgerBlockedSourceGraphsQuery = {
@@ -2792,7 +391,7 @@ export type ListLedgerBlockedSourceGraphsQuery = {
       sourceGraphId: string
       sourceGraphName: string | null
       blockedBy: string
-      blockedAt: any
+      blockedAt: string
       reason: string | null
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
@@ -2819,12 +418,12 @@ export type GetLedgerClosingBookStructuresQuery = {
 }
 
 export type ListLedgerElementsQueryVariables = Exact<{
-  taxonomyId: InputMaybe<Scalars['String']['input']>
-  source: InputMaybe<Scalars['String']['input']>
-  classification: InputMaybe<Scalars['String']['input']>
-  isAbstract: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  taxonomyId: string | null | undefined
+  source: string | null | undefined
+  classification: string | null | undefined
+  isAbstract: boolean | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListLedgerElementsQuery = {
@@ -2855,7 +454,7 @@ export type ListLedgerElementsQuery = {
 }
 
 export type ListLedgerEntitiesQueryVariables = Exact<{
-  source: InputMaybe<Scalars['String']['input']>
+  source: string | null | undefined
 }>
 
 export type ListLedgerEntitiesQuery = {
@@ -2918,7 +517,7 @@ export type GetLedgerEntityQuery = {
 }
 
 export type GetLedgerEventBlockQueryVariables = Exact<{
-  id: Scalars['String']['input']
+  id: string
 }>
 
 export type GetLedgerEventBlockQuery = {
@@ -2928,15 +527,15 @@ export type GetLedgerEventBlockQuery = {
     eventCategory: string
     eventClass: string
     status: string
-    occurredAt: any
-    effectiveAt: any | null
+    occurredAt: string
+    effectiveAt: string | null
     source: string
     externalId: string | null
     externalUrl: string | null
     amount: number | null
     currency: string
     description: string | null
-    metadata: any
+    metadata: unknown
     dimensionIds: Array<string>
     agentId: string | null
     resourceType: string | null
@@ -2945,19 +544,19 @@ export type GetLedgerEventBlockQuery = {
     replacesEventId: string | null
     obligatedByEventId: string | null
     dischargesEventId: string | null
-    createdAt: any
+    createdAt: string
     createdBy: string
   } | null
 }
 
 export type ListLedgerEventBlocksQueryVariables = Exact<{
-  eventType: InputMaybe<Scalars['String']['input']>
-  eventCategory: InputMaybe<Scalars['String']['input']>
-  status: InputMaybe<Scalars['String']['input']>
-  agentId: InputMaybe<Scalars['String']['input']>
-  source: InputMaybe<Scalars['String']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  eventType: string | null | undefined
+  eventCategory: string | null | undefined
+  status: string | null | undefined
+  agentId: string | null | undefined
+  source: string | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListLedgerEventBlocksQuery = {
@@ -2967,15 +566,15 @@ export type ListLedgerEventBlocksQuery = {
     eventCategory: string
     eventClass: string
     status: string
-    occurredAt: any
-    effectiveAt: any | null
+    occurredAt: string
+    effectiveAt: string | null
     source: string
     externalId: string | null
     externalUrl: string | null
     amount: number | null
     currency: string
     description: string | null
-    metadata: any
+    metadata: unknown
     dimensionIds: Array<string>
     agentId: string | null
     resourceType: string | null
@@ -2984,7 +583,7 @@ export type ListLedgerEventBlocksQuery = {
     replacesEventId: string | null
     obligatedByEventId: string | null
     dischargesEventId: string | null
-    createdAt: any
+    createdAt: string
     createdBy: string
   }>
 }
@@ -3005,9 +604,9 @@ export type GetLedgerFiscalCalendarQuery = {
     earliestPendingPeriod: string | null
     strandedObligationCount: number
     syncStaleDays: number | null
-    lastCloseAt: any | null
-    initializedAt: any | null
-    lastSyncAt: any | null
+    lastCloseAt: string | null
+    initializedAt: string | null
+    lastSyncAt: string | null
     pendingObligationSample: Array<{
       eventId: string
       scheduleId: string | null
@@ -3022,18 +621,18 @@ export type GetLedgerFiscalCalendarQuery = {
     }>
     periods: Array<{
       name: string
-      startDate: any
-      endDate: any
+      startDate: string
+      endDate: string
       status: string
-      closedAt: any | null
+      closedAt: string | null
     }>
   } | null
 }
 
 export type GetInformationBlockQueryVariables = Exact<{
-  id: Scalars['ID']['input']
-  scenarioId: InputMaybe<Scalars['String']['input']>
-  series?: Scalars['Boolean']['input']
+  id: string | number
+  scenarioId: string | null | undefined
+  series?: boolean
 }>
 
 export type GetInformationBlockQuery = {
@@ -3049,8 +648,8 @@ export type GetInformationBlockQuery = {
     artifact: {
       topic: string | null
       rendererNote: string | null
-      template: any | null
-      mechanics: any
+      template: unknown
+      mechanics: unknown
     }
     elements: Array<{
       id: string
@@ -3079,8 +678,8 @@ export type GetInformationBlockQuery = {
       textValue: string | null
       factType: string
       contentType: string | null
-      periodStart: any | null
-      periodEnd: any
+      periodStart: string | null
+      periodEnd: string
       periodType: string
       unit: string
       factScope: string
@@ -3101,13 +700,13 @@ export type GetInformationBlockQuery = {
     factSet: {
       id: string
       structureId: string | null
-      periodStart: any | null
-      periodEnd: any
+      periodStart: string | null
+      periodEnd: string
       factsetType: string
       entityId: string
       reportId: string | null
       scenarioId: string | null
-      provenance: any | null
+      provenance: unknown
     } | null
     verificationResults: Array<{
       id: string
@@ -3116,9 +715,9 @@ export type GetInformationBlockQuery = {
       factSetId: string | null
       status: string
       message: string | null
-      periodStart: any | null
-      periodEnd: any | null
-      evaluatedAt: any | null
+      periodStart: string | null
+      periodEnd: string | null
+      evaluatedAt: string | null
     }>
     verificationSummary: {
       total: number
@@ -3150,7 +749,12 @@ export type GetInformationBlockQuery = {
           isSubtotal: boolean
           depth: number
         }>
-        periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
+        periods: Array<{
+          start: string
+          end: string
+          label: string | null
+          forecast: boolean | null
+        }>
         validation: {
           passed: boolean
           checks: Array<string>
@@ -3171,11 +775,11 @@ export type GetInformationBlockQuery = {
 }
 
 export type GetInformationBlockWindowedQueryVariables = Exact<{
-  id: Scalars['ID']['input']
-  scenarioId: InputMaybe<Scalars['String']['input']>
-  series?: Scalars['Boolean']['input']
-  seriesHistory: InputMaybe<Scalars['Int']['input']>
-  seriesForecast: InputMaybe<Scalars['Int']['input']>
+  id: string | number
+  scenarioId: string | null | undefined
+  series?: boolean
+  seriesHistory: number | null | undefined
+  seriesForecast: number | null | undefined
 }>
 
 export type GetInformationBlockWindowedQuery = {
@@ -3191,8 +795,8 @@ export type GetInformationBlockWindowedQuery = {
     artifact: {
       topic: string | null
       rendererNote: string | null
-      template: any | null
-      mechanics: any
+      template: unknown
+      mechanics: unknown
     }
     elements: Array<{
       id: string
@@ -3221,8 +825,8 @@ export type GetInformationBlockWindowedQuery = {
       textValue: string | null
       factType: string
       contentType: string | null
-      periodStart: any | null
-      periodEnd: any
+      periodStart: string | null
+      periodEnd: string
       periodType: string
       unit: string
       factScope: string
@@ -3243,13 +847,13 @@ export type GetInformationBlockWindowedQuery = {
     factSet: {
       id: string
       structureId: string | null
-      periodStart: any | null
-      periodEnd: any
+      periodStart: string | null
+      periodEnd: string
       factsetType: string
       entityId: string
       reportId: string | null
       scenarioId: string | null
-      provenance: any | null
+      provenance: unknown
     } | null
     verificationResults: Array<{
       id: string
@@ -3258,9 +862,9 @@ export type GetInformationBlockWindowedQuery = {
       factSetId: string | null
       status: string
       message: string | null
-      periodStart: any | null
-      periodEnd: any | null
-      evaluatedAt: any | null
+      periodStart: string | null
+      periodEnd: string | null
+      evaluatedAt: string | null
     }>
     verificationSummary: {
       total: number
@@ -3292,7 +896,12 @@ export type GetInformationBlockWindowedQuery = {
           isSubtotal: boolean
           depth: number
         }>
-        periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
+        periods: Array<{
+          start: string
+          end: string
+          label: string | null
+          forecast: boolean | null
+        }>
         validation: {
           passed: boolean
           checks: Array<string>
@@ -3313,11 +922,11 @@ export type GetInformationBlockWindowedQuery = {
 }
 
 export type ListInformationBlocksQueryVariables = Exact<{
-  blockType: InputMaybe<Scalars['String']['input']>
-  category: InputMaybe<Scalars['String']['input']>
-  limit: InputMaybe<Scalars['Int']['input']>
-  offset: InputMaybe<Scalars['Int']['input']>
-  scenarioId: InputMaybe<Scalars['String']['input']>
+  blockType: string | null | undefined
+  category: string | null | undefined
+  limit: number | null | undefined
+  offset: number | null | undefined
+  scenarioId: string | null | undefined
 }>
 
 export type ListInformationBlocksQuery = {
@@ -3333,8 +942,8 @@ export type ListInformationBlocksQuery = {
     artifact: {
       topic: string | null
       rendererNote: string | null
-      template: any | null
-      mechanics: any
+      template: unknown
+      mechanics: unknown
     }
     elements: Array<{
       id: string
@@ -3363,8 +972,8 @@ export type ListInformationBlocksQuery = {
       textValue: string | null
       factType: string
       contentType: string | null
-      periodStart: any | null
-      periodEnd: any
+      periodStart: string | null
+      periodEnd: string
       periodType: string
       unit: string
       factScope: string
@@ -3385,13 +994,13 @@ export type ListInformationBlocksQuery = {
     factSet: {
       id: string
       structureId: string | null
-      periodStart: any | null
-      periodEnd: any
+      periodStart: string | null
+      periodEnd: string
       factsetType: string
       entityId: string
       reportId: string | null
       scenarioId: string | null
-      provenance: any | null
+      provenance: unknown
     } | null
     verificationResults: Array<{
       id: string
@@ -3400,9 +1009,9 @@ export type ListInformationBlocksQuery = {
       factSetId: string | null
       status: string
       message: string | null
-      periodStart: any | null
-      periodEnd: any | null
-      evaluatedAt: any | null
+      periodStart: string | null
+      periodEnd: string | null
+      evaluatedAt: string | null
     }>
     verificationSummary: {
       total: number
@@ -3434,7 +1043,12 @@ export type ListInformationBlocksQuery = {
           isSubtotal: boolean
           depth: number
         }>
-        periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
+        periods: Array<{
+          start: string
+          end: string
+          label: string | null
+          forecast: boolean | null
+        }>
         validation: {
           passed: boolean
           checks: Array<string>
@@ -3455,9 +1069,9 @@ export type ListInformationBlocksQuery = {
 }
 
 export type GetLedgerMappedTrialBalanceQueryVariables = Exact<{
-  mappingId: Scalars['String']['input']
-  startDate: InputMaybe<Scalars['Date']['input']>
-  endDate: InputMaybe<Scalars['Date']['input']>
+  mappingId: string
+  startDate: string | null | undefined
+  endDate: string | null | undefined
 }>
 
 export type GetLedgerMappedTrialBalanceQuery = {
@@ -3477,7 +1091,7 @@ export type GetLedgerMappedTrialBalanceQuery = {
 }
 
 export type GetLedgerMappingQueryVariables = Exact<{
-  mappingId: Scalars['String']['input']
+  mappingId: string
 }>
 
 export type GetLedgerMappingQuery = {
@@ -3507,7 +1121,7 @@ export type GetLedgerMappingQuery = {
 }
 
 export type MappingCandidatesQueryVariables = Exact<{
-  classification: Scalars['String']['input']
+  classification: string
 }>
 
 export type MappingCandidatesQuery = {
@@ -3515,7 +1129,7 @@ export type MappingCandidatesQuery = {
 }
 
 export type GetLedgerMappingCoverageQueryVariables = Exact<{
-  mappingId: Scalars['String']['input']
+  mappingId: string
 }>
 
 export type GetLedgerMappingCoverageQuery = {
@@ -3547,14 +1161,14 @@ export type ListLedgerMappingsQuery = {
 }
 
 export type GetLedgerPeriodCloseStatusQueryVariables = Exact<{
-  periodStart: Scalars['Date']['input']
-  periodEnd: Scalars['Date']['input']
+  periodStart: string
+  periodEnd: string
 }>
 
 export type GetLedgerPeriodCloseStatusQuery = {
   periodCloseStatus: {
-    fiscalPeriodStart: any
-    fiscalPeriodEnd: any
+    fiscalPeriodStart: string
+    fiscalPeriodEnd: string
     periodStatus: string
     totalDraft: number
     totalPosted: number
@@ -3571,14 +1185,14 @@ export type GetLedgerPeriodCloseStatusQuery = {
 }
 
 export type GetLedgerPeriodDraftsQueryVariables = Exact<{
-  period: Scalars['String']['input']
+  period: string
 }>
 
 export type GetLedgerPeriodDraftsQuery = {
   periodDrafts: {
     period: string
-    periodStart: any
-    periodEnd: any
+    periodStart: string
+    periodEnd: string
     draftCount: number
     totalDebit: number
     totalCredit: number
@@ -3589,7 +1203,7 @@ export type GetLedgerPeriodDraftsQuery = {
     localOnlyCount: number
     drafts: Array<{
       entryId: string
-      postingDate: any
+      postingDate: string
       type: string
       memo: string | null
       provenance: string | null
@@ -3613,7 +1227,7 @@ export type GetLedgerPeriodDraftsQuery = {
 }
 
 export type GetLedgerPublishListQueryVariables = Exact<{
-  listId: Scalars['String']['input']
+  listId: string
 }>
 
 export type GetLedgerPublishListQuery = {
@@ -3623,22 +1237,22 @@ export type GetLedgerPublishListQuery = {
     description: string | null
     memberCount: number
     createdBy: string
-    createdAt: any
-    updatedAt: any
+    createdAt: string
+    updatedAt: string
     members: Array<{
       id: string
       targetGraphId: string
       targetGraphName: string | null
       targetOrgName: string | null
       addedBy: string
-      addedAt: any
+      addedAt: string
     }>
   } | null
 }
 
 export type ListLedgerPublishListsQueryVariables = Exact<{
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  limit?: number
+  offset?: number
 }>
 
 export type ListLedgerPublishListsQuery = {
@@ -3649,15 +1263,15 @@ export type ListLedgerPublishListsQuery = {
       description: string | null
       memberCount: number
       createdBy: string
-      createdAt: any
-      updatedAt: any
+      createdAt: string
+      updatedAt: string
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
   } | null
 }
 
 export type GetLedgerReportQueryVariables = Exact<{
-  reportId: Scalars['String']['input']
+  reportId: string
 }>
 
 export type GetLedgerReportQuery = {
@@ -3667,32 +1281,32 @@ export type GetLedgerReportQuery = {
     taxonomyId: string
     generationStatus: string
     periodType: string
-    periodStart: any | null
-    periodEnd: any | null
+    periodStart: string | null
+    periodEnd: string | null
     comparative: boolean
     mappingId: string | null
     aiGenerated: boolean
-    createdAt: any
-    lastGenerated: any | null
+    createdAt: string
+    lastGenerated: string | null
     entityName: string | null
     sourceGraphId: string | null
     sourceReportId: string | null
-    sharedAt: any | null
-    periods: Array<{ start: any; end: any; label: string }> | null
+    sharedAt: string | null
+    periods: Array<{ start: string; end: string; label: string }> | null
     structures: Array<{ id: string; name: string; blockType: string }>
   } | null
 }
 
 export type GetLedgerReportDownloadUrlQueryVariables = Exact<{
-  reportId: Scalars['String']['input']
-  format?: InputMaybe<ReportDownloadFormat>
-  expiresIn?: InputMaybe<Scalars['Int']['input']>
+  reportId: string
+  format?: ReportDownloadFormat | null | undefined
+  expiresIn?: number | null | undefined
 }>
 
 export type GetLedgerReportDownloadUrlQuery = {
   reportDownloadUrl: {
     downloadUrl: string
-    expiresAt: any
+    expiresAt: string
     contentType: string
     format: string
     generationCount: number
@@ -3700,7 +1314,7 @@ export type GetLedgerReportDownloadUrlQuery = {
 }
 
 export type GetLedgerReportPackageQueryVariables = Exact<{
-  reportId: Scalars['String']['input']
+  reportId: string
 }>
 
 export type GetLedgerReportPackageQuery = {
@@ -3710,21 +1324,21 @@ export type GetLedgerReportPackageQuery = {
     description: string | null
     taxonomyId: string
     periodType: string
-    periodStart: any | null
-    periodEnd: any | null
+    periodStart: string | null
+    periodEnd: string | null
     generationStatus: string
-    lastGenerated: any | null
+    lastGenerated: string | null
     filingStatus: string
-    filedAt: any | null
+    filedAt: string | null
     filedBy: string | null
     supersedesId: string | null
     supersededById: string | null
     sourceGraphId: string | null
     sourceReportId: string | null
-    sharedAt: any | null
+    sharedAt: string | null
     entityName: string | null
     aiGenerated: boolean
-    createdAt: any
+    createdAt: string
     createdBy: string
     items: Array<{
       factSetId: string
@@ -3742,8 +1356,8 @@ export type GetLedgerReportPackageQuery = {
         artifact: {
           topic: string | null
           rendererNote: string | null
-          template: any | null
-          mechanics: any
+          template: unknown
+          mechanics: unknown
         }
         elements: Array<{
           id: string
@@ -3772,8 +1386,8 @@ export type GetLedgerReportPackageQuery = {
           textValue: string | null
           factType: string
           contentType: string | null
-          periodStart: any | null
-          periodEnd: any
+          periodStart: string | null
+          periodEnd: string
           periodType: string
           unit: string
           factScope: string
@@ -3794,13 +1408,13 @@ export type GetLedgerReportPackageQuery = {
         factSet: {
           id: string
           structureId: string | null
-          periodStart: any | null
-          periodEnd: any
+          periodStart: string | null
+          periodEnd: string
           factsetType: string
           entityId: string
           reportId: string | null
           scenarioId: string | null
-          provenance: any | null
+          provenance: unknown
         } | null
         verificationResults: Array<{
           id: string
@@ -3809,9 +1423,9 @@ export type GetLedgerReportPackageQuery = {
           factSetId: string | null
           status: string
           message: string | null
-          periodStart: any | null
-          periodEnd: any | null
-          evaluatedAt: any | null
+          periodStart: string | null
+          periodEnd: string | null
+          evaluatedAt: string | null
         }>
         verificationSummary: {
           total: number
@@ -3843,7 +1457,12 @@ export type GetLedgerReportPackageQuery = {
               isSubtotal: boolean
               depth: number
             }>
-            periods: Array<{ start: any; end: any; label: string | null; forecast: boolean | null }>
+            periods: Array<{
+              start: string
+              end: string
+              label: string | null
+              forecast: boolean | null
+            }>
             validation: {
               passed: boolean
               checks: Array<string>
@@ -3894,26 +1513,26 @@ export type ListLedgerReportsQuery = {
       taxonomyId: string
       generationStatus: string
       periodType: string
-      periodStart: any | null
-      periodEnd: any | null
+      periodStart: string | null
+      periodEnd: string | null
       comparative: boolean
       mappingId: string | null
       aiGenerated: boolean
-      createdAt: any
-      lastGenerated: any | null
+      createdAt: string
+      lastGenerated: string | null
       entityName: string | null
       sourceGraphId: string | null
       sourceReportId: string | null
-      sharedAt: any | null
-      periods: Array<{ start: any; end: any; label: string }> | null
+      sharedAt: string | null
+      periods: Array<{ start: string; end: string; label: string }> | null
       structures: Array<{ id: string; name: string; blockType: string }>
     }>
   } | null
 }
 
 export type GetLedgerStatementQueryVariables = Exact<{
-  reportId: Scalars['String']['input']
-  blockType: Scalars['String']['input']
+  reportId: string
+  blockType: string
 }>
 
 export type GetLedgerStatementQuery = {
@@ -3923,7 +1542,7 @@ export type GetLedgerStatementQuery = {
     structureName: string
     blockType: string
     unmappedCount: number
-    periods: Array<{ start: any; end: any; label: string }>
+    periods: Array<{ start: string; end: string; label: string }>
     rows: Array<{
       elementId: string
       elementQname: string
@@ -3943,8 +1562,8 @@ export type GetLedgerStatementQuery = {
 }
 
 export type ListLedgerStructuresQueryVariables = Exact<{
-  taxonomyId: InputMaybe<Scalars['String']['input']>
-  blockType: InputMaybe<Scalars['String']['input']>
+  taxonomyId: string | null | undefined
+  blockType: string | null | undefined
 }>
 
 export type ListLedgerStructuresQuery = {
@@ -3969,15 +1588,15 @@ export type GetLedgerSummaryQuery = {
     transactionCount: number
     entryCount: number
     lineItemCount: number
-    earliestTransactionDate: any | null
-    latestTransactionDate: any | null
+    earliestTransactionDate: string | null
+    latestTransactionDate: string | null
     connectionCount: number
-    lastSyncAt: any | null
+    lastSyncAt: string | null
   } | null
 }
 
 export type ListLedgerTaxonomiesQueryVariables = Exact<{
-  taxonomyType: InputMaybe<Scalars['String']['input']>
+  taxonomyType: string | null | undefined
 }>
 
 export type ListLedgerTaxonomiesQuery = {
@@ -4000,7 +1619,7 @@ export type ListLedgerTaxonomiesQuery = {
 }
 
 export type GetLedgerTransactionQueryVariables = Exact<{
-  transactionId: Scalars['String']['input']
+  transactionId: string
 }>
 
 export type GetLedgerTransactionQuery = {
@@ -4011,23 +1630,23 @@ export type GetLedgerTransactionQuery = {
     category: string | null
     amount: number
     currency: string
-    date: any
-    dueDate: any | null
+    date: string
+    dueDate: string | null
     merchantName: string | null
     referenceNumber: string | null
     description: string | null
     source: string
     sourceId: string | null
     status: string
-    postedAt: any | null
+    postedAt: string | null
     entries: Array<{
       id: string
       number: string | null
       type: string
-      postingDate: any
+      postingDate: string
       memo: string | null
       status: string
-      postedAt: any | null
+      postedAt: string | null
       lineItems: Array<{
         id: string
         accountId: string
@@ -4043,11 +1662,11 @@ export type GetLedgerTransactionQuery = {
 }
 
 export type ListLedgerTransactionsQueryVariables = Exact<{
-  type: InputMaybe<Scalars['String']['input']>
-  startDate: InputMaybe<Scalars['Date']['input']>
-  endDate: InputMaybe<Scalars['Date']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  type: string | null | undefined
+  startDate: string | null | undefined
+  endDate: string | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListLedgerTransactionsQuery = {
@@ -4059,8 +1678,8 @@ export type ListLedgerTransactionsQuery = {
       category: string | null
       amount: number
       currency: string
-      date: any
-      dueDate: any | null
+      date: string
+      dueDate: string | null
       merchantName: string | null
       referenceNumber: string | null
       description: string | null
@@ -4072,8 +1691,8 @@ export type ListLedgerTransactionsQuery = {
 }
 
 export type GetLedgerTrialBalanceQueryVariables = Exact<{
-  startDate: InputMaybe<Scalars['Date']['input']>
-  endDate: InputMaybe<Scalars['Date']['input']>
+  startDate: string | null | undefined
+  endDate: string | null | undefined
 }>
 
 export type GetLedgerTrialBalanceQuery = {
@@ -4094,7 +1713,7 @@ export type GetLedgerTrialBalanceQuery = {
 }
 
 export type ListLedgerUnmappedElementsQueryVariables = Exact<{
-  mappingId: InputMaybe<Scalars['String']['input']>
+  mappingId: string | null | undefined
 }>
 
 export type ListLedgerUnmappedElementsQuery = {
@@ -4115,11 +1734,11 @@ export type ListLedgerUnmappedElementsQuery = {
 }
 
 export type ListLibraryTaxonomyArcsQueryVariables = Exact<{
-  taxonomyId: Scalars['ID']['input']
-  associationType: InputMaybe<Scalars['String']['input']>
-  structureId: InputMaybe<Scalars['ID']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
+  taxonomyId: string | number
+  associationType: string | null | undefined
+  structureId: string | number | null | undefined
+  limit?: number
+  offset?: number
 }>
 
 export type ListLibraryTaxonomyArcsQuery = {
@@ -4146,7 +1765,7 @@ export type ListLibraryTaxonomyArcsQuery = {
 }
 
 export type GetLibraryElementArcsQueryVariables = Exact<{
-  id: Scalars['ID']['input']
+  id: string | number
 }>
 
 export type GetLibraryElementArcsQuery = {
@@ -4165,7 +1784,7 @@ export type GetLibraryElementArcsQuery = {
 }
 
 export type GetLibraryElementClassificationsQueryVariables = Exact<{
-  id: Scalars['ID']['input']
+  id: string | number
 }>
 
 export type GetLibraryElementClassificationsQuery = {
@@ -4178,7 +1797,7 @@ export type GetLibraryElementClassificationsQuery = {
 }
 
 export type GetLibraryElementEquivalentsQueryVariables = Exact<{
-  id: Scalars['ID']['input']
+  id: string | number
 }>
 
 export type GetLibraryElementEquivalentsQuery = {
@@ -4195,16 +1814,16 @@ export type GetLibraryElementEquivalentsQuery = {
 }
 
 export type ListLibraryElementsQueryVariables = Exact<{
-  taxonomyId: InputMaybe<Scalars['ID']['input']>
-  source: InputMaybe<Scalars['String']['input']>
-  classification: InputMaybe<Scalars['String']['input']>
-  activityType: InputMaybe<Scalars['String']['input']>
-  elementType: InputMaybe<Scalars['String']['input']>
-  isAbstract: InputMaybe<Scalars['Boolean']['input']>
-  limit?: Scalars['Int']['input']
-  offset?: Scalars['Int']['input']
-  includeLabels?: Scalars['Boolean']['input']
-  includeReferences?: Scalars['Boolean']['input']
+  taxonomyId: string | number | null | undefined
+  source: string | null | undefined
+  classification: string | null | undefined
+  activityType: string | null | undefined
+  elementType: string | null | undefined
+  isAbstract: boolean | null | undefined
+  limit?: number
+  offset?: number
+  includeLabels?: boolean
+  includeReferences?: boolean
 }>
 
 export type ListLibraryElementsQuery = {
@@ -4228,9 +1847,9 @@ export type ListLibraryElementsQuery = {
 }
 
 export type SearchLibraryElementsQueryVariables = Exact<{
-  query: Scalars['String']['input']
-  source: InputMaybe<Scalars['String']['input']>
-  limit?: Scalars['Int']['input']
+  query: string
+  source: string | null | undefined
+  limit?: number
 }>
 
 export type SearchLibraryElementsQuery = {
@@ -4254,8 +1873,8 @@ export type SearchLibraryElementsQuery = {
 }
 
 export type GetLibraryElementQueryVariables = Exact<{
-  id: InputMaybe<Scalars['ID']['input']>
-  qname: InputMaybe<Scalars['String']['input']>
+  id: string | number | null | undefined
+  qname: string | null | undefined
 }>
 
 export type GetLibraryElementQuery = {
@@ -4279,8 +1898,8 @@ export type GetLibraryElementQuery = {
 }
 
 export type ListLibraryStructuresQueryVariables = Exact<{
-  taxonomyId: InputMaybe<Scalars['ID']['input']>
-  blockType: InputMaybe<Scalars['String']['input']>
+  taxonomyId: string | number | null | undefined
+  blockType: string | null | undefined
 }>
 
 export type ListLibraryStructuresQuery = {
@@ -4295,7 +1914,7 @@ export type ListLibraryStructuresQuery = {
 }
 
 export type GetLibraryStructureQueryVariables = Exact<{
-  id: Scalars['ID']['input']
+  id: string | number
 }>
 
 export type GetLibraryStructureQuery = {
@@ -4310,8 +1929,8 @@ export type GetLibraryStructureQuery = {
 }
 
 export type ListLibraryTaxonomiesQueryVariables = Exact<{
-  standard: InputMaybe<Scalars['String']['input']>
-  includeElementCount?: Scalars['Boolean']['input']
+  standard: string | null | undefined
+  includeElementCount?: boolean
 }>
 
 export type ListLibraryTaxonomiesQuery = {
@@ -4331,10 +1950,10 @@ export type ListLibraryTaxonomiesQuery = {
 }
 
 export type GetLibraryTaxonomyQueryVariables = Exact<{
-  id: InputMaybe<Scalars['ID']['input']>
-  standard: InputMaybe<Scalars['String']['input']>
-  version: InputMaybe<Scalars['String']['input']>
-  includeElementCount?: Scalars['Boolean']['input']
+  id: string | number | null | undefined
+  standard: string | null | undefined
+  version: string | null | undefined
+  includeElementCount?: boolean
 }>
 
 export type GetLibraryTaxonomyQuery = {
