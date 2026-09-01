@@ -603,6 +603,10 @@ export type AvailableExtension = {
      */
     name: string;
     /**
+     * Display Name
+     */
+    display_name?: string | null;
+    /**
      * Description
      */
     description: string;
@@ -5057,7 +5061,7 @@ export type EventBlockEnvelope = {
     /**
      * Status
      *
-     * Lifecycle state. One of: `captured` (raw, pre-classification), `classified` (handler ran, GL pending), `committed` (GL entries posted), `pending` (committed but awaiting fulfillment of an obligation), `fulfilled` (obligation discharged), `voided` (canceled — terminal), `superseded` (replaced by a corrected event — terminal). See `UpdateEventBlockRequest.transition_to` for the valid transition graph.
+     * Lifecycle state. One of: `captured` (raw, pre-classification), `classified` (handler ran, GL pending), `committed` (GL entries posted), `pending` (committed but awaiting fulfillment of an obligation), `fulfilled` (obligation discharged — retractable while its ledger rows are still drafts), `voided` (canceled — terminal), `superseded` (replaced by a corrected event — terminal). See `UpdateEventBlockRequest.transition_to` for the valid transition graph.
      */
     status: string;
     /**
@@ -16868,7 +16872,7 @@ export type UpdateEventBlockRequest = {
     /**
      * Transition To
      *
-     * Status transition. Valid moves depend on current status: captured → committed | voided | superseded; classified → committed | pending | fulfilled | voided | superseded; committed → pending | fulfilled | voided | superseded; pending → fulfilled | voided | superseded. Terminal states (fulfilled, voided, superseded) accept no further transitions. Note: classified and fulfilled are usually set by handlers, not by callers, but the transition is allowed for corrections.
+     * Status transition. Valid moves depend on current status: captured → committed | voided | superseded; classified → committed | pending | fulfilled | voided | superseded; committed → pending | fulfilled | voided | superseded; pending → fulfilled | voided | superseded; fulfilled → voided | superseded. A retraction (voided, superseded) is final and is refused from any status once the event's ledger rows have posted or it has published to QuickBooks — reverse the posted entries instead. Note: classified and fulfilled are usually set by handlers, not by callers, but the transition is allowed for corrections.
      */
     transition_to?: 'committed' | 'pending' | 'fulfilled' | 'voided' | 'superseded' | null;
     /**
