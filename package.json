@@ -138,7 +138,7 @@
     "js-yaml": "^4.3.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.1",
     "@graphql-codegen/cli": "^7.4.0",
     "@graphql-codegen/typed-document-node": "^7.1.0",
     "@graphql-codegen/typescript": "^6.1.0",
@@ -149,7 +149,7 @@
     "@types/react": "^19.1.9",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^9.39.2",
+    "eslint": "^10.9.1",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "happy-dom": "^20.0.8",

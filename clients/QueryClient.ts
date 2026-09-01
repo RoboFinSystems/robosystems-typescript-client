@@ -232,7 +232,7 @@ export class QueryClient {
         }
       }
     } catch (error) {
-      throw new Error(`NDJSON stream reading error: ${error}`)
+      throw new Error(`NDJSON stream reading error: ${error}`, { cause: error })
     }
 
     // Report parse errors if any occurred

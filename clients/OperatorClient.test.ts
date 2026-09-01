@@ -560,9 +560,14 @@ describe('OperatorClient queued runs', () => {
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456')).mockRejectedValue(new Error('down'))
 
-    await expect(
-      client.executeQuery('graph_1', { message: 'burn rate?' }, { pollIntervalMs: 1 })
-    ).rejects.toThrow(/status polling failed \(down\)/)
+    const pollErr = await client
+      .executeQuery('graph_1', { message: 'burn rate?' }, { pollIntervalMs: 1 })
+      .catch((e: unknown) => e)
+    expect((pollErr as Error).message).toMatch(/status polling failed \(down\)/)
+    // The last poll rejection is preserved as `cause` rather than being
+    // flattened into the summary message.
+    expect((pollErr as Error).cause).toBeInstanceOf(Error)
+    expect(((pollErr as Error).cause as Error).message).toBe('down')
     expect(mockFetch).toHaveBeenCalledTimes(4)
   })
 

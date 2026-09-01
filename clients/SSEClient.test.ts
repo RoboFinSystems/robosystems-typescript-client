@@ -457,6 +457,11 @@ describe('SSEClient tokenProvider', () => {
     await expect(client.connect('op_123')).rejects.toThrow(
       /tokenProvider threw while resolving the SSE credential \(storage unavailable\)/
     )
+    // The provider's own failure is preserved as `cause`, so the original
+    // stack survives the rethrow.
+    const causeErr = await client.connect('op_123').catch((e: unknown) => e)
+    expect((causeErr as Error).cause).toBeInstanceOf(Error)
+    expect(((causeErr as Error).cause as Error).message).toBe('storage unavailable')
     expect(RecordingEventSource.instances).toHaveLength(0)
   })
 })

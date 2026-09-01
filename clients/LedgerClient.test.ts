@@ -220,6 +220,13 @@ describe('LedgerClient', () => {
       await expect(brokenClient.getEntity('graph_1')).rejects.toThrow(
         /tokenProvider threw while resolving the request credential \(storage unavailable\)/
       )
+      // The provider's own failure is preserved as `cause`. The message
+      // interpolates its text, but only the cause carries the original
+      // stack — without it a caller debugging a failing provider sees
+      // the SDK's frame and nothing about where their token lookup died.
+      const causeErr = await brokenClient.getEntity('graph_1').catch((e: unknown) => e)
+      expect((causeErr as Error).cause).toBeInstanceOf(Error)
+      expect(((causeErr as Error).cause as Error).message).toBe('storage unavailable')
       // The request never left the client.
       expect(mockFetch).not.toHaveBeenCalled()
     })

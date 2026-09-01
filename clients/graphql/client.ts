@@ -219,7 +219,8 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
           throw new Error(
             `RoboSystems SDK: tokenProvider threw while resolving the request credential (${detail}). ` +
               'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
-              'returns the current token, or null to send an unauthenticated (cookie-based) request.'
+              'returns the current token, or null to send an unauthenticated (cookie-based) request.',
+            { cause: err }
           )
         }
         if (!token) {
