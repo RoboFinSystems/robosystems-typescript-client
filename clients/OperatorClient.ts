@@ -328,12 +328,13 @@ export class OperatorClient {
         consecutiveFailures = 0
       } catch (pollError) {
         if (pollError instanceof PollAbort) {
-          throw new Error(pollError.message)
+          throw new Error(pollError.message, { cause: pollError })
         }
         consecutiveFailures += 1
         if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
           throw new Error(
-            `Operator stream failed (${streamDetail}); status polling failed (${describeError(pollError)})`
+            `Operator stream failed (${streamDetail}); status polling failed (${describeError(pollError)})`,
+            { cause: pollError }
           )
         }
         await sleep(interval)

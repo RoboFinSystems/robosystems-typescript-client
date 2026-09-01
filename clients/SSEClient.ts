@@ -177,7 +177,8 @@ export class SSEClient {
       throw new Error(
         `RoboSystems SDK: tokenProvider threw while resolving the SSE credential (${detail}). ` +
           'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
-          'returns the current token, or null to connect without one.'
+          'returns the current token, or null to connect without one.',
+        { cause: err }
       )
     }
     return token || undefined
