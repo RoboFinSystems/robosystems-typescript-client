@@ -169,6 +169,7 @@ import {
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
   ListLedgerEventBlocksDocument,
+  ListLedgerJournalEntriesDocument,
   ListLedgerMappingsDocument,
   ListLedgerPublishListsDocument,
   ListLedgerReportsDocument,
@@ -205,6 +206,7 @@ import {
   type ListLedgerElementsQuery,
   type ListLedgerEntitiesQuery,
   type ListLedgerEventBlocksQuery,
+  type ListLedgerJournalEntriesQuery,
   type ListLedgerMappingsQuery,
   type ListLedgerPublishListsQuery,
   type ListLedgerReportsQuery,
@@ -245,6 +247,9 @@ export type LedgerMappedTrialBalance = NonNullable<
 export type LedgerTransactionList = NonNullable<ListLedgerTransactionsQuery['transactions']>
 export type LedgerTransactionListItem = LedgerTransactionList['transactions'][number]
 export type LedgerTransaction = NonNullable<GetLedgerTransactionQuery['transaction']>
+
+export type LedgerJournalEntryList = NonNullable<ListLedgerJournalEntriesQuery['journalEntries']>
+export type LedgerJournalEntry = LedgerJournalEntryList['entries'][number]
 
 export type LedgerEventBlock = ListLedgerEventBlocksQuery['eventBlocks'][number]
 export type LedgerEventBlockDetail = NonNullable<GetLedgerEventBlockQuery['eventBlock']>
@@ -746,6 +751,52 @@ export class LedgerClient {
       },
       'List transactions',
       (data) => data.transactions
+    )
+  }
+
+  // ── Journal entries ─────────────────────────────────────────────────
+
+  /**
+   * List journal entries with their line items, newest first.
+   *
+   * The entry-centric read. `listTransactions` walks transactions and hangs
+   * entries off them, so an entry with no parent transaction appears in
+   * nothing it returns — and the schedule engine and event handlers create
+   * exactly those, which is why everything a period close posts is absent
+   * from that surface. Here `transactionId` is null for a standalone entry
+   * rather than absent data.
+   *
+   * Filter by `provenance` (`schedule_derived` for what a close posted),
+   * `type` (`adjusting` / `closing`), `status`, or a parent `transactionId`.
+   */
+  async listJournalEntries(
+    graphId: string,
+    options?: {
+      startDate?: string
+      endDate?: string
+      status?: string
+      type?: string
+      provenance?: string
+      transactionId?: string
+      limit?: number
+      offset?: number
+    }
+  ): Promise<LedgerJournalEntryList | null> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerJournalEntriesDocument,
+      {
+        startDate: options?.startDate ?? null,
+        endDate: options?.endDate ?? null,
+        status: options?.status ?? null,
+        type: options?.type ?? null,
+        provenance: options?.provenance ?? null,
+        transactionId: options?.transactionId ?? null,
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List journal entries',
+      (data) => data.journalEntries
     )
   }
 

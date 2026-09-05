@@ -1068,6 +1068,51 @@ export type ListInformationBlocksQuery = {
   }>
 }
 
+export type ListLedgerJournalEntriesQueryVariables = Exact<{
+  startDate: string | null | undefined
+  endDate: string | null | undefined
+  status: string | null | undefined
+  type: string | null | undefined
+  provenance: string | null | undefined
+  transactionId: string | null | undefined
+  limit?: number
+  offset?: number
+}>
+
+export type ListLedgerJournalEntriesQuery = {
+  journalEntries: {
+    entries: Array<{
+      id: string
+      number: string | null
+      transactionId: string | null
+      type: string
+      status: string
+      postingDate: string
+      memo: string | null
+      provenance: string | null
+      sourceStructureId: string | null
+      sourceStructureName: string | null
+      triggeredByEventId: string | null
+      reversalOf: string | null
+      postedAt: string | null
+      totalDebit: number
+      totalCredit: number
+      balanced: boolean
+      lineItems: Array<{
+        id: string
+        accountId: string
+        accountName: string | null
+        accountCode: string | null
+        debitAmount: number
+        creditAmount: number
+        description: string | null
+        lineOrder: number
+      }>
+    }>
+    pagination: { total: number; limit: number; offset: number; hasMore: boolean }
+  } | null
+}
+
 export type GetLedgerMappedTrialBalanceQueryVariables = Exact<{
   mappingId: string
   startDate: string | null | undefined
@@ -4849,6 +4894,177 @@ export const ListInformationBlocksDocument = {
     },
   ],
 } as unknown as DocumentNode<ListInformationBlocksQuery, ListInformationBlocksQueryVariables>
+export const ListLedgerJournalEntriesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerJournalEntries' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'startDate' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'type' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'provenance' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'transactionId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '100' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'journalEntries' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'startDate' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'startDate' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'endDate' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'status' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'status' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'type' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'type' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'provenance' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'provenance' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'transactionId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'transactionId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'entries' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'number' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'transactionId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'postingDate' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'memo' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'sourceStructureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'sourceStructureName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'triggeredByEventId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reversalOf' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'postedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'totalDebit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'totalCredit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'balanced' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'lineItems' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountId' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountCode' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'debitAmount' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'creditAmount' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'lineOrder' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'pagination' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'limit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'offset' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'hasMore' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLedgerJournalEntriesQuery, ListLedgerJournalEntriesQueryVariables>
 export const GetLedgerMappedTrialBalanceDocument = {
   kind: 'Document',
   definitions: [
