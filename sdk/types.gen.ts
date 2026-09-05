@@ -4472,7 +4472,8 @@ export type DocumentListResponse = {
 /**
  * DocumentSection
  *
- * Full document section retrieved by ID.
+ * Full document section retrieved by ID — one part of it when the section
+ * is long; ``next_document_id`` continues it.
  */
 export type DocumentSection = {
     /**
@@ -4487,6 +4488,22 @@ export type DocumentSection = {
      * Source Type
      */
     source_type: string;
+    /**
+     * Parent Document Id
+     */
+    parent_document_id?: string | null;
+    /**
+     * Part
+     */
+    part?: number;
+    /**
+     * Part Count
+     */
+    part_count?: number;
+    /**
+     * Next Document Id
+     */
+    next_document_id?: string | null;
     /**
      * Entity Ticker
      */
@@ -14624,6 +14641,10 @@ export type SchemaValidationResponse = {
  * SearchHit
  *
  * A single search result with snippet.
+ *
+ * A long SEC section (an MD&A, a commitments note) is indexed in parts, each
+ * a document of its own: ``part`` of ``part_count``, ``parent_document_id``
+ * shared by the section's parts, ``next_document_id`` to read on.
  */
 export type SearchHit = {
     /**
@@ -14642,6 +14663,18 @@ export type SearchHit = {
      * Parent Document Id
      */
     parent_document_id?: string | null;
+    /**
+     * Part
+     */
+    part?: number;
+    /**
+     * Part Count
+     */
+    part_count?: number;
+    /**
+     * Next Document Id
+     */
+    next_document_id?: string | null;
     /**
      * Entity Ticker
      */
@@ -14731,7 +14764,7 @@ export type SearchRequest = {
     /**
      * Section
      *
-     * Filter by section ID (item_1, item_1a, item_7, etc.)
+     * Filter by section ID: an Item (item_1, item_1a, item_7, ...) or, for iXBRL disclosures, the element qname (us-gaap:GoodwillDisclosureTextBlock)
      */
     section?: string | null;
     /**

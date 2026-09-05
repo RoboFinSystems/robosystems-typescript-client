@@ -370,6 +370,95 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listJournalEntries', () => {
+    it('returns an entry with no parent transaction', async () => {
+      // The shape the read exists for: schedule-derived closing entries
+      // carry no transactionId, so they appear in no transaction listing.
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          journalEntries: {
+            entries: [
+              {
+                id: 'je_1',
+                number: null,
+                transactionId: null,
+                type: 'adjusting',
+                status: 'posted',
+                postingDate: '2026-07-31',
+                memo: 'MacBook depreciation',
+                provenance: 'schedule_derived',
+                sourceStructureId: 'struct_1',
+                sourceStructureName: 'MacBook Pro Depreciation',
+                triggeredByEventId: null,
+                reversalOf: null,
+                postedAt: '2026-08-01T12:00:00',
+                totalDebit: 42.41,
+                totalCredit: 42.41,
+                balanced: true,
+                lineItems: [
+                  {
+                    id: 'li_1',
+                    accountId: 'el_1',
+                    accountName: 'Depreciation Expense',
+                    accountCode: '6100',
+                    debitAmount: 42.41,
+                    creditAmount: 0,
+                    description: null,
+                    lineOrder: 1,
+                  },
+                ],
+              },
+            ],
+            pagination: { total: 1, limit: 100, offset: 0, hasMore: false },
+          },
+        })
+      )
+      const list = await client.listJournalEntries('graph_1', {
+        startDate: '2026-07-01',
+        endDate: '2026-07-31',
+        status: 'posted',
+      })
+      expect(list?.entries).toHaveLength(1)
+      // null means standalone, not missing data
+      expect(list?.entries[0].transactionId).toBeNull()
+      expect(list?.entries[0].sourceStructureName).toBe('MacBook Pro Depreciation')
+      expect(list?.entries[0].balanced).toBe(true)
+      expect(list?.pagination.total).toBe(1)
+    })
+
+    it('sends every filter as a variable', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          journalEntries: {
+            entries: [],
+            pagination: { total: 0, limit: 25, offset: 50, hasMore: false },
+          },
+        })
+      )
+      await client.listJournalEntries('graph_1', {
+        startDate: '2026-07-01',
+        endDate: '2026-07-31',
+        status: 'posted',
+        type: 'closing',
+        provenance: 'schedule_derived',
+        transactionId: 'txn_1',
+        limit: 25,
+        offset: 50,
+      })
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string)
+      expect(body.variables).toMatchObject({
+        startDate: '2026-07-01',
+        endDate: '2026-07-31',
+        status: 'posted',
+        type: 'closing',
+        provenance: 'schedule_derived',
+        transactionId: 'txn_1',
+        limit: 25,
+        offset: 50,
+      })
+    })
+  })
+
   describe('getTrialBalance', () => {
     it('returns totals and rows', async () => {
       mockFetch.mockResolvedValueOnce(
