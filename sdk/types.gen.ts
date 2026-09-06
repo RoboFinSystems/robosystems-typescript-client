@@ -5072,7 +5072,7 @@ export type EventBlockEnvelope = {
     /**
      * Event Category
      *
-     * REA category — economic (`sales`, `purchase`, `financing`, `payroll`, `treasury`, `adjustment`, `recognition`, `other`) or support (`control`, `approval`, `reconciliation`, `inquiry`).
+     * REA category, scoped by `event_class` — economic (`sales`, `purchase`, `financing`, `payroll`, `treasury`, `adjustment`, `recognition`, `other`), support (`control`, `approval`, `reconciliation`, `inquiry`), or operational (`pipeline`, `engagement`, `schedule`, `other`) for occurrences that drive no GL — a lead, a lifecycle change, an outreach, a schedule setup.
      */
     event_category: string;
     /**

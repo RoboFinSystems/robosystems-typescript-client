@@ -6,9 +6,10 @@ import { gql } from 'graphql-request'
  * Replaces the retired `GET .../reports/{id}/download` REST resource — a
  * download is a read of stored state, so it lives on the read surface.
  * Every flavor resolves to a short-lived presigned S3 URL the client
- * follows directly (JSON-LD is stamped at publish time; XBRL is
- * materialized + cached on first request). `format` accepts the
- * `ReportDownloadFormat` enum (`JSONLD`, `XBRL_2_1`).
+ * follows directly (JSON-LD is stamped at publish time; XBRL, the holon
+ * and the Tavi compiled model are materialized + cached on first
+ * request). `format` accepts the `ReportDownloadFormat` enum (`JSONLD`,
+ * `HOLON_JSONLD`, `XBRL_2_1`, `TAVI`).
  */
 export const GET_REPORT_DOWNLOAD_URL = gql`
   query GetLedgerReportDownloadUrl(
