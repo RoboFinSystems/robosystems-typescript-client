@@ -2190,7 +2190,8 @@ export class LedgerClient {
    *
    * @param graphId Graph identifier owning the Report.
    * @param reportId Report identifier (rpt_-prefixed ULID).
-   * @param options.format Serialization flavor — `JSONLD` (default) or `XBRL_2_1`.
+   * @param options.format Serialization flavor — `JSONLD` (default), `HOLON_JSONLD`,
+   *   `XBRL_2_1`, or `TAVI` (the Project Tavi compiled model).
    * @param options.expiresIn Presigned URL lifetime, in seconds.
    */
   async getReportDownloadUrl(
