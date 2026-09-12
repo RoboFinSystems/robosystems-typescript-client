@@ -49,6 +49,7 @@ import {
   evaluateRules,
   fileReport,
   financialStatementAnalysis,
+  initializeChartOfAccounts,
   initializeLedger,
   linkEntityTaxonomy,
   liveFinancialStatement,
@@ -107,6 +108,8 @@ import type {
   FinancialStatementAnalysisRequest,
   FinancialStatementAnalysisResponse,
   InformationBlockEnvelope,
+  InitializeChartOfAccountsRequest,
+  InitializeChartOfAccountsResponse,
   InitializeLedgerRequest,
   JournalEntryResponse,
   LedgerAgentResponse,
@@ -162,6 +165,7 @@ import {
   GetLedgerSummaryDocument,
   GetLedgerTransactionDocument,
   GetLedgerTrialBalanceDocument,
+  ListChartTemplatesDocument,
   ListInformationBlocksDocument,
   ListLedgerAccountsDocument,
   ListLedgerAgentsDocument,
@@ -199,6 +203,7 @@ import {
   type GetLedgerSummaryQuery,
   type GetLedgerTransactionQuery,
   type GetLedgerTrialBalanceQuery,
+  type ListChartTemplatesQuery,
   type ListInformationBlocksQuery,
   type ListLedgerAccountsQuery,
   type ListLedgerAgentsQuery,
@@ -295,6 +300,8 @@ export type LedgerClosingBookStructures = NonNullable<
 >
 
 export type LedgerFiscalCalendar = NonNullable<GetLedgerFiscalCalendarQuery['fiscalCalendar']>
+/** A shipped chart-of-accounts template — `listChartTemplates()` row. */
+export type LedgerChartTemplate = ListChartTemplatesQuery['chartTemplates'][number]
 export type LedgerFiscalPeriod = LedgerFiscalCalendar['periods'][number]
 
 // Reports + publish lists + statements
@@ -506,6 +513,33 @@ export interface InitializeLedgerOptions {
   earliestDataPeriod?: string | null
   autoSeedSchedules?: boolean
   note?: string | null
+}
+
+/** A shipped chart template key — the `key` of a `listChartTemplates()` row. */
+export type ChartTemplateKey = InitializeChartOfAccountsRequest['template']
+
+export interface InitializeChartOfAccountsOptions {
+  /**
+   * Legal form for the equity mapping: `corporation`, `llc` or `partnership`.
+   * Defaults to the graph's primary entity, then to corporation.
+   */
+  entityType?: string | null
+  /** Chart display name. Defaults to 'Chart of Accounts'. */
+  name?: string | null
+}
+
+export interface InitializeChartOfAccountsResult {
+  taxonomyId: string
+  name: string
+  template: ChartTemplateKey
+  /** Legal form the equity rows were mapped for. */
+  entityType: string
+  elementsCreated: number
+  mappingsCreated: number
+  /** Frameworks the chart was mapped into (rs-gaap today). */
+  frameworks: string[]
+  /** Targets that did not resolve, or a framework this graph does not carry. Never fatal. */
+  unresolved: string[]
 }
 
 export interface ClosePeriodOptions {
@@ -1681,6 +1715,52 @@ export class LedgerClient {
       fiscalCalendar: rawFiscalCalendarToCamel(raw.fiscal_calendar),
       periodsCreated: raw.periods_created ?? 0,
       warnings: raw.warnings ?? [],
+    }
+  }
+
+  // ── Chart of Accounts ──────────────────────────────────────────────
+
+  /** Shipped chart-of-accounts templates for `initializeChartOfAccounts`. */
+  async listChartTemplates(graphId: string): Promise<LedgerChartTemplate[]> {
+    return this.gqlQuery(
+      graphId,
+      ListChartTemplatesDocument,
+      undefined,
+      'List chart templates',
+      (data) => data.chartTemplates
+    )
+  }
+
+  /**
+   * One-time chart of accounts from a shipped template — the fresh-company
+   * path to native books. Refused (409) once the graph has any chart of
+   * accounts; a QuickBooks-synced tenant never needs this. Customize the
+   * result with `updateTaxonomyBlock`.
+   */
+  async initializeChartOfAccounts(
+    graphId: string,
+    template: ChartTemplateKey,
+    options?: InitializeChartOfAccountsOptions
+  ): Promise<InitializeChartOfAccountsResult> {
+    const body: InitializeChartOfAccountsRequest = {
+      template,
+      entity_type: options?.entityType ?? null,
+      name: options?.name ?? null,
+    }
+    const envelope = await this.callOperation(
+      'Initialize chart of accounts',
+      initializeChartOfAccounts({ path: { graph_id: graphId }, body })
+    )
+    const raw = envelope.result as unknown as InitializeChartOfAccountsResponse
+    return {
+      taxonomyId: raw.taxonomy_id,
+      name: raw.name,
+      template: raw.template,
+      entityType: raw.entity_type,
+      elementsCreated: raw.elements_created,
+      mappingsCreated: raw.mappings_created,
+      frameworks: raw.frameworks ?? [],
+      unresolved: raw.unresolved ?? [],
     }
   }
 

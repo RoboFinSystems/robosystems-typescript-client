@@ -855,6 +855,77 @@ describe('LedgerClient', () => {
     })
   })
 
+  // ── Chart of Accounts ──────────────────────────────────────────────
+
+  describe('listChartTemplates', () => {
+    it('returns the shipped templates', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          chartTemplates: [
+            {
+              key: 'saas',
+              displayName: 'SaaS / subscription software',
+              description: 'Recurring revenue …',
+              accountCount: 20,
+            },
+            {
+              key: 'product',
+              displayName: 'Product business (inventory and COGS)',
+              description: 'Goods sold …',
+              accountCount: 27,
+            },
+          ],
+        })
+      )
+      const templates = await client.listChartTemplates('graph_1')
+      expect(templates.map((t) => t.key)).toEqual(['saas', 'product'])
+      expect(templates[1].accountCount).toBe(27)
+    })
+  })
+
+  describe('initializeChartOfAccounts', () => {
+    it('posts the template and converts the envelope result into camelCase', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('initialize-chart-of-accounts', {
+          taxonomy_id: 'tax_new',
+          name: 'Chart of Accounts',
+          template: 'saas',
+          entity_type: 'llc',
+          elements_created: 20,
+          mappings_created: 20,
+          frameworks: ['rs-gaap'],
+          unresolved: [],
+        })
+      )
+      const result = await client.initializeChartOfAccounts('graph_1', 'saas', {
+        entityType: 'llc',
+      })
+      expect(result.taxonomyId).toBe('tax_new')
+      expect(result.entityType).toBe('llc')
+      expect(result.frameworks).toEqual(['rs-gaap'])
+      expect(result.unresolved).toEqual([])
+
+      // The REST operation path hands fetch a Request; the GraphQL path a URL.
+      const [called, init] = mockFetch.mock.calls[0]
+      const request = called instanceof Request ? called : new Request(String(called), init)
+      expect(request.url).toContain(
+        '/extensions/roboledger/graph_1/operations/initialize-chart-of-accounts'
+      )
+      expect(await request.clone().json()).toEqual({
+        template: 'saas',
+        entity_type: 'llc',
+        name: null,
+      })
+    })
+
+    it('surfaces a 409 when the graph already has a chart', async () => {
+      mockFetch.mockResolvedValueOnce(
+        restErrorResponse('This graph already has a chart of accounts', 409)
+      )
+      await expect(client.initializeChartOfAccounts('graph_1', 'services')).rejects.toThrow()
+    })
+  })
+
   describe('closePeriod', () => {
     it('returns a close result with the refreshed calendar', async () => {
       mockFetch.mockResolvedValueOnce(

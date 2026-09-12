@@ -7392,6 +7392,84 @@ export type InitialEntityData = {
 };
 
 /**
+ * InitializeChartOfAccountsRequest
+ *
+ * Create the graph's chart of accounts from a shipped template.
+ *
+ * Refused (409) when the graph already has an active ``chart_of_accounts``
+ * taxonomy — a QuickBooks-synced tenant never needs this, and a chart is
+ * never replaced. The template's equity rows are mapped by the entity's
+ * legal form (``entity_type``: corporation / llc / partnership); omit it
+ * to use the graph's primary entity, falling back to corporation.
+ */
+export type InitializeChartOfAccountsRequest = {
+    /**
+     * Template
+     *
+     * Template key: `saas` (subscription software — deferred revenue, cost of revenue, R&D / S&M / G&A), `services` (professional services — no inventory, no COGS), `product` (inventory and cost of goods sold, direct + wholesale + subscription revenue).
+     */
+    template: 'saas' | 'services' | 'product';
+    /**
+     * Entity Type
+     *
+     * Legal form for the equity mapping: `corporation`, `llc` or `partnership`. Defaults to the graph's primary entity, then to corporation.
+     */
+    entity_type?: string | null;
+    /**
+     * Name
+     *
+     * Chart display name. Defaults to 'Chart of Accounts'.
+     */
+    name?: string | null;
+};
+
+/**
+ * InitializeChartOfAccountsResponse
+ */
+export type InitializeChartOfAccountsResponse = {
+    /**
+     * Taxonomy Id
+     *
+     * The new chart's taxonomy id.
+     */
+    taxonomy_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Template
+     */
+    template: 'saas' | 'services' | 'product';
+    /**
+     * Entity Type
+     *
+     * Legal form the equity rows were mapped for.
+     */
+    entity_type: string;
+    /**
+     * Elements Created
+     */
+    elements_created: number;
+    /**
+     * Mappings Created
+     */
+    mappings_created: number;
+    /**
+     * Frameworks
+     *
+     * Frameworks the chart was mapped into — each template mapping set whose framework this graph's library carries (rs-gaap today; every framework in the graph's pin once it is plural).
+     */
+    frameworks?: Array<string>;
+    /**
+     * Unresolved
+     *
+     * What could not be mapped, never fatal — the accounts exist and can be mapped by hand: a target qname the framework's library copy did not resolve, `<framework>: not in this graph's library` for a template mapping set whose framework this graph does not carry, or a template row naming an account it does not declare.
+     */
+    unresolved?: Array<string>;
+};
+
+/**
  * InitializeLedgerRequest
  *
  * One-time setup for a graph's fiscal calendar.
@@ -10387,6 +10465,52 @@ export type OperationEnvelopeInformationBlockEnvelope = {
      * Command-specific result payload
      */
     result?: InformationBlockEnvelope | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[InitializeChartOfAccountsResponse]
+ */
+export type OperationEnvelopeInitializeChartOfAccountsResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: InitializeChartOfAccountsResponse | null;
     /**
      * At
      *
@@ -14815,6 +14939,12 @@ export type SearchRequest = {
      * Pagination offset
      */
     offset?: number;
+    /**
+     * Snippet Chars
+     *
+     * Approximate snippet budget per hit in characters; the default is three highlight fragments of about 200
+     */
+    snippet_chars?: number | null;
 };
 
 /**
@@ -21032,7 +21162,14 @@ export type DeleteConnectionData = {
          */
         connection_id: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Disposition
+         *
+         * `disconnect` (default): soft-delete; a later re-OAuth to the same realm revives the connection. `sever`: the native-accounting cutover — QuickBooks only; the chart it created is stamped native-owned, write_policy drops to native, and the connection is never revived.
+         */
+        disposition?: 'disconnect' | 'sever';
+    };
     url: '/v1/graphs/{graph_id}/connections/{connection_id}';
 };
 
@@ -25982,6 +26119,70 @@ export type CreateTaxonomyBlockResponses = {
 };
 
 export type CreateTaxonomyBlockResponse = CreateTaxonomyBlockResponses[keyof CreateTaxonomyBlockResponses];
+
+export type InitializeChartOfAccountsData = {
+    body: InitializeChartOfAccountsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/initialize-chart-of-accounts';
+};
+
+export type InitializeChartOfAccountsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type InitializeChartOfAccountsError = InitializeChartOfAccountsErrors[keyof InitializeChartOfAccountsErrors];
+
+export type InitializeChartOfAccountsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeInitializeChartOfAccountsResponse;
+};
+
+export type InitializeChartOfAccountsResponse2 = InitializeChartOfAccountsResponses[keyof InitializeChartOfAccountsResponses];
 
 export type UpdateTaxonomyBlockData = {
     body: UpdateTaxonomyBlockRequest;
