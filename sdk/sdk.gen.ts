@@ -596,7 +596,7 @@ export const getOrgUsage = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Sync Connection
  *
- * QuickBooks: fetches transactions, balances, and chart of accounts; the envelope is `pending` with the run's `task_id`, and completion is reflected in the connection's `last_sync` timestamp. External connections are push-based and have nothing to pull; the envelope is `completed` with a null `task_id` and a message saying so — there is nothing to poll. Returns an `OperationEnvelope`; supports `Idempotency-Key`.
+ * QuickBooks: fetches transactions, balances, and chart of accounts. Mercury: pulls the bank feed (a 60-day window by default, or from `since_date` / the full backfill on `full_rebuild`) and captures it into the inbox. For both the envelope is `pending` with the run's `task_id`, and completion is reflected in the connection's `last_sync` timestamp and `last_sync_result`. External connections are push-based and have nothing to pull; the envelope is `completed` with a null `task_id` and a message saying so — there is nothing to poll. Returns an `OperationEnvelope`; supports `Idempotency-Key`.
  */
 export const syncConnection = <ThrowOnError extends boolean = false>(options: Options<SyncConnectionData, ThrowOnError>): RequestResult<SyncConnectionResponses, SyncConnectionErrors, ThrowOnError> => (options.client ?? client).post<SyncConnectionResponses, SyncConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -611,7 +611,7 @@ export const syncConnection = <ThrowOnError extends boolean = false>(options: Op
 /**
  * List Connection Options
  *
- * Returns available providers and their requirements. Only enabled providers are included (gated by feature flags). QuickBooks requires OAuth 2.0; external connections require no auth.
+ * Returns available providers and their requirements. Only enabled providers are included (gated by feature flags). QuickBooks and Mercury require OAuth 2.0; external connections require no auth.
  */
 export const getConnectionOptions = <ThrowOnError extends boolean = false>(options: Options<GetConnectionOptionsData, ThrowOnError>): RequestResult<GetConnectionOptionsResponses, GetConnectionOptionsErrors, ThrowOnError> => (options.client ?? client).get<GetConnectionOptionsResponses, GetConnectionOptionsErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -659,7 +659,7 @@ export const listConnections = <ThrowOnError extends boolean = false>(options: O
 /**
  * Create Connection
  *
- * QuickBooks: returns an OAuth URL — complete the flow to activate. External: registers a source namespace for an integration that writes through the public API. One connection allowed per provider per graph, except 'external' which allows one per source_name.
+ * QuickBooks and Mercury: returns a pending connection — complete the OAuth flow to activate (Mercury may instead connect at once with a personal API token where the deployment allows it). External: registers a source namespace for an integration that writes through the public API. One connection allowed per provider per graph, except 'external' which allows one per source_name. A bank feed (Mercury) is refused (409) beside a live QuickBooks connection or on a graph with no chart of accounts.
  */
 export const createConnection = <ThrowOnError extends boolean = false>(options: Options<CreateConnectionData, ThrowOnError>): RequestResult<CreateConnectionResponses, CreateConnectionErrors, ThrowOnError> => (options.client ?? client).post<CreateConnectionResponses, CreateConnectionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1748,7 +1748,7 @@ export const initializeChartOfAccounts = <ThrowOnError extends boolean = false>(
 /**
  * Update Taxonomy Block
  *
- * Incrementally mutate a taxonomy block via typed delta lists (elements/structures/associations/rules to add, update, remove). Dispatches by the target taxonomy's stored `taxonomy_type`. Library-origin block types (`reporting_standard`) surface 501. `reporting_extension` / `custom_ontology` authoring may be disabled per environment (TAXONOMY_AUTHORING_ENABLED) — disabled surfaces 403.
+ * Incrementally mutate a taxonomy block via typed delta lists (elements/structures/associations/rules to add, update, remove). Dispatches by the target taxonomy's stored `taxonomy_type`. For a chart of accounts: add, rename and reclassify accounts freely; an account with facts or line items is never removed — retire it with `elements_to_update[].is_active=false` (history stays, new postings are refused, pickers hide it; `true` reactivates). Removal and whole-chart delete work only with no activity. Library-origin block types (`reporting_standard`) surface 501. `reporting_extension` / `custom_ontology` authoring may be disabled per environment (TAXONOMY_AUTHORING_ENABLED) — disabled surfaces 403.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2037,7 +2037,7 @@ export const createEventBlock = <ThrowOnError extends boolean = false>(options: 
 /**
  * Update Event Block
  *
- * Apply a status transition (captured → committed | voided) and/or field corrections (description, effective_at, metadata_patch) to an existing event block. Only supplied fields are updated. When the transition is captured/classified → committed, the registered Python handler fires against the captured metadata to produce the GL rows; errors from the handler (validation, element resolution, closed period, unbalanced lines) surface as 422 here so the inbox UI can display the failure reason without retry.
+ * Apply a status transition (captured → classified | committed | voided) and/or field corrections (description, effective_at, metadata_patch) to an existing event block. Only supplied fields are updated. captured → classified records an account choice without posting — for a bank-feed line, patch metadata.classified_element_id (or accept_suggestion: true) in the same call. When the transition is captured/classified → committed, the registered Python handler fires against the captured metadata to produce the GL rows; a bank-feed line with no account chosen and no matching rule is refused. Errors from the handler (validation, element resolution, closed period, unbalanced lines) surface as 422 here so the inbox UI can display the failure reason without retry.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2156,7 +2156,7 @@ export const resolveReconcilingItem = <ThrowOnError extends boolean = false>(opt
 /**
  * Update Journal Entry
  *
- * Update a draft journal entry. Posted entries are immutable and must be corrected via `create-event-block(event_type='journal_entry_reversed')`. If line_items is provided, existing line items are replaced atomically and the new set must balance.
+ * Update a draft journal entry. Posted entries are immutable and must be corrected via `create-event-block(event_type='journal_entry_reversed')`. If line_items is provided, existing line items are replaced atomically, the new set must balance, and a line on a retired (`is_active=false`) account is refused.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

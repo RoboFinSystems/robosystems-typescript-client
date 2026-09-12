@@ -2074,7 +2074,7 @@ export type ConnectionProviderInfo = {
      *
      * Provider identifier
      */
-    provider: 'quickbooks' | 'external';
+    provider: 'quickbooks' | 'external' | 'mercury';
     /**
      * Display Name
      *
@@ -2475,7 +2475,7 @@ export type CreateConnectionRequest = {
      *
      * Connection provider type
      */
-    provider: 'quickbooks' | 'external';
+    provider: 'quickbooks' | 'external' | 'mercury';
     /**
      * Entity Id
      *
@@ -2484,6 +2484,7 @@ export type CreateConnectionRequest = {
     entity_id?: string | null;
     quickbooks_config?: QuickBooksConnectionConfig | null;
     external_config?: ExternalConnectionConfig | null;
+    mercury_config?: MercuryConnectionConfig | null;
 };
 
 /**
@@ -4759,6 +4760,12 @@ export type ElementUpdatePatch = {
     metadata?: {
         [key: string]: unknown;
     } | null;
+    /**
+     * Is Active
+     *
+     * Retire (`false`) or reactivate (`true`) a chart account. Retiring keeps its history and hides it from account pickers and the chart tree, and new line items on it are refused — the way to take an account with activity out of use, since removal needs no facts and no line items.
+     */
+    is_active?: boolean | null;
 };
 
 /**
@@ -8903,6 +8910,40 @@ export type MemoryRecord = {
      * Updated At
      */
     updated_at?: string | null;
+};
+
+/**
+ * MercuryConnectionConfig
+ *
+ * Mercury bank-feed connection configuration.
+ *
+ * A bank feed is native accounting: the graph must already have a chart of
+ * accounts and no live QuickBooks connection. Over OAuth (the hosted
+ * default) the connection is created ``pending_oauth`` and activated by the
+ * callback. ``api_key`` — a personal **read-only** Mercury token — connects
+ * at once without a browser round-trip, but only on deployments that turn
+ * on ``MERCURY_API_KEY_CONNECTIONS_ENABLED`` (self-hosted and local); the
+ * hosted product refuses it.
+ */
+export type MercuryConnectionConfig = {
+    /**
+     * Since Date
+     *
+     * First day of the backfill (ISO 8601). Defaults to 1 January of last year. Incremental syncs never look back before it.
+     */
+    since_date?: string | null;
+    /**
+     * Include Treasury
+     *
+     * Capture treasury-account activity alongside checking/savings.
+     */
+    include_treasury?: boolean;
+    /**
+     * Api Key
+     *
+     * A personal read-only Mercury API token, for deployments that allow the api_key credential mode. Omit to connect over OAuth.
+     */
+    api_key?: string | null;
 };
 
 /**
@@ -17035,9 +17076,9 @@ export type UpdateEventBlockRequest = {
     /**
      * Transition To
      *
-     * Status transition. Valid moves depend on current status: captured → committed | voided | superseded; classified → committed | pending | fulfilled | voided | superseded; committed → pending | fulfilled | voided | superseded; pending → fulfilled | voided | superseded; fulfilled → voided | superseded. A retraction (voided, superseded) is final and is refused from any status once the event's ledger rows have posted or it has published to QuickBooks — reverse the posted entries instead. Note: classified and fulfilled are usually set by handlers, not by callers, but the transition is allowed for corrections.
+     * Status transition. Valid moves depend on current status: captured → classified | committed | voided | superseded; classified → committed | pending | fulfilled | voided | superseded; committed → pending | fulfilled | voided | superseded; pending → fulfilled | voided | superseded; fulfilled → voided | superseded. A retraction (voided, superseded) is final and is refused from any status once the event's ledger rows have posted or it has published to QuickBooks — reverse the posted entries instead. captured → classified records an account choice without posting (bank-feed lines: patch classified_element_id, or accept_suggestion: true, in the same call); the later commit fires the handler. Note: classified and fulfilled are otherwise set by handlers, not by callers, but the transition is allowed for corrections.
      */
-    transition_to?: 'committed' | 'pending' | 'fulfilled' | 'voided' | 'superseded' | null;
+    transition_to?: 'classified' | 'committed' | 'pending' | 'fulfilled' | 'voided' | 'superseded' | null;
     /**
      * Superseded By Id
      *
@@ -21041,7 +21082,7 @@ export type ListConnectionsData = {
          *
          * Filter by provider type
          */
-        provider?: 'quickbooks' | 'external' | null;
+        provider?: 'quickbooks' | 'external' | 'mercury' | null;
     };
     url: '/v1/graphs/{graph_id}/connections';
 };
