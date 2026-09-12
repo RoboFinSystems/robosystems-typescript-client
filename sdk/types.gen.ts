@@ -17076,9 +17076,9 @@ export type UpdateEventBlockRequest = {
     /**
      * Transition To
      *
-     * Status transition. Valid moves depend on current status: captured → committed | voided | superseded; classified → committed | pending | fulfilled | voided | superseded; committed → pending | fulfilled | voided | superseded; pending → fulfilled | voided | superseded; fulfilled → voided | superseded. A retraction (voided, superseded) is final and is refused from any status once the event's ledger rows have posted or it has published to QuickBooks — reverse the posted entries instead. Note: classified and fulfilled are usually set by handlers, not by callers, but the transition is allowed for corrections.
+     * Status transition. Valid moves depend on current status: captured → classified | committed | voided | superseded; classified → committed | pending | fulfilled | voided | superseded; committed → pending | fulfilled | voided | superseded; pending → fulfilled | voided | superseded; fulfilled → voided | superseded. A retraction (voided, superseded) is final and is refused from any status once the event's ledger rows have posted or it has published to QuickBooks — reverse the posted entries instead. captured → classified records an account choice without posting (bank-feed lines: patch classified_element_id, or accept_suggestion: true, in the same call); the later commit fires the handler. Note: classified and fulfilled are otherwise set by handlers, not by callers, but the transition is allowed for corrections.
      */
-    transition_to?: 'committed' | 'pending' | 'fulfilled' | 'voided' | 'superseded' | null;
+    transition_to?: 'classified' | 'committed' | 'pending' | 'fulfilled' | 'voided' | 'superseded' | null;
     /**
      * Superseded By Id
      *
