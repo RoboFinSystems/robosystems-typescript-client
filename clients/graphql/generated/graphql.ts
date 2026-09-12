@@ -398,6 +398,17 @@ export type ListLedgerBlockedSourceGraphsQuery = {
   } | null
 }
 
+export type ListChartTemplatesQueryVariables = Exact<{ [key: string]: never }>
+
+export type ListChartTemplatesQuery = {
+  chartTemplates: Array<{
+    key: string
+    displayName: string
+    description: string
+    accountCount: number
+  }>
+}
+
 export type GetLedgerClosingBookStructuresQueryVariables = Exact<{ [key: string]: never }>
 
 export type GetLedgerClosingBookStructuresQuery = {
@@ -3211,6 +3222,34 @@ export const ListLedgerBlockedSourceGraphsDocument = {
   ListLedgerBlockedSourceGraphsQuery,
   ListLedgerBlockedSourceGraphsQueryVariables
 >
+export const ListChartTemplatesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListChartTemplates' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'chartTemplates' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'key' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'displayName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'accountCount' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListChartTemplatesQuery, ListChartTemplatesQueryVariables>
 export const GetLedgerClosingBookStructuresDocument = {
   kind: 'Document',
   definitions: [
