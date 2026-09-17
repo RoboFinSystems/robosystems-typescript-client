@@ -2074,7 +2074,7 @@ export type ConnectionProviderInfo = {
      *
      * Provider identifier
      */
-    provider: 'quickbooks' | 'external' | 'mercury';
+    provider: 'quickbooks' | 'external' | 'mercury' | 'plaid';
     /**
      * Display Name
      *
@@ -2475,7 +2475,7 @@ export type CreateConnectionRequest = {
      *
      * Connection provider type
      */
-    provider: 'quickbooks' | 'external' | 'mercury';
+    provider: 'quickbooks' | 'external' | 'mercury' | 'plaid';
     /**
      * Entity Id
      *
@@ -2485,6 +2485,7 @@ export type CreateConnectionRequest = {
     quickbooks_config?: QuickBooksConnectionConfig | null;
     external_config?: ExternalConnectionConfig | null;
     mercury_config?: MercuryConnectionConfig | null;
+    plaid_config?: PlaidConnectionConfig | null;
 };
 
 /**
@@ -4323,6 +4324,98 @@ export type Dimension = {
  * DimensionType
  */
 export type DimensionType = 'element' | 'period' | 'entity';
+
+/**
+ * DisclosuresRequest
+ *
+ * Request for the disclosures view op — the map of a report's sections.
+ */
+export type DisclosuresRequest = {
+    /**
+     * Ticker
+     *
+     * Company ticker. On shared-repository graphs (SEC) it resolves the latest matching filing when report_id is not given; ignored on tenant graphs.
+     */
+    ticker?: string | null;
+    /**
+     * Report Id
+     *
+     * Specific report identifier. Required on tenant graphs; on SEC, optional when ticker is given.
+     */
+    report_id?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Narrow auto-resolution to this fiscal year focus
+     */
+    fiscal_year?: number | null;
+    /**
+     * Period Type
+     *
+     * Which forms auto-resolution considers: annual (10-K / 20-F / 40-F, the default) or quarterly (10-Q as well)
+     */
+    period_type?: string | null;
+    /**
+     * Topic
+     *
+     * A disclosure family's name, or part of it ("leases", "income taxes"), for that family's blocks. Omit for the whole map.
+     */
+    topic?: string | null;
+};
+
+/**
+ * DisclosuresResponse
+ *
+ * The disclosures view op's result: xbrlkit's map, stamped with the graph
+ * and report it was read from.
+ *
+ * Without ``topic``: ``disclosures`` / ``count``. With ``topic``:
+ * ``disclosure`` / ``category`` / ``blocks`` / ``block_count``.
+ */
+export type DisclosuresResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Report Id
+     */
+    report_id: string;
+    resolved_report?: ResolvedReportInfo | null;
+    /**
+     * Disclosures
+     */
+    disclosures?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Count
+     */
+    count?: number | null;
+    /**
+     * Disclosure
+     */
+    disclosure?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * Blocks
+     */
+    blocks?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Block Count
+     */
+    block_count?: number | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    [key: string]: unknown;
+};
 
 /**
  * DocumentDetailResponse
@@ -7273,6 +7366,154 @@ export type InformationBlockEnvelope = {
 };
 
 /**
+ * InformationBlockRequest
+ *
+ * Request for the information-block view op — one section read whole.
+ */
+export type InformationBlockRequest = {
+    /**
+     * Ticker
+     *
+     * Company ticker. On shared-repository graphs (SEC) it resolves the latest matching filing when report_id is not given; ignored on tenant graphs.
+     */
+    ticker?: string | null;
+    /**
+     * Report Id
+     *
+     * Specific report identifier. Required on tenant graphs; on SEC, optional when ticker is given.
+     */
+    report_id?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Narrow auto-resolution to this fiscal year focus
+     */
+    fiscal_year?: number | null;
+    /**
+     * Period Type
+     *
+     * Which forms auto-resolution considers: annual (10-K / 20-F / 40-F, the default) or quarterly (10-Q as well)
+     */
+    period_type?: string | null;
+    /**
+     * Block
+     *
+     * The block id from disclosures (a role name or its last segment also resolves)
+     */
+    block: string;
+    /**
+     * Periods
+     *
+     * Period keys to keep, from a previous call's columns. Default keeps the budgeted set, year and balance columns first on an annual form.
+     */
+    periods?: Array<string> | null;
+    /**
+     * Member
+     *
+     * Keep only breakdowns whose member key contains this text (a segment name)
+     */
+    member?: string | null;
+    /**
+     * Max Rows
+     *
+     * Cap on presentation rows (default 400)
+     */
+    max_rows?: number | null;
+    /**
+     * Max Members
+     *
+     * An explicit cap on member breakdowns, instead of the response budget
+     */
+    max_members?: number | null;
+    /**
+     * Offset
+     *
+     * Rows to skip: the next_offset a truncated response returned
+     */
+    offset?: number | null;
+};
+
+/**
+ * InformationBlockResponse
+ *
+ * The information-block view op's result: xbrlkit's block, stamped.
+ */
+export type InformationBlockResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Report Id
+     */
+    report_id: string;
+    resolved_report?: ResolvedReportInfo | null;
+    /**
+     * Block
+     */
+    block: {
+        [key: string]: unknown;
+    };
+    /**
+     * Columns
+     */
+    columns?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Axes
+     */
+    axes?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Rows
+     */
+    rows?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Row Count
+     */
+    row_count?: number | null;
+    /**
+     * Truncated
+     */
+    truncated?: boolean | null;
+    /**
+     * Offset
+     */
+    offset?: number | null;
+    /**
+     * Ancestors
+     */
+    ancestors?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Next Offset
+     */
+    next_offset?: number | null;
+    /**
+     * Calculation
+     */
+    calculation?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Text
+     */
+    text?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    [key: string]: unknown;
+};
+
+/**
  * InformationModelResponse
  *
  * The block's intrinsic shape — concept + member arrangement patterns.
@@ -9092,7 +9333,7 @@ export type OAuthCallbackRequest = {
     /**
      * Code
      *
-     * Authorization code from OAuth provider
+     * Authorization code from the OAuth provider (Plaid: the public_token Link returned)
      */
     code: string;
     /**
@@ -9266,15 +9507,21 @@ export type OAuthInitRequest = {
 /**
  * OAuthInitResponse
  *
- * Response with OAuth authorization URL.
+ * Where the user authorizes: a redirect URL, or a token for an embedded widget.
  */
 export type OAuthInitResponse = {
     /**
      * Auth Url
      *
-     * URL to redirect user for authorization
+     * URL to redirect the user to for authorization. Null for providers that authorize in an embedded widget (Plaid: see link_token).
      */
-    auth_url: string;
+    auth_url?: string | null;
+    /**
+     * Link Token
+     *
+     * Plaid only: the token that opens Plaid Link. Link's public_token completes the flow through the callback, as code.
+     */
+    link_token?: string | null;
     /**
      * State
      *
@@ -10113,6 +10360,52 @@ export type OperationEnvelopeDeleteTaxonomyBlockResponse = {
 };
 
 /**
+ * OperationEnvelope[DisclosuresResponse]
+ */
+export type OperationEnvelopeDisclosuresResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DisclosuresResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[EntityTaxonomyResponse]
  */
 export type OperationEnvelopeEntityTaxonomyResponse = {
@@ -10506,6 +10799,52 @@ export type OperationEnvelopeInformationBlockEnvelope = {
      * Command-specific result payload
      */
     result?: InformationBlockEnvelope | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation (null for legacy callers)
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[InformationBlockResponse]
+ */
+export type OperationEnvelopeInformationBlockResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: InformationBlockResponse | null;
     /**
      * At
      *
@@ -12511,6 +12850,27 @@ export type PeriodSpec = {
 };
 
 /**
+ * PlaidConnectionConfig
+ *
+ * Plaid bank-feed connection configuration.
+ *
+ * A bank feed is native accounting: the graph must already have a chart of
+ * accounts and no live QuickBooks connection. The connection is created
+ * ``pending_oauth``; ``POST /oauth/init`` returns a ``link_token`` for Plaid
+ * Link, and the ``public_token`` Link hands back completes it through
+ * ``POST /oauth/callback/plaid`` (as ``code``). One connection per institution
+ * login; a graph can hold several.
+ */
+export type PlaidConnectionConfig = {
+    /**
+     * Since Date
+     *
+     * First day of the backfill (ISO 8601), and how much history Plaid is asked to pull for the new Item (at most two years). Defaults to 1 January of last year.
+     */
+    since_date?: string | null;
+};
+
+/**
  * PortalSessionResponse
  *
  * Response for customer portal session creation.
@@ -13443,7 +13803,7 @@ export type ReconcilingItemPlan = {
     /**
      * Default Disposition
      *
-     * What resolve would do with no disposition given: restate while every affected period is open, catch_up once one is closed.
+     * What resolve would do with no disposition given: restate while every affected period is open and nothing blocks it, catch_up otherwise.
      */
     default_disposition: 'restate' | 'catch_up' | 'acknowledge';
     /**
@@ -13936,13 +14296,13 @@ export type ReportResponse = {
     /**
      * Filed At
      *
-     * When the report was transitioned to `filed`.
+     * When the report was transitioned to `filed`. On a report shared in from another graph this is the sender's filing time, carried over with `filing_status` so a recipient can tell a draft they were sent from final statements.
      */
     filed_at?: string | null;
     /**
      * Filed By
      *
-     * User ID that transitioned the report to `filed`.
+     * User ID that transitioned the report to `filed`. Always null on a report shared in from another graph: the sender's user id resolves to nobody in the recipient's graph, so it is deliberately not carried across with `filing_status` and `filed_at`.
      */
     filed_by?: string | null;
     /**
@@ -14810,6 +15170,10 @@ export type SchemaValidationResponse = {
  * A long SEC section (an MD&A, a commitments note) is indexed in parts, each
  * a document of its own: ``part`` of ``part_count``, ``parent_document_id``
  * shared by the section's parts, ``next_document_id`` to read on.
+ *
+ * On a grouped search, ``also_in_filings`` counts the other filings of the
+ * same filer whose same section (and part) matched and were folded into
+ * this hit.
  */
 export type SearchHit = {
     /**
@@ -14900,6 +15264,10 @@ export type SearchHit = {
      * Folder
      */
     folder?: string | null;
+    /**
+     * Also In Filings
+     */
+    also_in_filings?: number | null;
 };
 
 /**
@@ -14917,7 +15285,7 @@ export type SearchRequest = {
     /**
      * Entity
      *
-     * Filter by ticker, CIK, or entity name
+     * Filter by CIK (exactly one filer), ticker, or entity name. A name, or a ticker that is also a word, is a loose word match that can include other filers
      */
     entity?: string | null;
     /**
@@ -14969,6 +15337,12 @@ export type SearchRequest = {
      */
     semantic?: boolean;
     /**
+     * Group
+     *
+     * Fold hits from successive filings of the same filer and section into the best-ranked one; also_in_filings counts the others. Ignored when entity is set, where a filer's filing history is the point. A grouped page is drawn from the first 100 hits.
+     */
+    group?: boolean;
+    /**
      * Size
      *
      * Max results to return
@@ -14996,6 +15370,8 @@ export type SearchRequest = {
 export type SearchResponse = {
     /**
      * Total
+     *
+     * Matching documents before any grouping, as OpenSearch counts them (it stops counting at 10,000). Not the number of distinct results a grouped search can page through.
      */
     total: number;
     /**
@@ -21082,7 +21458,7 @@ export type ListConnectionsData = {
          *
          * Filter by provider type
          */
-        provider?: 'quickbooks' | 'external' | 'mercury' | null;
+        provider?: 'quickbooks' | 'external' | 'mercury' | 'plaid' | null;
     };
     url: '/v1/graphs/{graph_id}/connections';
 };
@@ -29424,6 +29800,134 @@ export type FinancialStatementAnalysisResponses = {
 };
 
 export type FinancialStatementAnalysisResponse2 = FinancialStatementAnalysisResponses[keyof FinancialStatementAnalysisResponses];
+
+export type DisclosuresData = {
+    body: DisclosuresRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/disclosures';
+};
+
+export type DisclosuresErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type DisclosuresError = DisclosuresErrors[keyof DisclosuresErrors];
+
+export type DisclosuresResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeDisclosuresResponse;
+};
+
+export type DisclosuresResponse2 = DisclosuresResponses[keyof DisclosuresResponses];
+
+export type InformationBlockData = {
+    body: InformationBlockRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/information-block';
+};
+
+export type InformationBlockErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type InformationBlockError = InformationBlockErrors[keyof InformationBlockErrors];
+
+export type InformationBlockResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeInformationBlockResponse;
+};
+
+export type InformationBlockResponse2 = InformationBlockResponses[keyof InformationBlockResponses];
 
 export type CreatePortfolioBlockData = {
     body: CreatePortfolioBlockRequest;
