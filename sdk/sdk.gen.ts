@@ -1831,7 +1831,7 @@ export const deleteMappingAssociation = <ThrowOnError extends boolean = false>(o
 });
 
 /**
- * Auto-Map Elements via AI (async)
+ * Auto-Map Elements via AI
  *
  * Dispatches to the background worker — returns a `pending` envelope immediately. Monitor via SSE at `/v1/operations/{operation_id}/stream`. Confidence thresholds: ≥0.90 auto-approved, 0.70–0.89 flagged for review, <0.70 skipped.
  *
@@ -2052,7 +2052,7 @@ export const updateEventBlock = <ThrowOnError extends boolean = false>(options: 
 });
 
 /**
- * Execute Event Block (publish to source-of-truth system)
+ * Execute Event Block
  *
  * For events on a connection with write_policy='qb_authoritative' or 'hybrid', publish the captured GL plan to the source-of-truth system (QuickBooks). Captures qb_txn_id on event.metadata.qb_external_id, transitions status to 'fulfilled' (or 'pending' on rejection), and promotes draft GL rows to 'posted'. Native-policy events fast-path through with no QB write — RoboSystems is the system of record.
  *
@@ -2222,7 +2222,7 @@ export const rebuildSchedule = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * Terminate Schedule Early (No Entry)
+ * Terminate Schedule Early
  *
  * End a schedule early at a month-end cutoff without booking any entry. In one transaction: deletes forward facts past the cutoff (refusing when posted entries exist past it; stale drafts past it are deleted), voids the remaining obligation chain past the cutoff (pending and classified rows), and rewrites the SumEquals rule to prove the truncated curve. History at or before the cutoff is untouched, so open months the schedule still covers close normally. Use this when the termination's GL effect is already booked (an asset transferred via a manual entry, a prepaid refunded in the source system) or none is wanted; when the derecognition entry still needs to be booked, use create-event-block(event_type='asset_disposed') instead — the disposal handler posts it atomically with the same obligation void. Run BEFORE promote-obligations at close so terminated periods are never drafted.
  *
