@@ -274,7 +274,7 @@ npm publish
 
 - **[GitHub Discussions](https://github.com/orgs/RoboFinSystems/discussions)** - Best place for questions and community conversation
 - **[GitHub Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)** - Bug reports and feature requests for this repo
-- **[API Reference](https://api.robosystems.ai/docs)** - Backend API documentation
+- **[API Reference](https://robosystems.ai/docs/api)** - Backend API documentation
 - **Email**: security@robosystems.ai for security issues only
 
 ## Recognition

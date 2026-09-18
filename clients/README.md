@@ -514,7 +514,7 @@ MIT License - see [LICENSE](../LICENSE) file for details.
 
 ## Support
 
-- **API Reference**: [api.robosystems.ai/docs](https://api.robosystems.ai/docs)
+- **API Reference**: [robosystems.ai/docs/api](https://robosystems.ai/docs/api)
 - **Issues**: [GitHub Issues](https://github.com/RoboFinSystems/robosystems-typescript-client/issues)
 
 ---
