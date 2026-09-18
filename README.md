@@ -35,7 +35,7 @@ So `^1` is the right pin if you build on the facades. If you import from `/sdk`,
 
 - [RoboSystems Platform](https://robosystems.ai)
 - [GitHub Repository](https://github.com/RoboFinSystems/robosystems)
-- [API Documentation](https://api.robosystems.ai/docs)
+- [API Reference](https://robosystems.ai/docs/api)
 - [OpenAPI Specification](https://api.robosystems.ai/openapi.json)
 
 ## Support
