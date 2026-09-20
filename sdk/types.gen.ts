@@ -26345,6 +26345,70 @@ export type InitializeLedgerResponses = {
 
 export type InitializeLedgerResponse2 = InitializeLedgerResponses[keyof InitializeLedgerResponses];
 
+export type InitializeChartOfAccountsData = {
+    body: InitializeChartOfAccountsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/initialize-chart-of-accounts';
+};
+
+export type InitializeChartOfAccountsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type InitializeChartOfAccountsError = InitializeChartOfAccountsErrors[keyof InitializeChartOfAccountsErrors];
+
+export type InitializeChartOfAccountsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeInitializeChartOfAccountsResponse;
+};
+
+export type InitializeChartOfAccountsResponse2 = InitializeChartOfAccountsResponses[keyof InitializeChartOfAccountsResponses];
+
 export type UpdateEntityData = {
     body: UpdateEntityRequest;
     headers?: {
@@ -26536,70 +26600,6 @@ export type CreateTaxonomyBlockResponses = {
 };
 
 export type CreateTaxonomyBlockResponse = CreateTaxonomyBlockResponses[keyof CreateTaxonomyBlockResponses];
-
-export type InitializeChartOfAccountsData = {
-    body: InitializeChartOfAccountsRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/initialize-chart-of-accounts';
-};
-
-export type InitializeChartOfAccountsErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type InitializeChartOfAccountsError = InitializeChartOfAccountsErrors[keyof InitializeChartOfAccountsErrors];
-
-export type InitializeChartOfAccountsResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelopeInitializeChartOfAccountsResponse;
-};
-
-export type InitializeChartOfAccountsResponse2 = InitializeChartOfAccountsResponses[keyof InitializeChartOfAccountsResponses];
 
 export type UpdateTaxonomyBlockData = {
     body: UpdateTaxonomyBlockRequest;
@@ -28265,198 +28265,6 @@ export type DeleteJournalEntryResponses = {
 
 export type DeleteJournalEntryResponse = DeleteJournalEntryResponses[keyof DeleteJournalEntryResponses];
 
-export type PromoteObligationsData = {
-    body: PromoteObligationsRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/promote-obligations';
-};
-
-export type PromoteObligationsErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type PromoteObligationsError = PromoteObligationsErrors[keyof PromoteObligationsErrors];
-
-export type PromoteObligationsResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelopePromoteObligationsResponse;
-};
-
-export type PromoteObligationsResponse2 = PromoteObligationsResponses[keyof PromoteObligationsResponses];
-
-export type RebuildScheduleData = {
-    body: RebuildScheduleRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/rebuild-schedule';
-};
-
-export type RebuildScheduleErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type RebuildScheduleError = RebuildScheduleErrors[keyof RebuildScheduleErrors];
-
-export type RebuildScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelopeScheduleCreatedResponse;
-};
-
-export type RebuildScheduleResponse = RebuildScheduleResponses[keyof RebuildScheduleResponses];
-
-export type TerminateScheduleData = {
-    body: TerminateScheduleRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/terminate-schedule';
-};
-
-export type TerminateScheduleErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type TerminateScheduleError = TerminateScheduleErrors[keyof TerminateScheduleErrors];
-
-export type TerminateScheduleResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelopeTerminateScheduleResponse;
-};
-
-export type TerminateScheduleResponse2 = TerminateScheduleResponses[keyof TerminateScheduleResponses];
-
 export type SetCloseTargetData = {
     body: SetCloseTargetOperation;
     headers?: {
@@ -28713,6 +28521,198 @@ export type BackfillPlanHistoryResponses = {
 
 export type BackfillPlanHistoryResponse2 = BackfillPlanHistoryResponses[keyof BackfillPlanHistoryResponses];
 
+export type PromoteObligationsData = {
+    body: PromoteObligationsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/promote-obligations';
+};
+
+export type PromoteObligationsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type PromoteObligationsError = PromoteObligationsErrors[keyof PromoteObligationsErrors];
+
+export type PromoteObligationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopePromoteObligationsResponse;
+};
+
+export type PromoteObligationsResponse2 = PromoteObligationsResponses[keyof PromoteObligationsResponses];
+
+export type RebuildScheduleData = {
+    body: RebuildScheduleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/rebuild-schedule';
+};
+
+export type RebuildScheduleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RebuildScheduleError = RebuildScheduleErrors[keyof RebuildScheduleErrors];
+
+export type RebuildScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeScheduleCreatedResponse;
+};
+
+export type RebuildScheduleResponse = RebuildScheduleResponses[keyof RebuildScheduleResponses];
+
+export type TerminateScheduleData = {
+    body: TerminateScheduleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/terminate-schedule';
+};
+
+export type TerminateScheduleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type TerminateScheduleError = TerminateScheduleErrors[keyof TerminateScheduleErrors];
+
+export type TerminateScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeTerminateScheduleResponse;
+};
+
+export type TerminateScheduleResponse2 = TerminateScheduleResponses[keyof TerminateScheduleResponses];
+
 export type CreateReportData = {
     body: CreateReportRequest;
     headers?: {
@@ -28905,134 +28905,6 @@ export type DeleteReportResponses = {
 
 export type DeleteReportResponse = DeleteReportResponses[keyof DeleteReportResponses];
 
-export type ShareReportData = {
-    body: ShareReportOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/share-report';
-};
-
-export type ShareReportErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type ShareReportError = ShareReportErrors[keyof ShareReportErrors];
-
-export type ShareReportResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelopeShareReportResponse;
-};
-
-export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
-
-export type RevokeReportShareData = {
-    body: RevokeReportShareOperation;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/revoke-report-share';
-};
-
-export type RevokeReportShareErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type RevokeReportShareError = RevokeReportShareErrors[keyof RevokeReportShareErrors];
-
-export type RevokeReportShareResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelopeRevokeReportShareResponse;
-};
-
-export type RevokeReportShareResponse2 = RevokeReportShareResponses[keyof RevokeReportShareResponses];
-
 export type FileReportData = {
     body: FileReportRequest;
     headers?: {
@@ -29160,6 +29032,134 @@ export type TransitionFilingStatusResponses = {
 };
 
 export type TransitionFilingStatusResponse = TransitionFilingStatusResponses[keyof TransitionFilingStatusResponses];
+
+export type ShareReportData = {
+    body: ShareReportOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/share-report';
+};
+
+export type ShareReportErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ShareReportError = ShareReportErrors[keyof ShareReportErrors];
+
+export type ShareReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeShareReportResponse;
+};
+
+export type ShareReportResponse2 = ShareReportResponses[keyof ShareReportResponses];
+
+export type RevokeReportShareData = {
+    body: RevokeReportShareOperation;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/revoke-report-share';
+};
+
+export type RevokeReportShareErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RevokeReportShareError = RevokeReportShareErrors[keyof RevokeReportShareErrors];
+
+export type RevokeReportShareResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeRevokeReportShareResponse;
+};
+
+export type RevokeReportShareResponse2 = RevokeReportShareResponses[keyof RevokeReportShareResponses];
 
 export type CreatePublishListData = {
     body: CreatePublishListRequest;
