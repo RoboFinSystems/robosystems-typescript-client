@@ -1631,13 +1631,17 @@ export const getCheckoutStatus = <ThrowOnError extends boolean = false>(options:
 });
 
 /**
- * Handle Http Get
+ * GraphQL explorer (development only)
  *
+ * Serves the in-browser GraphiQL explorer on deployments that enable it, which is development only — it is not mounted on the hosted API. Run queries with `POST` to the same URL.
  *
+ * Queries are scoped by the URL: `graph_id` is a path parameter and never a query argument, so a document cannot name a graph that disagrees with the path it was sent to. Reads hit the operational (OLTP) extensions database, so they reflect the books as they stand now; the analytical projection is Cypher at `POST /v1/graphs/{graph_id}/query/cypher`.
+ *
+ * The schema is composed per deployment: ledger fields require RoboLedger and investor fields require RoboInvestor, and a disabled domain is absent from introspection rather than failing at runtime. Every field carries a description, so introspection is the authoritative, deployment-specific reference.
  *
  * **Auth**: pass `X-API-Key` (or a JWT `Authorization: Bearer` header). Unauthenticated introspection queries are deliberately allowed for SDK codegen; data queries require credentials and raise `UNAUTHENTICATED`.
  *
- * **Error codes**: `LEDGER_NOT_INITIALIZED`, `INVESTOR_NOT_INITIALIZED`, and `UNAUTHENTICATED` surface in the GraphQL `errors[].extensions.code` field — see `graphql/README.md` for the full vocabulary.
+ * **Error codes**: `LEDGER_NOT_INITIALIZED`, `INVESTOR_NOT_INITIALIZED`, and `UNAUTHENTICATED` surface in the GraphQL `errors[].extensions.code` field. GraphQL reports errors with HTTP 200 and a populated `errors[]`, so check that array rather than the status code.
  */
 export const handleHttpGetExtensionsGraphIdGraphqlGet = <ThrowOnError extends boolean = false>(options: Options<HandleHttpGetExtensionsGraphIdGraphqlGetData, ThrowOnError>): RequestResult<HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, ThrowOnError> => (options.client ?? client).get<HandleHttpGetExtensionsGraphIdGraphqlGetResponses, HandleHttpGetExtensionsGraphIdGraphqlGetErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1646,18 +1650,28 @@ export const handleHttpGetExtensionsGraphIdGraphqlGet = <ThrowOnError extends bo
 });
 
 /**
- * Handle Http Post
+ * Run a GraphQL query
  *
+ * The typed read surface for a graph's extensions data — RoboLedger and RoboInvestor records as they stand right now. Writes are not here: they are the named operations at `POST /extensions/{domain}/{graph_id}/operations/{name}`.
  *
+ * Send a standard GraphQL POST body: a `query` document, with optional `variables` and `operationName`.
+ *
+ * Queries are scoped by the URL: `graph_id` is a path parameter and never a query argument, so a document cannot name a graph that disagrees with the path it was sent to. Reads hit the operational (OLTP) extensions database, so they reflect the books as they stand now; the analytical projection is Cypher at `POST /v1/graphs/{graph_id}/query/cypher`.
+ *
+ * The schema is composed per deployment: ledger fields require RoboLedger and investor fields require RoboInvestor, and a disabled domain is absent from introspection rather than failing at runtime. Every field carries a description, so introspection is the authoritative, deployment-specific reference.
  *
  * **Auth**: pass `X-API-Key` (or a JWT `Authorization: Bearer` header). Unauthenticated introspection queries are deliberately allowed for SDK codegen; data queries require credentials and raise `UNAUTHENTICATED`.
  *
- * **Error codes**: `LEDGER_NOT_INITIALIZED`, `INVESTOR_NOT_INITIALIZED`, and `UNAUTHENTICATED` surface in the GraphQL `errors[].extensions.code` field — see `graphql/README.md` for the full vocabulary.
+ * **Error codes**: `LEDGER_NOT_INITIALIZED`, `INVESTOR_NOT_INITIALIZED`, and `UNAUTHENTICATED` surface in the GraphQL `errors[].extensions.code` field. GraphQL reports errors with HTTP 200 and a populated `errors[]`, so check that array rather than the status code.
  */
 export const handleHttpPostExtensionsGraphIdGraphqlPost = <ThrowOnError extends boolean = false>(options: Options<HandleHttpPostExtensionsGraphIdGraphqlPostData, ThrowOnError>): RequestResult<HandleHttpPostExtensionsGraphIdGraphqlPostResponses, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, ThrowOnError> => (options.client ?? client).post<HandleHttpPostExtensionsGraphIdGraphqlPostResponses, HandleHttpPostExtensionsGraphIdGraphqlPostErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/{graph_id}/graphql',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -2545,23 +2559,6 @@ export const unblockSourceGraph = <ThrowOnError extends boolean = false>(options
 });
 
 /**
- * Live Financial Statement
- *
- * Generate an ad-hoc financial statement directly from the tenant's OLTP ledger data using the active CoA→GAAP mapping. This is the authoritative source for RoboLedger entity graphs — no graph materialization required. Rejected on shared-repository graphs; those should use `financial-statement-analysis` instead.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const liveFinancialStatement = <ThrowOnError extends boolean = false>(options: Options<LiveFinancialStatementData, ThrowOnError>): RequestResult<LiveFinancialStatementResponses, LiveFinancialStatementErrors, ThrowOnError> => (options.client ?? client).post<LiveFinancialStatementResponses, LiveFinancialStatementErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/live-financial-statement',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Build Fact Grid
  *
  * Queries LadybugDB `Fact` nodes by element qnames or canonical concepts, with filters for periods, entities, form, and fiscal context. Returns deduplicated facts plus the aspects they span — arranging them into a table is the consumer's job, since collapsing cells safely requires the full aspect signature. Works on both roboledger tenant graphs (post-materialization) and the SEC shared repository.
@@ -2622,6 +2619,23 @@ export const disclosures = <ThrowOnError extends boolean = false>(options: Optio
 export const informationBlock = <ThrowOnError extends boolean = false>(options: Options<InformationBlockData, ThrowOnError>): RequestResult<InformationBlockResponses, InformationBlockErrors, ThrowOnError> => (options.client ?? client).post<InformationBlockResponses, InformationBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/information-block',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Live Financial Statement
+ *
+ * Generate an ad-hoc financial statement directly from the tenant's OLTP ledger data using the active CoA→GAAP mapping. This is the authoritative source for RoboLedger entity graphs — no graph materialization required. Rejected on shared-repository graphs; those should use `financial-statement-analysis` instead.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const liveFinancialStatement = <ThrowOnError extends boolean = false>(options: Options<LiveFinancialStatementData, ThrowOnError>): RequestResult<LiveFinancialStatementResponses, LiveFinancialStatementErrors, ThrowOnError> => (options.client ?? client).post<LiveFinancialStatementResponses, LiveFinancialStatementErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/live-financial-statement',
     ...options,
     headers: {
         'Content-Type': 'application/json',
