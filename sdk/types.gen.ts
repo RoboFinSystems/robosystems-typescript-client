@@ -229,17 +229,17 @@ export type ArtifactResponse = {
 /**
  * AssertMetricsRequest
  *
- * Request body for the ``assert-metrics`` operation.
+ * Request body for the `assert-metrics` operation.
  *
- * The observation sibling of ``compute-metrics``: writes externally-
+ * The observation sibling of `compute-metrics`: writes externally-
  * observed values (usage counts, marketing numbers, hand-carried
- * figures) into the period's standing ``factset_type='metric'`` FactSet
- * with ``AssertedProvenance``. Re-asserting a period replaces its facts
+ * figures) into the period's standing `factset_type='metric'` FactSet
+ * with `AssertedProvenance`. Re-asserting a period replaces its facts
  * — one standing FactSet per (structure, entity, period_end), the
  * accumulating time series.
  *
- * Structures carrying ``Derive`` rules are compute-owned
- * (``compute-metrics``) and rejected — asserted and derived metric
+ * Structures carrying `Derive` rules are compute-owned
+ * (`compute-metrics`) and rejected — asserted and derived metric
  * series keep disjoint structures. Asserted series are actuals; there
  * is no scenario axis.
  */
@@ -291,7 +291,7 @@ export type AssertMetricsRequest = {
 /**
  * AssertMetricsResponse
  *
- * Response for the ``assert-metrics`` operation.
+ * Response for the `assert-metrics` operation.
  */
 export type AssertMetricsResponse = {
     /**
@@ -327,7 +327,7 @@ export type AssertMetricsResponse = {
 /**
  * AssertedMetricLite
  *
- * One metric written by an ``assert-metrics`` run.
+ * One metric written by an `assert-metrics` run.
  */
 export type AssertedMetricLite = {
     /**
@@ -380,10 +380,10 @@ export type AssertedMetricLite = {
  * One edge between two elements within a structure (parent/child
  * presentation, calculation rollup, mapping, equivalence).
  *
- * ``association_type`` discriminates the edge semantics. Mapping edges
+ * `association_type` discriminates the edge semantics. Mapping edges
  * are the user-facing path (CoA → reporting concept); presentation /
  * calculation edges express structure layout and roll-ups.
- * ``confidence`` is set on AI-suggested mappings (≥0.90 auto-approved,
+ * `confidence` is set on AI-suggested mappings (≥0.90 auto-approved,
  * 0.70-0.89 flagged for review).
  */
 export type AssociationResponse = {
@@ -452,11 +452,11 @@ export type AssociationResponse = {
  *
  * Pairs a target concept (the flow leaf the matched amount counts
  * toward) with a predicate (which LineItems match). The rollforward's
- * ``attribution_filters: list[AttributionFilter]`` declares every flow
+ * `attribution_filters: list[AttributionFilter]` declares every flow
  * the BS source decomposes into; the renderer evaluates them all per
  * period.
  *
- * ``target_element_id`` is resolved at create time from ``target_qname``
+ * `target_element_id` is resolved at create time from `target_qname`
  * via the rs-gaap library + tenant taxonomy lookup. Authors only need
  * to provide the qname; the element_id is filled in by the create
  * handler and the resolved value is what the envelope round-trips.
@@ -465,13 +465,13 @@ export type AttributionFilter = {
     /**
      * Target Qname
      *
-     * QName of the flow concept this filter produces facts for — e.g. ``rs-gaap:ProceedsFromIssuanceOfCommonStock``. Resolved to ``target_element_id`` at create time.
+     * QName of the flow concept this filter produces facts for — e.g. `rs-gaap:ProceedsFromIssuanceOfCommonStock`. Resolved to `target_element_id` at create time.
      */
     target_qname: string;
     /**
      * Target Element Id
      *
-     * Resolved element id for ``target_qname``. Null at create time; populated by the handler before persistence. Round-tripped in the envelope.
+     * Resolved element id for `target_qname`. Null at create time; populated by the handler before persistence. Round-tripped in the envelope.
      */
     target_element_id?: string | null;
     /**
@@ -1440,9 +1440,9 @@ export type ChangeTierOp = {
  *
  * Server-shaped chart projection — panel/series CONFIG, never values.
  *
- * The second real server-computed View arm (after ``rendering``). Values
- * come from ``rendering.rows`` joined by ``element_id``; the x-axis is
- * ``rendering.periods``. Renderers (report-components) turn one panel
+ * The second real server-computed View arm (after `rendering`). Values
+ * come from `rendering.rows` joined by `element_id`; the x-axis is
+ * `rendering.periods`. Renderers (report-components) turn one panel
  * into one chart.
  */
 export type ChartLite = {
@@ -1458,8 +1458,8 @@ export type ChartLite = {
  * One chart panel — series sharing a y-axis format family.
  *
  * Mixed-unit catalogs are unplottable on one axis, so the server groups
- * rows into panels by ``item_type`` family (NULL falls back to
- * ``is_monetary``). The x-axis is always ``rendering.periods``.
+ * rows into panels by `item_type` family (NULL falls back to
+ * `is_monetary`). The x-axis is always `rendering.periods`.
  */
 export type ChartPanelLite = {
     /**
@@ -1492,9 +1492,9 @@ export type ChartPanelLite = {
  * One plottable series in a chart panel.
  *
  * Carries structure and identity only — the values live in the sibling
- * ``rendering.rows`` (join on ``element_id``), so the chart arm never
- * duplicates the value matrix. ``key`` is the stable series identity for
- * client state (colors, toggles); today it equals ``element_id``, and
+ * `rendering.rows` (join on `element_id`), so the chart arm never
+ * duplicates the value matrix. `key` is the stable series identity for
+ * client state (colors, toggles); today it equals `element_id`, and
  * future axes (the forecast scenario) arrive as new fields on this
  * model, never a new arm shape.
  */
@@ -1769,14 +1769,14 @@ export type ClosePeriodResponse = {
 /**
  * ComputeForecastRequest
  *
- * Request body for the ``compute-forecast`` operation.
+ * Request body for the `compute-forecast` operation.
  *
  * Walks the scenario's driver cascade month-by-month forward from the
- * forecast block's ``base_period``: lever-driven Derive rules in
+ * forecast block's `base_period`: lever-driven Derive rules in
  * dependency order, carry-forward for unmodeled IS lines, calc-DAG
  * subtotals — upserting one scenario IS FactSet (+ a working-capital BS
  * set) per forward month, all keyed by the forecast block's
- * ``scenario_id``. Re-running replaces each month's values (the
+ * `scenario_id`. Re-running replaces each month's values (the
  * compute-metrics drift semantics). Deterministic and non-AI — no
  * credits consumed.
  */
@@ -1804,7 +1804,7 @@ export type ComputeForecastRequest = {
 /**
  * ComputeForecastResponse
  *
- * Response for the ``compute-forecast`` operation.
+ * Response for the `compute-forecast` operation.
  */
 export type ComputeForecastResponse = {
     /**
@@ -1824,13 +1824,13 @@ export type ComputeForecastResponse = {
     /**
      * Base Period
      *
-     * Origin month of the block's authored horizon window — where its levers are keyed from. Equal to ``anchor_period`` unless the walk re-anchored at the seam.
+     * Origin month of the block's authored horizon window — where its levers are keyed from. Equal to `anchor_period` unless the walk re-anchored at the seam.
      */
     base_period: string;
     /**
      * Anchor Period
      *
-     * Month the walk actually seeded its opening balances from. With ``base_anchor='seam'`` this advances to the newest closed month as periods close, so the first forward month rolls off real balances instead of a stale base; with ``'fixed'`` it always equals ``base_period``.
+     * Month the walk actually seeded its opening balances from. With `base_anchor='seam'` this advances to the newest closed month as periods close, so the first forward month rolls off real balances instead of a stale base; with `'fixed'` it always equals `base_period`.
      */
     anchor_period: string;
     /**
@@ -1846,7 +1846,7 @@ export type ComputeForecastResponse = {
     /**
      * Halted At
      *
-     * Month (``YYYY-MM``) where the walk stopped because verification failed, or null if it ran the full horizon. Each month's opening balances are the previous month's closing balances, so computing past a failure yields months derived from a known-wrong one rather than merely unverified months. When set, ``months_computed`` ends at this month and is shorter than ``months``; the failing month's facts are kept so the failure can be inspected.
+     * Month (`YYYY-MM`) where the walk stopped because verification failed, or null if it ran the full horizon. Each month's opening balances are the previous month's closing balances, so computing past a failure yields months derived from a known-wrong one rather than merely unverified months. When set, `months_computed` ends at this month and is shorter than `months`; the failing month's facts are kept so the failure can be inspected.
      */
     halted_at?: string | null;
     /**
@@ -1864,12 +1864,12 @@ export type ComputeForecastResponse = {
 /**
  * ComputeMetricsRequest
  *
- * Request body for the ``compute-metrics`` operation.
+ * Request body for the `compute-metrics` operation.
  *
- * Resolves the ``Derive`` rules scoped to the metric block, binds each
+ * Resolves the `Derive` rules scoped to the metric block, binds each
  * rule's operands to the entity's most recent persisted report facts at
- * ``period_end``, evaluates, and upserts the period's standing
- * ``factset_type='metric'`` FactSet (re-running a period replaces its
+ * `period_end`, evaluates, and upserts the period's standing
+ * `factset_type='metric'` FactSet (re-running a period replaces its
  * facts). One standing FactSet per (structure, entity, period_end) — the
  * accumulating time series.
  */
@@ -1909,7 +1909,7 @@ export type ComputeMetricsRequest = {
 /**
  * ComputeMetricsResponse
  *
- * Response for the ``compute-metrics`` operation.
+ * Response for the `compute-metrics` operation.
  */
 export type ComputeMetricsResponse = {
     /**
@@ -1943,7 +1943,7 @@ export type ComputeMetricsResponse = {
 /**
  * ComputedMetricLite
  *
- * One metric computed by a ``compute-metrics`` run.
+ * One metric computed by a `compute-metrics` run.
  */
 export type ComputedMetricLite = {
     /**
@@ -2002,7 +2002,7 @@ export type ComputedMetricLite = {
  * Connection (= Association) projection.
  *
  * "Connection" is the ontology term used on the wire; the storage table is
- * ``associations`` (``models/extensions/association.py``).
+ * `associations` (`models/extensions/association.py`).
  */
 export type ConnectionLite = {
     /**
@@ -2338,11 +2338,11 @@ export type CreateApiKeyResponse = {
  *
  * Create a new economic counterparty.
  *
- * ``agent_type`` is the relationship category (customer, vendor,
+ * `agent_type` is the relationship category (customer, vendor,
  * employee, etc.) — the same legal entity may have multiple Agent rows
  * if they play multiple roles (e.g. a vendor who also became a
- * customer). ``source`` distinguishes integration-imported rows from
- * native-created ones; ``external_id`` carries the source-system's
+ * customer). `source` distinguishes integration-imported rows from
+ * native-created ones; `external_id` carries the source-system's
  * primary key for sync.
  */
 export type CreateAgentRequest = {
@@ -2623,16 +2623,16 @@ export type CreateEventBlockRequest = {
  *
  * Register a new event-type → transaction-template rule.
  *
- * When ``create-event-block`` runs with ``apply_handlers=True``, the
+ * When `create-event-block` runs with `apply_handlers=True`, the
  * registry resolves the *highest-priority active* handler whose match
  * criteria all match the event, then evaluates the
- * ``transaction_template`` to produce GL rows. Match precedence: among
- * active handlers for the same ``event_type``, the one with the most
+ * `transaction_template` to produce GL rows. Match precedence: among
+ * active handlers for the same `event_type`, the one with the most
  * specific match (more match fields satisfied) wins; ties broken by
- * ``priority`` desc, then ``created_at`` asc.
+ * `priority` desc, then `created_at` asc.
  *
- * All match fields except ``event_type`` are optional — leaving them
- * unset matches anything. Use ``match_metadata_expression`` for
+ * All match fields except `event_type` are optional — leaving them
+ * unset matches anything. Use `match_metadata_expression` for
  * fine-grained discrimination (e.g. only payroll categories).
  */
 export type CreateEventHandlerRequest = {
@@ -2723,8 +2723,8 @@ export type CreateEventHandlerRequest = {
  *
  * Create a forecast block — the authored scenario container.
  *
- * ``base_period`` defaults to the fiscal calendar's
- * ``closed_through_period`` (else the newest actual report month) —
+ * `base_period` defaults to the fiscal calendar's
+ * `closed_through_period` (else the newest actual report month) —
  * the walk projects forward from the last closed actuals. The resolved
  * value is stored in the mechanics so recompute is deterministic.
  */
@@ -2750,13 +2750,13 @@ export type CreateForecastRequest = {
     /**
      * Base Period
      *
-     * Seed month (``YYYY-MM``) the walk projects forward from. Defaults to the fiscal calendar's closed-through period, else the newest actual report month. Resolved and stored at create time, and it never moves afterwards — every lever is keyed to a month inside ``base_period + 1 … + horizon_months``, so moving it would mean restating all of them. ``base_anchor`` decides whether the walk still *seeds* here once months close under it.
+     * Seed month (`YYYY-MM`) the walk projects forward from. Defaults to the fiscal calendar's closed-through period, else the newest actual report month. Resolved and stored at create time, and it never moves afterwards — every lever is keyed to a month inside `base_period + 1 … + horizon_months`, so moving it would mean restating all of them. `base_anchor` decides whether the walk still *seeds* here once months close under it.
      */
     base_period?: string | null;
     /**
      * Base Anchor
      *
-     * Where the walk takes its opening balances as periods close. ``seam`` (default) re-anchors on the newest closed month inside the horizon, so the scenario survives a close untouched and its first forward month rolls off real balances. ``fixed`` pins the walk to ``base_period`` — the deliberate counterfactual, whose balances are meant to diverge from actuals.
+     * Where the walk takes its opening balances as periods close. `seam` (default) re-anchors on the newest closed month inside the horizon, so the scenario survives a close untouched and its first forward month rolls off real balances. `fixed` pins the walk to `base_period` — the deliberate counterfactual, whose balances are meant to diverge from actuals.
      */
     base_anchor?: 'seam' | 'fixed';
     /**
@@ -2971,15 +2971,15 @@ export type CreatePublishListRequest = {
  *
  * The report is materialized synchronously: we resolve the taxonomy +
  * CoA mapping, roll up GL facts into reportable concepts, attach them
- * to a fresh ``Report`` row, evaluate any reporting-rule structures
- * (cell-level checks), and stamp ``generation_status='published'``.
- * Subsequent ``regenerate-report`` calls re-run the same pipeline against
+ * to a fresh `Report` row, evaluate any reporting-rule structures
+ * (cell-level checks), and stamp `generation_status='published'`.
+ * Subsequent `regenerate-report` calls re-run the same pipeline against
  * the latest ledger state without creating a new Report row.
  *
- * ``period_start``/``period_end``/``comparative`` is the simple path
+ * `period_start`/`period_end`/`comparative` is the simple path
  * (auto-derives current + prior period). For multi-column reports
- * (YTD-by-quarter, multi-year) supply ``periods`` explicitly — when
- * set, ``period_start``/``period_end``/``comparative`` are ignored as
+ * (YTD-by-quarter, multi-year) supply `periods` explicitly — when
+ * set, `period_start`/`period_end`/`comparative` are ignored as
  * inputs to period generation.
  */
 export type CreateReportRequest = {
@@ -3059,7 +3059,7 @@ export type CreateRepositorySubscriptionRequest = {
  * Create a rollforward Information Block.
  *
  * Mirrors :class:`CreateScheduleRequest` in shape. The block decomposes
- * the period change in ``bs_source_qname`` across the declared
+ * the period change in `bs_source_qname` across the declared
  * attribution filters. Residual (Δ BS - Σ filter matches) falls back to
  * the default change tag — or, if no default is declared, surfaces as
  * an unattributed fact tagged with a synthetic residual concept.
@@ -3074,7 +3074,7 @@ export type CreateRollforwardRequest = {
     /**
      * Bs Source Qname
      *
-     * QName of the balance-sheet element whose period delta this block decomposes. Resolved to ``bs_source_element_id`` at create time.
+     * QName of the balance-sheet element whose period delta this block decomposes. Resolved to `bs_source_element_id` at create time.
      */
     bs_source_qname: string;
     /**
@@ -3092,13 +3092,13 @@ export type CreateRollforwardRequest = {
     /**
      * Validation Mode
      *
-     * How the renderer arbitrates when Σ filter matches != Δ BS. ``strict`` raises; ``residual_as_default`` emits the residual as a default-tag fact (the common case); ``warn_only`` logs and lets the imbalance pass.
+     * How the renderer arbitrates when Σ filter matches != Δ BS. `strict` raises; `residual_as_default` emits the residual as a default-tag fact (the common case); `warn_only` logs and lets the imbalance pass.
      */
     validation_mode?: 'strict' | 'residual_as_default' | 'warn_only';
     /**
      * Taxonomy Id
      *
-     * Owning taxonomy id (auto-resolved from ``bs_source_qname`` when omitted).
+     * Owning taxonomy id (auto-resolved from `bs_source_qname` when omitted).
      */
     taxonomy_id?: string | null;
 };
@@ -3275,14 +3275,14 @@ export type CreateSubgraphRequest = {
 /**
  * CreateTaxonomyBlockRequest
  *
- * Request body for the ``create-taxonomy-block`` operation.
+ * Request body for the `create-taxonomy-block` operation.
  *
- * One envelope per taxonomy instance. ``taxonomy_type`` discriminates
+ * One envelope per taxonomy instance. `taxonomy_type` discriminates
  * which block-type handler the command dispatcher routes to.
- * ``parent_taxonomy_id`` is required for ``reporting_extension`` (which
+ * `parent_taxonomy_id` is required for `reporting_extension` (which
  * extends a library taxonomy) and ignored otherwise.
  *
- * The library path (seeding ``reporting_standard`` rows) does NOT flow
+ * The library path (seeding `reporting_standard` rows) does NOT flow
  * through this envelope; library content is not tenant-writable here.
  */
 export type CreateTaxonomyBlockRequest = {
@@ -3295,13 +3295,13 @@ export type CreateTaxonomyBlockRequest = {
     /**
      * Taxonomy Type
      *
-     * Block-type discriminator. ``chart_of_accounts`` and ``custom_ontology`` construct from scratch; ``reporting_extension`` extends an existing library ``reporting_standard``.
+     * Block-type discriminator. `chart_of_accounts` and `custom_ontology` construct from scratch; `reporting_extension` extends an existing library `reporting_standard`.
      */
     taxonomy_type: 'reporting_standard' | 'reporting_extension' | 'custom_ontology' | 'chart_of_accounts' | 'schedule';
     /**
      * Parent Taxonomy Id
      *
-     * Required when ``taxonomy_type == 'reporting_extension'`` — the id of the library ``reporting_standard`` being extended.
+     * Required when `taxonomy_type == 'reporting_extension'` — the id of the library `reporting_standard` being extended.
      */
     parent_taxonomy_id?: string | null;
     /**
@@ -3538,7 +3538,7 @@ export type CreditSummaryResponse = {
  * Custom node and relationship types for a generic graph.
  *
  * For graphs that don't fit the entity-based schema — inventory, org charts,
- * project management. ``extends`` names a base schema to build on, or is
+ * project management. `extends` names a base schema to build on, or is
  * omitted for a bare database.
  */
 export type CustomSchemaDefinition = {
@@ -3966,7 +3966,7 @@ export type DeleteInformationBlockRequest = ({
 /**
  * DeleteInformationBlockResponse
  *
- * Response for ``delete-information-block``.
+ * Response for `delete-information-block`.
  *
  * The envelope is gone once the block is deleted, so the response is a
  * thin confirmation instead — structure_id + block_type + name for
@@ -4113,7 +4113,7 @@ export type DeleteReportOperation = {
  *
  * Shared response shape for delete / soft-delete operations.
  *
- * ``deleted=True`` means the operation succeeded (a row was deleted or
+ * `deleted=True` means the operation succeeded (a row was deleted or
  * flipped). A row that never existed gets a 404 — this shape never carries
  * "not found".
  *
@@ -4210,12 +4210,12 @@ export type DeleteSubgraphOp = {
 /**
  * DeleteTaxonomyBlockRequest
  *
- * Request body for the ``delete-taxonomy-block`` operation.
+ * Request body for the `delete-taxonomy-block` operation.
  *
- * ``cascade_facts=False`` (default) fails the delete if any Fact rows
- * reference elements in this taxonomy. ``cascade_facts=True`` deletes the
+ * `cascade_facts=False` (default) fails the delete if any Fact rows
+ * reference elements in this taxonomy. `cascade_facts=True` deletes the
  * referencing facts alongside the taxonomy; the response reports
- * ``facts_deleted``.
+ * `facts_deleted`.
  */
 export type DeleteTaxonomyBlockRequest = {
     /**
@@ -4241,7 +4241,7 @@ export type DeleteTaxonomyBlockRequest = {
 /**
  * DeleteTaxonomyBlockResponse
  *
- * Response for ``delete-taxonomy-block``.
+ * Response for `delete-taxonomy-block`.
  */
 export type DeleteTaxonomyBlockResponse = {
     /**
@@ -4369,8 +4369,8 @@ export type DisclosuresRequest = {
  * The disclosures view op's result: xbrlkit's map, stamped with the graph
  * and report it was read from.
  *
- * Without ``topic``: ``disclosures`` / ``count``. With ``topic``:
- * ``disclosure`` / ``category`` / ``blocks`` / ``block_count``.
+ * Without `topic`: `disclosures` / `count`. With `topic`:
+ * `disclosure` / `category` / `blocks` / `block_count`.
  */
 export type DisclosuresResponse = {
     /**
@@ -4567,7 +4567,7 @@ export type DocumentListResponse = {
  * DocumentSection
  *
  * Full document section retrieved by ID — one part of it when the section
- * is long; ``next_document_id`` continues it.
+ * is long; `next_document_id` continues it.
  */
 export type DocumentSection = {
     /**
@@ -5080,15 +5080,15 @@ export type ErrorResponse = {
 /**
  * EvaluateRulesRequest
  *
- * Request body for the ``evaluate-rules`` operation.
+ * Request body for the `evaluate-rules` operation.
  *
- * Runs every rule scoped to ``structure_id`` (plus element/association-
- * scoped rules for the structure's atoms), binds ``$Variable`` references
+ * Runs every rule scoped to `structure_id` (plus element/association-
+ * scoped rules for the structure's atoms), binds `$Variable` references
  * to facts via qname lookup, and writes one
  * :class:`VerificationResult` row per rule.
  *
- * Optional ``period_start`` / ``period_end`` narrow the fact-binding
- * window; without them the engine uses the most recent ``in_scope`` fact
+ * Optional `period_start` / `period_end` narrow the fact-binding
+ * window; without them the engine uses the most recent `in_scope` fact
  * for each element regardless of period.
  */
 export type EvaluateRulesRequest = {
@@ -5121,10 +5121,10 @@ export type EvaluateRulesRequest = {
 /**
  * EvaluateRulesResponse
  *
- * Response for the ``evaluate-rules`` operation.
+ * Response for the `evaluate-rules` operation.
  *
- * ``results`` is the full list of :class:`VerificationResultLite` rows
- * written by this evaluation run. ``summary`` gives counts keyed by
+ * `results` is the full list of :class:`VerificationResultLite` rows
+ * written by this evaluation run. `summary` gives counts keyed by
  * status for quick display without iterating the list.
  */
 export type EvaluateRulesResponse = {
@@ -5139,7 +5139,7 @@ export type EvaluateRulesResponse = {
     /**
      * Summary
      *
-     * Status counts keyed by outcome string: ``{'pass': N, 'fail': N, 'error': N, 'skipped': N}``.
+     * Status counts keyed by outcome string: `{'pass': N, 'fail': N, 'error': N, 'skipped': N}`.
      */
     summary?: {
         [key: string]: number;
@@ -5480,7 +5480,7 @@ export type ExecuteEventBlockResponse = {
  * run: the connection is registration + telemetry, not execution config.
  * The platform holds no credentials for the external source — the
  * integration authenticates to its own source and writes here through
- * the public API, stamping ``source_name`` on everything it emits.
+ * the public API, stamping `source_name` on everything it emits.
  */
 export type ExternalConnectionConfig = {
     /**
@@ -5636,8 +5636,8 @@ export type FactRecord = {
  *
  * FactSet projection — period-specific instantiation of the Structure.
  *
- * The envelope carries one ``FactSetLite`` per block when a FactSet row exists
- * for the requested period, and leaves ``fact_set`` null when none does.
+ * The envelope carries one `FactSetLite` per block when a FactSet row exists
+ * for the requested period, and leaves `fact_set` null when none does.
  */
 export type FactSetLite = {
     /**
@@ -5659,7 +5659,7 @@ export type FactSetLite = {
     /**
      * Factset Type
      *
-     * 'report' | 'schedule' | 'custom' | 'disclosure' | 'metric'. Enum closure enforced by the ``public.fact_sets`` CHECK constraint.
+     * 'report' | 'schedule' | 'custom' | 'disclosure' | 'metric'. Enum closure enforced by the `public.fact_sets` CHECK constraint.
      */
     factset_type: string;
     /**
@@ -5669,7 +5669,7 @@ export type FactSetLite = {
     /**
      * Report Id
      *
-     * Back-pointer to the parent row in ``reports``. Null when the FactSet does not belong to a report package.
+     * Back-pointer to the parent row in `reports`. Null when the FactSet does not belong to a report package.
      */
     report_id?: string | null;
     /**
@@ -5681,7 +5681,7 @@ export type FactSetLite = {
     /**
      * Provenance
      *
-     * Typed ``FactProvenance`` descriptor (discriminated on ``origin``: pivot | schedule | derived | asserted | document | forecast | filed) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor.
+     * Typed `FactProvenance` descriptor (discriminated on `origin`: pivot | schedule | derived | asserted | document | forecast | filed) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor.
      */
     provenance?: {
         [key: string]: unknown;
@@ -5787,13 +5787,13 @@ export type FileLayerStatus = {
 /**
  * FileReportRequest
  *
- * Transition a Report to ``filed`` — locks the package.
+ * Transition a Report to `filed` — locks the package.
  *
- * Acceptable from ``draft`` or ``under_review``. ``filed_by`` and
- * ``filed_at`` are stamped from the auth context + server clock; the
+ * Acceptable from `draft` or `under_review`. `filed_by` and
+ * `filed_at` are stamped from the auth context + server clock; the
  * request itself carries no fields today (kept as a model for OpenAPI
  * shape consistency and to avoid breaking changes if we add fields).
- * Use ``transition-filing-status`` for the non-file legs of the
+ * Use `transition-filing-status` for the non-file legs of the
  * lifecycle (`draft ↔ under_review`, `filed → archived`).
  */
 export type FileReportRequest = {
@@ -6035,8 +6035,8 @@ export type FiscalCalendarResponse = {
  *
  * One fiscal period row — header view used in calendar listings.
  *
- * Status lifecycle: ``open`` → ``closing`` → ``closed``. ``closing``
- * is the transient state during a close run; ``closed_at`` stamps when
+ * Status lifecycle: `open` → `closing` → `closed`. `closing`
+ * is the transient state during a close run; `closed_at` stamps when
  * the lock landed.
  */
 export type FiscalPeriodSummary = {
@@ -6075,17 +6075,17 @@ export type FiscalPeriodSummary = {
 /**
  * ForecastMechanics
  *
- * Authored scenario container for ``block_type='forecast'``.
+ * Authored scenario container for `block_type='forecast'`.
  *
- * The block IS the scenario: its structure id is the ``scenario_id``
+ * The block IS the scenario: its structure id is the `scenario_id`
  * every derived forward FactSet carries (NULL = actuals). The authored
  * surface is exactly this — scenario identity, horizon, base period,
  * lever assertions; everything downstream is derived by
- * ``compute-forecast`` (levers → driven rs-gaap anchors via the
+ * `compute-forecast` (levers → driven rs-gaap anchors via the
  * rs-driver Derive rules → carry-forward for unmodeled IS lines →
  * calc-DAG subtotals), landing in the EXISTING statement/metric block
  * types stamped with the scenario. Reads directly from the typed
- * ``structures.artifact_mechanics`` JSONB column.
+ * `structures.artifact_mechanics` JSONB column.
  */
 export type ForecastMechanics = {
     /**
@@ -6107,13 +6107,13 @@ export type ForecastMechanics = {
     /**
      * Base Period
      *
-     * Origin month (``YYYY-MM``) of the authored horizon window — resolved at create time (request → fiscal calendar closed-through → newest actual report month) and stored so recompute is deterministic. Every lever, line assertion and growth rate is keyed to a month in ``base_period + 1 … base_period + horizon_months``, so this never moves on its own; ``base_anchor`` decides whether the *walk* still seeds here.
+     * Origin month (`YYYY-MM`) of the authored horizon window — resolved at create time (request → fiscal calendar closed-through → newest actual report month) and stored so recompute is deterministic. Every lever, line assertion and growth rate is keyed to a month in `base_period + 1 … base_period + horizon_months`, so this never moves on its own; `base_anchor` decides whether the *walk* still seeds here.
      */
     base_period: string;
     /**
      * Base Anchor
      *
-     * Where the walk takes its opening balances. ``seam`` (default) re-anchors on the newest closed month at or after ``base_period``, so a scenario survives a period close without being rebuilt and its first forward month rolls off real balances. ``fixed`` pins the walk to ``base_period`` — the deliberate counterfactual (“if we had restarted in July”), whose balances diverge from actuals on purpose.
+     * Where the walk takes its opening balances. `seam` (default) re-anchors on the newest closed month at or after `base_period`, so a scenario survives a period close without being rebuilt and its first forward month rolls off real balances. `fixed` pins the walk to `base_period` — the deliberate counterfactual (“if we had restarted in July”), whose balances diverge from actuals on purpose.
      */
     base_anchor?: 'seam' | 'fixed';
     /**
@@ -6145,13 +6145,13 @@ export type ForecastMechanics = {
 /**
  * ForecastMonthLite
  *
- * One computed forward month in a ``compute-forecast`` response.
+ * One computed forward month in a `compute-forecast` response.
  */
 export type ForecastMonthLite = {
     /**
      * Period
      *
-     * Month key (``YYYY-MM``).
+     * Month key (`YYYY-MM`).
      */
     period: string;
     /**
@@ -6189,7 +6189,7 @@ export type ForecastMonthLite = {
     /**
      * Verification Passed
      *
-     * Whether every rule evaluated against the month's scenario sets passed. Three states, and the third is not the first: ``true`` = rules ran and all passed; ``false`` = at least one failed or errored, which halts the walk (see ``halted_at``); ``null`` = **no rules ran**, so the month is unverified rather than verified. Treat null as absence of evidence, never as a pass.
+     * Whether every rule evaluated against the month's scenario sets passed. Three states, and the third is not the first: `true` = rules ran and all passed; `false` = at least one failed or errored, which halts the walk (see `halted_at`); `null` = **no rules ran**, so the month is unverified rather than verified. Treat null as absence of evidence, never as a pass.
      */
     verification_passed?: boolean | null;
     /**
@@ -7224,7 +7224,7 @@ export type HealthStatus = {
  *
  * Body for index-document (corpus content-op).
  *
- * Create a new document when ``document_id`` is absent; update the named
+ * Create a new document when `document_id` is absent; update the named
  * document (partial — only supplied fields) when present.
  */
 export type IndexDocumentOp = {
@@ -7356,11 +7356,11 @@ export type InformationBlockEnvelope = {
      */
     verification_results?: Array<VerificationResultLite>;
     /**
-     * Server-computed aggregate over ``verification_results`` — overall pass/fail/error/skip counts plus a per-rule_category breakdown for the grouped Verification Results panel. Null when the block has no verification results.
+     * Server-computed aggregate over `verification_results` — overall pass/fail/error/skip counts plus a per-rule_category breakdown for the grouped Verification Results panel. Null when the block has no verification results.
      */
     verification_summary?: VerificationSummary | null;
     /**
-     * Server-computed view projections (Charlie's six type-of View arms). ``view.rendering`` carries pre-computed rows + periods + validation for blocks where rendering is deterministic (the statement family today). Other projections come online as their backend support lands — see :class:`ViewProjections`.
+     * Server-computed view projections (Charlie's six type-of View arms). `view.rendering` carries pre-computed rows + periods + validation for blocks where rendering is deterministic (the statement family today). Other projections come online as their backend support lands — see :class:`ViewProjections`.
      */
     view?: ViewProjections;
 };
@@ -7539,7 +7539,7 @@ export type InformationModelResponse = {
  * Body for ingest-file (raw→staging content flow).
  *
  * Marks an uploaded file ready and triggers DuckDB staging. Set
- * ``ingest_to_graph`` to auto-chain graph materialization after staging.
+ * `ingest_to_graph` to auto-chain graph materialization after staging.
  */
 export type IngestFileOp = {
     /**
@@ -7644,10 +7644,10 @@ export type InitialEntityData = {
  *
  * Create the graph's chart of accounts from a shipped template.
  *
- * Refused (409) when the graph already has an active ``chart_of_accounts``
+ * Refused (409) when the graph already has an active `chart_of_accounts`
  * taxonomy — a QuickBooks-synced tenant never needs this, and a chart is
  * never replaced. The template's equity rows are mapped by the entity's
- * legal form (``entity_type``: corporation / llc / partnership); omit it
+ * legal form (`entity_type`: corporation / llc / partnership); omit it
  * to use the graph's primary entity, falling back to corporation.
  */
 export type InitializeChartOfAccountsRequest = {
@@ -7723,16 +7723,16 @@ export type InitializeChartOfAccountsResponse = {
  * One-time setup for a graph's fiscal calendar.
  *
  * Creates the `FiscalCalendar` row, seeds `FiscalPeriod` rows from
- * ``earliest_data_period`` (or 24 months ago) through the current month,
- * and stamps periods on or before ``closed_through`` as already closed.
+ * `earliest_data_period` (or 24 months ago) through the current month,
+ * and stamps periods on or before `closed_through` as already closed.
  * Subsequent calls return 409 — there's no re-initialize.
  *
  * The two pointers it sets up:
  *
- * - ``closed_through`` (system-maintained): the latest period whose
+ * - `closed_through` (system-maintained): the latest period whose
  * books are locked. Set on init for businesses with prior close
  * history; null for a fresh start.
- * - ``close_target`` (user-controlled): the goal date the user is
+ * - `close_target` (user-controlled): the goal date the user is
  * closing toward. Set independently via `set-close-target`.
  */
 export type InitializeLedgerRequest = {
@@ -8046,7 +8046,7 @@ export type JournalEntryLineItemInput = {
     /**
      * Metadata
      *
-     * Optional per-line metadata stamped on ``LineItem.metadata_``. Used to carry source-system fields the standard columns don't cover — e.g. an external flow-tag code that drives rollforward attribution (``transaction_description_code``), an external memo, or a cost-center hint. Pass-through is non-validating; the renderer / filter engine reads keys it knows about and ignores the rest. ``None`` is normalized to ``{}`` at persist time.
+     * Optional per-line metadata stamped on `LineItem.metadata_`. Used to carry source-system fields the standard columns don't cover — e.g. an external flow-tag code that drives rollforward attribution (`transaction_description_code`), an external memo, or a cost-center hint. Pass-through is non-validating; the renderer / filter engine reads keys it knows about and ignores the rest. `None` is normalized to `{}` at persist time.
      */
     metadata?: {
         [key: string]: unknown;
@@ -8418,14 +8418,14 @@ export type LedgerEntityResponse = {
 /**
  * LeverAssertionLite
  *
- * One lever's persisted assertion inside ``ForecastMechanics``.
+ * One lever's persisted assertion inside `ForecastMechanics`.
  *
- * The create handler expands the wire-level assertion (uniform ``value``
- * + per-month overrides) into the explicit ``values_by_period`` map so
+ * The create handler expands the wire-level assertion (uniform `value`
+ * + per-month overrides) into the explicit `values_by_period` map so
  * compute never interpolates — every asserted month is stated. The
  * values are duplicated as authored facts in the scenario's lever
  * FactSet (rules for mechanics, **facts for values** — the facts are
- * what ``compute-forecast`` binds); this mechanics copy is the
+ * what `compute-forecast` binds); this mechanics copy is the
  * operator-legible round-trip shape.
  */
 export type LeverAssertionLite = {
@@ -8450,7 +8450,7 @@ export type LeverAssertionLite = {
     /**
      * Values By Period
      *
-     * Expanded per-month assertions keyed by ``YYYY-MM``.
+     * Expanded per-month assertions keyed by `YYYY-MM`.
      */
     values_by_period: {
         [key: string]: number;
@@ -8462,20 +8462,20 @@ export type LeverAssertionLite = {
  *
  * One lever's asserted values for the scenario.
  *
- * ``qname`` must resolve to an ``rs-driver:*`` catalog element (the
+ * `qname` must resolve to an `rs-driver:*` catalog element (the
  * create handler rejects anything else). Each lever's value semantics
  * are defined by its catalog element's documentation — surfaced as
- * ``documentation`` on the elements bundled in the forecast block's
- * envelope (``get-information-block``). Percent levers are decimals but
+ * `documentation` on the elements bundled in the forecast block's
+ * envelope (`get-information-block`). Percent levers are decimals but
  * their *meaning* varies by lever: growth levers are month-over-month
- * rates (``RevenueGrowthRate`` 0.03 = +3%/month, compounding), while
+ * rates (`RevenueGrowthRate` 0.03 = +3%/month, compounding), while
  * rate-on-base levers are fractions of the same month's base
- * (``CostOfRevenueRate`` 0.62 = cost of revenue at 62% of that month's
- * revenues — not a growth rate). Days levers (``DaysSalesOutstanding``,
- * ``DaysPayableOutstanding``) are day counts.
+ * (`CostOfRevenueRate` 0.62 = cost of revenue at 62% of that month's
+ * revenues — not a growth rate). Days levers (`DaysSalesOutstanding`,
+ * `DaysPayableOutstanding`) are day counts.
  *
- * ``value`` is a uniform fill across the whole horizon;
- * ``values_by_period`` overrides individual months (``"YYYY-MM"``
+ * `value` is a uniform fill across the whole horizon;
+ * `values_by_period` overrides individual months (`"YYYY-MM"`
  * keys) — e.g. a margin-compression ramp asserts a different rate each
  * month. At least one of the two must be provided. Months covered by
  * neither carry no assertion — the lever's rule is inactive for that
@@ -8485,7 +8485,7 @@ export type LeverAssertionRequest = {
     /**
      * Qname
      *
-     * QName of the rs-driver lever element (e.g. ``rs-driver:RevenueGrowthRate``).
+     * QName of the rs-driver lever element (e.g. `rs-driver:RevenueGrowthRate`).
      */
     qname: string;
     /**
@@ -8497,7 +8497,7 @@ export type LeverAssertionRequest = {
     /**
      * Values By Period
      *
-     * Per-month overrides keyed by ``YYYY-MM``. Wins over ``value`` for the months it names.
+     * Per-month overrides keyed by `YYYY-MM`. Wins over `value` for the months it names.
      */
     values_by_period?: {
         [key: string]: number;
@@ -8508,20 +8508,20 @@ export type LeverAssertionRequest = {
  * LineAssertionLite
  *
  * One statement line's persisted direct assertion inside
- * ``ForecastMechanics``.
+ * `ForecastMechanics`.
  *
  * The manual-override sibling of :class:`LeverAssertionLite`: a lever
  * asserts a *driver* whose rule derives a line; a line assertion pins
  * the **line itself** (a calc-DAG leaf) to typed values for the months
  * it names — winning over driver rules and carry-forward for exactly
  * those months (a displaced rule surfaces in the compute response's
- * ``skipped`` list). Subtotals stay calc-DAG-derived, so a manual line
+ * `skipped` list). Subtotals stay calc-DAG-derived, so a manual line
  * still articulates through RollUps, RE, balancing cash, and derived
  * CF, and stays verification-gated.
  *
  * Same persistence doctrine as levers: values are duplicated as
  * authored facts in the scenario's lever FactSet (facts are what
- * ``compute-forecast`` binds); this mechanics copy is the
+ * `compute-forecast` binds); this mechanics copy is the
  * operator-legible round-trip shape.
  */
 export type LineAssertionLite = {
@@ -8552,7 +8552,7 @@ export type LineAssertionLite = {
     /**
      * Values By Period
      *
-     * Expanded per-month assertions keyed by ``YYYY-MM``.
+     * Expanded per-month assertions keyed by `YYYY-MM`.
      */
     values_by_period: {
         [key: string]: number;
@@ -8569,7 +8569,7 @@ export type LineAssertionLite = {
  * line assertion asserts the **line itself** — an rs-gaap (or tenant
  * extension) statement leaf pinned to typed values for the months it
  * names. Assertions win over driver rules and carry-forward for those
- * months (a displaced rule lands in ``skipped``, legibly); months the
+ * months (a displaced rule lands in `skipped`, legibly); months the
  * assertion doesn't name keep the engine's normal derivation.
  *
  * **Leaves only** — subtotals stay calc-DAG-derived, so a manually set
@@ -8577,8 +8577,8 @@ export type LineAssertionLite = {
  * derived CF, and stays verification-gated (the whole pitch vs a
  * spreadsheet cell). The create handler rejects calc-parent qnames.
  *
- * Value/period grammar is identical to levers: ``value`` is a uniform
- * fill across the horizon, ``values_by_period`` overrides individual
+ * Value/period grammar is identical to levers: `value` is a uniform
+ * fill across the horizon, `values_by_period` overrides individual
  * months. The canonical uses: zero out a base-month one-off so
  * carry-forward stops replicating it, or hold a line at a known budget
  * number no driver models.
@@ -8587,7 +8587,7 @@ export type LineAssertionRequest = {
     /**
      * Qname
      *
-     * QName of the statement leaf to assert (e.g. ``rs-gaap:NonoperatingIncomeExpense``). Must be a calc-DAG leaf; rs-driver concepts belong in ``levers``.
+     * QName of the statement leaf to assert (e.g. `rs-gaap:NonoperatingIncomeExpense`). Must be a calc-DAG leaf; rs-driver concepts belong in `levers`.
      */
     qname: string;
     /**
@@ -8599,7 +8599,7 @@ export type LineAssertionRequest = {
     /**
      * Values By Period
      *
-     * Per-month overrides keyed by ``YYYY-MM``. Wins over ``value`` for the months it names.
+     * Per-month overrides keyed by `YYYY-MM`. Wins over `value` for the months it names.
      */
     values_by_period?: {
         [key: string]: number;
@@ -8610,19 +8610,19 @@ export type LineAssertionRequest = {
  * LineGrowthLite
  *
  * One statement line's persisted growth trajectory inside
- * ``ForecastMechanics``.
+ * `ForecastMechanics`.
  *
  * The generic per-line form of the revenue growth lever: grows an
  * income-statement leaf month-over-month at the asserted rate
- * (``line[t] = line[t-1] * (1 + rate[t])``), compounding from the base
+ * (`line[t] = line[t-1] * (1 + rate[t])`), compounding from the base
  * month's value. Months without a rate keep the engine's carry-forward.
- * Duration leaves only; disjoint from ``line_assertions`` and from any
+ * Duration leaves only; disjoint from `line_assertions` and from any
  * active catalog rule's target (one owner per line).
  *
  * Persistence deviates from levers/assertions deliberately: rates are
  * NOT duplicated as facts in the scenario FactSet — a growth rate on a
  * monetary statement element would be a unit-lying fact. This mechanics
- * copy is the single authored store; ``compute-forecast`` binds rates
+ * copy is the single authored store; `compute-forecast` binds rates
  * from here.
  */
 export type LineGrowthLite = {
@@ -8647,7 +8647,7 @@ export type LineGrowthLite = {
     /**
      * Values By Period
      *
-     * Expanded per-month growth rates keyed by ``YYYY-MM``.
+     * Expanded per-month growth rates keyed by `YYYY-MM`.
      */
     values_by_period: {
         [key: string]: number;
@@ -8659,27 +8659,27 @@ export type LineGrowthLite = {
  *
  * One statement line's asserted growth trajectory for the scenario.
  *
- * The generic per-line sibling of ``rs-driver:RevenueGrowthRate``: where
+ * The generic per-line sibling of `rs-driver:RevenueGrowthRate`: where
  * the catalog lever grows *revenue* through its seeded rule, a line
  * growth entry grows **any income-statement leaf** at a month-over-month
- * rate — ``value`` -0.05 cuts the line 5% per month, compounding from
+ * rate — `value` -0.05 cuts the line 5% per month, compounding from
  * the base month's value. This is what expense trajectories ("opex +2%/mo
  * with inflation", "cut costs 5%/mo starting October") use; without it
  * every unmodeled line just carries flat.
  *
- * Semantics per month: ``line[t] = line[t-1] * (1 + rate[t])``. Months
+ * Semantics per month: `line[t] = line[t-1] * (1 + rate[t])`. Months
  * the entry doesn't name keep the engine's carry-forward (grow-then-hold
- * ramps fall out of ``values_by_period`` naturally). **Duration leaves
+ * ramps fall out of `values_by_period` naturally). **Duration leaves
  * only**: balance-sheet lines roll from the IS and the working-capital
  * levers — grow the driving IS line instead. A line already driven by an
- * active catalog rule (e.g. Revenues with ``RevenueGrowthRate`` set) or
- * named by a ``line_assertions`` entry is rejected — one owner per line.
+ * active catalog rule (e.g. Revenues with `RevenueGrowthRate` set) or
+ * named by a `line_assertions` entry is rejected — one owner per line.
  */
 export type LineGrowthRequest = {
     /**
      * Qname
      *
-     * QName of the income-statement leaf to grow (e.g. ``rs-gaap:ResearchAndDevelopmentExpense``). Must be a calc-DAG duration leaf.
+     * QName of the income-statement leaf to grow (e.g. `rs-gaap:ResearchAndDevelopmentExpense`). Must be a calc-DAG duration leaf.
      */
     qname: string;
     /**
@@ -8691,7 +8691,7 @@ export type LineGrowthRequest = {
     /**
      * Values By Period
      *
-     * Per-month rate overrides keyed by ``YYYY-MM``. Wins over ``value`` for the months it names; months named by neither carry the line's prior value (rate 0).
+     * Per-month rate overrides keyed by `YYYY-MM`. Wins over `value` for the months it names; months named by neither carry the line's prior value (rate 0).
      */
     values_by_period?: {
         [key: string]: number;
@@ -8703,16 +8703,16 @@ export type LineGrowthRequest = {
  *
  * Filter ledger LineItems by flow concept.
  *
- * The single predicate kind shipped to date. ``values`` are flow-concept
- * qnames — mini's ``TransactionDescriptionCode`` values, rs-gaap flow
+ * The single predicate kind shipped to date. `values` are flow-concept
+ * qnames — mini's `TransactionDescriptionCode` values, rs-gaap flow
  * concepts (what the enrichment classifier emits for QuickBooks data),
- * future XBRL GL ``GenericFlowCategory`` codes. The engine resolves them
- * to element_ids and matches the first-class ``LineItem.flow_element_id``
+ * future XBRL GL `GenericFlowCategory` codes. The engine resolves them
+ * to element_ids and matches the first-class `LineItem.flow_element_id`
  * FK; matched lines aggregate signed into the attributed fact for the
  * period.
  *
- * ``field`` is accepted but ignored: the flow tag lives in the typed
- * ``flow_element_id`` FK, not in JSONB metadata. It stays on the wire so
+ * `field` is accepted but ignored: the flow tag lives in the typed
+ * `flow_element_id` FK, not in JSONB metadata. It stays on the wire so
  * existing request bodies keep validating.
  */
 export type LineItemMetadataPredicate = {
@@ -8725,13 +8725,13 @@ export type LineItemMetadataPredicate = {
     /**
      * Field
      *
-     * Accepted but ignored. The flow tag lives in the typed ``flow_element_id`` FK, not JSONB metadata. Retained for wire-compatibility.
+     * Accepted but ignored. The flow tag lives in the typed `flow_element_id` FK, not JSONB metadata. Retained for wire-compatibility.
      */
     field?: string;
     /**
      * Values
      *
-     * Flow-concept qnames that route to this filter's target concept. A LineItem matches when its ``flow_element_id`` is one of the elements named here AND the line falls within the rollforward's period.
+     * Flow-concept qnames that route to this filter's target concept. A LineItem matches when its `flow_element_id` is one of the elements named here AND the line falls within the rollforward's period.
      */
     values: Array<string>;
 };
@@ -8742,7 +8742,7 @@ export type LineItemMetadataPredicate = {
  * Link an entity to a taxonomy (creates the ENTITY_HAS_TAXONOMY edge).
  *
  * This is how a graph declares "this entity reports under this taxonomy."
- * For ``chart_of_accounts`` taxonomies, this tells the platform which CoA
+ * For `chart_of_accounts` taxonomies, this tells the platform which CoA
  * the entity uses. For reporting taxonomies, which standard (us-gaap,
  * ifrs). Idempotent — re-linking returns the existing edge unchanged.
  *
@@ -8884,7 +8884,7 @@ export type LiveFinancialStatementRequest = {
     /**
      * Statement Type
      *
-     * income_statement | balance_sheet | cash_flow_statement | equity_statement. ``equity_statement`` is provisional — equity balances, not a rollforward — and is not offered on the MCP surface until it articulates.
+     * income_statement | balance_sheet | cash_flow_statement | equity_statement. `equity_statement` is provisional — equity balances, not a rollforward — and is not offered on the MCP surface until it articulates.
      */
     statement_type: string;
     /**
@@ -8936,7 +8936,7 @@ export type LiveFinancialStatementResponse = {
     /**
      * Periods
      *
-     * Rendered columns, aligned with each row's ``values``. Current and prior for income_statement and balance_sheet; current only for cash_flow_statement — the prior period is pivoted as the indirect-method delta basis and not rendered.
+     * Rendered columns, aligned with each row's `values`. Current and prior for income_statement and balance_sheet; current only for cash_flow_statement — the prior period is pivoted as the indirect-method delta basis and not rendered.
      */
     periods: Array<PeriodSpec>;
     /**
@@ -9160,10 +9160,10 @@ export type MemoryRecord = {
  *
  * A bank feed is native accounting: the graph must already have a chart of
  * accounts and no live QuickBooks connection. Over OAuth (the hosted
- * default) the connection is created ``pending_oauth`` and activated by the
- * callback. ``api_key`` — a personal **read-only** Mercury token — connects
+ * default) the connection is created `pending_oauth` and activated by the
+ * callback. `api_key` — a personal **read-only** Mercury token — connects
  * at once without a browser round-trip, but only on deployments that turn
- * on ``MERCURY_API_KEY_CONNECTIONS_ENABLED`` (self-hosted and local); the
+ * on `MERCURY_API_KEY_CONNECTIONS_ENABLED` (self-hosted and local); the
  * hosted product refuses it.
  */
 export type MercuryConnectionConfig = {
@@ -9190,7 +9190,7 @@ export type MercuryConnectionConfig = {
 /**
  * MetricMechanics
  *
- * Derivative mechanics for ``block_type='metric'``.
+ * Derivative mechanics for `block_type='metric'`.
  *
  * A metric block composes its facts from one or more source blocks at
  * read time — covenant tests, ratios, KPI trend computations. The typed
@@ -9199,10 +9199,10 @@ export type MercuryConnectionConfig = {
  * derivation evaluator that actually computes facts from source-block
  * FactSets is not yet implemented.
  *
- * ``source_block_ids`` is the ordered list of Structure ids this metric
- * derives from; ``derivation_type`` names the kind of computation
- * (``ratio``, ``trailing_twelve_month``, ``covenant_test``, …), and
- * ``expression`` carries the agent-authored derivation string that the
+ * `source_block_ids` is the ordered list of Structure ids this metric
+ * derives from; `derivation_type` names the kind of computation
+ * (`ratio`, `trailing_twelve_month`, `covenant_test`, …), and
+ * `expression` carries the agent-authored derivation string that the
  * evaluator will consume at envelope build time.
  */
 export type MetricMechanics = {
@@ -9239,7 +9239,7 @@ export type MetricMechanics = {
 /**
  * MetricObservation
  *
- * One externally-observed value in an ``assert-metrics`` request.
+ * One externally-observed value in an `assert-metrics` request.
  */
 export type MetricObservation = {
     /**
@@ -9655,20 +9655,20 @@ export type OperationCosts = {
  *
  * Uniform response shape for every operation endpoint.
  *
- * Every dispatch carries an ``op_<ULID>`` operation_id, which is the bridge
+ * Every dispatch carries an `op_<ULID>` operation_id, which is the bridge
  * to the monitoring surface: pass it to
- * ``GET /v1/operations/{operation_id}/stream`` (see ``routers/operations.py``)
+ * `GET /v1/operations/{operation_id}/stream` (see `routers/operations.py`)
  * to subscribe to SSE progress events. Sync commands complete in the envelope
- * itself (``status: "completed"``, HTTP 200); async commands
- * (``status: "pending"``, HTTP 202) hand off to a background worker and stream
+ * itself (`status: "completed"`, HTTP 200); async commands
+ * (`status: "pending"`, HTTP 202) hand off to a background worker and stream
  * their tail through that SSE endpoint. Failed dispatches still mint an
- * ``operation_id`` so the audit log and any partial SSE events stay
+ * `operation_id` so the audit log and any partial SSE events stay
  * correlatable.
  *
- * ``TResult`` parameterizes ``result`` so per-op response shapes surface in
- * OpenAPI. Operations that pin ``OperationSpec.result_type`` get
- * ``OperationEnvelope[YourEnvelope]`` as their response model; the rest keep
- * the default ``Any`` shape (``result: any | null`` on the wire).
+ * `TResult` parameterizes `result` so per-op response shapes surface in
+ * OpenAPI. Operations that pin `OperationSpec.result_type` get
+ * `OperationEnvelope[YourEnvelope]` as their response model; the rest keep
+ * the default `Any` shape (`result: any | null` on the wire).
  */
 export type OperationEnvelope = {
     /**
@@ -12534,10 +12534,10 @@ export type PasskeyLoginVerifyRequest = {
  *
  * Begin enrollment.
  *
- * Two disjoint lanes: ``mfa_token`` (forced enrollment — the token was minted
+ * Two disjoint lanes: `mfa_token` (forced enrollment — the token was minted
  * seconds after a password verify, so it is its own freshness proof) or an
  * authenticated settings-flow enrollment, which must carry a fresh re-auth
- * proof — ``password``, or a ``reauth``-ceremony ``assertion`` when adding a
+ * proof — `password`, or a `reauth`-ceremony `assertion` when adding a
  * passkey beside an existing one.
  */
 export type PasskeyRegisterOptionsRequest = {
@@ -12823,8 +12823,8 @@ export type PerformanceInsights = {
  * A single reporting period column.
  *
  * Reports render facts in N period columns side-by-side. Each
- * ``PeriodSpec`` is one column — its ``start``/``end`` define the
- * window the report's facts roll up into; ``label`` is what the renderer
+ * `PeriodSpec` is one column — its `start`/`end` define the
+ * window the report's facts roll up into; `label` is what the renderer
  * prints in the column header. For year-over-year statements, supply two
  * PeriodSpecs (current + comparative); for YTD by quarter, supply four.
  */
@@ -12856,9 +12856,9 @@ export type PeriodSpec = {
  *
  * A bank feed is native accounting: the graph must already have a chart of
  * accounts and no live QuickBooks connection. The connection is created
- * ``pending_oauth``; ``POST /oauth/init`` returns a ``link_token`` for Plaid
- * Link, and the ``public_token`` Link hands back completes it through
- * ``POST /oauth/callback/plaid`` (as ``code``). One connection per institution
+ * `pending_oauth`; `POST /oauth/init` returns a `link_token` for Plaid
+ * Link, and the `public_token` Link hands back completes it through
+ * `POST /oauth/callback/plaid` (as `code`). One connection per institution
  * login; a graph can hold several.
  */
 export type PlaidConnectionConfig = {
@@ -13378,15 +13378,15 @@ export type PreviewReconcilingItemRequest = {
  *
  * On-demand trigger for the obligation-promotion sweep.
  *
- * Mirrors what the ``scheduled_obligation_promoter`` Dagster sensor does
+ * Mirrors what the `scheduled_obligation_promoter` Dagster sensor does
  * on its tick, but lets an interactive caller or an MCP close co-pilot
  * run it now instead of waiting for the background cadence — required to
  * drive a schedule-driven close to completion in a single session.
- * Flips matured ``pending`` ``schedule_entry_due`` events (period boundary
- * passed) to ``classified``; with ``dispatch_handlers`` it also drafts the
+ * Flips matured `pending` `schedule_entry_due` events (period boundary
+ * passed) to `classified`; with `dispatch_handlers` it also drafts the
  * closing entries in the same transaction (idempotent — reconciles to an
  * existing draft). The sweep also reaches *stranded* obligations —
- * already ``classified`` (by an earlier flip-only sweep) but with no
+ * already `classified` (by an earlier flip-only sweep) but with no
  * closing entry ever drafted — dispatching them in the same pass.
  */
 export type PromoteObligationsRequest = {
@@ -13680,7 +13680,7 @@ export type ReconcilingItemCatchUp = {
  * One account's net change between the posted entries and the new payload.
  *
  * Amounts are signed minor units in debit-positive convention: a positive
- * figure is a net debit, a negative one a net credit. ``delta`` is what a
+ * figure is a net debit, a negative one a net credit. `delta` is what a
  * catch-up entry would post to bring the books level.
  */
 export type ReconcilingItemDeltaLine = {
@@ -14055,8 +14055,8 @@ export type RemovePublishListMemberOperation = {
  *
  * Computed server-side at envelope-build time for blocks where rendering
  * is deterministic (the statement family today; future block types add
- * their own rendering builders). The frontend's ``BlockView``
- * ``Rendering`` projection consumes this directly — no client-side
+ * their own rendering builders). The frontend's `BlockView`
+ * `Rendering` projection consumes this directly — no client-side
  * rollup, depth computation, or calculation walk needed.
  */
 export type RenderingLite = {
@@ -14108,7 +14108,7 @@ export type RenderingPeriodLite = {
  *
  * Mirrors :class:`FactRow` in
  * :mod:`robosystems.operations.roboledger.reports.fact_grid`, restated at the
- * API boundary so envelope consumers don't depend on that module. ``values``
+ * API boundary so envelope consumers don't depend on that module. `values`
  * holds one entry per period column in :class:`RenderingLite.periods`.
  */
 export type RenderingRowLite = {
@@ -14191,10 +14191,10 @@ export type ReopenPeriodOperation = {
  *
  * Report definition summary — header metadata, no facts.
  *
- * Returned by ``create-report``, ``regenerate-report``,
- * ``file-report``, and ``transition-filing-status``. Use the package
+ * Returned by `create-report`, `regenerate-report`,
+ * `file-report`, and `transition-filing-status`. Use the package
  * read endpoint to retrieve a Report rehydrated with its rendered
- * ``InformationBlockEnvelope`` items.
+ * `InformationBlockEnvelope` items.
  */
 export type ReportResponse = {
     /**
@@ -14650,7 +14650,7 @@ export type RevokeReportShareResponse = {
 /**
  * RollforwardMechanics
  *
- * Filter-based attribution mechanics for ``block_type='rollforward'``.
+ * Filter-based attribution mechanics for `block_type='rollforward'`.
  *
  * Filter-based attribution: each block decomposes one BS source
  * element's period delta into a list of flow concepts via declared
@@ -14659,10 +14659,10 @@ export type RevokeReportShareResponse = {
  * attributed fact per filter per period, and arbitrates any residual
  * against the default change tag fallback.
  *
- * Reads directly from the typed ``structures.artifact_mechanics`` JSONB
- * column. ``attribution_filters`` rides as nested JSON; the predicate
+ * Reads directly from the typed `structures.artifact_mechanics` JSONB
+ * column. `attribution_filters` rides as nested JSON; the predicate
  * union widens as new predicate shapes are added — currently only
- * ``line_item_metadata_field`` is carried.
+ * `line_item_metadata_field` is carried.
  */
 export type RollforwardMechanics = {
     /**
@@ -14672,25 +14672,25 @@ export type RollforwardMechanics = {
     /**
      * Bs Source Element Id
      *
-     * Element id of the balance-sheet source whose period delta this block decomposes. Resolved from ``bs_source_qname`` at create time.
+     * Element id of the balance-sheet source whose period delta this block decomposes. Resolved from `bs_source_qname` at create time.
      */
     bs_source_element_id: string;
     /**
      * Bs Source Qname
      *
-     * QName of the BS source element (e.g. ``mini:CashAndCashEquivalents``). Round-tripped for caller convenience; ``bs_source_element_id`` is authoritative.
+     * QName of the BS source element (e.g. `mini:CashAndCashEquivalents`). Round-tripped for caller convenience; `bs_source_element_id` is authoritative.
      */
     bs_source_qname: string;
     /**
      * Default Change Tag Element Id
      *
-     * Element id of the default change tag — the fallback flow concept that receives any residual (Δ BS − Σ filter matches). Null when no default is declared; behavior on residual then follows ``validation_mode``.
+     * Element id of the default change tag — the fallback flow concept that receives any residual (Δ BS − Σ filter matches). Null when no default is declared; behavior on residual then follows `validation_mode`.
      */
     default_change_tag_element_id?: string | null;
     /**
      * Default Change Tag Qname
      *
-     * QName of the default change tag (e.g. ``rs-gaap:IncreaseDecreaseInCashAndCashEquivalents``). Round-tripped for caller convenience and operator-readable envelopes; ``default_change_tag_element_id`` is authoritative. Null iff ``default_change_tag_element_id`` is null.
+     * QName of the default change tag (e.g. `rs-gaap:IncreaseDecreaseInCashAndCashEquivalents`). Round-tripped for caller convenience and operator-readable envelopes; `default_change_tag_element_id` is authoritative. Null iff `default_change_tag_element_id` is null.
      */
     default_change_tag_qname?: string | null;
     /**
@@ -14702,7 +14702,7 @@ export type RollforwardMechanics = {
     /**
      * Validation Mode
      *
-     * Renderer arbitration policy when Σ filter matches != Δ BS. ``strict`` raises; ``residual_as_default`` emits the residual as a default-tag fact (the common case); ``warn_only`` logs and lets the imbalance pass.
+     * Renderer arbitration policy when Σ filter matches != Δ BS. `strict` raises; `residual_as_default` emits the residual as a default-tag fact (the common case); `warn_only` logs and lets the imbalance pass.
      */
     validation_mode?: 'strict' | 'residual_as_default' | 'warn_only';
 };
@@ -14712,8 +14712,8 @@ export type RollforwardMechanics = {
  *
  * Rule projection for the Information Block envelope.
  *
- * One row per ``public.rules`` entry scoped to this block. The rule
- * engine consumes ``rule_expression`` + ``rule_variables`` to evaluate
+ * One row per `public.rules` entry scoped to this block. The rule
+ * engine consumes `rule_expression` + `rule_variables` to evaluate
  * against the in-scope fact set; the envelope surfaces the rules so
  * the UI can render them as a checklist alongside any persisted
  * verification results.
@@ -14757,13 +14757,13 @@ export type RuleLite = {
     /**
      * Rule Severity
      *
-     * Failure severity — 'info' | 'warning' | 'error'. Enum closure enforced by the ``public.rules`` CHECK constraint.
+     * Failure severity — 'info' | 'warning' | 'error'. Enum closure enforced by the `public.rules` CHECK constraint.
      */
     rule_severity?: string;
     /**
      * Rule Origin
      *
-     * Provenance — 'forked' (from an upstream artifact, e.g. Seattle Method) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the ``public.rules`` CHECK constraint.
+     * Provenance — 'forked' (from an upstream artifact, e.g. Seattle Method) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the `public.rules` CHECK constraint.
      */
     rule_origin?: string;
 };
@@ -14777,13 +14777,13 @@ export type RuleTargetLite = {
     /**
      * Target Kind
      *
-     * Which atom type the rule targets — 'structure' | 'element' | 'association' | 'taxonomy'. Enum closure enforced by the ``public.rules`` CHECK constraint.
+     * Which atom type the rule targets — 'structure' | 'element' | 'association' | 'taxonomy'. Enum closure enforced by the `public.rules` CHECK constraint.
      */
     target_kind: string;
     /**
      * Target Ref Id
      *
-     * UUID of the target atom — structure_id, element_id, association_id, or taxonomy_id depending on ``target_kind``.
+     * UUID of the target atom — structure_id, element_id, association_id, or taxonomy_id depending on `target_kind`.
      */
     target_ref_id: string;
 };
@@ -14949,11 +14949,11 @@ export type ScheduleCreatedResponse = {
 /**
  * ScheduleMechanics
  *
- * Closing-entry generator mechanics for ``block_type='schedule'``.
+ * Closing-entry generator mechanics for `block_type='schedule'`.
  *
- * Reads the typed ``structures.artifact_mechanics`` JSONB column, falling back
- * to ``structures.metadata_`` for Schedule rows that lack it.
- * ``entry_template`` and ``schedule_metadata`` reuse the wire-level request
+ * Reads the typed `structures.artifact_mechanics` JSONB column, falling back
+ * to `structures.metadata_` for Schedule rows that lack it.
+ * `entry_template` and `schedule_metadata` reuse the wire-level request
  * shapes so OpenAPI emits one canonical type per concept.
  */
 export type ScheduleMechanics = {
@@ -15168,10 +15168,10 @@ export type SchemaValidationResponse = {
  * A single search result with snippet.
  *
  * A long SEC section (an MD&A, a commitments note) is indexed in parts, each
- * a document of its own: ``part`` of ``part_count``, ``parent_document_id``
- * shared by the section's parts, ``next_document_id`` to read on.
+ * a document of its own: `part` of `part_count`, `parent_document_id`
+ * shared by the section's parts, `next_document_id` to read on.
  *
- * On a grouped search, ``also_in_filings`` counts the other filings of the
+ * On a grouped search, `also_in_filings` counts the other filings of the
  * same filer whose same section (and part) matched and were folded into
  * this hit.
  */
@@ -15734,7 +15734,7 @@ export type ShareResultItem = {
 /**
  * SkippedForecastLite
  *
- * One rule/month soft-skip in a ``compute-forecast`` response.
+ * One rule/month soft-skip in a `compute-forecast` response.
  *
  * A skipped rule never aborts the walk — its target falls back to the
  * carry-forward value for that month (when a prior value exists).
@@ -15751,7 +15751,7 @@ export type SkippedForecastLite = {
     /**
      * Period
      *
-     * Month key (``YYYY-MM``) of the skip.
+     * Month key (`YYYY-MM`) of the skip.
      */
     period: string;
     /**
@@ -15767,7 +15767,7 @@ export type SkippedForecastLite = {
 /**
  * SkippedMetricLite
  *
- * One metric a ``compute-metrics`` run could not compute.
+ * One metric a `compute-metrics` run could not compute.
  *
  * Soft-fail by design: a missing operand fact (e.g. InterestExpense for a
  * debt-free entity) or an undefined ratio (division by zero) skips the
@@ -15855,10 +15855,10 @@ export type SqlStatementResponse = {
  *
  * Renderer mechanics for the statement family of block types.
  *
- * Covers ``balance_sheet``, ``income_statement``, ``cash_flow_statement``,
- * and ``equity_statement``. All fields are optional so library-seeded
+ * Covers `balance_sheet`, `income_statement`, `cash_flow_statement`,
+ * and `equity_statement`. All fields are optional so library-seeded
  * rows that haven't been enriched yet still validate against an empty
- * tagged body. The existing ``statement(...)`` GraphQL field continues
+ * tagged body. The existing `statement(...)` GraphQL field continues
  * to serve rendered output; this mechanics model is the source of truth
  * for future renderer configuration.
  */
@@ -16012,9 +16012,9 @@ export type StructureSummary = {
  *
  * Partial-update patch for a single structure, keyed by structure_id.
  *
- * ``concept_arrangement`` makes a mis-CAP'd structure repairable in
- * place (e.g. promoting a ``set`` note to ``roll_up`` so it gains a
- * footing rule); ``block_type`` stays immutable — it drives block-type
+ * `concept_arrangement` makes a mis-CAP'd structure repairable in
+ * place (e.g. promoting a `set` note to `roll_up` so it gains a
+ * footing rule); `block_type` stays immutable — it drives block-type
  * routing, so changing it is a re-create, not an edit.
  */
 export type StructureUpdatePatch = {
@@ -16054,7 +16054,7 @@ export type StructureUpdatePatch = {
  * Subgraph count against the parent graph tier's cap.
  *
  * Subgraphs are refused at the tier cap regardless of how small they are,
- * so this is a count axis independent of the storage one — ``instance``
+ * so this is a count axis independent of the storage one — `instance`
  * already itemizes their footprint.
  */
 export type SubgraphLimits = {
@@ -16432,7 +16432,7 @@ export type TaxonomyBlockAssociationRequest = {
     /**
      * Association Type
      *
-     * DB ``associations.association_type`` enum. ``presentation`` = parent-child hierarchy; ``calculation`` = summation arc.
+     * DB `associations.association_type` enum. `presentation` = parent-child hierarchy; `calculation` = summation arc.
      */
     association_type: 'presentation' | 'calculation' | 'mapping' | 'equivalence' | 'general-special' | 'essence-alias';
     /**
@@ -16506,7 +16506,7 @@ export type TaxonomyBlockElement = {
     /**
      * Origin
      *
-     * Provenance — 'library' if the element's taxonomy is locked (``is_locked=true``), else 'tenant'.
+     * Provenance — 'library' if the element's taxonomy is locked (`is_locked=true`), else 'tenant'.
      */
     origin: 'library' | 'tenant';
 };
@@ -16516,17 +16516,17 @@ export type TaxonomyBlockElement = {
  *
  * Element definition inside a Taxonomy Block envelope.
  *
- * ``qname`` is the envelope-local identifier — must be unique within the
- * envelope's ``elements`` list and is used by association / rule / patch
- * payloads as the reference token. ``parent_ref`` may reference another
- * envelope-local qname or, for ``reporting_extension`` blocks, a library
+ * `qname` is the envelope-local identifier — must be unique within the
+ * envelope's `elements` list and is used by association / rule / patch
+ * payloads as the reference token. `parent_ref` may reference another
+ * envelope-local qname or, for `reporting_extension` blocks, a library
  * element qname.
  */
 export type TaxonomyBlockElementRequest = {
     /**
      * Qname
      *
-     * Envelope-local element identifier. Must be unique within the envelope's ``elements`` list. Used as the reference token for associations, rules, and update patches.
+     * Envelope-local element identifier. Must be unique within the envelope's `elements` list. Used as the reference token for associations, rules, and update patches.
      */
     qname: string;
     /**
@@ -16538,7 +16538,7 @@ export type TaxonomyBlockElementRequest = {
     /**
      * Trait
      *
-     * FASB metamodel trait for the element. Required for ``chart_of_accounts`` blocks; optional for ``custom_ontology``.
+     * FASB metamodel trait for the element. Required for `chart_of_accounts` blocks; optional for `custom_ontology`.
      */
     trait?: string | null;
     /**
@@ -16572,7 +16572,7 @@ export type TaxonomyBlockElementRequest = {
     /**
      * Code
      *
-     * Optional chart-of-accounts code (e.g. '1000', '4100-02'). Only meaningful for ``chart_of_accounts`` blocks.
+     * Optional chart-of-accounts code (e.g. '1000', '4100-02'). Only meaningful for `chart_of_accounts` blocks.
      */
     code?: string | null;
     /**
@@ -16582,7 +16582,7 @@ export type TaxonomyBlockElementRequest = {
     /**
      * Parent Ref
      *
-     * qname of the parent element — either another envelope-local qname or, for ``reporting_extension`` blocks, a library element qname.
+     * qname of the parent element — either another envelope-local qname or, for `reporting_extension` blocks, a library element qname.
      */
     parent_ref?: string | null;
     /**
@@ -16600,7 +16600,7 @@ export type TaxonomyBlockElementRequest = {
  *
  * One envelope per taxonomy instance. Carries identity + type,
  * registry-sourced display metadata, the parent taxonomy pointer (for
- * ``reporting_extension`` blocks), and bundled atoms (elements,
+ * `reporting_extension` blocks), and bundled atoms (elements,
  * structures, associations, rules, verification results).
  */
 export type TaxonomyBlockEnvelope = {
@@ -16697,9 +16697,9 @@ export type TaxonomyBlockEnvelope = {
  *
  * Rule projection for the Taxonomy Block envelope.
  *
- * Exactly one of ``rule_pattern`` (arithmetic) or ``rule_check_kind``
+ * Exactly one of `rule_pattern` (arithmetic) or `rule_check_kind`
  * (model-structure) is non-null per row, enforced by the
- * ``check_rule_pattern_kind_xor`` DB constraint.
+ * `check_rule_pattern_kind_xor` DB constraint.
  */
 export type TaxonomyBlockRule = {
     /**
@@ -16743,7 +16743,7 @@ export type TaxonomyBlockRule = {
     /**
      * Target Ref
      *
-     * Polymorphic display string — structure_id, element qname, association_id, or taxonomy_id depending on ``target_kind``.
+     * Polymorphic display string — structure_id, element qname, association_id, or taxonomy_id depending on `target_kind`.
      */
     target_ref?: string | null;
 };
@@ -16753,17 +16753,17 @@ export type TaxonomyBlockRule = {
  *
  * Rule definition inside a Taxonomy Block envelope.
  *
- * Exactly one of ``target_structure_ref``, ``target_element_qname``, or
- * ``target_taxonomy_self`` must be set (or all null for a global rule).
- * The ``model_validator`` enforces this contract at the Pydantic layer.
+ * Exactly one of `target_structure_ref`, `target_element_qname`, or
+ * `target_taxonomy_self` must be set (or all null for a global rule).
+ * The `model_validator` enforces this contract at the Pydantic layer.
  *
  * Only **arithmetic** rule patterns are user-creatable via this API
- * (the ``rule_pattern`` Literal below). The 6 model-structure check
- * kinds (``NoCycles``, ``NoOrphanArcs``, ``ParentBeforeChild``,
- * ``LeafHasClassification``, ``LibraryOriginImmutability``,
- * ``UniqueQNameInTaxonomy``) are system-managed — they're auto-emitted
+ * (the `rule_pattern` Literal below). The 6 model-structure check
+ * kinds (`NoCycles`, `NoOrphanArcs`, `ParentBeforeChild`,
+ * `LeafHasClassification`, `LibraryOriginImmutability`,
+ * `UniqueQNameInTaxonomy`) are system-managed — they're auto-emitted
  * by :func:`emit_auto_rules` at taxonomy-block creation time and
- * populate ``rules.rule_check_kind`` instead of ``rule_pattern``.
+ * populate `rules.rule_check_kind` instead of `rule_pattern`.
  */
 export type TaxonomyBlockRuleRequest = {
     /**
@@ -16797,7 +16797,7 @@ export type TaxonomyBlockRuleRequest = {
     /**
      * Variables
      *
-     * ``$Variable`` → qname bindings. Each entry is ``{'variable_name': str, 'variable_qname': str}``.
+     * `$Variable` → qname bindings. Each entry is `{'variable_name': str, 'variable_qname': str}`.
      */
     variables?: Array<{
         [key: string]: unknown;
@@ -16821,7 +16821,7 @@ export type TaxonomyBlockRuleRequest = {
     /**
      * Target Taxonomy Self
      *
-     * True iff the rule targets the envelope's own taxonomy row (``target_kind='taxonomy'``). Mutually exclusive with the other target_* fields.
+     * True iff the rule targets the envelope's own taxonomy row (`target_kind='taxonomy'`). Mutually exclusive with the other target_* fields.
      */
     target_taxonomy_self?: boolean;
     /**
@@ -16879,13 +16879,13 @@ export type TaxonomyBlockStructureRequest = {
     /**
      * Block Type
      *
-     * DB ``structures.block_type`` enum. CoA blocks use ``chart_of_accounts``; reporting extensions use the statement family, ``regulatory_disclosure`` (disclosure notes), or ``custom``; custom ontology uses ``custom``.
+     * DB `structures.block_type` enum. CoA blocks use `chart_of_accounts`; reporting extensions use the statement family, `regulatory_disclosure` (disclosure notes), or `custom`; custom ontology uses `custom`.
      */
     block_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'rollforward' | 'reconciliation' | 'policy' | 'metric' | 'regulatory_disclosure';
     /**
      * Concept Arrangement
      *
-     * Concept Arrangement Pattern (CAP) — how the structure's concepts relate (mirrors the ``structures.concept_arrangement`` CHECK vocabulary). A disclosure note footing members to a total is ``roll_up``. Null leaves the pattern unset.
+     * Concept Arrangement Pattern (CAP) — how the structure's concepts relate (mirrors the `structures.concept_arrangement` CHECK vocabulary). A disclosure note footing members to a total is `roll_up`. Null leaves the pattern unset.
      */
     concept_arrangement?: 'set' | 'roll_up' | 'roll_forward' | 'roll_forward_info' | 'adjustment' | 'variance' | 'arithmetic' | 'text_block' | 'level1_textblock' | 'level2_textblock' | 'level3_textblock' | 'level4_detail' | 'table_equivalent_textblock' | 'grid' | 'compound_fact' | null;
     /**
@@ -17161,9 +17161,9 @@ export type TransactionTemplateLeg = {
  *
  * Generic filing-status transition — escape hatch for non-file moves.
  *
- * Used for ``draft → under_review`` (submit for review) and
- * ``filed → archived`` (supersede / retire). Filing the package goes
- * through :class:`FileReportRequest` so ``filed_at`` / ``filed_by``
+ * Used for `draft → under_review` (submit for review) and
+ * `filed → archived` (supersede / retire). Filing the package goes
+ * through :class:`FileReportRequest` so `filed_at` / `filed_by`
  * audit fields land cleanly.
  */
 export type TransitionFilingStatusRequest = {
@@ -17262,8 +17262,8 @@ export type UpdateApiKeyRequest = {
 /**
  * UpdateAgentRequest
  *
- * Patch an agent. All fields except ``agent_id`` are optional —
- * pass only what changes. ``metadata_patch`` is deep-merged into the
+ * Patch an agent. All fields except `agent_id` are optional —
+ * pass only what changes. `metadata_patch` is deep-merged into the
  * existing metadata dict.
  */
 export type UpdateAgentRequest = {
@@ -17505,12 +17505,12 @@ export type UpdateEventBlockRequest = {
  * UpdateEventHandlerRequest
  *
  * Update an existing event handler. All fields except
- * ``event_handler_id`` are optional — pass only what changes.
+ * `event_handler_id` are optional — pass only what changes.
  *
- * ``transaction_template`` is **fully replaced** when supplied (no
- * partial template patches). ``metadata_patch`` does deep-merge into
- * the existing metadata. ``approve=true`` sets ``approved_by`` and
- * ``approved_at``; ``approve=false`` clears them.
+ * `transaction_template` is **fully replaced** when supplied (no
+ * partial template patches). `metadata_patch` does deep-merge into
+ * the existing metadata. `approve=true` sets `approved_by` and
+ * `approved_at`; `approve=false` clears them.
  */
 export type UpdateEventHandlerRequest = {
     /**
@@ -17589,11 +17589,11 @@ export type UpdateEventHandlerRequest = {
  * Update a forecast block in place.
  *
  * Mutable: name, scenario_kind, horizon_months, base_period, levers,
- * line_assertions. ``levers`` and ``line_assertions`` are each a
+ * line_assertions. `levers` and `line_assertions` are each a
  * **full replace** when provided (partial edits would make the asserted
  * set ambiguous); replacing one leaves the other as stored. Updating
  * does NOT recompute — previously computed scenario months go stale
- * until the next ``compute-forecast`` run (the compute-metrics drift
+ * until the next `compute-forecast` run (the compute-metrics drift
  * semantics).
  */
 export type UpdateForecastRequest = {
@@ -17622,7 +17622,7 @@ export type UpdateForecastRequest = {
     /**
      * Base Anchor
      *
-     * Switch the walk between seam-anchored (default) and pinned to ``base_period``. Changes nothing about the authored window, so unlike ``base_period`` it needs no levers re-supplied.
+     * Switch the walk between seam-anchored (default) and pinned to `base_period`. Changes nothing about the authored window, so unlike `base_period` it needs no levers re-supplied.
      */
     base_anchor?: 'seam' | 'fixed' | null;
     /**
@@ -17661,14 +17661,14 @@ export type UpdateGraphMemberRoleRequest = {
  *
  * Partial update — only supplied (non-null) fields change, so a caller
  * editing just the display name need not resend the description and tags.
- * Because ``None`` means "leave alone", clearing a field uses its empty
- * value instead: pass ``""`` to clear the description and ``[]`` to clear
- * the tags. ``graph_name`` cannot be cleared; it is the graph's label
+ * Because `None` means "leave alone", clearing a field uses its empty
+ * value instead: pass `""` to clear the description and `[]` to clear
+ * the tags. `graph_name` cannot be cleared; it is the graph's label
  * everywhere it is listed.
  *
  * This is the platform-level label for the graph, independent of the
  * entity name shown on financial statements — change that through
- * ``POST /extensions/roboledger/{graph_id}/operations/update-entity``.
+ * `POST /extensions/roboledger/{graph_id}/operations/update-entity`.
  */
 export type UpdateGraphMetadataOp = {
     /**
@@ -17768,7 +17768,7 @@ export type UpdateMemberRoleRequest = {
  *
  * Body for the update-memory operation (partial update of a stored memory).
  *
- * Only supplied fields are changed; the memory is re-embedded when ``text``
+ * Only supplied fields are changed; the memory is re-embedded when `text`
  * changes.
  */
 export type UpdateMemoryOp = {
@@ -17913,7 +17913,7 @@ export type UpdatePublishListOperation = {
  * invalidate every period already rendered — so switching BS source means
  * delete and re-create.
  *
- * **Partial-update semantics**: an omitted (``None``) field means "leave
+ * **Partial-update semantics**: an omitted (`None`) field means "leave
  * unchanged". There is no wire-level way to *clear* the default change tag or
  * empty the attribution_filters list; delete and re-create the block instead.
  * The asymmetry is deliberate — a clear-sentinel costs wire-shape complexity
@@ -17934,7 +17934,7 @@ export type UpdateRollforwardRequest = {
     /**
      * Default Change Tag Qname
      *
-     * New default change tag qname. Pass a value to *change* the default; omit (``None``) to leave unchanged. There is no wire-level way to clear the default — see the class docstring.
+     * New default change tag qname. Pass a value to *change* the default; omit (`None`) to leave unchanged. There is no wire-level way to clear the default — see the class docstring.
      */
     default_change_tag_qname?: string | null;
     /**
@@ -18050,7 +18050,7 @@ export type UpdateSecurityOperation = {
 /**
  * UpdateTaxonomyBlockRequest
  *
- * Request body for the ``update-taxonomy-block`` operation.
+ * Request body for the `update-taxonomy-block` operation.
  *
  * Top-level fields (name / description / version) apply to the taxonomy
  * row itself. The delta lists mutate atoms incrementally — the validator
@@ -18129,8 +18129,8 @@ export type UpdateTaxonomyBlockRequest = {
  *
  * Request model for updating user profile.
  *
- * Changing ``email`` re-authenticates: a fresh proof (password re-entry or a
- * ``mgmt``-flow passkey assertion) must accompany the request, exactly as
+ * Changing `email` re-authenticates: a fresh proof (password re-entry or a
+ * `mgmt`-flow passkey assertion) must accompany the request, exactly as
  * passkey enrollment and removal require. Name-only updates need no proof.
  */
 export type UpdateUserRequest = {
@@ -18247,7 +18247,7 @@ export type UserResponse = {
  *
  * Every rule runs once per rendered period column; on a multi-column
  * statement each failure and warning is prefixed with the column it was
- * found in (``[Prior] …``).
+ * found in (`[Prior] …`).
  */
 export type ValidationCheckResponse = {
     /**
@@ -18316,7 +18316,7 @@ export type ValidationError = {
  * Outcome of guard-rail validation on a rendered statement.
  *
  * Distinct from :class:`VerificationResultLite` (which surfaces the
- * rule-engine outcomes from ``public.verification_results``). This lite
+ * rule-engine outcomes from `public.verification_results`). This lite
  * type carries the synchronous guard-rail checks computed at
  * envelope-build time — accounting equation, totals foot, etc.
  */
@@ -18346,11 +18346,11 @@ export type ValidationLite = {
 /**
  * VerificationCategorySummary
  *
- * Pass/fail/skip counts for one ``rule_category`` within a block's
+ * Pass/fail/skip counts for one `rule_category` within a block's
  * verification results.
  *
  * Drives the per-category accordions in the Verification Results panel.
- * ``category`` is the rule's ``rule_category``
+ * `category` is the rule's `rule_category`
  * (one of the cm:VerificationRule subclasses), resolved by joining each
  * result to its Rule.
  */
@@ -18386,9 +18386,9 @@ export type VerificationCategorySummary = {
  *
  * Persisted outcome of one Rule evaluation.
  *
- * One row per ``public.verification_results`` entry the rule engine
+ * One row per `public.verification_results` entry the rule engine
  * writes. The envelope surfaces them so the block viewer's
- * "Verification Results" tab and MCP ``list-verification-failures``
+ * "Verification Results" tab and MCP `list-verification-failures`
  * tool can render + aggregate without a second round-trip.
  */
 export type VerificationResultLite = {
@@ -18411,7 +18411,7 @@ export type VerificationResultLite = {
     /**
      * Status
      *
-     * 'pass' | 'fail' | 'error' | 'skipped'. Enum closure enforced by the ``public.verification_results`` CHECK constraint.
+     * 'pass' | 'fail' | 'error' | 'skipped'. Enum closure enforced by the `public.verification_results` CHECK constraint.
      */
     status: string;
     /**
@@ -18435,13 +18435,13 @@ export type VerificationResultLite = {
 /**
  * VerificationSummary
  *
- * Server-computed aggregate of a block's ``verification_results``.
+ * Server-computed aggregate of a block's `verification_results`.
  *
- * Overall counts plus a per-``rule_category`` breakdown, so the viewer
+ * Overall counts plus a per-`rule_category` breakdown, so the viewer
  * renders the grouped Verification Results panel
  * without a client-side results→rules join. Status closure is
- * ``pass | fail | error | skipped`` (the ``public.verification_results``
- * CHECK); ``total`` is their sum.
+ * `pass | fail | error | skipped` (the `public.verification_results`
+ * CHECK); `total` is their sum.
  */
 export type VerificationSummary = {
     /**
@@ -18568,21 +18568,21 @@ export type ViewMetadata = {
 /**
  * ViewProjections
  *
- * Charlie's six ``type-of View`` arms, surfaced at the envelope boundary.
+ * Charlie's six `type-of View` arms, surfaced at the envelope boundary.
  *
  * Each projection is computed server-side at envelope-build time when
- * its source data is available. The frontend's ``BlockView`` dispatcher
+ * its source data is available. The frontend's `BlockView` dispatcher
  * routes to the projection component matching the user's selected view
  * mode; missing projections (those still in backlog) render as empty
  * states without breaking the dispatcher.
  *
- * Today: ``rendering`` is computed for the statement family, and
- * ``chart`` (the 7th arm — panel/series config over the rendering's
+ * Today: `rendering` is computed for the statement family, and
+ * `chart` (the 7th arm — panel/series config over the rendering's
  * rows and periods) for metric blocks.
- * Other arms (``fact_table``, ``model_structure``, ``verification_results``,
- * ``report_elements``, ``business_rules``) come online as their backend
- * support lands; ``fact_table`` is trivially derivable from
- * ``InformationBlockEnvelope.facts`` and may stay as a frontend-only
+ * Other arms (`fact_table`, `model_structure`, `verification_results`,
+ * `report_elements`, `business_rules`) come online as their backend
+ * support lands; `fact_table` is trivially derivable from
+ * `InformationBlockEnvelope.facts` and may stay as a frontend-only
  * projection.
  */
 export type ViewProjections = {
@@ -18630,11 +18630,11 @@ export type ViewResponse = {
 /**
  * _CreateForecastArm
  *
- * Create-information-block body for ``block_type="forecast"``.
+ * Create-information-block body for `block_type="forecast"`.
  *
  * Carries a typed forecast payload — the authored scenario container:
  * scenario identity, horizon, base period, lever assertions on
- * ``rs-driver:*`` catalog elements. Run ``compute-forecast`` after
+ * `rs-driver:*` catalog elements. Run `compute-forecast` after
  * creating to derive the forward months.
  */
 export type CreateForecastArm = {
@@ -18686,7 +18686,7 @@ export type CreateLegacyArm = {
 /**
  * _CreateRollforwardArm
  *
- * Create-information-block body for ``block_type="rollforward"``.
+ * Create-information-block body for `block_type="rollforward"`.
  *
  * Carries a typed rollforward payload. The block decomposes the period
  * change in a BS source element across the declared attribution
@@ -18729,7 +18729,7 @@ export type CreateScheduleArm = {
 /**
  * _DeleteForecastArm
  *
- * Delete-information-block body for ``block_type="forecast"``.
+ * Delete-information-block body for `block_type="forecast"`.
  *
  * Removes the scenario's entire parallel universe — the lever FactSet
  * and every computed scenario FactSet. Actuals are never touched.
@@ -18777,7 +18777,7 @@ export type DeleteLegacyArm = {
 /**
  * _DeleteRollforwardArm
  *
- * Delete-information-block body for ``block_type="rollforward"``.
+ * Delete-information-block body for `block_type="rollforward"`.
  *
  * Cascades through any synthetic facts produced by this block's filter
  * evaluations. The underlying ledger LineItems are not touched.
@@ -18818,10 +18818,10 @@ export type DeleteScheduleArm = {
 /**
  * _UpdateForecastArm
  *
- * Update-information-block body for ``block_type="forecast"``.
+ * Update-information-block body for `block_type="forecast"`.
  *
  * Mutable: name, scenario_kind, horizon_months, base_period, levers
- * (full replace). Updating does not recompute — run ``compute-forecast``
+ * (full replace). Updating does not recompute — run `compute-forecast`
  * to refresh the scenario's derived months.
  */
 export type UpdateForecastArm = {
@@ -18867,7 +18867,7 @@ export type UpdateLegacyArm = {
 /**
  * _UpdateRollforwardArm
  *
- * Update-information-block body for ``block_type="rollforward"``.
+ * Update-information-block body for `block_type="rollforward"`.
  *
  * Carries a typed rollforward update payload. Mutable fields: name,
  * default_change_tag_qname, attribution_filters, validation_mode.
@@ -26242,7 +26242,22 @@ export type HandleHttpGetExtensionsGraphIdGraphqlGetResponses = {
 };
 
 export type HandleHttpPostExtensionsGraphIdGraphqlPostData = {
-    body?: never;
+    body: {
+        /**
+         * The GraphQL document to execute.
+         */
+        query: string;
+        /**
+         * Values for the document's variables.
+         */
+        variables?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Which operation to run, when the document declares more than one.
+         */
+        operationName?: string;
+    };
     path: {
         /**
          * Graph Id
@@ -29609,70 +29624,6 @@ export type UnblockSourceGraphResponses = {
 
 export type UnblockSourceGraphResponse = UnblockSourceGraphResponses[keyof UnblockSourceGraphResponses];
 
-export type LiveFinancialStatementData = {
-    body: LiveFinancialStatementRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/extensions/roboledger/{graph_id}/operations/live-financial-statement';
-};
-
-export type LiveFinancialStatementErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type LiveFinancialStatementError = LiveFinancialStatementErrors[keyof LiveFinancialStatementErrors];
-
-export type LiveFinancialStatementResponses = {
-    /**
-     * Successful Response
-     */
-    200: OperationEnvelopeLiveFinancialStatementResponse;
-};
-
-export type LiveFinancialStatementResponse2 = LiveFinancialStatementResponses[keyof LiveFinancialStatementResponses];
-
 export type BuildFactGridData = {
     body: CreateViewRequest;
     headers?: {
@@ -29928,6 +29879,70 @@ export type InformationBlockResponses = {
 };
 
 export type InformationBlockResponse2 = InformationBlockResponses[keyof InformationBlockResponses];
+
+export type LiveFinancialStatementData = {
+    body: LiveFinancialStatementRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/live-financial-statement';
+};
+
+export type LiveFinancialStatementErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type LiveFinancialStatementError = LiveFinancialStatementErrors[keyof LiveFinancialStatementErrors];
+
+export type LiveFinancialStatementResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeLiveFinancialStatementResponse;
+};
+
+export type LiveFinancialStatementResponse2 = LiveFinancialStatementResponses[keyof LiveFinancialStatementResponses];
 
 export type CreatePortfolioBlockData = {
     body: CreatePortfolioBlockRequest;
