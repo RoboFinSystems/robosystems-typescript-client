@@ -1678,6 +1678,23 @@ export const initializeLedger = <ThrowOnError extends boolean = false>(options: 
 });
 
 /**
+ * Initialize Chart of Accounts
+ *
+ * Create the graph's chart of accounts from a shipped template — the fresh-company path to native books. Use when the graph has NO chart (a QuickBooks-synced tenant never needs this: its chart arrives with the sync and stays after a sever) and before connecting a bank feed, which needs a chart to resolve against. Templates: `saas` (subscription software), `services` (professional services), `product` (inventory and COGS) — the `chartTemplates` GraphQL field lists them with names and account counts. Creates the chart, its `coa_mapping` structure and the template's CoA → rs-gaap mapping associations in one transaction, with the equity rows mapped by the entity's legal form (`entity_type`, defaulting to the graph's primary entity). One-time: 409 once a chart exists — a chart is never replaced. Customize afterwards with update-taxonomy-block; accounts that carry activity are never deleted.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const initializeChartOfAccounts = <ThrowOnError extends boolean = false>(options: Options<InitializeChartOfAccountsData, ThrowOnError>): RequestResult<InitializeChartOfAccountsResponses, InitializeChartOfAccountsErrors, ThrowOnError> => (options.client ?? client).post<InitializeChartOfAccountsResponses, InitializeChartOfAccountsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/initialize-chart-of-accounts',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Update Entity
  *
  * Update the graph's primary entity. Only provided (non-null) fields are updated. The graph is implicit in the URL — the operation always targets the graph's primary entity.
@@ -1721,23 +1738,6 @@ export const changeReportingStyle = <ThrowOnError extends boolean = false>(optio
 export const createTaxonomyBlock = <ThrowOnError extends boolean = false>(options: Options<CreateTaxonomyBlockData, ThrowOnError>): RequestResult<CreateTaxonomyBlockResponses, CreateTaxonomyBlockErrors, ThrowOnError> => (options.client ?? client).post<CreateTaxonomyBlockResponses, CreateTaxonomyBlockErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/create-taxonomy-block',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Initialize Chart of Accounts
- *
- * Create the graph's chart of accounts from a shipped template — the fresh-company path to native books. Use when the graph has NO chart (a QuickBooks-synced tenant never needs this: its chart arrives with the sync and stays after a sever) and before connecting a bank feed, which needs a chart to resolve against. Templates: `saas` (subscription software), `services` (professional services), `product` (inventory and COGS) — the `chartTemplates` GraphQL field lists them with names and account counts. Creates the chart, its `coa_mapping` structure and the template's CoA → rs-gaap mapping associations in one transaction, with the equity rows mapped by the entity's legal form (`entity_type`, defaulting to the graph's primary entity). One-time: 409 once a chart exists — a chart is never replaced. Customize afterwards with update-taxonomy-block; accounts that carry activity are never deleted.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const initializeChartOfAccounts = <ThrowOnError extends boolean = false>(options: Options<InitializeChartOfAccountsData, ThrowOnError>): RequestResult<InitializeChartOfAccountsResponses, InitializeChartOfAccountsErrors, ThrowOnError> => (options.client ?? client).post<InitializeChartOfAccountsResponses, InitializeChartOfAccountsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/initialize-chart-of-accounts',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -2037,7 +2037,7 @@ export const createEventBlock = <ThrowOnError extends boolean = false>(options: 
 /**
  * Update Event Block
  *
- * Apply a status transition (captured → classified | committed | voided) and/or field corrections (description, effective_at, metadata_patch) to an existing event block. Only supplied fields are updated. captured → classified records an account choice without posting — for a bank-feed line, patch metadata.classified_element_id (or accept_suggestion: true) in the same call. When the transition is captured/classified → committed, the registered Python handler fires against the captured metadata to produce the GL rows; a bank-feed line with no account chosen and no matching rule is refused. Errors from the handler (validation, element resolution, closed period, unbalanced lines) surface as 422 here so the inbox UI can display the failure reason without retry.
+ * Apply a status transition (captured → classified | committed | voided) and/or field corrections (description, effective_at, metadata_patch) to an existing event block. Only supplied fields are updated. captured → classified records an account choice without posting — for a bank-feed line, patch metadata.classified_element_id (or accept_suggestion: true) in the same call. When the transition is captured/classified → committed, the registered Python handler fires against the captured metadata to produce the GL rows, unless it already wrote them when the event was created; a bank-feed line with no account chosen and no matching rule is refused. Errors from the handler (validation, element resolution, closed period, unbalanced lines) surface as 422 here so the inbox UI can display the failure reason without retry.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2188,57 +2188,6 @@ export const deleteJournalEntry = <ThrowOnError extends boolean = false>(options
 });
 
 /**
- * Promote Due Schedule Obligations
- *
- * Promote matured pending schedule obligations (schedule_entry_due events whose period boundary has passed) to 'classified', and — when dispatch_handlers=true (default) — draft their closing entries in the same transaction. Also reaches stranded obligations: events already 'classified' (by an earlier flip-only sweep) whose closing entry was never drafted are dispatched in the same pass, and reported via stranded_count. This is the on-demand form of the background obligation-promotion sweep; run it before close-period when a schedule was just created or when you can't wait for the Dagster sensor. Idempotent: re-running skips already-classified obligations and reconciles to existing drafts.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const promoteObligations = <ThrowOnError extends boolean = false>(options: Options<PromoteObligationsData, ThrowOnError>): RequestResult<PromoteObligationsResponses, PromoteObligationsErrors, ThrowOnError> => (options.client ?? client).post<PromoteObligationsResponses, PromoteObligationsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/promote-obligations',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Rebuild Schedule In Place
- *
- * Re-run the schedule generator in place on an existing schedule. Atomic alternative to delete-then-recreate (which orphans pending obligations): preserves the structure id + element associations + taxonomy, voids the old pending obligation chain, deletes the old facts and SumEquals rules, and regenerates fresh forward facts + a fresh obligation chain from the schedule's stored definition (entry_template / schedule_metadata / monthly_amount / period bounds). The historical-vs-in-scope split is re-derived from the CURRENT fiscal calendar closed_through. Use this to pick up a fixed generator (e.g. the roll-forward direction fix) without orphaning obligations.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const rebuildSchedule = <ThrowOnError extends boolean = false>(options: Options<RebuildScheduleData, ThrowOnError>): RequestResult<RebuildScheduleResponses, RebuildScheduleErrors, ThrowOnError> => (options.client ?? client).post<RebuildScheduleResponses, RebuildScheduleErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/rebuild-schedule',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Terminate Schedule Early
- *
- * End a schedule early at a month-end cutoff without booking any entry. In one transaction: deletes forward facts past the cutoff (refusing when posted entries exist past it; stale drafts past it are deleted), voids the remaining obligation chain past the cutoff (pending and classified rows), and rewrites the SumEquals rule to prove the truncated curve. History at or before the cutoff is untouched, so open months the schedule still covers close normally. Use this when the termination's GL effect is already booked (an asset transferred via a manual entry, a prepaid refunded in the source system) or none is wanted; when the derecognition entry still needs to be booked, use create-event-block(event_type='asset_disposed') instead — the disposal handler posts it atomically with the same obligation void. Run BEFORE promote-obligations at close so terminated periods are never drafted.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const terminateSchedule = <ThrowOnError extends boolean = false>(options: Options<TerminateScheduleData, ThrowOnError>): RequestResult<TerminateScheduleResponses, TerminateScheduleErrors, ThrowOnError> => (options.client ?? client).post<TerminateScheduleResponses, TerminateScheduleErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/terminate-schedule',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Set Close Target
  *
  * Set the user-controlled goal period for closing (`close_target`). Format: YYYY-MM. Distinct from `closed_through` (what's actually locked) — setting a target doesn't close anything; call `close-period` for that. The catch-up sequence between `closed_through` and this target appears on the response's `fiscal_calendar.catch_up_sequence`.
@@ -2307,6 +2256,57 @@ export const backfillPlanHistory = <ThrowOnError extends boolean = false>(option
 });
 
 /**
+ * Promote Due Schedule Obligations
+ *
+ * Promote matured pending schedule obligations (schedule_entry_due events whose period boundary has passed) to 'classified', and — when dispatch_handlers=true (default) — draft their closing entries in the same transaction. Also reaches stranded obligations: events already 'classified' (by an earlier flip-only sweep) whose closing entry was never drafted are dispatched in the same pass, and reported via stranded_count. This is the on-demand form of the background obligation-promotion sweep; run it before close-period when a schedule was just created or when you can't wait for the Dagster sensor. Idempotent: re-running skips already-classified obligations and reconciles to existing drafts.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const promoteObligations = <ThrowOnError extends boolean = false>(options: Options<PromoteObligationsData, ThrowOnError>): RequestResult<PromoteObligationsResponses, PromoteObligationsErrors, ThrowOnError> => (options.client ?? client).post<PromoteObligationsResponses, PromoteObligationsErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/promote-obligations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Rebuild Schedule In Place
+ *
+ * Re-run the schedule generator in place on an existing schedule. Atomic alternative to delete-then-recreate (which orphans pending obligations): preserves the structure id + element associations + taxonomy, voids the old pending obligation chain, deletes the old facts and SumEquals rules, and regenerates fresh forward facts + a fresh obligation chain from the schedule's stored definition (entry_template / schedule_metadata / monthly_amount / period bounds). The historical-vs-in-scope split is re-derived from the CURRENT fiscal calendar closed_through. Use this to pick up a fixed generator (e.g. the roll-forward direction fix) without orphaning obligations.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const rebuildSchedule = <ThrowOnError extends boolean = false>(options: Options<RebuildScheduleData, ThrowOnError>): RequestResult<RebuildScheduleResponses, RebuildScheduleErrors, ThrowOnError> => (options.client ?? client).post<RebuildScheduleResponses, RebuildScheduleErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/rebuild-schedule',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Terminate Schedule Early
+ *
+ * End a schedule early at a month-end cutoff without booking any entry. In one transaction: deletes forward facts past the cutoff (refusing when posted entries exist past it; stale drafts past it are deleted), voids the remaining obligation chain past the cutoff (pending and classified rows), and rewrites the SumEquals rule to prove the truncated curve. History at or before the cutoff is untouched, so open months the schedule still covers close normally. Use this when the termination's GL effect is already booked (an asset transferred via a manual entry, a prepaid refunded in the source system) or none is wanted; when the derecognition entry still needs to be booked, use create-event-block(event_type='asset_disposed') instead — the disposal handler posts it atomically with the same obligation void. Run BEFORE promote-obligations at close so terminated periods are never drafted.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const terminateSchedule = <ThrowOnError extends boolean = false>(options: Options<TerminateScheduleData, ThrowOnError>): RequestResult<TerminateScheduleResponses, TerminateScheduleErrors, ThrowOnError> => (options.client ?? client).post<TerminateScheduleResponses, TerminateScheduleErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/terminate-schedule',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
  * Create Report
  *
  * Generates report facts from the ledger and marks the report as published.
@@ -2358,40 +2358,6 @@ export const deleteReport = <ThrowOnError extends boolean = false>(options: Opti
 });
 
 /**
- * Share Report
- *
- * Pushes a published report to every member of the target publish list. Each share is an independent copy: the report row + all its facts are cloned into the recipient's tenant schema with `source_graph_id` / `source_report_id` provenance fields populated. Per-target outcomes (success or error) surface in the response — share does not fail-fast across targets. Recipients that have blocked this graph come back as an error for that target; withdraw a delivered copy with `revoke-report-share`.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const shareReport = <ThrowOnError extends boolean = false>(options: Options<ShareReportData, ThrowOnError>): RequestResult<ShareReportResponses, ShareReportErrors, ThrowOnError> => (options.client ?? client).post<ShareReportResponses, ShareReportErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/share-report',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Revoke Report Share
- *
- * Withdraws a report previously shared to one recipient graph: deletes the copy from that recipient's schema and stamps the share record revoked. Scoped to a single recipient — withdrawing a distribution to a whole publish list is one call per member. A recipient who already deleted the copy is not an error; the share is still marked revoked and `copy_deleted` returns false. The linked entity in the recipient's graph is left in place, so an investor's declared holding survives.
- *
- * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
- */
-export const revokeReportShare = <ThrowOnError extends boolean = false>(options: Options<RevokeReportShareData, ThrowOnError>): RequestResult<RevokeReportShareResponses, RevokeReportShareErrors, ThrowOnError> => (options.client ?? client).post<RevokeReportShareResponses, RevokeReportShareErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
-    url: '/extensions/roboledger/{graph_id}/operations/revoke-report-share',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * File Report
  *
  * Transitions the Report's filing_status to 'filed' — locks the package. Allowed from 'draft' or 'under_review'. Stamps filed_at + filed_by.
@@ -2418,6 +2384,40 @@ export const fileReport = <ThrowOnError extends boolean = false>(options: Option
 export const transitionFilingStatus = <ThrowOnError extends boolean = false>(options: Options<TransitionFilingStatusData, ThrowOnError>): RequestResult<TransitionFilingStatusResponses, TransitionFilingStatusErrors, ThrowOnError> => (options.client ?? client).post<TransitionFilingStatusResponses, TransitionFilingStatusErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
     url: '/extensions/roboledger/{graph_id}/operations/transition-filing-status',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Share Report
+ *
+ * Pushes a published report to every member of the target publish list. Each share is an independent copy: the report row + all its facts are cloned into the recipient's tenant schema with `source_graph_id` / `source_report_id` provenance fields populated. Per-target outcomes (success or error) surface in the response — share does not fail-fast across targets. Recipients that have blocked this graph come back as an error for that target; withdraw a delivered copy with `revoke-report-share`.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const shareReport = <ThrowOnError extends boolean = false>(options: Options<ShareReportData, ThrowOnError>): RequestResult<ShareReportResponses, ShareReportErrors, ThrowOnError> => (options.client ?? client).post<ShareReportResponses, ShareReportErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/share-report',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Revoke Report Share
+ *
+ * Withdraws a report previously shared to one recipient graph: deletes the copy from that recipient's schema and stamps the share record revoked. Scoped to a single recipient — withdrawing a distribution to a whole publish list is one call per member. A recipient who already deleted the copy is not an error; the share is still marked revoked and `copy_deleted` returns false. The linked entity in the recipient's graph is left in place, so an investor's declared holding survives.
+ *
+ * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
+ */
+export const revokeReportShare = <ThrowOnError extends boolean = false>(options: Options<RevokeReportShareData, ThrowOnError>): RequestResult<RevokeReportShareResponses, RevokeReportShareErrors, ThrowOnError> => (options.client ?? client).post<RevokeReportShareResponses, RevokeReportShareErrors, ThrowOnError>({
+    security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
+    url: '/extensions/roboledger/{graph_id}/operations/revoke-report-share',
     ...options,
     headers: {
         'Content-Type': 'application/json',
