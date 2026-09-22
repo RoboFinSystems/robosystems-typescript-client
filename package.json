@@ -130,7 +130,7 @@
   "bugs": {
     "url": "https://github.com/RoboFinSystems/robosystems-typescript-client/issues"
   },
-  "homepage": "https://github.com/RoboFinSystems/robosystems-typescript-client#readme",
+  "homepage": "https://robosystems.ai",
   "engines": {
     "node": ">=22.0.0"
   },
