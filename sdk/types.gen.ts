@@ -5452,19 +5452,27 @@ export type ExecuteEventBlockResponse = {
     /**
      * Status
      *
-     * Post-execute event status. `'classified'` when no write fired (native policy or no-op). `'committed'` when the QB write was in flight (intermediate state). `'fulfilled'` when QB accepted and local GL drafts were promoted to posted. `'pending'` when QB rejected — see `qb_error` for the rejection detail; retry after fixing the underlying issue.
+     * The event's status after the call. Unchanged when no write fired (native policy, a source that does not publish) or when drafts in a later period are still unpublished. `'fulfilled'` once every draft entry of the event is in QuickBooks and posted. `'pending'` when QuickBooks rejected an entry — see `qb_error`; retry after fixing the underlying issue.
      */
     status: string;
     /**
      * Qb External Id
      *
-     * QB-side transaction ID returned by the JournalEntry API. Null when no write fired (native policy) or when the write was rejected before getting an ID.
+     * QuickBooks JournalEntry ID of the first entry this call published. Null when nothing was published. When a call publishes several entries, `qb_entry_ids` holds them all.
      */
     qb_external_id?: string | null;
     /**
+     * Qb Entry Ids
+     *
+     * Every entry of the event now in QuickBooks: ledger entry ID → QuickBooks JournalEntry ID. Null when none are.
+     */
+    qb_entry_ids?: {
+        [key: string]: string;
+    } | null;
+    /**
      * Qb Error
      *
-     * QB rejection detail when status='pending'. Shape: `{code, message, qb_response_at}`. Operator retries after fixing CoA mapping / amount validation / closed-period.
+     * QB rejection detail when a publish failed. Shape: `{code, message, qb_response_at}`. Operator retries after fixing CoA mapping / amount validation / closed-period.
      */
     qb_error?: {
         [key: string]: unknown;
@@ -7360,7 +7368,7 @@ export type InformationBlockEnvelope = {
      */
     verification_summary?: VerificationSummary | null;
     /**
-     * Server-computed view projections (Charlie's six type-of View arms). `view.rendering` carries pre-computed rows + periods + validation for blocks where rendering is deterministic (the statement family today). Other projections come online as their backend support lands — see :class:`ViewProjections`.
+     * Server-computed view projections (the six `type-of` View projections). `view.rendering` carries pre-computed rows + periods + validation for blocks where rendering is deterministic (the statement family today). Projections without backend support yet are empty — see :class:`ViewProjections`.
      */
     view?: ViewProjections;
 };
@@ -9704,7 +9712,7 @@ export type OperationEnvelope = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -9750,7 +9758,7 @@ export type OperationEnvelopeAssertMetricsResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -9796,7 +9804,7 @@ export type OperationEnvelopeAssociationResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -9842,7 +9850,7 @@ export type OperationEnvelopeBackfillPlanHistoryResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -9888,7 +9896,7 @@ export type OperationEnvelopeBindTextBlockResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -9934,7 +9942,7 @@ export type OperationEnvelopeBlockSourceGraphResult = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -9980,7 +9988,7 @@ export type OperationEnvelopeBlockedSourceGraphResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10026,7 +10034,7 @@ export type OperationEnvelopeChangeReportingStyleResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10072,7 +10080,7 @@ export type OperationEnvelopeClosePeriodResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10118,7 +10126,7 @@ export type OperationEnvelopeComputeForecastResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10164,7 +10172,7 @@ export type OperationEnvelopeComputeMetricsResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10210,7 +10218,7 @@ export type OperationEnvelopeDeleteInformationBlockResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10256,7 +10264,7 @@ export type OperationEnvelopeDeletePortfolioBlockResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10302,7 +10310,7 @@ export type OperationEnvelopeDeleteResult = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10348,7 +10356,7 @@ export type OperationEnvelopeDeleteTaxonomyBlockResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10394,7 +10402,7 @@ export type OperationEnvelopeDisclosuresResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10440,7 +10448,7 @@ export type OperationEnvelopeEntityTaxonomyResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10486,7 +10494,7 @@ export type OperationEnvelopeEvaluateRulesResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10532,7 +10540,7 @@ export type OperationEnvelopeEventBlockEnvelope = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10578,7 +10586,7 @@ export type OperationEnvelopeEventHandlerResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10624,7 +10632,7 @@ export type OperationEnvelopeExecuteEventBlockResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10670,7 +10678,7 @@ export type OperationEnvelopeFinancialStatementAnalysisResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10716,7 +10724,7 @@ export type OperationEnvelopeFiscalCalendarResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10762,7 +10770,7 @@ export type OperationEnvelopeGraphMetadataResult = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10808,7 +10816,7 @@ export type OperationEnvelopeInformationBlockEnvelope = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10854,7 +10862,7 @@ export type OperationEnvelopeInformationBlockResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10900,7 +10908,7 @@ export type OperationEnvelopeInitializeChartOfAccountsResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10946,7 +10954,7 @@ export type OperationEnvelopeInitializeLedgerResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -10992,7 +11000,7 @@ export type OperationEnvelopeJournalEntryResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11038,7 +11046,7 @@ export type OperationEnvelopeLedgerAgentResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11084,7 +11092,7 @@ export type OperationEnvelopeLedgerEntityResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11130,7 +11138,7 @@ export type OperationEnvelopeLiveFinancialStatementResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11176,7 +11184,7 @@ export type OperationEnvelopePortfolioBlockEnvelope = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11222,7 +11230,7 @@ export type OperationEnvelopePreviewEventBlockResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11268,7 +11276,7 @@ export type OperationEnvelopePromoteObligationsResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11314,7 +11322,7 @@ export type OperationEnvelopePublishListResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11360,7 +11368,7 @@ export type OperationEnvelopeReconcilingItemPlan = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11406,7 +11414,7 @@ export type OperationEnvelopeReportResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11452,7 +11460,7 @@ export type OperationEnvelopeResolveReconcilingItemResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11498,7 +11506,7 @@ export type OperationEnvelopeRevokeReportShareResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11544,7 +11552,7 @@ export type OperationEnvelopeScheduleCreatedResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11590,7 +11598,7 @@ export type OperationEnvelopeSecurityResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11636,7 +11644,7 @@ export type OperationEnvelopeShareReportResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11682,7 +11690,7 @@ export type OperationEnvelopeTaxonomyBlockEnvelope = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11728,7 +11736,7 @@ export type OperationEnvelopeTerminateScheduleResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11774,7 +11782,7 @@ export type OperationEnvelopeViewResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -11822,7 +11830,7 @@ export type OperationEnvelopeListPublishListMemberResponse = {
     /**
      * Createdby
      *
-     * User ID that initiated the operation (null for legacy callers)
+     * User ID that initiated the operation
      */
     createdBy?: string | null;
     /**
@@ -14763,7 +14771,7 @@ export type RuleLite = {
     /**
      * Rule Origin
      *
-     * Provenance — 'forked' (from an upstream artifact, e.g. Seattle Method) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the `public.rules` CHECK constraint.
+     * Provenance — 'forked' (from an upstream artifact, e.g. an external XBRL taxonomy) or 'native' (authored in this seed or by a tenant). Enum closure enforced by the `public.rules` CHECK constraint.
      */
     rule_origin?: string;
 };
@@ -14996,7 +15004,7 @@ export type ScheduleMetadataRequest = {
     /**
      * Residual Value
      *
-     * Salvage value in cents
+     * Salvage value in cents. The schedule expenses `original_amount` less this; net book value ends at it.
      */
     residual_value?: number;
     /**
@@ -15014,7 +15022,7 @@ export type ScheduleMetadataRequest = {
     /**
      * Periodic Amounts
      *
-     * Explicit per-period amounts in cents. When set, the generator uses these values instead of `monthly_amount` — enabling non-straight-line schedules (effective-interest bond discount amortization, day-count interest accrual, variable lease payments, pre-computed effective-yield curves, etc.). Length must match the number of monthly periods between `period_start` and `period_end`; sum must equal `original_amount` exactly. The auto-generated SumEquals rule proves Σ = original regardless of the curve shape.
+     * Explicit per-period amounts in cents. When set, the generator uses these values instead of `monthly_amount` — enabling non-straight-line schedules (effective-interest bond discount amortization, day-count interest accrual, variable lease payments, pre-computed effective-yield curves, etc.). Length must match the number of monthly periods between `period_start` and `period_end`; sum must equal `original_amount` less `residual_value` exactly. The auto-generated SumEquals rule proves that total regardless of the curve shape.
      */
     periodic_amounts?: Array<number> | null;
 };
@@ -18568,22 +18576,20 @@ export type ViewMetadata = {
 /**
  * ViewProjections
  *
- * Charlie's six `type-of View` arms, surfaced at the envelope boundary.
+ * The six `type-of` View projections of an Information Block (Rendering,
+ * FactTable, ModelStructure, VerificationResults, ReportElements,
+ * BusinessRules), surfaced at the envelope boundary.
  *
  * Each projection is computed server-side at envelope-build time when
  * its source data is available. The frontend's `BlockView` dispatcher
  * routes to the projection component matching the user's selected view
- * mode; missing projections (those still in backlog) render as empty
- * states without breaking the dispatcher.
+ * mode; missing projections render as empty states without breaking the
+ * dispatcher.
  *
  * Today: `rendering` is computed for the statement family, and
- * `chart` (the 7th arm — panel/series config over the rendering's
- * rows and periods) for metric blocks.
- * Other arms (`fact_table`, `model_structure`, `verification_results`,
- * `report_elements`, `business_rules`) come online as their backend
- * support lands; `fact_table` is trivially derivable from
- * `InformationBlockEnvelope.facts` and may stay as a frontend-only
- * projection.
+ * `chart` (panel/series config over the rendering's rows and periods)
+ * for metric blocks. Projections without backend support yet are empty;
+ * `fact_table` is derivable from `InformationBlockEnvelope.facts`.
  */
 export type ViewProjections = {
     rendering?: RenderingLite | null;

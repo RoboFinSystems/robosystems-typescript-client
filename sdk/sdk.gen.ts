@@ -222,11 +222,7 @@ export const listUserPasskeys = <ThrowOnError extends boolean = false>(options?:
  *
  * Fresh-assertion options for destructive passkey lifecycle actions.
  */
-export const getPasskeyReauthOptions = <ThrowOnError extends boolean = false>(options?: Options<GetPasskeyReauthOptionsData, ThrowOnError>): RequestResult<GetPasskeyReauthOptionsResponses, GetPasskeyReauthOptionsErrors, ThrowOnError> => (options?.client ?? client).post<GetPasskeyReauthOptionsResponses, GetPasskeyReauthOptionsErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }],
-    url: '/v1/auth/passkeys/reauth/options',
-    ...options
-});
+export const getPasskeyReauthOptions = <ThrowOnError extends boolean = false>(options?: Options<GetPasskeyReauthOptionsData, ThrowOnError>): RequestResult<GetPasskeyReauthOptionsResponses, GetPasskeyReauthOptionsErrors, ThrowOnError> => (options?.client ?? client).post<GetPasskeyReauthOptionsResponses, GetPasskeyReauthOptionsErrors, ThrowOnError>({ url: '/v1/auth/passkeys/reauth/options', ...options });
 
 /**
  * Remove Passkey
@@ -234,7 +230,6 @@ export const getPasskeyReauthOptions = <ThrowOnError extends boolean = false>(op
  * Remove one passkey after re-authentication (password or fresh assertion). The last passkey of an MFA-required role cannot be removed while enforcement is active.
  */
 export const deleteUserPasskey = <ThrowOnError extends boolean = false>(options: Options<DeleteUserPasskeyData, ThrowOnError>): RequestResult<DeleteUserPasskeyResponses, DeleteUserPasskeyErrors, ThrowOnError> => (options.client ?? client).delete<DeleteUserPasskeyResponses, DeleteUserPasskeyErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }],
     url: '/v1/auth/passkeys/{passkey_id}',
     ...options,
     headers: {
@@ -309,7 +304,6 @@ export const getMfaStatus = <ThrowOnError extends boolean = false>(options?: Opt
  * Replace the recovery-code set after re-authentication; codes are shown once.
  */
 export const regenerateMfaRecoveryCodes = <ThrowOnError extends boolean = false>(options: Options<RegenerateMfaRecoveryCodesData, ThrowOnError>): RequestResult<RegenerateMfaRecoveryCodesResponses, RegenerateMfaRecoveryCodesErrors, ThrowOnError> => (options.client ?? client).post<RegenerateMfaRecoveryCodesResponses, RegenerateMfaRecoveryCodesErrors, ThrowOnError>({
-    security: [{ name: 'X-API-Key', type: 'apiKey' }],
     url: '/v1/auth/mfa/recovery-codes/regenerate',
     ...options,
     headers: {
@@ -768,7 +762,7 @@ export const listBackups = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Get temporary download URL for backup
  *
- * Generate a temporary download URL for a backup. The filename carries the extension listed as `download_extension` on the backup: `.lbug.zip` is a ZIP holding the LadybugDB database file `{graph_id}.lbug`; `.lbug.zst` (shared repository snapshots) is a single zstd-compressed database file. Decompress the latter with `zstd -d <file>.lbug.zst` (install zstd first: `brew install zstd`, `apt-get install zstd`, or `dnf install zstd`) — no `--long` flag is needed.
+ * Generate a temporary download URL for a backup. The filename carries the extension listed as `download_extension` on the backup: `.lbug.zip` is a ZIP holding the LadybugDB database file `{graph_id}.lbug`; `.lbug.zst` (shared repository snapshots) is a single zstd-compressed database file; decompress it with `zstd -d`.
  */
 export const getBackupDownloadUrl = <ThrowOnError extends boolean = false>(options: Options<GetBackupDownloadUrlData, ThrowOnError>): RequestResult<GetBackupDownloadUrlResponses, GetBackupDownloadUrlErrors, ThrowOnError> => (options.client ?? client).get<GetBackupDownloadUrlResponses, GetBackupDownloadUrlErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
