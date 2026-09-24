@@ -339,7 +339,7 @@ export interface ReportBundleDownloadResponse {
   expiresAt: string
   /** MIME type of the artifact behind the URL. */
   contentType: string
-  /** Serialization flavor — ``jsonld`` or ``xbrl-2.1``. */
+  /** Serialization flavor — ``tavi``, ``holon-jsonld`` or ``xbrl-2.1``. */
   format: string
   /** Bundle generation number stamped on the Report. */
   generationCount: number
@@ -2270,8 +2270,8 @@ export class LedgerClient {
    *
    * @param graphId Graph identifier owning the Report.
    * @param reportId Report identifier (rpt_-prefixed ULID).
-   * @param options.format Serialization flavor — `JSONLD` (default), `HOLON_JSONLD`,
-   *   `XBRL_2_1`, or `TAVI` (the Project Tavi compiled model).
+   * @param options.format Serialization flavor — `TAVI` (default, the Project
+   *   Tavi compiled model stamped at publish), `HOLON_JSONLD`, or `XBRL_2_1`.
    * @param options.expiresIn Presigned URL lifetime, in seconds.
    */
   async getReportDownloadUrl(
@@ -2284,7 +2284,7 @@ export class LedgerClient {
       GetLedgerReportDownloadUrlDocument,
       {
         reportId,
-        format: options.format ?? 'JSONLD',
+        format: options.format ?? 'TAVI',
         expiresIn: options.expiresIn ?? 300,
       },
       'Get report download URL',
