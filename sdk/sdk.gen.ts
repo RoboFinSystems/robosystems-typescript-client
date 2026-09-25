@@ -2385,7 +2385,7 @@ export const fileReport = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Transition Filing Status
  *
- * Move a Report along the non-file legs of the filing lifecycle (draft ↔ under_review, filed → archived). Use 'file-report' to reach 'filed' so audit fields land cleanly.
+ * Move a Report along the non-file legs of the filing lifecycle (draft ↔ under_review, filed ↔ archived). Archiving takes a filed report off the current list without deleting it; unarchiving returns it to 'filed'. Use 'file-report' to file a draft so audit fields land cleanly.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
