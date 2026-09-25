@@ -542,6 +542,27 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listReports', () => {
+    it('sends no lifecycle by default, so the server returns current reports', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({ reports: { reports: [{ id: 'rpt_1', filingStatus: 'filed' }] } })
+      )
+      const reports = await client.listReports('graph_1')
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables?.lifecycle).toBeUndefined()
+      expect(body.query).toContain('reports(lifecycle: $lifecycle)')
+      expect(body.query).toContain('filingStatus')
+      expect(reports).toEqual([{ id: 'rpt_1', filingStatus: 'filed' }])
+    })
+
+    it('forwards lifecycle as a GraphQL variable', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ reports: { reports: [] } }))
+      await client.listReports('graph_1', { lifecycle: 'ARCHIVED' })
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toMatchObject({ lifecycle: 'ARCHIVED' })
+    })
+  })
+
   describe('listEventBlocks', () => {
     it('returns the eventBlocks array', async () => {
       mockFetch.mockResolvedValueOnce(

@@ -1,20 +1,24 @@
 import { gql } from 'graphql-request'
 
 /**
- * All report definitions for this graph, most recent first.
+ * Report definitions for this graph, most recent first.
+ *
+ * `lifecycle` defaults to `CURRENT` (archived reports left out); `ARCHIVED`
+ * returns only those, `ALL` every report.
  *
  * Includes both native reports (generated from this graph's books) and
  * shared reports (materialized from another graph via a publish list).
  * `sourceGraphId` / `sourceReportId` / `sharedAt` identify shared reports.
  */
 export const LIST_REPORTS = gql`
-  query ListLedgerReports {
-    reports {
+  query ListLedgerReports($lifecycle: ReportLifecycle! = CURRENT) {
+    reports(lifecycle: $lifecycle) {
       reports {
         id
         name
         taxonomyId
         generationStatus
+        filingStatus
         periodType
         periodStart
         periodEnd

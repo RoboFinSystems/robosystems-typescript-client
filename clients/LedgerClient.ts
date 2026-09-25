@@ -221,11 +221,13 @@ import {
   type ListLedgerUnmappedElementsQuery,
   type MappingCandidatesQuery,
   type ReportDownloadFormat,
+  type ReportLifecycle,
 } from './graphql/generated/graphql'
 
 // Re-export the structured GraphQL error type so consumers importing
 // from the `@robosystems/client/ledger` subpath can `instanceof` it.
 export { GraphQLError } from './graphql/client'
+export type { ReportLifecycle }
 
 // ── Friendly types derived from GraphQL codegen ────────────────────────
 //
@@ -2155,12 +2157,20 @@ export class LedgerClient {
     return this.requireResult('Create report', envelope.result)
   }
 
-  /** List all reports for a graph (includes received shared reports). */
-  async listReports(graphId: string): Promise<ReportListItem[]> {
+  /**
+   * List reports for a graph (includes received shared reports).
+   *
+   * `lifecycle` defaults to `CURRENT`, which leaves archived reports out;
+   * `ARCHIVED` returns only those, `ALL` every report.
+   */
+  async listReports(
+    graphId: string,
+    options: { lifecycle?: ReportLifecycle } = {}
+  ): Promise<ReportListItem[]> {
     const list = await this.gqlQuery(
       graphId,
       ListLedgerReportsDocument,
-      undefined,
+      options.lifecycle ? { lifecycle: options.lifecycle } : undefined,
       'List reports',
       (data) => data.reports
     )
@@ -2343,9 +2353,10 @@ export class LedgerClient {
 
   /**
    * Move a Report along the non-file legs of the filing lifecycle
-   * (draft ↔ under_review, filed → archived). Use ``fileReport`` to
-   * reach 'filed' so the audit fields land cleanly. Synchronous —
-   * resolves with the updated report header.
+   * (draft ↔ under_review, filed ↔ archived). Archiving takes a filed
+   * report off the current list without deleting it; unarchiving returns
+   * it to 'filed'. Use ``fileReport`` to file a draft so the audit fields
+   * land cleanly. Synchronous — resolves with the updated report header.
    */
   async transitionFilingStatus(
     graphId: string,

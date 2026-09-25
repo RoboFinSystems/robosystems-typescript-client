@@ -17169,10 +17169,11 @@ export type TransactionTemplateLeg = {
  *
  * Generic filing-status transition — escape hatch for non-file moves.
  *
- * Used for `draft → under_review` (submit for review) and
- * `filed → archived` (supersede / retire). Filing the package goes
- * through :class:`FileReportRequest` so `filed_at` / `filed_by`
- * audit fields land cleanly.
+ * Used for `draft ↔ under_review` (submit for review, or send back),
+ * `filed → archived` (take a filed report off the current list) and
+ * `archived → filed` (bring it back). Filing a draft goes through
+ * :class:`FileReportRequest` so `filed_at` / `filed_by` audit fields
+ * land cleanly.
  */
 export type TransitionFilingStatusRequest = {
     /**
@@ -17184,7 +17185,7 @@ export type TransitionFilingStatusRequest = {
     /**
      * Target Status
      *
-     * Target lifecycle state: `under_review` (submit a draft for review) or `archived` (supersede / retire a filed report). Reaching `filed` goes through `file-report` so audit fields land cleanly.
+     * Target lifecycle state: `under_review` (submit a draft for review), `draft` (send it back), `archived` (take a filed report off the current list; it stays a record) or `filed` (unarchive). Filing a draft goes through `file-report` so audit fields land cleanly.
      */
     target_status: string;
 };

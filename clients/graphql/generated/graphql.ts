@@ -6,6 +6,8 @@ export type Incremental<T> =
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core'
 export type ReportDownloadFormat = 'HOLON_JSONLD' | 'TAVI' | 'XBRL_2_1'
 
+export type ReportLifecycle = 'ALL' | 'ARCHIVED' | 'CURRENT'
+
 export type GetInvestorHoldingsQueryVariables = Exact<{
   portfolioId: string
 }>
@@ -1559,7 +1561,9 @@ export type GetLedgerReportingTaxonomyQuery = {
   } | null
 }
 
-export type ListLedgerReportsQueryVariables = Exact<{ [key: string]: never }>
+export type ListLedgerReportsQueryVariables = Exact<{
+  lifecycle?: ReportLifecycle
+}>
 
 export type ListLedgerReportsQuery = {
   reports: {
@@ -1568,6 +1572,7 @@ export type ListLedgerReportsQuery = {
       name: string
       taxonomyId: string
       generationStatus: string
+      filingStatus: string
       periodType: string
       periodStart: string | null
       periodEnd: string | null
@@ -6372,12 +6377,30 @@ export const ListLedgerReportsDocument = {
       kind: 'OperationDefinition',
       operation: 'query',
       name: { kind: 'Name', value: 'ListLedgerReports' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'lifecycle' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'ReportLifecycle' } },
+          },
+          defaultValue: { kind: 'EnumValue', value: 'CURRENT' },
+        },
+      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'reports' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'lifecycle' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'lifecycle' } },
+              },
+            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
@@ -6391,6 +6414,7 @@ export const ListLedgerReportsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'generationStatus' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'filingStatus' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodStart' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'periodEnd' } },
