@@ -723,6 +723,12 @@ export type BackfillPlanHistoryOperation = {
      */
     allow_reconciling_items?: boolean;
     /**
+     * Allow Unposted Source Events
+     *
+     * Override the unposted-source-event gate on each reclose. Only needed when a source event inside the backfill window was never committed and you have decided not to commit or void it first.
+     */
+    allow_unposted_source_events?: boolean;
+    /**
      * Restamp
      *
      * Also re-derive months that ALREADY have canonical statement sets (default: skip them). Use after an engine improvement changes what a stamp produces — each month reruns the full reopen → reclose cycle and replaces its sets. A restamp run is not self-resuming (every month in range stays a candidate); advance `start_period` between chunks.
@@ -1679,6 +1685,12 @@ export type ClosePeriodOperation = {
      * Override the reconciling-item gate — close even though posted events in the period are still flagged as changed in the source system, leaving those differences undecided. The next sync will still report them, and the statements stamped by this close may disagree with the source. Prefer resolve-reconciling-item on each first. The override is recorded in the close audit note.
      */
     allow_reconciling_items?: boolean;
+    /**
+     * Allow Unposted Source Events
+     *
+     * Override the unposted-source-event gate — close even though source events dated in the period (bank-feed lines, QuickBooks transactions whose automatic posting failed) were never committed. Once the period closes they cannot post into it, so the stamped statements leave them out. Prefer classifying and committing, or voiding, each first. The override is recorded in the close audit note.
+     */
+    allow_unposted_source_events?: boolean;
     /**
      * Period
      *
@@ -5689,7 +5701,7 @@ export type FactSetLite = {
     /**
      * Provenance
      *
-     * Typed `FactProvenance` descriptor (discriminated on `origin`: pivot | schedule | derived | asserted | document | forecast | filed) recording how this FactSet's facts were constructed. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor.
+     * Typed `FactProvenance` descriptor (discriminated on `origin`: pivot | schedule | derived | asserted | document | forecast | filed) recording how this FactSet was constructed. It describes the set, not each fact: a `pivot` set's mapped leaves aggregate posted line items, while its subtotals and derivations are computed from those leaves. Surfaced as JSON, mirroring how mechanics is exposed. Null when the FactSet carries no descriptor.
      */
     provenance?: {
         [key: string]: unknown;
@@ -6016,6 +6028,18 @@ export type FiscalCalendarResponse = {
      * Source identifiers (or event ids) of up to 5 unresolved reconciling items, so the blocker names what is holding the close.
      */
     reconciling_item_sample?: Array<string>;
+    /**
+     * Unposted Source Event Count
+     *
+     * Source events dated in this period that were never committed: bank-feed lines still captured or classified, and QuickBooks transactions whose automatic posting failed. Commit or void each, or close over them knowingly with allow_unposted_source_events.
+     */
+    unposted_source_event_count?: number;
+    /**
+     * Unposted Source Event Sample
+     *
+     * Source identifiers (or event ids) of up to 5 unposted source events, so the blocker names what is holding the close.
+     */
+    unposted_source_event_sample?: Array<string>;
     /**
      * Last Close At
      */
@@ -7559,7 +7583,7 @@ export type IngestFileOp = {
     /**
      * Ingest To Graph
      *
-     * Auto-materialize into the graph after DuckDB staging
+     * Auto-materialize into the graph after DuckDB staging. Refused with 409 while another materialization of the graph is running.
      */
     ingest_to_graph?: boolean;
 };
@@ -9036,7 +9060,7 @@ export type MaterializeOp = {
     /**
      * Rebuild
      *
-     * Rebuild the graph from scratch, dropping existing data. Required (staged source) when materializing new uploads into a graph that already contains materialized data — staging replays all uploaded files, so a non-rebuild pass would re-copy ingested rows (409).
+     * Rebuild the graph from scratch, dropping existing data. Required (staged source) when materializing new uploads into a graph that already contains materialized data — staging replays all uploaded files, so a non-rebuild pass would re-copy ingested rows (409). An extensions source always rebuilds a graph that already exists: the new copy is built alongside and swapped in, regardless of this flag.
      */
     rebuild?: boolean;
     /**
@@ -9330,6 +9354,126 @@ export type MfaVerifyRequest = {
      * Single-use recovery code
      */
     recovery_code?: string | null;
+};
+
+/**
+ * MutationAuditEntry
+ *
+ * One mutating call on the graph.
+ */
+export type MutationAuditEntry = {
+    /**
+     * Id
+     *
+     * Audit entry identifier
+     */
+    id: string;
+    /**
+     * Occurred At
+     *
+     * When the call finished
+     */
+    occurred_at: string;
+    /**
+     * Surface
+     *
+     * Where the call came from: 'api' for a REST operation, 'mcp' for an external MCP client, 'operator' for an in-app AI operator run such as the console's /do
+     */
+    surface: 'api' | 'mcp' | 'operator';
+    /**
+     * Operation Name
+     *
+     * The operation or MCP tool that ran
+     */
+    operation_name: string;
+    /**
+     * Status
+     *
+     * Whether the call succeeded; a failed call changed nothing it reports
+     */
+    status: 'completed' | 'failed';
+    /**
+     * Error Code
+     *
+     * Why a failed call failed
+     */
+    error_code?: string | null;
+    /**
+     * Duration Ms
+     *
+     * How long the call took
+     */
+    duration_ms: number;
+    /**
+     * User Id
+     *
+     * The user the call ran as
+     */
+    user_id?: string | null;
+    /**
+     * Auth Method
+     *
+     * How the caller authenticated, for example 'api_key' or 'oauth'
+     */
+    auth_method?: string | null;
+    /**
+     * Api Key Prefix
+     *
+     * The first characters of the API key used, when one was
+     */
+    api_key_prefix?: string | null;
+    /**
+     * Request Id
+     *
+     * The HTTP request that made the call
+     */
+    request_id?: string | null;
+    /**
+     * Operation Id
+     *
+     * The REST operation's envelope id, or the operator run's operation id: every write an operator run makes shares it
+     */
+    operation_id?: string | null;
+    /**
+     * Operator Type
+     *
+     * The operator that made the call, for surface 'operator'
+     */
+    operator_type?: string | null;
+    /**
+     * Arguments Fingerprint
+     *
+     * SHA-256 of the call's arguments. The arguments themselves are not stored
+     */
+    arguments_fingerprint?: string | null;
+    /**
+     * Object Ids
+     *
+     * Identifiers of the objects the call touched
+     */
+    object_ids?: Array<string>;
+};
+
+/**
+ * MutationAuditListResponse
+ *
+ * A page of the graph's mutation audit, newest first.
+ */
+export type MutationAuditListResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Entries
+     */
+    entries: Array<MutationAuditEntry>;
+    /**
+     * Next Cursor
+     *
+     * Pass as `cursor` for the next, older page; null on the last page
+     */
+    next_cursor?: string | null;
 };
 
 /**
@@ -23148,6 +23292,111 @@ export type UpdateGraphMemberRoleResponses = {
 };
 
 export type UpdateGraphMemberRoleResponse = UpdateGraphMemberRoleResponses[keyof UpdateGraphMemberRoleResponses];
+
+export type ListGraphMutationsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Surface
+         *
+         * Only calls from this surface
+         */
+        surface?: 'api' | 'mcp' | 'operator' | null;
+        /**
+         * Operation Name
+         *
+         * Only this operation or MCP tool
+         */
+        operation_name?: string | null;
+        /**
+         * User Id
+         *
+         * Only calls made as this user
+         */
+        user_id?: string | null;
+        /**
+         * Operation Id
+         *
+         * Only calls from this REST operation or operator run
+         */
+        operation_id?: string | null;
+        /**
+         * Since
+         *
+         * Only calls at or after this time
+         */
+        since?: string | null;
+        /**
+         * Until
+         *
+         * Only calls before this time
+         */
+        until?: string | null;
+        /**
+         * Cursor
+         *
+         * The `next_cursor` of the previous page
+         */
+        cursor?: string | null;
+        /**
+         * Limit
+         *
+         * Entries per page
+         */
+        limit?: number;
+    };
+    url: '/v1/graphs/{graph_id}/audit/mutations';
+};
+
+export type ListGraphMutationsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListGraphMutationsError = ListGraphMutationsErrors[keyof ListGraphMutationsErrors];
+
+export type ListGraphMutationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: MutationAuditListResponse;
+};
+
+export type ListGraphMutationsResponse = ListGraphMutationsResponses[keyof ListGraphMutationsResponses];
 
 export type ListSubgraphsData = {
     body?: never;
