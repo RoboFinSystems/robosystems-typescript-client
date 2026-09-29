@@ -9389,9 +9389,9 @@ export type MutationAuditEntry = {
     /**
      * Status
      *
-     * Whether the call succeeded; a failed call changed nothing it reports
+     * Whether the call succeeded; a failed call changed nothing it reports. 'pending' means the call started background work; follow its operation_id for the outcome
      */
-    status: 'completed' | 'failed';
+    status: 'completed' | 'failed' | 'pending';
     /**
      * Error Code
      *
