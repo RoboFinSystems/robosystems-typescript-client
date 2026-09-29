@@ -405,6 +405,7 @@ describe('re-exports', () => {
 
     expect(typeof mod.QueuedQueryError).toBe('function')
     expect(typeof mod.QueuedOperatorError).toBe('function')
+    expect(typeof mod.OperatorRunError).toBe('function')
   })
 
   it('should re-export EventType enum', async () => {
