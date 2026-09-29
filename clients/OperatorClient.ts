@@ -271,12 +271,18 @@ export class OperatorClient {
 
       sseClient.on(EventType.OPERATION_ERROR, (error) => {
         finish()
-        reject(new Error(error.message || error.error))
+        reject(
+          new OperatorRunError(
+            error.message || error.error,
+            'failed',
+            readWrites(error.error_details)
+          )
+        )
       })
 
       sseClient.on(EventType.OPERATION_CANCELLED, () => {
         finish()
-        reject(new Error('Agent execution cancelled'))
+        reject(new OperatorRunError('Agent execution cancelled', 'cancelled', []))
       })
 
       // Handle generic error event
@@ -345,9 +351,17 @@ export class OperatorClient {
         case 'completed':
           return toOperatorResult(status.result || {})
         case 'failed':
-          throw new Error(status.error || status.message || 'Operator run failed')
+          throw new OperatorRunError(
+            status.error || status.message || 'Operator run failed',
+            'failed',
+            readWrites(status)
+          )
         case 'cancelled':
-          throw new Error('Agent execution cancelled')
+          throw new OperatorRunError(
+            'Agent execution cancelled',
+            'cancelled',
+            readWrites(status.result)
+          )
         default:
           if (status.message) {
             options.onProgress?.(status.message)
@@ -377,6 +391,29 @@ export class OperatorClient {
       this.sseClient = undefined
     }
   }
+}
+
+/**
+ * A run that failed or was cancelled. `writes` lists what it had already
+ * changed on the graph before it stopped, so a caller can show a receipt
+ * rather than invite a retry that repeats them.
+ */
+export class OperatorRunError extends Error {
+  constructor(
+    message: string,
+    public status: 'failed' | 'cancelled',
+    public writes: Record<string, any>[]
+  ) {
+    super(message)
+    this.name = 'OperatorRunError'
+  }
+}
+
+const readWrites = (source: unknown): Record<string, any>[] => {
+  const writes = (source as { writes?: unknown } | null | undefined)?.writes
+  return Array.isArray(writes)
+    ? writes.filter((w): w is Record<string, any> => !!w && typeof w === 'object')
+    : []
 }
 
 /**

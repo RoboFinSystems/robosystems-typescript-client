@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { OperatorClient, QueuedOperatorError } from './OperatorClient'
+import { OperatorClient, OperatorRunError, QueuedOperatorError } from './OperatorClient'
 
 // Mock EventSource for SSE tests
 class MockEventSource {
@@ -515,6 +515,67 @@ describe('OperatorClient queued runs', () => {
     await expect(
       client.executeQuery('graph_1', { message: 'burn rate?' }, { pollIntervalMs: 1 })
     ).rejects.toThrow('Operator run failed: model timeout')
+  })
+
+  it('carries the writes a failed run already made', async () => {
+    global.EventSource = RejectedEventSource as any
+    const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
+    const write = { operation: 'create-agent', id: 'agt_1', name: 'Notion Labs' }
+    mockFetch.mockResolvedValueOnce(queuedResponse('op_456')).mockResolvedValueOnce(
+      createMockResponse({
+        operation_id: 'op_456',
+        status: 'failed',
+        error: 'Operation failed — reference op_456',
+        writes: [write],
+      })
+    )
+
+    const err = await client
+      .executeQuery('graph_1', { message: 'add Notion Labs' }, { pollIntervalMs: 1 })
+      .catch((e) => e)
+
+    expect(err).toBeInstanceOf(OperatorRunError)
+    expect(err.status).toBe('failed')
+    expect(err.writes).toEqual([write])
+    expect(err.message).toBe('Operation failed — reference op_456')
+  })
+
+  it('carries the writes a cancelled run kept', async () => {
+    global.EventSource = RejectedEventSource as any
+    const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
+    const write = { operation: 'remember', id: 'mem_1' }
+    mockFetch.mockResolvedValueOnce(queuedResponse('op_456')).mockResolvedValueOnce(
+      createMockResponse({
+        operation_id: 'op_456',
+        status: 'cancelled',
+        result: { content: 'Cancelled', writes: [write] },
+      })
+    )
+
+    const err = await client
+      .executeQuery('graph_1', { message: 'remember this' }, { pollIntervalMs: 1 })
+      .catch((e) => e)
+
+    expect(err).toBeInstanceOf(OperatorRunError)
+    expect(err.status).toBe('cancelled')
+    expect(err.writes).toEqual([write])
+  })
+
+  it('carries the writes from a streamed failure', async () => {
+    global.EventSource = RecordingEventSource as any
+    const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
+    mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
+
+    const pending = client.executeQuery('graph_1', { message: 'add Notion Labs' }).catch((e) => e)
+    await new Promise((r) => setTimeout(r, 5))
+    RecordingEventSource.last.simulateMessage('operation_error', {
+      error: 'Task timed out after 600s',
+      error_details: { error_type: 'TimeoutError', writes: [{ id: 'agt_2' }] },
+    })
+
+    const err = await pending
+    expect(err).toBeInstanceOf(OperatorRunError)
+    expect(err.writes).toEqual([{ id: 'agt_2' }])
   })
 
   it('stops polling on a definitive 4xx from /status', async () => {
