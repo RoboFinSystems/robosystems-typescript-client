@@ -1214,6 +1214,7 @@ export type ListLedgerMappingsQuery = {
       blockType: string
       taxonomyId: string
       isActive: boolean
+      framework: string | null
     }>
   } | null
 }
@@ -1636,6 +1637,7 @@ export type ListLedgerStructuresQuery = {
       blockType: string
       taxonomyId: string
       isActive: boolean
+      framework: string | null
     }>
   } | null
 }
@@ -5382,6 +5384,7 @@ export const ListLedgerMappingsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'framework' } },
                     ],
                   },
                 },
@@ -6614,6 +6617,7 @@ export const ListLedgerStructuresDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'framework' } },
                     ],
                   },
                 },

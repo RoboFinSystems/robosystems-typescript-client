@@ -1164,7 +1164,10 @@ export class LedgerClient {
 
   // ── Mappings ────────────────────────────────────────────────────────
 
-  /** List active CoA→reporting mapping structures. */
+  /**
+   * List active CoA→reporting mapping structures, the book mapping first.
+   * Each carries `framework`: the reporting framework it maps the chart into.
+   */
   async listMappings(graphId: string): Promise<LedgerMappingInfo[]> {
     const list = await this.gqlQuery(
       graphId,

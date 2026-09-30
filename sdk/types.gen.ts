@@ -17014,6 +17014,12 @@ export type TaxonomyBlockStructure = {
      * Role Uri
      */
     role_uri?: string | null;
+    /**
+     * Target Framework
+     *
+     * `coa_mapping` only: the framework the mapping maps into.
+     */
+    target_framework?: string | null;
 };
 
 /**
@@ -17048,6 +17054,12 @@ export type TaxonomyBlockStructureRequest = {
      * Role Uri
      */
     role_uri?: string | null;
+    /**
+     * Target Framework
+     *
+     * `coa_mapping` only: the framework this mapping maps the chart into, e.g. `rs-gaap`. Omitted means the graph's book framework. A chart holds one mapping per framework.
+     */
+    target_framework?: string | null;
     /**
      * Metadata
      */
