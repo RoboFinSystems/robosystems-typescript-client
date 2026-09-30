@@ -14,6 +14,7 @@ export const LIST_STRUCTURES = gql`
         blockType
         taxonomyId
         isActive
+        framework
       }
     }
   }
