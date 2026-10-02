@@ -1008,6 +1008,212 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('reconciliations', () => {
+    const fiscalCalendar = {
+      graph_id: 'graph_1',
+      fiscal_year_start_month: 1,
+      closed_through: null,
+      close_target: null,
+      gap_periods: 0,
+      catch_up_sequence: [],
+      closeable_now: false,
+      blockers: ['unreconciled_accounts'],
+      unreconciled_account_count: 1,
+      unreconciled_account_sample: ['Prepaid Insurance (schedules): unreconciled'],
+      last_close_at: null,
+      initialized_at: null,
+      last_sync_at: null,
+      periods: [],
+    }
+
+    const summary = {
+      structure_id: 'struct_1',
+      name: 'Equipment Loan (statement)',
+      scope: 'account',
+      method: 'statement',
+      element_id: 'elem_loan',
+      required_for_close: false,
+      materiality: 0,
+      period: '2026-08',
+      as_of: '2026-08-31',
+      status: 'reconciled',
+      unreconciled_difference: 0,
+      ledger_balance: -4800,
+      independent_balance: -4800,
+      balance_as_of: '2026-08-31',
+      components: [
+        {
+          name: 'Statement ending 2026-08-31',
+          amount: -4800,
+          event_id: 'evt_1',
+          document_id: 'doc_1',
+        },
+      ],
+      review_required: false,
+      separate_reviewer: false,
+      differences: [],
+    }
+
+    it('lists every reconciliation for a period', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          reconciliations: {
+            period: '2026-08',
+            asOf: '2026-08-31',
+            notes: [],
+            reconciliations: [{ structureId: 'struct_1', status: 'not_started' }],
+          },
+        })
+      )
+      const list = await client.listReconciliations('graph_1', '2026-08')
+      expect(list?.reconciliations[0].status).toBe('not_started')
+      const [calledUrl, init] = mockFetch.mock.calls[0]
+      expect(String(calledUrl)).toBe('http://localhost:8000/extensions/graph_1/graphql')
+      expect(JSON.parse(init.body as string).variables).toEqual({ period: '2026-08' })
+    })
+
+    it('refreshes and returns the same shape a read does', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('refresh-reconciliations', {
+          period: '2026-08',
+          as_of: '2026-08-31',
+          notes: ['Source ledger (QuickBooks) was not compared.'],
+          reconciliations: [summary],
+        })
+      )
+      const list = await client.refreshReconciliations('graph_1', '2026-08')
+      expect(list.notes).toHaveLength(1)
+      const rec = list.reconciliations[0]
+      expect(rec.structureId).toBe('struct_1')
+      expect(rec.balanceAsOf).toBe('2026-08-31')
+      expect(rec.components[0]).toEqual({
+        name: 'Statement ending 2026-08-31',
+        amount: -4800,
+        structureId: null,
+        eventId: 'evt_1',
+        documentId: 'doc_1',
+        note: null,
+      })
+      expect(rec.reviewedBy).toBeNull()
+    })
+
+    it('previews one method without recording', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-reconciliations', {
+          period: '2026-08',
+          as_of: '2026-08-31',
+          fiscal_year_start: '2026-01-01',
+          method: 'schedule_register',
+          source: 'schedules',
+          accounts_compared: 1,
+          accounts_tied: 0,
+          accounts_different: 1,
+          total_difference: 600,
+          rows: [
+            {
+              element_id: 'elem_prepaid',
+              account_name: 'Prepaid Insurance',
+              ledger_balance: 1000,
+              independent_balance: 400,
+              difference: 600,
+              status: 'different',
+              components: [{ name: 'Insurance policy', amount: 400, structure_id: 'struct_s' }],
+            },
+          ],
+          notes: [],
+        })
+      )
+      const preview = await client.previewReconciliations('graph_1', '2026-08', {
+        method: 'schedule_register',
+        includeTied: true,
+      })
+      expect(preview.totalDifference).toBe(600)
+      expect(preview.rows[0].components[0].structureId).toBe('struct_s')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text())).toEqual({
+        period: '2026-08',
+        method: 'schedule_register',
+        include_tied: true,
+      })
+    })
+
+    it('records a statement balance', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('record-statement-balance', summary))
+      const rec = await client.recordStatementBalance('graph_1', {
+        elementId: 'elem_loan',
+        asOf: '2026-08-31',
+        balance: 4800,
+        documentId: 'doc_1',
+      })
+      expect(rec.status).toBe('reconciled')
+      expect(rec.independentBalance).toBe(-4800)
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toContain('/operations/record-statement-balance')
+      expect(JSON.parse(await req.text())).toEqual({
+        element_id: 'elem_loan',
+        as_of: '2026-08-31',
+        balance: 4800,
+        document_id: 'doc_1',
+        note: null,
+      })
+    })
+
+    it('changes only the policy fields given', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('set-reconciliation-policy', {
+          structure_id: 'struct_1',
+          required_for_close: true,
+          materiality: 5,
+          review_required: false,
+          separate_reviewer: false,
+        })
+      )
+      const policy = await client.setReconciliationPolicy('graph_1', 'struct_1', {
+        requiredForClose: true,
+      })
+      expect(policy.requiredForClose).toBe(true)
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text())).toEqual({
+        structure_id: 'struct_1',
+        required_for_close: true,
+      })
+    })
+
+    it('signs off a period', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('sign-off-reconciliation', {
+          ...summary,
+          status: 'reviewed',
+          reviewed_by: 'usr_1',
+          self_reviewed: true,
+        })
+      )
+      const rec = await client.signOffReconciliation('graph_1', 'struct_1', '2026-08')
+      expect(rec.status).toBe('reviewed')
+      expect(rec.selfReviewed).toBe(true)
+    })
+
+    it('carries the unreconciled accounts on the calendar and the override on close', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', {
+          period: '2026-08',
+          entries_posted: 0,
+          target_auto_advanced: false,
+          fiscal_calendar: fiscalCalendar,
+        })
+      )
+      const result = await client.closePeriod('graph_1', '2026-08', {
+        allowUnreconciledAccounts: true,
+      })
+      expect(result.fiscalCalendar.unreconciledAccountCount).toBe(1)
+      expect(result.fiscalCalendar.unreconciledAccountSample).toEqual([
+        'Prepaid Insurance (schedules): unreconciled',
+      ])
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text()).allow_unreconciled_accounts).toBe(true)
+    })
+  })
+
   describe('createSchedule', () => {
     it('serializes options into snake_case body and converts the result', async () => {
       // `create-information-block` returns an InformationBlockEnvelope. The

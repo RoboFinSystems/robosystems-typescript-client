@@ -54,13 +54,18 @@ import {
   linkEntityTaxonomy,
   liveFinancialStatement,
   previewEventBlock,
+  previewReconciliations,
   rebuildSchedule,
+  recordStatementBalance,
+  refreshReconciliations,
   regenerateReport,
   removePublishListMember,
   reopenPeriod,
   revokeReportShare,
   setCloseTarget,
+  setReconciliationPolicy,
   shareReport,
+  signOffReconciliation,
   transitionFilingStatus,
   unblockSourceGraph,
   updateAgent,
@@ -119,14 +124,25 @@ import type {
   LiveFinancialStatementResponse,
   OperationEnvelope,
   PreviewEventBlockResponse,
+  PreviewReconciliationsRequest,
   PublishListMemberResponse,
   PublishListResponse,
   RebuildScheduleRequest,
+  ReconciliationComponent,
+  ReconciliationListResponse,
+  ReconciliationPolicyResponse,
+  ReconciliationPreviewResponse,
+  ReconciliationRow,
+  ReconciliationSummary,
+  RecordStatementBalanceRequest,
+  RefreshReconciliationsRequest,
   ReopenPeriodOperation,
   ReportResponse,
   RevokeReportShareResponse,
   SetCloseTargetOperation,
+  SetReconciliationPolicyRequest,
   ShareReportResponse,
+  SignOffReconciliationRequest,
   TaxonomyBlockEnvelope,
   TransitionFilingStatusRequest,
   UpdateAgentRequest,
@@ -176,6 +192,7 @@ import {
   ListLedgerJournalEntriesDocument,
   ListLedgerMappingsDocument,
   ListLedgerPublishListsDocument,
+  ListLedgerReconciliationsDocument,
   ListLedgerReportsDocument,
   ListLedgerStructuresDocument,
   ListLedgerTaxonomiesDocument,
@@ -214,6 +231,7 @@ import {
   type ListLedgerJournalEntriesQuery,
   type ListLedgerMappingsQuery,
   type ListLedgerPublishListsQuery,
+  type ListLedgerReconciliationsQuery,
   type ListLedgerReportsQuery,
   type ListLedgerStructuresQuery,
   type ListLedgerTaxonomiesQuery,
@@ -306,6 +324,17 @@ export type LedgerFiscalCalendar = NonNullable<GetLedgerFiscalCalendarQuery['fis
 export type LedgerChartTemplate = ListChartTemplatesQuery['chartTemplates'][number]
 export type LedgerFiscalPeriod = LedgerFiscalCalendar['periods'][number]
 
+/** Every reconciliation block's standing for one period. */
+export type LedgerReconciliationList = NonNullable<
+  ListLedgerReconciliationsQuery['reconciliations']
+>
+/** One reconciliation block's standing for a period. */
+export type LedgerReconciliation = LedgerReconciliationList['reconciliations'][number]
+/** One account: the ledger's balance, the independent balance, the difference. */
+export type LedgerReconciliationRow = LedgerReconciliation['differences'][number]
+/** One part of an account's independent balance: a schedule, or a statement. */
+export type LedgerReconciliationComponent = LedgerReconciliation['components'][number]
+
 // Reports + publish lists + statements
 export type Report = NonNullable<GetLedgerReportQuery['report']>
 export type ReportPackage = NonNullable<GetLedgerReportPackageQuery['reportPackage']>
@@ -396,6 +425,8 @@ interface RawFiscalCalendar {
   stranded_obligation_count?: number
   stranded_obligation_sample?: RawObligationDetail[]
   sync_stale_days?: number | null
+  unreconciled_account_count?: number
+  unreconciled_account_sample?: string[]
   last_close_at: string | null
   initialized_at: string | null
   last_sync_at: string | null
@@ -554,6 +585,74 @@ export interface ClosePeriodOptions {
    * in the close audit note.
    */
   allowStrandedObligations?: boolean
+  /**
+   * Close despite a reconciliation the close waits on that is not
+   * reconciled for the period, or was never compared for it. Prefer
+   * `refreshReconciliations` and clearing what it reports. The override is
+   * recorded in the close audit note.
+   */
+  allowUnreconciledAccounts?: boolean
+}
+
+/** Which reconciliation check to run. */
+export type ReconciliationMethod = NonNullable<PreviewReconciliationsRequest['method']>
+
+export interface PreviewReconciliationsOptions {
+  /** Defaults to `source_ledger`, which needs a connected QuickBooks ledger. */
+  method?: ReconciliationMethod
+  /** Also return the accounts that tie. */
+  includeTied?: boolean
+}
+
+/** One comparison of the ledger with something outside it. Nothing is recorded. */
+export interface LedgerReconciliationPreview {
+  period: string
+  asOf: string
+  fiscalYearStart: string
+  method: string
+  source: string
+  reportBasis: string | null
+  lastSyncAt: string | null
+  accountsCompared: number
+  accountsTied: number
+  accountsDifferent: number
+  /** Sum of the absolute differences across accounts, not a net figure. */
+  totalDifference: number
+  /** Accounts that do not tie, largest first; tied ones follow with `includeTied`. */
+  rows: LedgerReconciliationRow[]
+  notes: string[]
+}
+
+export interface RecordStatementBalanceInput {
+  /** The balance-sheet account the statement is for. */
+  elementId: string
+  /** The statement's ending date, as YYYY-MM-DD. */
+  asOf: string
+  /**
+   * The ending balance as the statement shows it: a positive number in the
+   * account's normal direction (money in a bank account, or the amount owed
+   * on a loan or a card).
+   */
+  balance: number
+  /** The statement itself, as a document already on the graph. */
+  documentId?: string | null
+  note?: string | null
+}
+
+/** Policy fields to change; an omitted field keeps its value. */
+export interface ReconciliationPolicyChanges {
+  requiredForClose?: boolean
+  materiality?: number
+  reviewRequired?: boolean
+  separateReviewer?: boolean
+}
+
+export interface LedgerReconciliationPolicy {
+  structureId: string
+  requiredForClose: boolean
+  materiality: number
+  reviewRequired: boolean
+  separateReviewer: boolean
 }
 
 export interface CreateScheduleOptions {
@@ -1794,6 +1893,7 @@ export class LedgerClient {
       note: options?.note ?? null,
       allow_stale_sync: options?.allowStaleSync,
       allow_stranded_obligations: options?.allowStrandedObligations,
+      allow_unreconciled_accounts: options?.allowUnreconciledAccounts,
     }
     const envelope = await this.callOperation(
       'Close period',
@@ -1829,6 +1929,127 @@ export class LedgerClient {
       reopenPeriod({ path: { graph_id: graphId }, body })
     )
     return rawFiscalCalendarToCamel(envelope.result as unknown as RawFiscalCalendar)
+  }
+
+  // ── Reconciliations ─────────────────────────────────────────────────
+
+  /**
+   * Every reconciliation block's standing at a period end (YYYY-MM). A block
+   * not yet compared for the period reads `not_started`.
+   */
+  async listReconciliations(
+    graphId: string,
+    period: string
+  ): Promise<LedgerReconciliationList | null> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerReconciliationsDocument,
+      { period },
+      'List reconciliations',
+      (data) => data.reconciliations
+    )
+  }
+
+  /** Compare the ledger with something outside it. Records nothing. */
+  async previewReconciliations(
+    graphId: string,
+    period: string,
+    options?: PreviewReconciliationsOptions
+  ): Promise<LedgerReconciliationPreview> {
+    const body: PreviewReconciliationsRequest = {
+      period,
+      method: options?.method,
+      include_tied: options?.includeTied,
+    }
+    const envelope = await this.callOperation(
+      'Preview reconciliations',
+      previewReconciliations({ path: { graph_id: graphId }, body })
+    )
+    return reconciliationPreviewToCamel(envelope.result as unknown as ReconciliationPreviewResponse)
+  }
+
+  /**
+   * Run every reconciliation that applies at a period end and record each
+   * result on its block. `notes` names any check that could not run.
+   */
+  async refreshReconciliations(graphId: string, period: string): Promise<LedgerReconciliationList> {
+    const body: RefreshReconciliationsRequest = { period }
+    const envelope = await this.callOperation(
+      'Refresh reconciliations',
+      refreshReconciliations({ path: { graph_id: graphId }, body })
+    )
+    return reconciliationListToCamel(envelope.result as unknown as ReconciliationListResponse)
+  }
+
+  /**
+   * Record a statement's ending balance for an account and reconcile the
+   * account to it for the period the statement ends in. Writes no books.
+   */
+  async recordStatementBalance(
+    graphId: string,
+    input: RecordStatementBalanceInput
+  ): Promise<LedgerReconciliation> {
+    const body: RecordStatementBalanceRequest = {
+      element_id: input.elementId,
+      as_of: input.asOf,
+      balance: input.balance,
+      document_id: input.documentId ?? null,
+      note: input.note ?? null,
+    }
+    const envelope = await this.callOperation(
+      'Record statement balance',
+      recordStatementBalance({ path: { graph_id: graphId }, body })
+    )
+    return reconciliationSummaryToCamel(envelope.result as unknown as ReconciliationSummary)
+  }
+
+  /** Change how much the close cares about one reconciliation. */
+  async setReconciliationPolicy(
+    graphId: string,
+    structureId: string,
+    changes: ReconciliationPolicyChanges
+  ): Promise<LedgerReconciliationPolicy> {
+    const body: SetReconciliationPolicyRequest = {
+      structure_id: structureId,
+      required_for_close: changes.requiredForClose,
+      materiality: changes.materiality,
+      review_required: changes.reviewRequired,
+      separate_reviewer: changes.separateReviewer,
+    }
+    const envelope = await this.callOperation(
+      'Set reconciliation policy',
+      setReconciliationPolicy({ path: { graph_id: graphId }, body })
+    )
+    const raw = envelope.result as unknown as ReconciliationPolicyResponse
+    return {
+      structureId: raw.structure_id,
+      requiredForClose: raw.required_for_close,
+      materiality: raw.materiality,
+      reviewRequired: raw.review_required,
+      separateReviewer: raw.separate_reviewer,
+    }
+  }
+
+  /**
+   * Sign off a reconciled period as its reviewer. Only a member of the graph
+   * can; a later change to any balance lapses the sign-off.
+   */
+  async signOffReconciliation(
+    graphId: string,
+    structureId: string,
+    period: string,
+    note?: string | null
+  ): Promise<LedgerReconciliation> {
+    const body: SignOffReconciliationRequest = {
+      structure_id: structureId,
+      period,
+      note: note ?? null,
+    }
+    const envelope = await this.callOperation(
+      'Sign off reconciliation',
+      signOffReconciliation({ path: { graph_id: graphId }, body })
+    )
+    return reconciliationSummaryToCamel(envelope.result as unknown as ReconciliationSummary)
   }
 
   // ── Journal entries (native accounting writes) ──────────────────────
@@ -2701,6 +2922,8 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
       rawObligationDetailToCamel
     ),
     syncStaleDays: raw.sync_stale_days ?? null,
+    unreconciledAccountCount: raw.unreconciled_account_count ?? 0,
+    unreconciledAccountSample: raw.unreconciled_account_sample ?? [],
     lastCloseAt: raw.last_close_at ?? null,
     initializedAt: raw.initialized_at ?? null,
     lastSyncAt: raw.last_sync_at ?? null,
@@ -2711,6 +2934,101 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
       status: p.status,
       closedAt: p.closed_at ?? null,
     })),
+  }
+}
+
+function reconciliationComponentToCamel(
+  raw: ReconciliationComponent
+): LedgerReconciliationComponent {
+  return {
+    name: raw.name,
+    amount: raw.amount,
+    structureId: raw.structure_id ?? null,
+    eventId: raw.event_id ?? null,
+    documentId: raw.document_id ?? null,
+    note: raw.note ?? null,
+  }
+}
+
+function reconciliationRowToCamel(raw: ReconciliationRow): LedgerReconciliationRow {
+  return {
+    elementId: raw.element_id ?? null,
+    accountCode: raw.account_code ?? null,
+    accountName: raw.account_name,
+    sourceAccountId: raw.source_account_id ?? null,
+    statement: raw.statement ?? null,
+    ledgerBalance: raw.ledger_balance,
+    independentBalance: raw.independent_balance,
+    difference: raw.difference,
+    status: raw.status,
+    asOf: raw.as_of ?? null,
+    components: (raw.components ?? []).map(reconciliationComponentToCamel),
+  }
+}
+
+/**
+ * Map the REST `ReconciliationSummary` (snake_case) onto the GraphQL shape
+ * `listReconciliations` returns, so a read and a write give the same object.
+ */
+function reconciliationSummaryToCamel(raw: ReconciliationSummary): LedgerReconciliation {
+  return {
+    structureId: raw.structure_id,
+    name: raw.name,
+    scope: raw.scope,
+    method: raw.method,
+    elementId: raw.element_id ?? null,
+    requiredForClose: raw.required_for_close,
+    materiality: raw.materiality,
+    period: raw.period,
+    asOf: raw.as_of,
+    status: raw.status,
+    unreconciledDifference: raw.unreconciled_difference ?? null,
+    accountsCompared: raw.accounts_compared ?? null,
+    accountsDifferent: raw.accounts_different ?? null,
+    ledgerBalance: raw.ledger_balance ?? null,
+    independentBalance: raw.independent_balance ?? null,
+    balanceAsOf: raw.balance_as_of ?? null,
+    components: (raw.components ?? []).map(reconciliationComponentToCamel),
+    source: raw.source ?? null,
+    comparedAt: raw.compared_at ?? null,
+    factSetId: raw.fact_set_id ?? null,
+    comparedBy: raw.compared_by ?? null,
+    comparedVia: raw.compared_via ?? null,
+    reviewRequired: raw.review_required,
+    separateReviewer: raw.separate_reviewer,
+    reviewedBy: raw.reviewed_by ?? null,
+    reviewedAt: raw.reviewed_at ?? null,
+    selfReviewed: raw.self_reviewed ?? null,
+    differences: (raw.differences ?? []).map(reconciliationRowToCamel),
+  }
+}
+
+function reconciliationListToCamel(raw: ReconciliationListResponse): LedgerReconciliationList {
+  return {
+    period: raw.period,
+    asOf: raw.as_of,
+    notes: raw.notes ?? [],
+    reconciliations: (raw.reconciliations ?? []).map(reconciliationSummaryToCamel),
+  }
+}
+
+function reconciliationPreviewToCamel(
+  raw: ReconciliationPreviewResponse
+): LedgerReconciliationPreview {
+  return {
+    period: raw.period,
+    asOf: raw.as_of,
+    fiscalYearStart: raw.fiscal_year_start,
+    method: raw.method,
+    source: raw.source,
+    reportBasis: raw.report_basis ?? null,
+    lastSyncAt: raw.last_sync_at ?? null,
+    accountsCompared: raw.accounts_compared,
+    accountsTied: raw.accounts_tied,
+    accountsDifferent: raw.accounts_different,
+    totalDifference: raw.total_difference,
+    rows: (raw.rows ?? []).map(reconciliationRowToCamel),
+    notes: raw.notes ?? [],
   }
 }
 
