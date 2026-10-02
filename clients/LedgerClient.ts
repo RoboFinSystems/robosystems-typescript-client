@@ -2498,8 +2498,8 @@ export class LedgerClient {
    * A download is a read, so this resolves through GraphQL
    * (`reportDownloadUrl`) — the retired `GET .../reports/{id}/download`
    * REST resource is gone. Every flavor resolves to a presigned S3 URL:
-   * JSON-LD is stamped at publish time; XBRL is materialized + cached
-   * on first request. The returned `downloadUrl` is valid for
+   * the Tavi model is stamped at publish time; the holon and XBRL are
+   * materialized + cached on first request. The returned `downloadUrl` is valid for
    * `expiresIn` seconds (default 300, max 3600); browser callers
    * navigate to it via `window.location.href` (or an `<a href>` click)
    * to trigger the download — the server-set Content-Disposition forces
@@ -2511,8 +2511,9 @@ export class LedgerClient {
    *
    * @param graphId Graph identifier owning the Report.
    * @param reportId Report identifier (rpt_-prefixed ULID).
-   * @param options.format Serialization flavor — `TAVI` (default, the Project
-   *   Tavi compiled model stamped at publish), `HOLON_JSONLD`, or `XBRL_2_1`.
+   * @param options.format Serialization flavor — `HOLON_JSONLD` (default, the
+   *   holon, which carries the whole report), `TAVI` (the Project Tavi
+   *   compiled model stamped at publish), or `XBRL_2_1`.
    * @param options.expiresIn Presigned URL lifetime, in seconds.
    */
   async getReportDownloadUrl(
@@ -2525,7 +2526,7 @@ export class LedgerClient {
       GetLedgerReportDownloadUrlDocument,
       {
         reportId,
-        format: options.format ?? 'TAVI',
+        format: options.format ?? 'HOLON_JSONLD',
         expiresIn: options.expiresIn ?? 300,
       },
       'Get report download URL',
