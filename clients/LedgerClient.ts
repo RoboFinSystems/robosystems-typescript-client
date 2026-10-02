@@ -674,6 +674,12 @@ export interface CreateScheduleOptions {
     residualValue?: number
     usefulLifeMonths?: number
     assetElementId?: string
+    /**
+     * The day the cost went on the books (YYYY-MM-DD), when that is before
+     * the schedule's first period. The schedule reconciliation carries the
+     * cost from that day.
+     */
+    bookedOn?: string
   }
 }
 
@@ -1529,6 +1535,7 @@ export class LedgerClient {
               residual_value: options.scheduleMetadata.residualValue,
               useful_life_months: options.scheduleMetadata.usefulLifeMonths,
               asset_element_id: options.scheduleMetadata.assetElementId,
+              booked_on: options.scheduleMetadata.bookedOn,
             }
           : undefined,
       },

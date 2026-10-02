@@ -1256,6 +1256,26 @@ describe('LedgerClient', () => {
       expect(body.payload.monthly_amount).toBe(100000)
       expect(body.payload.entry_template.debit_element_id).toBe('elem_depr_exp')
     })
+
+    it('carries the day the cost was booked', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-schedule', { id: 'str_2', name: 'Insurance policy' })
+      )
+      await client.createSchedule('graph_1', {
+        name: 'Insurance policy',
+        elementIds: ['elem_1'],
+        periodStart: '2026-02-01',
+        periodEnd: '2027-01-31',
+        monthlyAmount: 10000,
+        entryTemplate: { debitElementId: 'elem_insurance', creditElementId: 'elem_prepaid' },
+        scheduleMetadata: { originalAmount: 120000, bookedOn: '2026-01-15' },
+      })
+
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.payload.schedule_metadata.booked_on).toBe('2026-01-15')
+      expect(body.payload.schedule_metadata.original_amount).toBe(120000)
+    })
   })
 
   describe('createClosingEntry', () => {

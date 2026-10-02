@@ -15947,6 +15947,12 @@ export type ScheduleMetadataRequest = {
      */
     asset_element_id?: string | null;
     /**
+     * Booked On
+     *
+     * The date the cost went on the books, when that is before the schedule's first period: a policy paid in December that starts amortizing in January, or an asset bought the month before it is placed in service. From this date until the first period the schedule carries its full cost, so the schedule reconciliation does not report that balance as unscheduled. Leave it out when the cost is booked in the first period.
+     */
+    booked_on?: string | null;
+    /**
      * Periodic Amounts
      *
      * Explicit per-period amounts in cents. When set, the generator uses these values instead of `monthly_amount` — enabling non-straight-line schedules (effective-interest bond discount amortization, day-count interest accrual, variable lease payments, pre-computed effective-yield curves, etc.). Length must match the number of monthly periods between `period_start` and `period_end`; sum must equal `original_amount` less `residual_value` exactly. The auto-generated SumEquals rule proves that total regardless of the curve shape.
@@ -18974,7 +18980,8 @@ export type UpdateRollforwardRequest = {
  * entry), then create a fresh schedule via `create-information-block`
  * (`block_type='schedule'`).
  *
- * Omitted fields are left unchanged.
+ * Omitted fields are left unchanged, and that holds inside
+ * `schedule_metadata` too: name only the fields to change.
  */
 export type UpdateScheduleRequest = {
     /**
