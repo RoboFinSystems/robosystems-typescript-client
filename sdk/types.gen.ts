@@ -14416,7 +14416,7 @@ export type ReconciliationSummary = {
     /**
      * Status
      *
-     * `not_started`: not compared for this period. `unreconciled`: the sides differ by more than the materiality. `explained`: they differ and items account for all of it. `reconciled`: nothing is left unexplained. `reviewed`: reconciled and signed off.
+     * `not_started`: not compared for this period. `stale`: the books have changed since it was compared, so run refresh-reconciliations. `unreconciled`: the sides differ by more than the materiality. `reconciled`: they agree within it. `reviewed`: reconciled and signed off.
      */
     status: string;
     /**
