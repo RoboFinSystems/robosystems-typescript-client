@@ -41,6 +41,8 @@ export const GET_FISCAL_CALENDAR = gql`
         period
       }
       syncStaleDays
+      unreconciledAccountCount
+      unreconciledAccountSample
       lastCloseAt
       initializedAt
       lastSyncAt

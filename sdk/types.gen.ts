@@ -223,7 +223,9 @@ export type ArtifactResponse = {
         kind: 'rollforward';
     } & RollforwardMechanics) | ({
         kind: 'forecast';
-    } & ForecastMechanics);
+    } & ForecastMechanics) | ({
+        kind: 'reconciliation';
+    } & ReconciliationMechanics);
 };
 
 /**
@@ -728,6 +730,12 @@ export type BackfillPlanHistoryOperation = {
      * Override the unposted-source-event gate on each reclose. Only needed when a source event inside the backfill window was never committed and you have decided not to commit or void it first.
      */
     allow_unposted_source_events?: boolean;
+    /**
+     * Allow Unreconciled Accounts
+     *
+     * Override the reconciliation gate on each reclose. Needed when a month inside the backfill window has a reconciliation the close waits on that was never compared for it, which is every month closed before the reconciliation existed.
+     */
+    allow_unreconciled_accounts?: boolean;
     /**
      * Restamp
      *
@@ -1691,6 +1699,12 @@ export type ClosePeriodOperation = {
      * Override the unposted-source-event gate — close even though source events dated in the period (bank-feed lines, QuickBooks transactions whose automatic posting failed) were never committed. Once the period closes they cannot post into it, so the stamped statements leave them out. Prefer classifying and committing, or voiding, each first. The override is recorded in the close audit note.
      */
     allow_unposted_source_events?: boolean;
+    /**
+     * Allow Unreconciled Accounts
+     *
+     * Override the reconciliation gate — close even though a reconciliation the close waits on is not reconciled for the period, or was never compared for it. The books are then closed without that check. Prefer refresh-reconciliations and clearing what it reports first. The override is recorded in the close audit note.
+     */
+    allow_unreconciled_accounts?: boolean;
     /**
      * Period
      *
@@ -2856,7 +2870,7 @@ export type CreateInformationBlockRequest = ({
 } & CreateRollforwardArm) | ({
     block_type: 'forecast';
 } & CreateForecastArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'reconciliation' | 'regulatory_disclosure';
 } & CreateLegacyArm);
 
 /**
@@ -3972,7 +3986,7 @@ export type DeleteInformationBlockRequest = ({
 } & DeleteRollforwardArm) | ({
     block_type: 'forecast';
 } & DeleteForecastArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'reconciliation' | 'regulatory_disclosure';
 } & DeleteLegacyArm);
 
 /**
@@ -4162,15 +4176,14 @@ export type DeleteRollforwardRequest = {
 /**
  * DeleteScheduleRequest
  *
- * Delete a schedule — cascades through facts and associations.
+ * Delete a schedule and everything under it. Permanent and irreversible.
  *
- * Hard deletes the Structure, all Facts tied to it, and all
- * Associations tied to it. This is a permanent, irreversible
- * operation. For ending a schedule early without removing history, use
- * `terminate-schedule` (no entry) or
- * `create-event-block(event_type='asset_disposed')` (the handler voids
- * the remaining obligation chain + posts the disposal entry atomically;
- * recognized facts stay as history).
+ * Removes the Structure, its Facts and Associations, its draft entries and
+ * its unposted obligations. Refused once any of the schedule's entries has
+ * posted, because the schedule is their support. To end a schedule early
+ * and keep its history, use `terminate-schedule` (no entry) or
+ * `create-event-block(event_type='asset_disposed')`, whose handler voids
+ * the remaining obligations and posts the disposal entry in one step.
  */
 export type DeleteScheduleRequest = {
     /**
@@ -6040,6 +6053,18 @@ export type FiscalCalendarResponse = {
      * Source identifiers (or event ids) of up to 5 unposted source events, so the blocker names what is holding the close.
      */
     unposted_source_event_sample?: Array<string>;
+    /**
+     * Unreconciled Account Count
+     *
+     * Reconciliations the close waits on that are not reconciled for this period, including any never compared for it. Run refresh-reconciliations and clear what it reports, release one with set-reconciliation-policy, or close over them knowingly with allow_unreconciled_accounts.
+     */
+    unreconciled_account_count?: number;
+    /**
+     * Unreconciled Account Sample
+     *
+     * Name and status of up to 5 of those reconciliations, so the blocker names what is holding the close.
+     */
+    unreconciled_account_sample?: Array<string>;
     /**
      * Last Close At
      */
@@ -11478,6 +11503,190 @@ export type OperationEnvelopePublishListResponse = {
 };
 
 /**
+ * OperationEnvelope[ReconciliationListResponse]
+ */
+export type OperationEnvelopeReconciliationListResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ReconciliationListResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ReconciliationPolicyResponse]
+ */
+export type OperationEnvelopeReconciliationPolicyResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ReconciliationPolicyResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ReconciliationPreviewResponse]
+ */
+export type OperationEnvelopeReconciliationPreviewResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ReconciliationPreviewResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ReconciliationSummary]
+ */
+export type OperationEnvelopeReconciliationSummary = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ReconciliationSummary | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[ReconcilingItemPlan]
  */
 export type OperationEnvelopeReconcilingItemPlan = {
@@ -13512,6 +13721,32 @@ export type PreviewEventBlockResponse = {
 };
 
 /**
+ * PreviewReconciliationsRequest
+ *
+ * Compare the ledger's balances at a period end with an independent source.
+ */
+export type PreviewReconciliationsRequest = {
+    /**
+     * Period
+     *
+     * Period to compare at its last day, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * Method
+     *
+     * Which check to preview. `source_ledger` compares every account with the synced accounting system's own trial balance. `schedule_register` compares each asset account a schedule carries a balance on with what its schedules say it holds. `statement` compares each account that has a statement balance recorded in the period with that balance.
+     */
+    method?: 'source_ledger' | 'schedule_register' | 'statement';
+    /**
+     * Include Tied
+     *
+     * Also return the accounts that tie. Off by default: the differences are the work, and the counts cover the rest.
+     */
+    include_tied?: boolean;
+};
+
+/**
  * PreviewReconcilingItemRequest
  *
  * Read what changed on a reconciling item, and what resolving it would do.
@@ -13799,6 +14034,502 @@ export type RebuildScheduleRequest = {
 };
 
 /**
+ * ReconciliationComponent
+ *
+ * One part of an account's independent balance: what a single schedule
+ * says the account carries, or a recorded statement balance.
+ */
+export type ReconciliationComponent = {
+    /**
+     * Name
+     *
+     * The schedule's name, or the statement and its date.
+     */
+    name: string;
+    /**
+     * Amount
+     *
+     * What this part says the account holds, debit-positive.
+     */
+    amount: number;
+    /**
+     * Structure Id
+     *
+     * The schedule, for a `schedule_register` part.
+     */
+    structure_id?: string | null;
+    /**
+     * Event Id
+     *
+     * The recorded balance, for a `statement` part.
+     */
+    event_id?: string | null;
+    /**
+     * Document Id
+     *
+     * The statement document given as evidence, when one was.
+     */
+    document_id?: string | null;
+    /**
+     * Note
+     *
+     * Why a schedule carries nothing (disposed of, or ended early), or the note recorded with a statement balance.
+     */
+    note?: string | null;
+};
+
+/**
+ * ReconciliationListResponse
+ *
+ * Every reconciliation's standing for one period.
+ */
+export type ReconciliationListResponse = {
+    /**
+     * Period
+     *
+     * The period, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * As Of
+     *
+     * The period's last day.
+     */
+    as_of: string;
+    /**
+     * Reconciliations
+     *
+     * One entry per reconciliation block, oldest block first.
+     */
+    reconciliations: Array<ReconciliationSummary>;
+    /**
+     * Notes
+     *
+     * What a refresh could not compare, such as a check skipped because its source is no longer connected. Empty on a plain read.
+     */
+    notes?: Array<string>;
+};
+
+/**
+ * ReconciliationMechanics
+ *
+ * Mechanics for `block_type='reconciliation'`: what is compared, against
+ * what, and how much the close cares.
+ *
+ * A `ledger`-scope reconciliation checks the whole ledger against one
+ * source (the synced accounting system's own trial balance). An
+ * `account`-scope one ties a single account to an independent balance.
+ */
+export type ReconciliationMechanics = {
+    /**
+     * Kind
+     */
+    kind?: 'reconciliation';
+    /**
+     * Scope
+     *
+     * Whether the block covers the whole ledger or one account.
+     */
+    scope: 'ledger' | 'account';
+    /**
+     * Method
+     *
+     * Where the independent side comes from.
+     */
+    method: 'source_ledger' | 'schedule_register' | 'statement';
+    /**
+     * Element Id
+     *
+     * The account reconciled; null for a ledger-scope block.
+     */
+    element_id?: string | null;
+    /**
+     * Required For Close
+     *
+     * Whether the period's close waits on this reconciliation.
+     */
+    required_for_close?: boolean;
+    /**
+     * Materiality
+     *
+     * A difference up to this amount still counts as reconciled. Zero means the two sides must agree to the cent.
+     */
+    materiality?: number;
+    /**
+     * Review Required
+     *
+     * Whether the close waits for a sign-off as well, not just for the two sides to reconcile.
+     */
+    review_required?: boolean;
+    /**
+     * Separate Reviewer
+     *
+     * Whether the person who signs off must be someone other than the person who ran the comparison.
+     */
+    separate_reviewer?: boolean;
+};
+
+/**
+ * ReconciliationPolicyResponse
+ *
+ * A reconciliation's policy after a change.
+ */
+export type ReconciliationPolicyResponse = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Required For Close
+     */
+    required_for_close: boolean;
+    /**
+     * Materiality
+     */
+    materiality: number;
+    /**
+     * Review Required
+     */
+    review_required: boolean;
+    /**
+     * Separate Reviewer
+     */
+    separate_reviewer: boolean;
+};
+
+/**
+ * ReconciliationPreviewResponse
+ *
+ * The comparison for one period end. Nothing is written.
+ */
+export type ReconciliationPreviewResponse = {
+    /**
+     * Period
+     */
+    period: string;
+    /**
+     * As Of
+     *
+     * The period's last day.
+     */
+    as_of: string;
+    /**
+     * Fiscal Year Start
+     *
+     * Income-statement accounts are compared from this date to `as_of`.
+     */
+    fiscal_year_start: string;
+    /**
+     * Method
+     */
+    method: 'source_ledger' | 'schedule_register' | 'statement';
+    /**
+     * Source
+     *
+     * The system the independent side was read from.
+     */
+    source: string;
+    /**
+     * Report Basis
+     *
+     * Accounting basis the source reported on.
+     */
+    report_basis?: string | null;
+    /**
+     * Last Sync At
+     *
+     * When the source was last synced. A difference on a sync older than the period end may be activity not yet synced, not a fault in the mirror.
+     */
+    last_sync_at?: string | null;
+    /**
+     * Accounts Compared
+     *
+     * Accounts with a balance on either side; zero on both is left out.
+     */
+    accounts_compared: number;
+    /**
+     * Accounts Tied
+     */
+    accounts_tied: number;
+    /**
+     * Accounts Different
+     *
+     * Every account that does not tie, whatever the reason.
+     */
+    accounts_different: number;
+    /**
+     * Total Difference
+     *
+     * Sum of the absolute differences across accounts, not a net figure: one missing transaction counts on each account it touches.
+     */
+    total_difference: number;
+    /**
+     * Rows
+     *
+     * Accounts that do not tie, largest difference first; tied accounts follow when `include_tied` is set.
+     */
+    rows: Array<ReconciliationRow>;
+    /**
+     * Notes
+     *
+     * How the comparison was made, and anything that qualifies it.
+     */
+    notes?: Array<string>;
+};
+
+/**
+ * ReconciliationRow
+ *
+ * One account: the ledger's balance, the independent balance, the difference.
+ *
+ * Balances are debit-positive, so a credit balance is negative on both sides.
+ */
+export type ReconciliationRow = {
+    /**
+     * Element Id
+     *
+     * The chart account; null when the ledger has none for it.
+     */
+    element_id?: string | null;
+    /**
+     * Account Code
+     *
+     * The chart account's code.
+     */
+    account_code?: string | null;
+    /**
+     * Account Name
+     *
+     * The account's name in the ledger, else in the source.
+     */
+    account_name: string;
+    /**
+     * Source Account Id
+     *
+     * The account's id in the source system, when it has one.
+     */
+    source_account_id?: string | null;
+    /**
+     * Statement
+     *
+     * `balance_sheet` or `income_statement`. Balance-sheet accounts are compared cumulatively to the period end; income-statement accounts from the start of the fiscal year. Null when the ledger has no account.
+     */
+    statement?: string | null;
+    /**
+     * Ledger Balance
+     *
+     * What the ledger holds. For `source_ledger`, landed entries only. For `schedule_register`, the balance as the period's close will leave it: landed entries, drafts awaiting the close, and schedule entries not yet drafted.
+     */
+    ledger_balance: number;
+    /**
+     * Independent Balance
+     *
+     * What the independent source says.
+     */
+    independent_balance: number;
+    /**
+     * Difference
+     *
+     * Ledger minus independent.
+     */
+    difference: number;
+    /**
+     * Status
+     *
+     * `tied`: both sides agree to the cent. `different`: both know the account and disagree. `not_in_ledger`: the source reports an account the ledger has none for. `not_in_source`: the ledger holds a balance on an account the source does not have.
+     */
+    status: string;
+    /**
+     * As Of
+     *
+     * The date both balances are stated at, when it is not the period's last day: a statement that ends mid-period is compared with the ledger at the statement's own date.
+     */
+    as_of?: string | null;
+    /**
+     * Components
+     *
+     * Account-scope methods only: what makes up the independent balance. One entry per schedule for `schedule_register`; the recorded statement for `statement`.
+     */
+    components?: Array<ReconciliationComponent>;
+};
+
+/**
+ * ReconciliationSummary
+ *
+ * One reconciliation's standing for a period.
+ */
+export type ReconciliationSummary = {
+    /**
+     * Structure Id
+     *
+     * The reconciliation block.
+     */
+    structure_id: string;
+    /**
+     * Name
+     *
+     * The block's name.
+     */
+    name: string;
+    /**
+     * Scope
+     *
+     * `ledger`: the whole ledger against one source. `account`: one account against an independent balance.
+     */
+    scope: string;
+    /**
+     * Method
+     *
+     * Where the independent side comes from. `source_ledger` is the synced accounting system's own trial balance. `schedule_register` is what the account's schedules say it carries. `statement` is the ending balance of a statement recorded for the account.
+     */
+    method: string;
+    /**
+     * Element Id
+     *
+     * The account reconciled; null for a ledger-scope block.
+     */
+    element_id?: string | null;
+    /**
+     * Required For Close
+     *
+     * Whether the period's close waits on this reconciliation.
+     */
+    required_for_close: boolean;
+    /**
+     * Materiality
+     *
+     * A difference up to this amount still counts as reconciled.
+     */
+    materiality: number;
+    /**
+     * Period
+     *
+     * The period, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * As Of
+     *
+     * The period's last day.
+     */
+    as_of: string;
+    /**
+     * Status
+     *
+     * `not_started`: not compared for this period. `unreconciled`: the sides differ by more than the materiality. `explained`: they differ and items account for all of it. `reconciled`: nothing is left unexplained. `reviewed`: reconciled and signed off.
+     */
+    status: string;
+    /**
+     * Unreconciled Difference
+     *
+     * What is left unexplained at the last comparison; null when the period has not been compared. For a ledger-scope block, the sum of every account's absolute difference. For an account-scope block, the ledger balance minus the independent one.
+     */
+    unreconciled_difference?: number | null;
+    /**
+     * Accounts Compared
+     *
+     * Ledger-scope only: accounts with a balance on either side.
+     */
+    accounts_compared?: number | null;
+    /**
+     * Accounts Different
+     *
+     * Ledger-scope only: accounts that do not tie.
+     */
+    accounts_different?: number | null;
+    /**
+     * Ledger Balance
+     *
+     * Account-scope only: the account's balance at the last comparison, debit-positive, as the period's close will leave it.
+     */
+    ledger_balance?: number | null;
+    /**
+     * Independent Balance
+     *
+     * Account-scope only: what the independent source said at the last comparison, debit-positive.
+     */
+    independent_balance?: number | null;
+    /**
+     * Balance As Of
+     *
+     * Account-scope only: the date the two balances are stated at. The period's last day, unless a statement ended earlier in the period.
+     */
+    balance_as_of?: string | null;
+    /**
+     * Components
+     *
+     * Account-scope only: what makes up the independent balance. One entry per schedule for `schedule_register`; the recorded statement for `statement`.
+     */
+    components?: Array<ReconciliationComponent>;
+    /**
+     * Source
+     *
+     * The system the independent side was read from.
+     */
+    source?: string | null;
+    /**
+     * Compared At
+     *
+     * When the two sides were last compared.
+     */
+    compared_at?: string | null;
+    /**
+     * Fact Set Id
+     *
+     * The FactSet holding the period's comparison.
+     */
+    fact_set_id?: string | null;
+    /**
+     * Compared By
+     *
+     * The user whose action ran the last comparison.
+     */
+    compared_by?: string | null;
+    /**
+     * Compared Via
+     *
+     * `operation` when someone ran refresh-reconciliations; `sync` when a source sync refreshed it.
+     */
+    compared_via?: string | null;
+    /**
+     * Review Required
+     *
+     * Whether the close also waits for a sign-off.
+     */
+    review_required: boolean;
+    /**
+     * Separate Reviewer
+     *
+     * Whether the reviewer must be someone other than the person who ran the comparison.
+     */
+    separate_reviewer: boolean;
+    /**
+     * Reviewed By
+     *
+     * The user who signed off the comparison as it stands. Null when nobody has, or when the balances changed after the sign-off.
+     */
+    reviewed_by?: string | null;
+    /**
+     * Reviewed At
+     *
+     * When the standing sign-off was made.
+     */
+    reviewed_at?: string | null;
+    /**
+     * Self Reviewed
+     *
+     * True when the reviewer is the person who ran the comparison they signed off. Null when there is no standing sign-off.
+     */
+    self_reviewed?: boolean | null;
+    /**
+     * Differences
+     *
+     * Ledger-scope only: the accounts that did not tie at the last comparison, largest difference first.
+     */
+    differences?: Array<ReconciliationRow>;
+};
+
+/**
  * ReconcilingItemCatchUp
  *
  * The catch-up entry a resolution posted.
@@ -14027,6 +14758,44 @@ export type ReconcilingItemRegenerated = {
 };
 
 /**
+ * RecordStatementBalanceRequest
+ *
+ * Record the ending balance of a statement for one account.
+ */
+export type RecordStatementBalanceRequest = {
+    /**
+     * Element Id
+     *
+     * The balance-sheet account the statement is for (a chart-of-accounts element id).
+     */
+    element_id: string;
+    /**
+     * As Of
+     *
+     * The statement's ending date.
+     */
+    as_of: string;
+    /**
+     * Balance
+     *
+     * The ending balance as the statement shows it, as a positive number in the account's normal direction: money in a bank account, or the amount owed on a loan or a card. Negative for the opposite, such as an overdrawn bank account.
+     */
+    balance: number;
+    /**
+     * Document Id
+     *
+     * The statement itself, as a document already added with create-document. Kept on the record as evidence.
+     */
+    document_id?: string | null;
+    /**
+     * Note
+     *
+     * Anything worth keeping with the recorded balance.
+     */
+    note?: string | null;
+};
+
+/**
  * RecoveryCodesRequest
  *
  * Re-authentication proof for regenerating recovery codes.
@@ -14060,6 +14829,20 @@ export type RecoveryCodesResponse = {
      * Single-use recovery codes
      */
     codes: Array<string>;
+};
+
+/**
+ * RefreshReconciliationsRequest
+ *
+ * Compare each reconciliation at a period end and record the result.
+ */
+export type RefreshReconciliationsRequest = {
+    /**
+     * Period
+     *
+     * Period to reconcile at its last day, as YYYY-MM.
+     */
+    period: string;
 };
 
 /**
@@ -15164,6 +15947,12 @@ export type ScheduleMetadataRequest = {
      */
     asset_element_id?: string | null;
     /**
+     * Booked On
+     *
+     * The date the cost went on the books, when that is before the schedule's first period: a policy paid in December that starts amortizing in January, or an asset bought the month before it is placed in service. From this date until the first period the schedule carries its full cost, so the schedule reconciliation does not report that balance as unscheduled. Leave it out when the cost is booked in the first period.
+     */
+    booked_on?: string | null;
+    /**
      * Periodic Amounts
      *
      * Explicit per-period amounts in cents. When set, the generator uses these values instead of `monthly_amount` — enabling non-straight-line schedules (effective-interest bond discount amortization, day-count interest accrual, variable lease payments, pre-computed effective-yield curves, etc.). Length must match the number of monthly periods between `period_start` and `period_end`; sum must equal `original_amount` less `residual_value` exactly. The auto-generated SumEquals rule proves that total regardless of the curve shape.
@@ -15795,6 +16584,44 @@ export type SetCloseTargetOperation = {
 };
 
 /**
+ * SetReconciliationPolicyRequest
+ *
+ * Change how much the close cares about one reconciliation.
+ */
+export type SetReconciliationPolicyRequest = {
+    /**
+     * Structure Id
+     *
+     * The reconciliation block.
+     */
+    structure_id: string;
+    /**
+     * Required For Close
+     *
+     * Whether the period's close waits on it. Omit to keep.
+     */
+    required_for_close?: boolean | null;
+    /**
+     * Materiality
+     *
+     * A difference up to this amount still counts as reconciled. Omit to keep.
+     */
+    materiality?: number | null;
+    /**
+     * Review Required
+     *
+     * Whether the close also waits for a sign-off, not just for the two sides to reconcile. Omit to keep.
+     */
+    review_required?: boolean | null;
+    /**
+     * Separate Reviewer
+     *
+     * Whether the person who signs off must be someone other than the person who ran the comparison. It can only be turned on when the graph has at least two members who can write. Omit to keep.
+     */
+    separate_reviewer?: boolean | null;
+};
+
+/**
  * SetWritePolicyRequest
  *
  * Request to set a connection's source-of-truth write policy.
@@ -15881,6 +16708,32 @@ export type ShareResultItem = {
      * Number of facts copied into the target on success.
      */
     fact_count?: number;
+};
+
+/**
+ * SignOffReconciliationRequest
+ *
+ * Sign off a reconciliation for a period as its reviewer.
+ */
+export type SignOffReconciliationRequest = {
+    /**
+     * Structure Id
+     *
+     * The reconciliation block.
+     */
+    structure_id: string;
+    /**
+     * Period
+     *
+     * The period signed off, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * Note
+     *
+     * What the reviewer looked at, kept on the sign-off.
+     */
+    note?: string | null;
 };
 
 /**
@@ -17872,7 +18725,7 @@ export type UpdateInformationBlockRequest = ({
 } & UpdateRollforwardArm) | ({
     block_type: 'forecast';
 } & UpdateForecastArm) | ({
-    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'regulatory_disclosure';
+    block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'reconciliation' | 'regulatory_disclosure';
 } & UpdateLegacyArm);
 
 /**
@@ -18127,7 +18980,8 @@ export type UpdateRollforwardRequest = {
  * entry), then create a fresh schedule via `create-information-block`
  * (`block_type='schedule'`).
  *
- * Omitted fields are left unchanged.
+ * Omitted fields are left unchanged, and that holds inside
+ * `schedule_metadata` too: name only the fields to change.
  */
 export type UpdateScheduleRequest = {
     /**
@@ -18835,7 +19689,7 @@ export type CreateLegacyArm = {
      *
      * Statement-family or metric block type. The endpoint returns 501 for these values — statements are constructed via `create-report`; metric construction is pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric' | 'reconciliation';
     /**
      * Payload
      *
@@ -18926,7 +19780,7 @@ export type DeleteLegacyArm = {
      *
      * Statement-family or metric block type. Deletion returns 501 — statements are library-seeded (archive the underlying Report instead); metric deletion is pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric' | 'reconciliation';
     /**
      * Payload
      *
@@ -19016,7 +19870,7 @@ export type UpdateLegacyArm = {
      *
      * Statement-family or metric block type. Updates return 501 — statement Structures are library-seeded; metric updates are pending.
      */
-    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric';
+    block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric' | 'reconciliation';
     /**
      * Payload
      *
@@ -28419,6 +29273,326 @@ export type ResolveReconcilingItemResponses = {
 };
 
 export type ResolveReconcilingItemResponse2 = ResolveReconcilingItemResponses[keyof ResolveReconcilingItemResponses];
+
+export type PreviewReconciliationsData = {
+    body: PreviewReconciliationsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/preview-reconciliations';
+};
+
+export type PreviewReconciliationsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type PreviewReconciliationsError = PreviewReconciliationsErrors[keyof PreviewReconciliationsErrors];
+
+export type PreviewReconciliationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeReconciliationPreviewResponse;
+};
+
+export type PreviewReconciliationsResponse = PreviewReconciliationsResponses[keyof PreviewReconciliationsResponses];
+
+export type RefreshReconciliationsData = {
+    body: RefreshReconciliationsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/refresh-reconciliations';
+};
+
+export type RefreshReconciliationsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RefreshReconciliationsError = RefreshReconciliationsErrors[keyof RefreshReconciliationsErrors];
+
+export type RefreshReconciliationsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeReconciliationListResponse;
+};
+
+export type RefreshReconciliationsResponse = RefreshReconciliationsResponses[keyof RefreshReconciliationsResponses];
+
+export type RecordStatementBalanceData = {
+    body: RecordStatementBalanceRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/record-statement-balance';
+};
+
+export type RecordStatementBalanceErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RecordStatementBalanceError = RecordStatementBalanceErrors[keyof RecordStatementBalanceErrors];
+
+export type RecordStatementBalanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeReconciliationSummary;
+};
+
+export type RecordStatementBalanceResponse = RecordStatementBalanceResponses[keyof RecordStatementBalanceResponses];
+
+export type SetReconciliationPolicyData = {
+    body: SetReconciliationPolicyRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/set-reconciliation-policy';
+};
+
+export type SetReconciliationPolicyErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type SetReconciliationPolicyError = SetReconciliationPolicyErrors[keyof SetReconciliationPolicyErrors];
+
+export type SetReconciliationPolicyResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeReconciliationPolicyResponse;
+};
+
+export type SetReconciliationPolicyResponse = SetReconciliationPolicyResponses[keyof SetReconciliationPolicyResponses];
+
+export type SignOffReconciliationData = {
+    body: SignOffReconciliationRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/sign-off-reconciliation';
+};
+
+export type SignOffReconciliationErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type SignOffReconciliationError = SignOffReconciliationErrors[keyof SignOffReconciliationErrors];
+
+export type SignOffReconciliationResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeReconciliationSummary;
+};
+
+export type SignOffReconciliationResponse = SignOffReconciliationResponses[keyof SignOffReconciliationResponses];
 
 export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;

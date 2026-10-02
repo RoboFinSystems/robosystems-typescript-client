@@ -617,6 +617,8 @@ export type GetLedgerFiscalCalendarQuery = {
     earliestPendingPeriod: string | null
     strandedObligationCount: number
     syncStaleDays: number | null
+    unreconciledAccountCount: number
+    unreconciledAccountSample: Array<string>
     lastCloseAt: string | null
     initializedAt: string | null
     lastSyncAt: string | null
@@ -1326,6 +1328,74 @@ export type ListLedgerPublishListsQuery = {
       updatedAt: string
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
+  } | null
+}
+
+export type ListLedgerReconciliationsQueryVariables = Exact<{
+  period: string
+}>
+
+export type ListLedgerReconciliationsQuery = {
+  reconciliations: {
+    period: string
+    asOf: string
+    notes: Array<string>
+    reconciliations: Array<{
+      structureId: string
+      name: string
+      scope: string
+      method: string
+      elementId: string | null
+      requiredForClose: boolean
+      materiality: number
+      period: string
+      asOf: string
+      status: string
+      unreconciledDifference: number | null
+      accountsCompared: number | null
+      accountsDifferent: number | null
+      ledgerBalance: number | null
+      independentBalance: number | null
+      balanceAsOf: string | null
+      source: string | null
+      comparedAt: string | null
+      factSetId: string | null
+      comparedBy: string | null
+      comparedVia: string | null
+      reviewRequired: boolean
+      separateReviewer: boolean
+      reviewedBy: string | null
+      reviewedAt: string | null
+      selfReviewed: boolean | null
+      components: Array<{
+        name: string
+        amount: number
+        structureId: string | null
+        eventId: string | null
+        documentId: string | null
+        note: string | null
+      }>
+      differences: Array<{
+        elementId: string | null
+        accountCode: string | null
+        accountName: string
+        sourceAccountId: string | null
+        statement: string | null
+        ledgerBalance: number
+        independentBalance: number
+        difference: number
+        status: string
+        asOf: string | null
+        components: Array<{
+          name: string
+          amount: number
+          structureId: string | null
+          eventId: string | null
+          documentId: string | null
+          note: string | null
+        }>
+      }>
+    }>
   } | null
 }
 
@@ -3805,6 +3875,8 @@ export const GetLedgerFiscalCalendarDocument = {
                   },
                 },
                 { kind: 'Field', name: { kind: 'Name', value: 'syncStaleDays' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountSample' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'lastCloseAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'initializedAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'lastSyncAt' } },
@@ -5710,6 +5782,137 @@ export const ListLedgerPublishListsDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerPublishListsQuery, ListLedgerPublishListsQueryVariables>
+export const ListLedgerReconciliationsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerReconciliations' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'reconciliations' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'period' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'asOf' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'reconciliations' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'scope' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'method' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'requiredForClose' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'materiality' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'asOf' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'unreconciledDifference' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'accountsCompared' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'accountsDifferent' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'ledgerBalance' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'independentBalance' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'balanceAsOf' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'components' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'documentId' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'note' } },
+                          ],
+                        },
+                      },
+                      { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'comparedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'comparedBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'comparedVia' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reviewRequired' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'separateReviewer' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reviewedBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reviewedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'selfReviewed' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'differences' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountCode' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'sourceAccountId' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'statement' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'ledgerBalance' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'independentBalance' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'difference' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'asOf' } },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'components' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'documentId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'note' } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ListLedgerReconciliationsQuery,
+  ListLedgerReconciliationsQueryVariables
+>
 export const GetLedgerReportDocument = {
   kind: 'Document',
   definitions: [
