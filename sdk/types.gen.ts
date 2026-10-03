@@ -4292,6 +4292,107 @@ export type DeleteTaxonomyBlockResponse = {
 };
 
 /**
+ * DescribeFilingRequest
+ *
+ * Request for the describe-filing view op — how a filing is laid out.
+ */
+export type DescribeFilingRequest = {
+    /**
+     * Ticker
+     *
+     * Company ticker. On shared-repository graphs (SEC) it resolves the latest matching filing when report_id is not given; ignored on tenant graphs.
+     */
+    ticker?: string | null;
+    /**
+     * Report Id
+     *
+     * Specific report identifier. Required on tenant graphs; on SEC, optional when ticker is given.
+     */
+    report_id?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Narrow auto-resolution to this fiscal year focus
+     */
+    fiscal_year?: number | null;
+    /**
+     * Period Type
+     *
+     * Which forms auto-resolution considers: annual (10-K / 20-F / 40-F, the default) or quarterly (10-Q as well)
+     */
+    period_type?: string | null;
+    /**
+     * Accession
+     *
+     * SEC only, with ticker: one filing by accession number — a report, or an 8-K from resolved_report.recent_releases
+     */
+    accession?: string | null;
+    /**
+     * Form
+     *
+     * SEC only, with ticker: '8-K' reads the latest earnings release
+     */
+    form?: string | null;
+};
+
+/**
+ * DescribeFilingResponse
+ *
+ * The describe-filing view op's result: xbrlkit's layout of the filing.
+ */
+export type DescribeFilingResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Report Id
+     */
+    report_id?: string | null;
+    /**
+     * Accession
+     */
+    accession?: string | null;
+    /**
+     * Resolved Report
+     */
+    resolved_report?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Profile
+     */
+    profile?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Filing
+     */
+    filing?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Entity
+     */
+    entity?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Counts
+     */
+    counts?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Sections
+     */
+    sections?: {
+        [key: string]: unknown;
+    } | null;
+    [key: string]: unknown;
+};
+
+/**
  * DetailedTransactionsResponse
  *
  * Detailed response for transaction queries.
@@ -5866,6 +5967,57 @@ export type FileUploadRequest = {
      * Size of the file about to be uploaded, in bytes. Optional; when supplied, an over-limit file is rejected here instead of after it has been pushed to S3 and rejected by ingest-file. Advisory only — the authoritative check measures the object after upload.
      */
     file_size_bytes?: number | null;
+};
+
+/**
+ * FilingLinks
+ *
+ * Where a filing on a shared repository is served.
+ */
+export type FilingLinks = {
+    /**
+     * Viewer
+     *
+     * The xbrlkit viewer over the published holon — the link to show the filing
+     */
+    viewer?: string | null;
+    /**
+     * Holon
+     */
+    holon?: string | null;
+    /**
+     * Tavi
+     */
+    tavi?: string | null;
+    /**
+     * As Filed
+     *
+     * The primary document as filed
+     */
+    as_filed?: string | null;
+    /**
+     * Exhibits
+     *
+     * An 8-K's exhibits by exhibit number (EX-99.1)
+     */
+    exhibits?: {
+        [key: string]: string;
+    } | null;
+    /**
+     * Manifest
+     */
+    manifest?: string | null;
+    /**
+     * Folder
+     */
+    folder?: string | null;
+    /**
+     * Edgar
+     *
+     * The filing's folder on EDGAR
+     */
+    edgar?: string | null;
+    [key: string]: unknown;
 };
 
 /**
@@ -10537,6 +10689,52 @@ export type OperationEnvelopeDeleteTaxonomyBlockResponse = {
 };
 
 /**
+ * OperationEnvelope[DescribeFilingResponse]
+ */
+export type OperationEnvelopeDescribeFilingResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DescribeFilingResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[DisclosuresResponse]
  */
 export type OperationEnvelopeDisclosuresResponse = {
@@ -11503,6 +11701,52 @@ export type OperationEnvelopePublishListResponse = {
 };
 
 /**
+ * OperationEnvelope[ReadTextResponse]
+ */
+export type OperationEnvelopeReadTextResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ReadTextResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[ReconciliationListResponse]
  */
 export type OperationEnvelopeReconciliationListResponse = {
@@ -11896,6 +12140,52 @@ export type OperationEnvelopeScheduleCreatedResponse = {
      * Command-specific result payload
      */
     result?: ScheduleCreatedResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[SearchTextResponse]
+ */
+export type OperationEnvelopeSearchTextResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: SearchTextResponse | null;
     /**
      * At
      *
@@ -14008,6 +14298,113 @@ export type RateLimits = {
 };
 
 /**
+ * ReadTextRequest
+ *
+ * Request for the read-text view op — a window of one filing's text.
+ */
+export type ReadTextRequest = {
+    /**
+     * Ticker
+     *
+     * Company ticker. On shared-repository graphs (SEC) it resolves the latest matching filing when report_id is not given; ignored on tenant graphs.
+     */
+    ticker?: string | null;
+    /**
+     * Report Id
+     *
+     * Specific report identifier. Required on tenant graphs; on SEC, optional when ticker is given.
+     */
+    report_id?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Narrow auto-resolution to this fiscal year focus
+     */
+    fiscal_year?: number | null;
+    /**
+     * Period Type
+     *
+     * Which forms auto-resolution considers: annual (10-K / 20-F / 40-F, the default) or quarterly (10-Q as well)
+     */
+    period_type?: string | null;
+    /**
+     * Accession
+     *
+     * SEC only, with ticker: one filing by accession number — a report, or an 8-K from resolved_report.recent_releases
+     */
+    accession?: string | null;
+    /**
+     * Form
+     *
+     * SEC only, with ticker: '8-K' reads the latest earnings release
+     */
+    form?: string | null;
+    /**
+     * Offset
+     *
+     * Character offset to start from
+     */
+    offset?: number;
+    /**
+     * Length
+     *
+     * Characters to return (default 4000)
+     */
+    length?: number | null;
+};
+
+/**
+ * ReadTextResponse
+ *
+ * The read-text view op's result: one window of the filing's text.
+ */
+export type ReadTextResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Report Id
+     */
+    report_id?: string | null;
+    /**
+     * Accession
+     */
+    accession?: string | null;
+    /**
+     * Resolved Report
+     */
+    resolved_report?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Offset
+     */
+    offset: number;
+    /**
+     * Length
+     */
+    length: number;
+    /**
+     * Text
+     */
+    text: string;
+    /**
+     * Text Chars
+     */
+    text_chars: number;
+    /**
+     * Next Offset
+     */
+    next_offset?: number | null;
+    /**
+     * Section
+     */
+    section?: string | null;
+    [key: string]: unknown;
+};
+
+/**
  * RebuildScheduleRequest
  *
  * Re-run the schedule generator in place on an existing schedule.
@@ -15521,6 +15918,7 @@ export type ResolvedReportInfo = {
      * Fiscal Period
      */
     fiscal_period?: string | null;
+    links?: FilingLinks | null;
 };
 
 /**
@@ -16327,6 +16725,137 @@ export type SearchResponse = {
      * Graph Id
      */
     graph_id: string;
+};
+
+/**
+ * SearchTextRequest
+ *
+ * Request for the search-text view op — words inside one filing.
+ */
+export type SearchTextRequest = {
+    /**
+     * Ticker
+     *
+     * Company ticker. On shared-repository graphs (SEC) it resolves the latest matching filing when report_id is not given; ignored on tenant graphs.
+     */
+    ticker?: string | null;
+    /**
+     * Report Id
+     *
+     * Specific report identifier. Required on tenant graphs; on SEC, optional when ticker is given.
+     */
+    report_id?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Narrow auto-resolution to this fiscal year focus
+     */
+    fiscal_year?: number | null;
+    /**
+     * Period Type
+     *
+     * Which forms auto-resolution considers: annual (10-K / 20-F / 40-F, the default) or quarterly (10-Q as well)
+     */
+    period_type?: string | null;
+    /**
+     * Accession
+     *
+     * SEC only, with ticker: one filing by accession number — a report, or an 8-K from resolved_report.recent_releases
+     */
+    accession?: string | null;
+    /**
+     * Form
+     *
+     * SEC only, with ticker: '8-K' reads the latest earnings release
+     */
+    form?: string | null;
+    /**
+     * Query
+     *
+     * Words matched in order across any spacing, case-insensitive; `|` between alternative phrases, a trailing `*` for a stem. Not a regular expression.
+     */
+    query: string;
+    /**
+     * Window
+     *
+     * Characters of context around each match (default 300)
+     */
+    window?: number | null;
+    /**
+     * Max Hits
+     *
+     * Matches to return (default 10)
+     */
+    max_hits?: number | null;
+};
+
+/**
+ * SearchTextResponse
+ *
+ * The search-text view op's result: matches in document order.
+ */
+export type SearchTextResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Report Id
+     */
+    report_id?: string | null;
+    /**
+     * Accession
+     */
+    accession?: string | null;
+    /**
+     * Resolved Report
+     */
+    resolved_report?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Query
+     */
+    query: string;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Hits
+     */
+    hits?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Text Chars
+     */
+    text_chars: number;
+    /**
+     * Text
+     */
+    text?: string | null;
+    /**
+     * Sections
+     */
+    sections?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Sections Omitted
+     */
+    sections_omitted?: number | null;
+    /**
+     * Terms
+     */
+    terms?: Array<{
+        [key: string]: unknown;
+    }> | null;
+    /**
+     * Note
+     */
+    note?: string | null;
+    [key: string]: unknown;
 };
 
 /**
@@ -31321,6 +31850,198 @@ export type InformationBlockResponses = {
 };
 
 export type InformationBlockResponse2 = InformationBlockResponses[keyof InformationBlockResponses];
+
+export type DescribeFilingData = {
+    body: DescribeFilingRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/describe-filing';
+};
+
+export type DescribeFilingErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type DescribeFilingError = DescribeFilingErrors[keyof DescribeFilingErrors];
+
+export type DescribeFilingResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeDescribeFilingResponse;
+};
+
+export type DescribeFilingResponse2 = DescribeFilingResponses[keyof DescribeFilingResponses];
+
+export type SearchTextData = {
+    body: SearchTextRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/search-text';
+};
+
+export type SearchTextErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type SearchTextError = SearchTextErrors[keyof SearchTextErrors];
+
+export type SearchTextResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeSearchTextResponse;
+};
+
+export type SearchTextResponse2 = SearchTextResponses[keyof SearchTextResponses];
+
+export type ReadTextData = {
+    body: ReadTextRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/read-text';
+};
+
+export type ReadTextErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ReadTextError = ReadTextErrors[keyof ReadTextErrors];
+
+export type ReadTextResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeReadTextResponse;
+};
+
+export type ReadTextResponse2 = ReadTextResponses[keyof ReadTextResponses];
 
 export type LiveFinancialStatementData = {
     body: LiveFinancialStatementRequest;
