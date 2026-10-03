@@ -55,12 +55,15 @@ import {
   liveFinancialStatement,
   previewEventBlock,
   previewReconciliations,
+  previewReconcilingItem,
+  promoteObligations,
   rebuildSchedule,
   recordStatementBalance,
   refreshReconciliations,
   regenerateReport,
   removePublishListMember,
   reopenPeriod,
+  resolveReconcilingItem,
   revokeReportShare,
   setCloseTarget,
   setReconciliationPolicy,
@@ -125,6 +128,8 @@ import type {
   OperationEnvelope,
   PreviewEventBlockResponse,
   PreviewReconciliationsRequest,
+  PromoteObligationsRequest,
+  PromoteObligationsResponse,
   PublishListMemberResponse,
   PublishListResponse,
   RebuildScheduleRequest,
@@ -134,10 +139,13 @@ import type {
   ReconciliationPreviewResponse,
   ReconciliationRow,
   ReconciliationSummary,
+  ReconcilingItemPlan,
   RecordStatementBalanceRequest,
   RefreshReconciliationsRequest,
   ReopenPeriodOperation,
   ReportResponse,
+  ResolveReconcilingItemRequest,
+  ResolveReconcilingItemResponse,
   RevokeReportShareResponse,
   SetCloseTargetOperation,
   SetReconciliationPolicyRequest,
@@ -425,6 +433,10 @@ interface RawFiscalCalendar {
   stranded_obligation_count?: number
   stranded_obligation_sample?: RawObligationDetail[]
   sync_stale_days?: number | null
+  reconciling_item_count?: number
+  reconciling_item_sample?: string[]
+  unposted_source_event_count?: number
+  unposted_source_event_sample?: string[]
   unreconciled_account_count?: number
   unreconciled_account_sample?: string[]
   last_close_at: string | null
@@ -592,6 +604,18 @@ export interface ClosePeriodOptions {
    * recorded in the close audit note.
    */
   allowUnreconciledAccounts?: boolean
+  /**
+   * Close despite posted events whose source payload changed afterwards and
+   * that nobody has decided on. Prefer `resolveReconcilingItem` on each.
+   * The override is recorded in the close audit note.
+   */
+  allowReconcilingItems?: boolean
+  /**
+   * Close despite source events dated in the period that were never
+   * committed; once it closes they cannot post into it. Prefer committing
+   * or voiding each. The override is recorded in the close audit note.
+   */
+  allowUnpostedSourceEvents?: boolean
 }
 
 /** Which reconciliation check to run. */
@@ -969,6 +993,8 @@ export class LedgerClient {
       status?: string
       agentId?: string
       source?: string
+      /** Only posted events whose source payload changed afterwards. */
+      isReconcilingItem?: boolean
       limit?: number
       offset?: number
     }
@@ -982,6 +1008,7 @@ export class LedgerClient {
         status: options?.status ?? null,
         agentId: options?.agentId ?? null,
         source: options?.source ?? null,
+        isReconcilingItem: options?.isReconcilingItem ?? null,
         limit: options?.limit ?? 50,
         offset: options?.offset ?? 0,
       },
@@ -1901,6 +1928,8 @@ export class LedgerClient {
       allow_stale_sync: options?.allowStaleSync,
       allow_stranded_obligations: options?.allowStrandedObligations,
       allow_unreconciled_accounts: options?.allowUnreconciledAccounts,
+      allow_reconciling_items: options?.allowReconcilingItems,
+      allow_unposted_source_events: options?.allowUnpostedSourceEvents,
     }
     const envelope = await this.callOperation(
       'Close period',
@@ -1955,6 +1984,52 @@ export class LedgerClient {
       'List reconciliations',
       (data) => data.reconciliations
     )
+  }
+
+  /**
+   * What changed on a reconciling item (a posted event whose source payload
+   * changed afterwards) and what each treatment would do. Writes nothing.
+   * List the items with `listEventBlocks(graphId, { isReconcilingItem: true })`.
+   */
+  async previewReconcilingItem(graphId: string, eventId: string): Promise<ReconcilingItemPlan> {
+    const envelope = await this.callOperation(
+      'Preview reconciling item',
+      previewReconcilingItem({ path: { graph_id: graphId }, body: { event_id: eventId } })
+    )
+    return this.requireResult('Preview reconciling item', envelope.result)
+  }
+
+  /**
+   * Decide one reconciling item: `restate` the affected months, `catch_up`
+   * with an entry in the open period, or `acknowledge` that it was handled
+   * elsewhere (a note is required). Omit `disposition` to take the default
+   * the preview reports.
+   */
+  async resolveReconcilingItem(
+    graphId: string,
+    body: ResolveReconcilingItemRequest
+  ): Promise<ResolveReconcilingItemResponse> {
+    const envelope = await this.callOperation(
+      'Resolve reconciling item',
+      resolveReconcilingItem({ path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Resolve reconciling item', envelope.result)
+  }
+
+  /**
+   * Draft the closing entry of every matured schedule obligation, including
+   * ones promoted earlier and never drafted. The drafts post when the period
+   * closes. Safe to repeat.
+   */
+  async promoteObligations(
+    graphId: string,
+    body: PromoteObligationsRequest = {}
+  ): Promise<PromoteObligationsResponse> {
+    const envelope = await this.callOperation(
+      'Promote obligations',
+      promoteObligations({ path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Promote obligations', envelope.result)
   }
 
   /** Compare the ledger with something outside it. Records nothing. */
@@ -2930,6 +3005,10 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
       rawObligationDetailToCamel
     ),
     syncStaleDays: raw.sync_stale_days ?? null,
+    reconcilingItemCount: raw.reconciling_item_count ?? 0,
+    reconcilingItemSample: raw.reconciling_item_sample ?? [],
+    unpostedSourceEventCount: raw.unposted_source_event_count ?? 0,
+    unpostedSourceEventSample: raw.unposted_source_event_sample ?? [],
     unreconciledAccountCount: raw.unreconciled_account_count ?? 0,
     unreconciledAccountSample: raw.unreconciled_account_sample ?? [],
     lastCloseAt: raw.last_close_at ?? null,

@@ -8,7 +8,8 @@ import { gql } from 'graphql-request'
  * `eventType` matches values like `invoice_issued`, `bill_received`,
  * `payment_received`, `bill_paid`, `sales_receipt_recorded`,
  * `journal_entry_recorded`. `eventCategory` groups them: `sales`,
- * `purchase`, `adjustment`.
+ * `purchase`, `adjustment`. `isReconcilingItem` narrows to posted events
+ * whose source payload changed afterwards and that await a decision.
  */
 export const LIST_EVENT_BLOCKS = gql`
   query ListLedgerEventBlocks(
@@ -17,6 +18,7 @@ export const LIST_EVENT_BLOCKS = gql`
     $status: String
     $agentId: String
     $source: String
+    $isReconcilingItem: Boolean
     $limit: Int! = 50
     $offset: Int! = 0
   ) {
@@ -26,6 +28,7 @@ export const LIST_EVENT_BLOCKS = gql`
       status: $status
       agentId: $agentId
       source: $source
+      isReconcilingItem: $isReconcilingItem
       limit: $limit
       offset: $offset
     ) {

@@ -568,6 +568,7 @@ export type ListLedgerEventBlocksQueryVariables = Exact<{
   status: string | null | undefined
   agentId: string | null | undefined
   source: string | null | undefined
+  isReconcilingItem: boolean | null | undefined
   limit?: number
   offset?: number
 }>
@@ -617,6 +618,10 @@ export type GetLedgerFiscalCalendarQuery = {
     earliestPendingPeriod: string | null
     strandedObligationCount: number
     syncStaleDays: number | null
+    reconcilingItemCount: number
+    reconcilingItemSample: Array<string>
+    unpostedSourceEventCount: number
+    unpostedSourceEventSample: Array<string>
     unreconciledAccountCount: number
     unreconciledAccountSample: Array<string>
     lastCloseAt: string | null
@@ -3726,6 +3731,11 @@ export const ListLedgerEventBlocksDocument = {
         },
         {
           kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'isReconcilingItem' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+        },
+        {
+          kind: 'VariableDefinition',
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
           type: {
             kind: 'NonNullType',
@@ -3774,6 +3784,11 @@ export const ListLedgerEventBlocksDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'source' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'isReconcilingItem' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'isReconcilingItem' } },
               },
               {
                 kind: 'Argument',
@@ -3875,6 +3890,10 @@ export const GetLedgerFiscalCalendarDocument = {
                   },
                 },
                 { kind: 'Field', name: { kind: 'Name', value: 'syncStaleDays' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'reconcilingItemCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'reconcilingItemSample' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unpostedSourceEventCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unpostedSourceEventSample' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountCount' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountSample' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'lastCloseAt' } },
