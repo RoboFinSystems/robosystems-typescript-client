@@ -635,9 +635,19 @@ describe('LedgerClient', () => {
       expect(body.variables).toMatchObject({
         eventType: null,
         status: null,
+        isReconcilingItem: null,
         limit: 50,
         offset: 0,
       })
+    })
+
+    it('narrows to reconciling items when asked', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ eventBlocks: [] }))
+      await client.listEventBlocks('graph_1', { isReconcilingItem: true })
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.isReconcilingItem).toBe(true)
+      expect(body.query).toContain('isReconcilingItem: $isReconcilingItem')
     })
   })
 
@@ -1005,6 +1015,129 @@ describe('LedgerClient', () => {
       const body = JSON.parse(await req.text())
       expect(body.allow_stale_sync).toBe(true)
       expect(body.period).toBe('2026-03')
+    })
+
+    it('sends the reconciling-item and unposted-event overrides', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', { period: '2026-03', fiscal_calendar: { periods: [] } })
+      )
+      await client.closePeriod('graph_1', '2026-03', {
+        allowReconcilingItems: true,
+        allowUnpostedSourceEvents: true,
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.allow_reconciling_items).toBe(true)
+      expect(body.allow_unposted_source_events).toBe(true)
+      // Unset overrides stay off the wire, so the server's defaults apply.
+      expect(body.allow_stale_sync).toBeUndefined()
+    })
+
+    it('carries the reconciling-item and unposted-event detail on the calendar', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', {
+          period: '2026-03',
+          fiscal_calendar: {
+            blockers: ['reconciling_items', 'unposted_source_events'],
+            reconciling_item_count: 2,
+            reconciling_item_sample: ['INV-1041', 'evt_9'],
+            unposted_source_event_count: 1,
+            unposted_source_event_sample: ['evt_3'],
+            periods: [],
+          },
+        })
+      )
+      const { fiscalCalendar } = await client.closePeriod('graph_1', '2026-03')
+      expect(fiscalCalendar.reconcilingItemCount).toBe(2)
+      expect(fiscalCalendar.reconcilingItemSample).toEqual(['INV-1041', 'evt_9'])
+      expect(fiscalCalendar.unpostedSourceEventCount).toBe(1)
+      expect(fiscalCalendar.unpostedSourceEventSample).toEqual(['evt_3'])
+    })
+
+    it('defaults that detail to nothing when the calendar omits it', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', { period: '2026-03', fiscal_calendar: { periods: [] } })
+      )
+      const { fiscalCalendar } = await client.closePeriod('graph_1', '2026-03')
+      expect(fiscalCalendar.reconcilingItemCount).toBe(0)
+      expect(fiscalCalendar.reconcilingItemSample).toEqual([])
+      expect(fiscalCalendar.unpostedSourceEventCount).toBe(0)
+      expect(fiscalCalendar.unpostedSourceEventSample).toEqual([])
+    })
+  })
+
+  describe('reconciling items', () => {
+    it('previews one by event id and returns the plan', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-reconciling-item', {
+          event_id: 'evt_1',
+          default_disposition: 'catch_up',
+          closed_periods: ['2026-07'],
+          delta: [{ element_id: 'el_1', net_change: 1250 }],
+        })
+      )
+      const plan = await client.previewReconcilingItem('graph_42', 'evt_1')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/preview-reconciling-item'
+      )
+      expect(JSON.parse(await req.text())).toEqual({ event_id: 'evt_1' })
+      expect(plan.default_disposition).toBe('catch_up')
+      expect(plan.closed_periods).toEqual(['2026-07'])
+    })
+
+    it('resolves one with the chosen treatment', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('resolve-reconciling-item', {
+          event_id: 'evt_1',
+          disposition: 'acknowledge',
+        })
+      )
+      const result = await client.resolveReconcilingItem('graph_42', {
+        event_id: 'evt_1',
+        disposition: 'acknowledge',
+        note: 'Booked by hand in JE-1042',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/resolve-reconciling-item'
+      )
+      expect(JSON.parse(await req.text())).toEqual({
+        event_id: 'evt_1',
+        disposition: 'acknowledge',
+        note: 'Booked by hand in JE-1042',
+      })
+      expect(result.disposition).toBe('acknowledge')
+    })
+
+    it('surfaces a refused resolution', async () => {
+      mockFetch.mockResolvedValueOnce(
+        restErrorResponse('Restate is blocked: period 2026-07 is closed', 409)
+      )
+      await expect(
+        client.resolveReconcilingItem('graph_42', { event_id: 'evt_1', disposition: 'restate' })
+      ).rejects.toThrow(/Restate is blocked/)
+    })
+  })
+
+  describe('promoteObligations', () => {
+    it('sweeps with the server defaults when given nothing', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('promote-obligations', {
+          classified_count: 2,
+          dispatched_count: 2,
+          stranded_count: 1,
+          error_count: 0,
+        })
+      )
+      const result = await client.promoteObligations('graph_42')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/promote-obligations'
+      )
+      expect(JSON.parse(await req.text())).toEqual({})
+      expect(result.dispatched_count).toBe(2)
+      expect(result.stranded_count).toBe(1)
     })
   })
 
