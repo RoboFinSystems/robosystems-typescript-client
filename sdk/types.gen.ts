@@ -3383,7 +3383,7 @@ export type CreateViewRequest = {
     /**
      * Canonical Concepts
      *
-     * Canonical concept names (e.g., 'revenue', 'net_income'). Matches all mapped qnames.
+     * Canonical concept names (e.g., 'revenue', 'net_income'). Matches all mapped qnames. Shared repositories only.
      */
     canonical_concepts?: Array<string>;
     /**
@@ -3407,19 +3407,19 @@ export type CreateViewRequest = {
     /**
      * Form
      *
-     * Filter by SEC filing form type (e.g., '10-K', '10-Q')
+     * Filter by SEC filing form type (e.g., '10-K', '10-Q'). Shared repositories only.
      */
     form?: string | null;
     /**
      * Fiscal Year
      *
-     * Filter by fiscal year (e.g., 2024)
+     * Filter by fiscal year (e.g., 2024). Shared repositories only.
      */
     fiscal_year?: number | null;
     /**
      * Fiscal Period
      *
-     * Filter by fiscal period (e.g., 'FY', 'Q1', 'Q2', 'Q3')
+     * Filter by fiscal period (e.g., 'FY', 'Q1', 'Q2', 'Q3'). Shared repositories only.
      */
     fiscal_period?: string | null;
     /**
@@ -4330,7 +4330,7 @@ export type DescribeFilingRequest = {
     /**
      * Form
      *
-     * SEC only, with ticker: '8-K' reads the latest earnings release
+     * SEC only, with ticker: '8-K' reads the latest earnings release, or with fiscal_year the latest filed in that calendar year
      */
     form?: string | null;
 };
@@ -6005,12 +6005,10 @@ export type FilingLinks = {
     } | null;
     /**
      * Manifest
+     *
+     * Every file in the filing's public folder, with its URL
      */
     manifest?: string | null;
-    /**
-     * Folder
-     */
-    folder?: string | null;
     /**
      * Edgar
      *
@@ -14336,7 +14334,7 @@ export type ReadTextRequest = {
     /**
      * Form
      *
-     * SEC only, with ticker: '8-K' reads the latest earnings release
+     * SEC only, with ticker: '8-K' reads the latest earnings release, or with fiscal_year the latest filed in that calendar year
      */
     form?: string | null;
     /**
@@ -15513,7 +15511,7 @@ export type ReopenPeriodOperation = {
     /**
      * Period
      *
-     * Period to reopen, in YYYY-MM. Any closed period may be reopened. Reopening the current `closed_through` retreats it by one month; reopening an earlier period leaves `closed_through` where it is (a prior-period adjustment), and its re-close restores the period without moving the pointer.
+     * Period to reopen, in YYYY-MM. Only the latest closed period (the current `closed_through`) can be reopened, and reopening it retreats `closed_through` by one month. To reach an earlier period, reopen the later ones first, latest to earliest.
      */
     period: string;
 };
@@ -16576,6 +16574,10 @@ export type SearchHit = {
      */
     form_type?: string | null;
     /**
+     * Accession Number
+     */
+    accession_number?: string | null;
+    /**
      * Xbrl Elements
      */
     xbrl_elements?: Array<string> | null;
@@ -16766,7 +16768,7 @@ export type SearchTextRequest = {
     /**
      * Form
      *
-     * SEC only, with ticker: '8-K' reads the latest earnings release
+     * SEC only, with ticker: '8-K' reads the latest earnings release, or with fiscal_year the latest filed in that calendar year
      */
     form?: string | null;
     /**
