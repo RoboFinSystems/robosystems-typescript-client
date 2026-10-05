@@ -47,8 +47,8 @@ export interface RoboSystemsClientConfig {
    */
   token?: string
   /**
-   * Dynamic credential callback invoked on every GraphQL request and
-   * every SSE connect. When set, JWT refreshes are picked up
+   * Dynamic credential callback invoked on every GraphQL request, every
+   * facade REST write, and every SSE connect. When set, JWT refreshes are picked up
    * automatically — no need to rebuild or clear cached clients after a
    * refresh. Browser sessions need this: the backend revokes the previous
    * JWT on each refresh, so a static `token` captured at construction
@@ -95,10 +95,10 @@ export class RoboSystemsClients {
     // Get base URL from SDK client config or use provided/default
     const sdkConfig = client.getConfig()
 
-    // Facade REST calls run through the generated ops, which share this
-    // module-level client — its `fetch` is the only interception point,
-    // since the ops take no per-call transport. A caller that already
-    // supplied one keeps it; we never override an explicit choice.
+    // Facade REST calls run through the generated ops on this module-level
+    // client. They pass their own baseUrl, credential and headers per call,
+    // but the transport is still this client's `fetch`. A caller that
+    // already supplied one keeps it; we never override an explicit choice.
     if (!sdkConfig.fetch) {
       client.setConfig({
         fetch: createRetryingFetch({
@@ -122,8 +122,8 @@ export class RoboSystemsClients {
       token,
       tokenProvider,
       headers: config.headers,
-      maxRetries: config.maxRetries || 5,
-      retryDelay: config.retryDelay || 1000,
+      maxRetries: config.maxRetries ?? 5,
+      retryDelay: config.retryDelay ?? 1000,
       timeout: config.timeout,
     }
 

@@ -275,6 +275,75 @@ describe('OperationClient', () => {
 
       await expect(resultPromise).rejects.toThrow('Operation timeout after 100ms')
     })
+
+    const liveSource = (client: OperationClient, operationId: string) =>
+      ((client as any).sseClients.get(operationId) as any).eventSource as MockEventSource
+
+    it('settles when cancelOperation() closes the stream', async () => {
+      mockFetch.mockResolvedValueOnce(createMockResponse({ status: 'cancelled' }))
+      const resultPromise = operationClient.monitorOperation('op_cancel_local')
+      await new Promise((r) => setTimeout(r, 20))
+
+      await operationClient.cancelOperation('op_cancel_local')
+
+      await expect(resultPromise).resolves.toEqual({
+        success: false,
+        error: 'SSE stream closed before the operation finished',
+      })
+    })
+
+    it('settles when closeAll() runs', async () => {
+      const resultPromise = operationClient.monitorOperation('op_close_all')
+      await new Promise((r) => setTimeout(r, 20))
+
+      operationClient.closeAll()
+
+      await expect(resultPromise).resolves.toMatchObject({ success: false })
+    })
+
+    it('settles when a reconnect fails before it opens', async () => {
+      const client = new OperationClient({ baseUrl: 'http://localhost:8000', retryDelay: 1 })
+      const resultPromise = client.monitorOperation('op_reconnect')
+      await new Promise((r) => setTimeout(r, 20))
+
+      // The reconnect is refused before open (an expired token, say).
+      global.EventSource = class {
+        static CLOSED = 2
+        readyState = 0
+        onopen: ((event: any) => void) | null = null
+        onerror: ((event: any) => void) | null = null
+        onmessage: ((event: any) => void) | null = null
+        constructor() {
+          setTimeout(() => {
+            this.readyState = 2
+            this.onerror?.({ type: 'error' })
+          }, 0)
+        }
+        addEventListener() {}
+        close() {
+          this.readyState = 2
+        }
+      } as any
+      liveSource(client, 'op_reconnect').onerror?.({ type: 'error' })
+
+      await expect(resultPromise).resolves.toMatchObject({ success: false })
+      client.closeAll()
+    })
+
+    it("resolves with the server's in-stream error", async () => {
+      const resultPromise = operationClient.monitorOperation('op_capped')
+      await new Promise((r) => setTimeout(r, 20))
+
+      liveSource(operationClient, 'op_capped').onerror?.({
+        type: 'error',
+        data: JSON.stringify({ error: 'Too many concurrent SSE connections (limit: 3)' }),
+      })
+
+      await expect(resultPromise).resolves.toEqual({
+        success: false,
+        error: 'Too many concurrent SSE connections (limit: 3)',
+      })
+    })
   })
 
   describe('waitForOperation', () => {

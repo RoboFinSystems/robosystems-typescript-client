@@ -92,9 +92,26 @@ const describeError = (err: unknown): string => (err instanceof Error ? err.mess
  */
 const describeEnvelopeError = (err: unknown): string => {
   if (err instanceof Error) return err.message
-  if (err && typeof err === 'object' && 'detail' in err) return String((err as any).detail)
+  if (err && typeof err === 'object' && 'detail' in err) return describeDetail((err as any).detail)
   if (err === undefined || err === null) return 'empty response'
   return typeof err === 'string' ? err : JSON.stringify(err)
+}
+
+/**
+ * A FastAPI `detail`: a string, an object such as the 402 credit refusal
+ * (`{code, message, ...}`), or a 422's list of validation errors.
+ */
+const describeDetail = (detail: unknown): string => {
+  if (typeof detail === 'string') return detail
+  if (Array.isArray(detail)) {
+    return detail
+      .map((d) => (d && typeof d === 'object' && 'msg' in d ? d.msg : String(d)))
+      .join('; ')
+  }
+  if (detail && typeof detail === 'object' && 'message' in detail) {
+    return String((detail as any).message)
+  }
+  return JSON.stringify(detail)
 }
 
 /**
@@ -117,6 +134,34 @@ function toOperatorResult(data: Record<string, any>): OperatorResult {
     result.error_details = data.error_details
   }
   return result
+}
+
+/**
+ * An operator request the API refused — 402 (credits), 403, 404, 422, 500 —
+ * or one that never reached it (`status` undefined). `detail` is the
+ * server's `detail` field, or the network error.
+ */
+export class OperatorRequestError extends Error {
+  constructor(
+    message: string,
+    public status: number | undefined,
+    public detail: unknown
+  ) {
+    super(message)
+    this.name = 'OperatorRequestError'
+  }
+}
+
+function throwIfRequestFailed(response: { error?: unknown; response?: Response }): void {
+  if (response.error === undefined) return
+  const status = response.response?.status
+  const error = response.error as any
+  const detail = error instanceof Error ? error : (error?.detail ?? error)
+  throw new OperatorRequestError(
+    `Operator request failed${status ? ` (${status})` : ''}: ${describeEnvelopeError(response.error)}`,
+    status,
+    detail
+  )
 }
 
 /** Internal: a `/status` verdict that must not be retried. */
@@ -152,6 +197,7 @@ export class OperatorClient {
     }
 
     const response = await autoSelectOperator(data)
+    throwIfRequestFailed(response)
     return this.settle(response.data, options)
   }
 
@@ -178,6 +224,7 @@ export class OperatorClient {
     }
 
     const response = await executeSpecificOperator(data)
+    throwIfRequestFailed(response)
     return this.settle(response.data, options)
   }
 
@@ -238,12 +285,13 @@ export class OperatorClient {
         }
       }
 
-      // The stream closed before a terminal event: a reconnect that failed
-      // before opening, retries exhausted, or this client being closed. The
-      // SSE client clears its listeners as it closes, so without this the
-      // promise would never settle. The run finishes whether or not anyone
-      // watches, so a dropped stream follows it over `/status` instead.
-      sseClient.on('closed', () => {
+      // The stream ended before a terminal event: a reconnect that failed
+      // before opening, retries exhausted, the server's own stream `error`
+      // (the per-user connection cap among them), or this client being
+      // closed. The SSE client clears its listeners as it closes, so without
+      // this the promise would never settle. The run finishes whether or not
+      // anyone watches, so a dropped stream follows it over `/status` instead.
+      const followByPolling = (streamError: Error) => {
         if (settled) return
         settled = true
         if (this.sseClient !== sseClient) {
@@ -251,11 +299,17 @@ export class OperatorClient {
           return
         }
         this.sseClient = undefined
-        this.pollForCompletion(
-          operationId,
-          options,
-          new Error('the stream closed before the run finished')
-        ).then(resolve, reject)
+        this.pollForCompletion(operationId, options, streamError).then(resolve, reject)
+      }
+
+      sseClient.on('closed', () => {
+        followByPolling(new Error('the stream closed before the run finished'))
+      })
+
+      // A stream-level failure, not a run failure (those arrive as
+      // `operation_error`); the SSE client closes right after emitting it.
+      sseClient.on('error', (error) => {
+        followByPolling(new Error(error?.error || error?.message || 'stream error'))
       })
 
       // Listen for progress events
@@ -305,12 +359,6 @@ export class OperatorClient {
       sseClient.on(EventType.OPERATION_CANCELLED, () => {
         finish()
         reject(new OperatorRunError('Agent execution cancelled', 'cancelled', []))
-      })
-
-      // Handle generic error event
-      sseClient.on('error' as EventType, (error) => {
-        finish()
-        reject(new Error(error.error || error.message || 'Agent execution failed'))
       })
     })
   }

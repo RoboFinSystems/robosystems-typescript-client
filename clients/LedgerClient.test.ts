@@ -2529,3 +2529,167 @@ describe('LedgerClient', () => {
     })
   })
 })
+
+// ── REST write transport ───────────────────────────────────────────────
+
+describe('LedgerClient REST writes use the facade config', () => {
+  let mockFetch: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    global.fetch = mockFetch as unknown as typeof fetch
+    globalThis.fetch = mockFetch as unknown as typeof fetch
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const entityResult = { id: 'ent_1', name: 'ACME', status: 'active' }
+
+  it("sends the write to the facade's baseUrl, not the generated client's default", async () => {
+    const c = new LedgerClient({ baseUrl: 'https://api.example.com/', token: 'rfs_key' })
+    mockFetch.mockResolvedValueOnce(envelopeResponse('update-entity', entityResult))
+    await c.updateEntity('graph_1', { name: 'ACME' })
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(req.url).toBe(
+      'https://api.example.com/extensions/roboledger/graph_1/operations/update-entity'
+    )
+  })
+
+  it('authenticates an `rfs…` API key with X-API-Key, like the reads', async () => {
+    const c = new LedgerClient({ baseUrl: 'http://localhost:8000', token: 'rfs_key' })
+    mockFetch.mockResolvedValueOnce(envelopeResponse('update-entity', entityResult))
+    await c.updateEntity('graph_1', { name: 'ACME' })
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(req.headers.get('X-API-Key')).toBe('rfs_key')
+    expect(req.headers.get('Authorization')).toBeNull()
+  })
+
+  it('asks the tokenProvider on every write and sends a JWT as Bearer', async () => {
+    let current = 'jwt-1'
+    const c = new LedgerClient({
+      baseUrl: 'http://localhost:8000',
+      token: 'jwt-captured',
+      tokenProvider: async () => current,
+    })
+    mockFetch
+      .mockResolvedValueOnce(envelopeResponse('update-entity', entityResult))
+      .mockResolvedValueOnce(envelopeResponse('update-entity', entityResult))
+    await c.updateEntity('graph_1', { name: 'A' })
+    current = 'jwt-2'
+    await c.updateEntity('graph_1', { name: 'B' })
+    expect((mockFetch.mock.calls[0][0] as Request).headers.get('Authorization')).toBe(
+      'Bearer jwt-1'
+    )
+    expect((mockFetch.mock.calls[1][0] as Request).headers.get('Authorization')).toBe(
+      'Bearer jwt-2'
+    )
+  })
+
+  it('fails the write, without sending it, when the tokenProvider throws', async () => {
+    const c = new LedgerClient({
+      baseUrl: 'http://localhost:8000',
+      tokenProvider: () => {
+        throw new Error('storage unavailable')
+      },
+    })
+    await expect(c.updateEntity('graph_1', { name: 'A' })).rejects.toThrow(/tokenProvider threw/)
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('carries the configured headers, and keeps the idempotency key alongside them', async () => {
+    const c = new LedgerClient({
+      baseUrl: 'http://localhost:8000',
+      token: 'rfs_key',
+      headers: { 'X-Tenant-Trace': 't-1' },
+    })
+    mockFetch.mockResolvedValueOnce(envelopeResponse('create-agent', { id: 'agt_1' }))
+    await c.createAgent('graph_1', { agent_type: 'customer', name: 'X' }, 'idem-1')
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(req.headers.get('X-Tenant-Trace')).toBe('t-1')
+    expect(req.headers.get('Idempotency-Key')).toBe('idem-1')
+    expect(req.headers.get('X-API-Key')).toBe('rfs_key')
+  })
+})
+
+describe('LedgerClient.updatePublishList', () => {
+  let mockFetch: ReturnType<typeof vi.fn>
+  const client = new LedgerClient({ baseUrl: 'http://localhost:8000', token: 'rfs_key' })
+  const listResult = { id: 'pl_1', name: 'Board', description: 'Monthly pack', member_count: 2 }
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    global.fetch = mockFetch as unknown as typeof fetch
+    globalThis.fetch = mockFetch as unknown as typeof fetch
+  })
+
+  it('leaves the description off a name-only update, so the server keeps it', async () => {
+    mockFetch.mockResolvedValueOnce(envelopeResponse('update-publish-list', listResult))
+    await client.updatePublishList('graph_1', 'pl_1', { name: 'Board' })
+    const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+    expect(body).toEqual({ list_id: 'pl_1', name: 'Board' })
+  })
+
+  it('still clears the description on an explicit null', async () => {
+    mockFetch.mockResolvedValueOnce(
+      envelopeResponse('update-publish-list', { ...listResult, description: null })
+    )
+    await client.updatePublishList('graph_1', 'pl_1', { description: null })
+    const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+    expect(body).toEqual({ list_id: 'pl_1', description: null })
+  })
+})
+
+describe('LedgerClient.createEventBlock', () => {
+  let mockFetch: ReturnType<typeof vi.fn>
+  const client = new LedgerClient({ baseUrl: 'http://localhost:8000', token: 'rfs_key' })
+  const body = {
+    event_type: 'approval_requested',
+    event_category: 'approval',
+    event_class: 'support',
+    occurred_at: '2026-10-01T00:00:00Z',
+    metadata: { note: 'Sign off Q3 accruals' },
+  } as any
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    global.fetch = mockFetch as unknown as typeof fetch
+    globalThis.fetch = mockFetch as unknown as typeof fetch
+  })
+
+  it('POSTs the body to create-event-block and returns the event', async () => {
+    mockFetch.mockResolvedValueOnce(
+      envelopeResponse('create-event-block', { id: 'evt_1', status: 'captured' })
+    )
+    const result = await client.createEventBlock('graph_9', body)
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(req.url).toBe(
+      'http://localhost:8000/extensions/roboledger/graph_9/operations/create-event-block'
+    )
+    expect(JSON.parse(await req.text())).toEqual(body)
+    expect(req.headers.get('Idempotency-Key')).toBeNull()
+    expect(result).toMatchObject({ id: 'evt_1' })
+  })
+
+  it('forwards the Idempotency-Key when supplied', async () => {
+    mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', { id: 'evt_1' }))
+    await client.createEventBlock('graph_9', body, 'idem-evt-1')
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(req.headers.get('Idempotency-Key')).toBe('idem-evt-1')
+  })
+
+  it('surfaces a refused event (422) with the server detail', async () => {
+    mockFetch.mockResolvedValueOnce(restErrorResponse('Unknown event_type', 422))
+    await expect(client.createEventBlock('graph_9', body)).rejects.toThrow(
+      /Create event block failed: .*Unknown event_type/
+    )
+  })
+
+  it('throws when the envelope carries no result', async () => {
+    mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', null))
+    await expect(client.createEventBlock('graph_9', body)).rejects.toThrow(
+      'Create event block: operation envelope had no result'
+    )
+  })
+})

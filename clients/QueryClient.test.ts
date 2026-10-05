@@ -430,3 +430,120 @@ describe('QueryClient', () => {
     })
   })
 })
+
+describe('QueryClient request options', () => {
+  let mockFetch: any
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    globalThis.fetch = mockFetch
+  })
+
+  it('sends the query timeout in the body and the chunk size as chunk_size', async () => {
+    mockFetch.mockResolvedValueOnce(createMockResponse({ data: [], columns: [] }))
+    const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
+
+    await client.executeQuery(
+      'graph_123',
+      { query: 'MATCH (n) RETURN n', timeout: 120 },
+      { mode: 'sync', chunkSize: 500 }
+    )
+
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(new URL(req.url).searchParams.get('chunk_size')).toBe('500')
+    expect(JSON.parse(await req.text())).toMatchObject({ timeout: 120 })
+  })
+
+  it('leaves both off when not given', async () => {
+    mockFetch.mockResolvedValueOnce(createMockResponse({ data: [], columns: [] }))
+    const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
+
+    await client.executeQuery('graph_123', { query: 'RETURN 1' })
+
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(new URL(req.url).searchParams.has('chunk_size')).toBe(false)
+    expect(JSON.parse(await req.text())).not.toHaveProperty('timeout')
+  })
+})
+
+describe('QueryClient queued query stream', () => {
+  class OpenEventSource {
+    static instances: OpenEventSource[] = []
+    static CLOSED = 2
+    readyState = 0
+    onopen: ((event: any) => void) | null = null
+    onerror: ((event: any) => void) | null = null
+    onmessage: ((event: any) => void) | null = null
+    constructor() {
+      OpenEventSource.instances.push(this)
+      setTimeout(() => {
+        this.readyState = 1
+        this.onopen?.({ type: 'open' })
+      }, 0)
+    }
+    listeners = new Map<string, (event: any) => void>()
+    addEventListener(type: string, listener: (event: any) => void) {
+      this.listeners.set(type, listener)
+    }
+    close() {
+      this.readyState = 2
+    }
+  }
+
+  let mockFetch: any
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    globalThis.fetch = mockFetch
+    OpenEventSource.instances = []
+    global.EventSource = OpenEventSource as any
+  })
+
+  const queued = () =>
+    createMockResponse({
+      status: 'queued',
+      operation_id: 'op_q',
+      queue_position: 1,
+      estimated_wait_seconds: 2,
+      message: 'Query queued',
+    })
+
+  it('resolves from operation_completed even though the stream closes after it', async () => {
+    mockFetch.mockResolvedValueOnce(queued())
+    const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
+
+    const pending = client.executeQuery('graph_123', { query: 'RETURN 1' })
+    await new Promise((r) => setTimeout(r, 10))
+    OpenEventSource.instances[0].listeners.get('operation_completed')?.({
+      data: JSON.stringify({ result: { data: [{ n: 1 }], columns: ['n'], row_count: 1 } }),
+      lastEventId: '3',
+    })
+
+    await expect(pending).resolves.toMatchObject({ data: [{ n: 1 }], row_count: 1 })
+  })
+
+  it('rejects when the client is closed while it waits', async () => {
+    mockFetch.mockResolvedValueOnce(queued())
+    const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
+
+    const pending = client.executeQuery('graph_123', { query: 'RETURN 1' })
+    await new Promise((r) => setTimeout(r, 10))
+    client.close()
+
+    await expect(pending).rejects.toThrow('Query stream closed before the query completed')
+  })
+
+  it("rejects with the server's in-stream error", async () => {
+    mockFetch.mockResolvedValueOnce(queued())
+    const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
+
+    const pending = client.executeQuery('graph_123', { query: 'RETURN 1' })
+    await new Promise((r) => setTimeout(r, 10))
+    OpenEventSource.instances[0].onerror?.({
+      type: 'error',
+      data: JSON.stringify({ error: 'Too many concurrent SSE connections (limit: 3)' }),
+    })
+
+    await expect(pending).rejects.toThrow('Too many concurrent SSE connections (limit: 3)')
+  })
+})

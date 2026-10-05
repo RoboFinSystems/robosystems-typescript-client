@@ -35,9 +35,23 @@ export interface SDKClientConfig {
   retryDelay?: number
 }
 
+/**
+ * `NEXT_PUBLIC_API_URL`, or undefined where there is no `process` global (a
+ * browser bundle that does not inline env vars). The literal
+ * `process.env.NEXT_PUBLIC_API_URL` expression is kept so Next.js still
+ * inlines it at build time.
+ */
+function publicApiUrl(): string | undefined {
+  try {
+    return process.env.NEXT_PUBLIC_API_URL
+  } catch {
+    return undefined
+  }
+}
+
 // Default configuration
 const defaultConfig: SDKClientConfig = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  baseUrl: publicApiUrl() || 'http://localhost:8000',
   credentials: 'include',
   token: undefined, // Will be set from environment or programmatically
   timeout: 30000,
@@ -166,21 +180,21 @@ export function getEnvironmentConfig(
 ): SDKClientConfig {
   const baseConfigs: Record<string, Partial<SDKClientConfig>> = {
     production: {
-      baseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://api.robosystems.ai',
+      baseUrl: publicApiUrl() || 'https://api.robosystems.ai',
       credentials: 'include',
       timeout: 60000,
       maxRetries: 5,
       retryDelay: 2000,
     },
     staging: {
-      baseUrl: process.env.NEXT_PUBLIC_API_URL || 'https://staging-api.robosystems.ai',
+      baseUrl: publicApiUrl() || 'https://staging-api.robosystems.ai',
       credentials: 'include',
       timeout: 45000,
       maxRetries: 3,
       retryDelay: 1500,
     },
     development: {
-      baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+      baseUrl: publicApiUrl() || 'http://localhost:8000',
       credentials: 'include',
       timeout: 30000,
       maxRetries: 3,

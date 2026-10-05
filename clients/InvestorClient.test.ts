@@ -371,3 +371,61 @@ describe('InvestorClient', () => {
     })
   })
 })
+
+describe('InvestorClient writes', () => {
+  let mockFetch: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    global.fetch = mockFetch as unknown as typeof fetch
+    globalThis.fetch = mockFetch as unknown as typeof fetch
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("go to the facade's baseUrl with its credential", async () => {
+    const c = new InvestorClient({
+      baseUrl: 'https://api.example.com',
+      tokenProvider: async () => 'jwt-now',
+    })
+    mockFetch.mockResolvedValueOnce(envelopeResponse('create-portfolio-block', sampleBlockResult))
+    await c.createPortfolioBlock('graph_1', { portfolio: { name: 'New Fund' } } as any)
+    const req = mockFetch.mock.calls[0][0] as Request
+    expect(req.url).toBe(
+      'https://api.example.com/extensions/roboinvestor/graph_1/operations/create-portfolio-block'
+    )
+    expect(req.headers.get('Authorization')).toBe('Bearer jwt-now')
+  })
+
+  describe('an envelope with no result', () => {
+    const c = new InvestorClient({ baseUrl: 'http://localhost:8000', token: 'rfs_key' })
+
+    it.each([
+      [
+        'Create portfolio block',
+        'create-portfolio-block',
+        () => c.createPortfolioBlock('graph_1', { portfolio: { name: 'X' } } as any),
+      ],
+      [
+        'Update portfolio block',
+        'update-portfolio-block',
+        () => c.updatePortfolioBlock('graph_1', 'port_1', { portfolio: { name: 'X' } }),
+      ],
+      [
+        'Create security',
+        'create-security',
+        () => c.createSecurity('graph_1', { name: 'X', security_type: 'common_stock' } as any),
+      ],
+      [
+        'Update security',
+        'update-security',
+        () => c.updateSecurity('graph_1', 'sec_1', { name: 'X' }),
+      ],
+    ])('%s throws a readable error instead of a TypeError', async (label, op, call) => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse(op, null))
+      await expect(call()).rejects.toThrow(`${label}: operation envelope had no result`)
+    })
+  })
+})

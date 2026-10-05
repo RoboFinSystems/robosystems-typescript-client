@@ -13,11 +13,13 @@ import { EventType, SSEClient } from './SSEClient'
 export interface QueryRequest {
   query: string
   parameters?: Record<string, any>
+  /** Server-side query timeout in whole seconds (the API accepts 1-300). */
   timeout?: number
 }
 
 export interface QueryOptions {
   mode?: 'auto' | 'sync' | 'async' | 'stream'
+  /** Rows per streamed chunk (the API accepts 10-10000). */
   chunkSize?: number
   testMode?: boolean
   maxWait?: number
@@ -73,9 +75,11 @@ export class QueryClient {
       body: {
         query: request.query,
         parameters: request.parameters,
+        timeout: request.timeout,
       },
       query: {
         mode: options.mode,
+        chunk_size: options.chunkSize,
         test_mode: options.testMode,
       },
       // For streaming mode, don't parse response - get raw Response object
@@ -255,76 +259,13 @@ export class QueryClient {
     }
   }
 
-  private async *streamQueryResults(
-    operationId: string,
-    options: QueryOptions
-  ): AsyncIterableIterator<any> {
-    const buffer: any[] = []
-    let completed = false
-    let error: Error | null = null
-
-    // Set up SSE connection
-    this.sseClient = new SSEClient(this.config)
-    await this.sseClient.connect(operationId)
-
-    // Listen for data chunks
-    this.sseClient.on(EventType.DATA_CHUNK, (data) => {
-      if (Array.isArray(data.rows)) {
-        buffer.push(...data.rows)
-      } else if (data.data) {
-        buffer.push(...data.data)
-      }
-    })
-
-    // Listen for queue updates
-    this.sseClient.on(EventType.QUEUE_UPDATE, (data) => {
-      options.onQueueUpdate?.(data.position, data.estimated_wait_seconds)
-    })
-
-    // Listen for progress
-    this.sseClient.on(EventType.OPERATION_PROGRESS, (data) => {
-      options.onProgress?.(data.message)
-    })
-
-    // Listen for completion
-    this.sseClient.on(EventType.OPERATION_COMPLETED, (data) => {
-      if (data.result?.data) {
-        buffer.push(...data.result.data)
-      }
-      completed = true
-    })
-
-    // Listen for errors
-    this.sseClient.on(EventType.OPERATION_ERROR, (err) => {
-      error = new Error(err.message || err.error)
-      completed = true
-    })
-
-    // Yield buffered results
-    while (!completed || buffer.length > 0) {
-      if (error) throw error
-
-      if (buffer.length > 0) {
-        const chunk = buffer.splice(0, options.chunkSize || 100)
-        for (const item of chunk) {
-          yield item
-        }
-      } else if (!completed) {
-        // Wait for more data
-        await new Promise((resolve) => setTimeout(resolve, 100))
-      }
-    }
-
-    this.sseClient.close()
-    this.sseClient = undefined
-  }
-
   private async waitForQueryCompletion(
     operationId: string,
     options: QueryOptions
   ): Promise<QueryResult> {
     return new Promise((resolve, reject) => {
       const sseClient = new SSEClient(this.config)
+      this.sseClient = sseClient
 
       sseClient
         .connect(operationId)
@@ -351,18 +292,29 @@ export class QueryClient {
               graph_id: queryResult.graph_id,
               timestamp: queryResult.timestamp || new Date().toISOString(),
             }
-            sseClient.close()
             resolve(result)
+            sseClient.close()
           })
 
           sseClient.on(EventType.OPERATION_ERROR, (error) => {
-            sseClient.close()
             reject(new Error(error.message || error.error))
+            sseClient.close()
           })
 
           sseClient.on(EventType.OPERATION_CANCELLED, () => {
-            sseClient.close()
             reject(new Error('Query cancelled'))
+            sseClient.close()
+          })
+
+          sseClient.on('error', (error) => {
+            reject(new Error(error?.error || 'Query stream error'))
+          })
+
+          // A close before a terminal event (retries exhausted, a reconnect
+          // that failed before opening, close()) would otherwise leave this
+          // pending. Settle first in the handlers above: they close too.
+          sseClient.on('closed', () => {
+            reject(new Error('Query stream closed before the query completed'))
           })
         })
         .catch(reject)
