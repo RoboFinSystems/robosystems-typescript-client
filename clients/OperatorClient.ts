@@ -228,13 +228,35 @@ export class OperatorClient {
 
     return new Promise((resolve, reject) => {
       let result: OperatorResult | null = null
+      let settled = false
 
       const finish = () => {
+        settled = true
         sseClient.close()
         if (this.sseClient === sseClient) {
           this.sseClient = undefined
         }
       }
+
+      // The stream closed before a terminal event: a reconnect that failed
+      // before opening, retries exhausted, or this client being closed. The
+      // SSE client clears its listeners as it closes, so without this the
+      // promise would never settle. The run finishes whether or not anyone
+      // watches, so a dropped stream follows it over `/status` instead.
+      sseClient.on('closed', () => {
+        if (settled) return
+        settled = true
+        if (this.sseClient !== sseClient) {
+          reject(new OperatorRunError('Operator client closed', 'cancelled', []))
+          return
+        }
+        this.sseClient = undefined
+        this.pollForCompletion(
+          operationId,
+          options,
+          new Error('the stream closed before the run finished')
+        ).then(resolve, reject)
+      })
 
       // Listen for progress events
       sseClient.on(EventType.OPERATION_PROGRESS, (data) => {
@@ -387,8 +409,11 @@ export class OperatorClient {
    */
   close(): void {
     if (this.sseClient) {
-      this.sseClient.close()
+      // Detach first: a run watching this stream reads the detach as a
+      // deliberate close and rejects instead of polling on.
+      const sseClient = this.sseClient
       this.sseClient = undefined
+      sseClient.close()
     }
   }
 }

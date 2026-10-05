@@ -501,6 +501,78 @@ describe('OperatorClient queued runs', () => {
     expect(onProgress).toHaveBeenCalledWith('Operation is currently executing')
   })
 
+  describe('a stream that drops after it opened', () => {
+    const completedStatus = () =>
+      createMockResponse({
+        operation_id: 'op_456',
+        status: 'completed',
+        result: completedResult,
+        message: 'Operation completed successfully',
+      })
+
+    it('follows the run over status when the reconnect fails', async () => {
+      global.EventSource = RecordingEventSource as any
+      const client = new OperatorClient({
+        baseUrl: 'http://localhost:8000',
+        token: 'jwt',
+        retryDelay: 1,
+      } as any)
+      mockFetch
+        .mockResolvedValueOnce(queuedResponse('op_456'))
+        .mockResolvedValueOnce(completedStatus())
+
+      const pending = client.executeQuery(
+        'graph_1',
+        { message: 'burn rate?' },
+        { pollIntervalMs: 1 }
+      )
+      await new Promise((r) => setTimeout(r, 5))
+      // The reconnect is refused before it opens (an expired token, say).
+      global.EventSource = RejectedEventSource as any
+      RecordingEventSource.last.onerror?.({ type: 'error' })
+
+      const result = await pending
+      expect(result.content).toBe(completedResult.content)
+      expect(RejectedEventSource.constructed).toBe(1)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('follows the run over status once the retries run out', async () => {
+      global.EventSource = RecordingEventSource as any
+      const client = new OperatorClient({
+        baseUrl: 'http://localhost:8000',
+        token: 'jwt',
+        maxRetries: 0,
+      } as any)
+      mockFetch
+        .mockResolvedValueOnce(queuedResponse('op_456'))
+        .mockResolvedValueOnce(completedStatus())
+
+      const pending = client.executeQuery(
+        'graph_1',
+        { message: 'burn rate?' },
+        { pollIntervalMs: 1 }
+      )
+      await new Promise((r) => setTimeout(r, 5))
+      RecordingEventSource.last.onerror?.({ type: 'error' })
+
+      await expect(pending).resolves.toMatchObject({ content: completedResult.content })
+    })
+
+    it('rejects, and does not poll, when the client itself is closed', async () => {
+      global.EventSource = RecordingEventSource as any
+      const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
+      mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
+
+      const pending = client.executeQuery('graph_1', { message: 'burn rate?' })
+      await new Promise((r) => setTimeout(r, 5))
+      client.close()
+
+      await expect(pending).rejects.toThrow('Operator client closed')
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+  })
+
   it('surfaces a failed run from the status fallback', async () => {
     global.EventSource = RejectedEventSource as any
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
