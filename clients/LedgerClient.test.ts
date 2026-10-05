@@ -1110,6 +1110,21 @@ describe('LedgerClient', () => {
       expect(result.disposition).toBe('acknowledge')
     })
 
+    it('sends the stamp of the preview it was decided on', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('resolve-reconciling-item', { event_id: 'evt_1' })
+      )
+      await client.resolveReconcilingItem('graph_42', {
+        event_id: 'evt_1',
+        expected_drift_detected_at: '2026-08-21T04:00:00+00:00',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text())).toEqual({
+        event_id: 'evt_1',
+        expected_drift_detected_at: '2026-08-21T04:00:00+00:00',
+      })
+    })
+
     it('surfaces a refused resolution', async () => {
       mockFetch.mockResolvedValueOnce(
         restErrorResponse('Restate is blocked: period 2026-07 is closed', 409)

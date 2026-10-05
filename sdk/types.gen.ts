@@ -15813,6 +15813,12 @@ export type ResolveReconcilingItemRequest = {
      */
     event_id: string;
     /**
+     * Expected Drift Detected At
+     *
+     * The `drift_detected_at` of the preview this resolution was decided on. Pass it: the resolution is refused when the item has been flagged again since, with a newer payload nobody has seen, and must be previewed again.
+     */
+    expected_drift_detected_at?: string | null;
+    /**
      * Disposition
      *
      * How to dispose of the difference. Omit to take the default the preview reports: restate when every period the event touches is open, catch_up when any is closed.
