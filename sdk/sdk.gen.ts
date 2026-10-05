@@ -2651,7 +2651,7 @@ export const unblockSourceGraph = <ThrowOnError extends boolean = false>(options
 /**
  * Build Fact Grid
  *
- * Queries LadybugDB `Fact` nodes by element qnames or canonical concepts, with filters for periods, entities, form, and fiscal context. Returns deduplicated facts plus the aspects they span — arranging them into a table is the consumer's job, since collapsing cells safely requires the full aspect signature. Works on both roboledger tenant graphs (post-materialization) and the SEC shared repository.
+ * Queries LadybugDB `Fact` nodes by element qnames, with filters for periods and entities. Returns deduplicated facts plus the aspects they span — arranging them into a table is the consumer's job, since collapsing cells safely requires the full aspect signature. Works on both roboledger tenant graphs (post-materialization) and the SEC shared repository. Canonical concepts and the form and fiscal-period filters exist on shared repositories only: a ledger's graph carries none of them, and a query by them there is refused rather than answered with nothing.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2719,7 +2719,7 @@ export const informationBlock = <ThrowOnError extends boolean = false>(options: 
 /**
  * Describe Filing
  *
- * How one filing is laid out: entity, periods, statements and disclosures by role, axes, and its text — the Items of a 10-K or 10-Q and its largest text blocks, each with the character offset `read-text` pages from. On the SEC shared repository the filing is read from its public folder — its own document, from any processed year — and a `ticker` picks it: the latest annual report, narrowed by `fiscal_year` / `period_type`, or one `accession`, or with `form: 8-K` the latest earnings release and its exhibits. SEC only: a ledger files no document, and its sections read through `disclosures` and `information-block`.
+ * How one filing is laid out: entity, periods, statements and disclosures by role, axes, and its text — the Items of a 10-K or 10-Q and its largest text blocks, each with the character offset `read-text` pages from. On the SEC shared repository the filing is read from its public folder — its own document, from any processed year — and a `ticker` picks it: the latest annual report, narrowed by `fiscal_year` / `period_type`, or one `accession`, or with `form: 8-K` the latest earnings release and its exhibits (`fiscal_year` is then the calendar year it was filed, and a CIK may stand in for the ticker). SEC only: a ledger files no document, and its sections read through `disclosures` and `information-block`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
