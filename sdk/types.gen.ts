@@ -167,6 +167,12 @@ export type AnalyticalStatementFactRow = {
      */
     value?: number | null;
     /**
+     * Unit
+     *
+     * The fact's unit, e.g. `USD` or `USD/shares`. A line a filer reports in two units (its own currency and a US-dollar translation) comes back once per unit.
+     */
+    unit?: string | null;
+    /**
      * Start Date
      */
     start_date?: string | null;
@@ -3431,7 +3437,7 @@ export type CreateViewRequest = {
     /**
      * Include Summary
      *
-     * Include summary statistics per element
+     * Include summary statistics per element. An element reported in more than one unit has none.
      */
     include_summary?: boolean;
     /**
