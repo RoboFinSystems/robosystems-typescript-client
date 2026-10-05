@@ -27,10 +27,19 @@ export type RestCallConfig = Pick<
   'baseUrl' | 'headers' | 'credentials' | 'token' | 'tokenProvider'
 >
 
+const CREDENTIAL_HEADERS = new Set(['x-api-key', 'authorization'])
+
 export async function restCallOptions(config: RestCallConfig): Promise<RestCallOptions> {
   const headers: Record<string, string> = { ...(config.headers ?? {}) }
   const token = await resolveCredential(config)
   if (token) {
+    // The resolved credential replaces any the static headers carry, so
+    // exactly one is sent.
+    for (const name of Object.keys(headers)) {
+      if (CREDENTIAL_HEADERS.has(name.toLowerCase())) {
+        delete headers[name]
+      }
+    }
     Object.assign(headers, authHeaderFor(token))
   }
   const options: RestCallOptions = { baseUrl: config.baseUrl.replace(/\/$/, ''), headers }
