@@ -1,13 +1,14 @@
 'use client'
 
 /**
- * Per-call transport options for the facades' REST writes.
+ * Per-call transport options for the facades' REST calls.
  *
  * The generated ops default to the module-level `client` from
  * `../sdk/client.gen`, which knows nothing of a facade's own `baseUrl` or
- * credential. Facade writes pass these options per call instead, so a
- * write reaches the same server, with the same credential, as the
- * facade's GraphQL reads. They still run through the shared client, so
+ * credential. Facade REST calls (writes, Cypher queries, operator runs,
+ * operation status) pass these options per call instead, so they reach
+ * the same server, with the same credential, as the facade's GraphQL
+ * reads. They still run through the shared client, so
  * its `fetch` (the retrying one `RoboSystemsClients` installs),
  * interceptors and default headers keep applying underneath.
  */

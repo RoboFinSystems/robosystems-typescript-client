@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { client } from '../sdk/client.gen'
 import { resetSDKClientConfig, setSDKClientConfig } from './config'
 import { RoboSystemsClients } from './index'
+import { OperationClient } from './OperationClient'
+import { OperatorClient } from './OperatorClient'
+import { QueryClient } from './QueryClient'
 
 // The apps configure the module-level generated client once —
 // `client.setConfig({ baseUrl })` plus a request interceptor that adds the
@@ -92,5 +95,62 @@ describe('facade writes under an app-configured generated client', () => {
 
     expect(appFetch).toHaveBeenCalledTimes(1)
     expect(mockFetch).not.toHaveBeenCalled()
+  })
+})
+
+describe('standalone facades reach their own server', () => {
+  // An integrator outside the apps builds a facade with its own baseUrl and
+  // API key, and never touches the module-level generated client.
+  let mockFetch: ReturnType<typeof vi.fn>
+  const config = { baseUrl: 'https://api.integrator.example', token: 'rfs_integrator_key' }
+
+  function json(body: unknown) {
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  }
+
+  function sent(): Request {
+    return mockFetch.mock.calls[0][0] as Request
+  }
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    globalThis.fetch = mockFetch as unknown as typeof fetch
+  })
+
+  it('sends a Cypher query to the facade server with its API key', async () => {
+    mockFetch.mockResolvedValueOnce(json({ data: [], columns: [] }))
+
+    await new QueryClient(config).executeQuery('kg_1', { query: 'RETURN 1' }, { mode: 'sync' })
+
+    expect(new URL(sent().url).origin).toBe('https://api.integrator.example')
+    expect(sent().headers.get('X-API-Key')).toBe('rfs_integrator_key')
+  })
+
+  it('sends an operator run to the facade server with its API key', async () => {
+    mockFetch.mockResolvedValueOnce(
+      json({ content: 'done', operator_used: 'financial', mode_used: 'standard' })
+    )
+
+    await new OperatorClient(config).executeQuery('kg_1', { message: 'hi' })
+
+    expect(new URL(sent().url).origin).toBe('https://api.integrator.example')
+    expect(sent().headers.get('X-API-Key')).toBe('rfs_integrator_key')
+  })
+
+  it('reads operation status from the facade server with its API key', async () => {
+    mockFetch.mockResolvedValueOnce(json({ operation_id: 'op_1', status: 'running' }))
+    const operations = new OperationClient(config)
+
+    try {
+      await operations.getStatus('op_1')
+    } finally {
+      operations.closeAll()
+    }
+
+    expect(new URL(sent().url).origin).toBe('https://api.integrator.example')
+    expect(sent().headers.get('X-API-Key')).toBe('rfs_integrator_key')
   })
 })

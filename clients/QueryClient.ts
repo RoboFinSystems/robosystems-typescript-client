@@ -8,6 +8,7 @@
 import { executeCypher } from '../sdk/sdk.gen'
 import type { ExecuteCypherData } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
+import { restCallOptions } from './rest'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface QueryRequest {
@@ -86,7 +87,7 @@ export class QueryClient {
       ...(options.mode === 'stream' ? { parseAs: 'stream' as const } : {}),
     }
 
-    const response = await executeCypher(data)
+    const response = await executeCypher({ ...(await restCallOptions(this.config)), ...data })
 
     // Check for errors in the response (network errors, etc.)
     if ('error' in response && response.error) {

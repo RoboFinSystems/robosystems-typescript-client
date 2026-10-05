@@ -111,21 +111,26 @@ export function createRetryingFetch(options: RetryOptions = {}): typeof fetch {
   const inner = options.fetch
 
   return async (input, init) => {
-    const send = () => (inner ?? fetch)(input, init)
+    // The generated SDK passes a `Request`, whose body a send consumes.
+    // Each attempt sends a clone, so the original stays readable for the
+    // next one.
+    const template = typeof Request !== 'undefined' && input instanceof Request ? input : null
+    const signal = init?.signal ?? template?.signal
+    const send = () => (inner ?? fetch)(template && maxRetries > 0 ? template.clone() : input, init)
     let response = await send()
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       if (!RETRY_STATUS_CODES.has(response.status) || !isReplayable(init)) {
         return response
       }
-      if (init?.signal?.aborted) {
+      if (signal?.aborted) {
         return response
       }
       const delay = backoffMs(attempt, retryDelay, retryAfterMs(response))
       // The rejection body goes unused, but leaving it undrained keeps
       // the connection pinned in some runtimes.
       await response.body?.cancel().catch(() => {})
-      await sleep(delay, init?.signal)
+      await sleep(delay, signal)
       response = await send()
     }
 

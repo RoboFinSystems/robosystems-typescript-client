@@ -7,6 +7,7 @@
 
 import { cancelOperation as cancelOperationSDK, getOperationStatus } from '../sdk/sdk.gen'
 import type { TokenProvider } from './graphql/client'
+import { restCallOptions } from './rest'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface OperationProgress {
@@ -204,6 +205,7 @@ export class OperationClient {
    */
   async getStatus(operationId: string): Promise<any> {
     const response = await getOperationStatus({
+      ...(await restCallOptions(this.config)),
       path: { operation_id: operationId },
     })
     return response.data
@@ -218,6 +220,7 @@ export class OperationClient {
 
     // Then cancel the operation
     await cancelOperationSDK({
+      ...(await restCallOptions(this.config)),
       path: { operation_id: operationId },
     })
   }

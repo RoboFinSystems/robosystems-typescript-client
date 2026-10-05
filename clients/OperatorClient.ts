@@ -8,6 +8,7 @@
 import { autoSelectOperator, executeSpecificOperator, getOperationStatus } from '../sdk/sdk.gen'
 import type { AutoSelectOperatorData, ExecuteSpecificOperatorData } from '../sdk/types.gen'
 import type { TokenProvider } from './graphql/client'
+import { restCallOptions } from './rest'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface OperatorQueryRequest {
@@ -196,7 +197,10 @@ export class OperatorClient {
       },
     }
 
-    const response = await autoSelectOperator(data)
+    const response = await autoSelectOperator({
+      ...(await restCallOptions(this.config)),
+      ...data,
+    })
     throwIfRequestFailed(response)
     return this.settle(response.data, options)
   }
@@ -223,7 +227,10 @@ export class OperatorClient {
       },
     }
 
-    const response = await executeSpecificOperator(data)
+    const response = await executeSpecificOperator({
+      ...(await restCallOptions(this.config)),
+      ...data,
+    })
     throwIfRequestFailed(response)
     return this.settle(response.data, options)
   }
@@ -382,7 +389,10 @@ export class OperatorClient {
     for (;;) {
       let status: any
       try {
-        const response = await getOperationStatus({ path: { operation_id: operationId } })
+        const response = await getOperationStatus({
+          ...(await restCallOptions(this.config)),
+          path: { operation_id: operationId },
+        })
         if (response.error || !response.data) {
           const httpStatus = response.response?.status
           const detail = describeEnvelopeError(response.error)
