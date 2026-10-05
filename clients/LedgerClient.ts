@@ -1978,7 +1978,9 @@ export class LedgerClient {
    * Decide one reconciling item: `restate` the affected months, `catch_up`
    * with an entry in the open period, or `acknowledge` that it was handled
    * elsewhere (a note is required). Omit `disposition` to take the default
-   * the preview reports.
+   * the preview reports. Pass the preview's `drift_detected_at` as
+   * `expected_drift_detected_at`: the resolution is refused when the item
+   * was flagged again since, and must be previewed again.
    */
   async resolveReconcilingItem(
     graphId: string,
