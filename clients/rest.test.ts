@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { client } from '../sdk/client.gen'
 import { resetSDKClientConfig, setSDKClientConfig } from './config'
+import { createGraphQLClient } from './graphql/client'
 import { RoboSystemsClients } from './index'
 import { OperationClient } from './OperationClient'
 import { OperatorClient } from './OperatorClient'
 import { QueryClient } from './QueryClient'
+import { restCallOptions } from './rest'
 
 // The apps configure the module-level generated client once —
 // `client.setConfig({ baseUrl })` plus a request interceptor that adds the
@@ -152,5 +154,39 @@ describe('standalone facades reach their own server', () => {
 
     expect(new URL(sent().url).origin).toBe('https://api.integrator.example')
     expect(sent().headers.get('X-API-Key')).toBe('rfs_integrator_key')
+  })
+})
+
+describe('one credential per request', () => {
+  // A facade configured with a static API key in `headers` and a
+  // tokenProvider handing out JWTs: the resolved JWT is the one sent.
+  const config = {
+    baseUrl: 'https://api.integrator.example',
+    headers: { 'x-api-key': 'rfs_static', 'X-Trace': '1' },
+    tokenProvider: async () => 'eyJ.session',
+  }
+
+  it('REST calls carry only the resolved credential', async () => {
+    const { headers } = await restCallOptions(config)
+
+    expect(headers).toEqual({ 'X-Trace': '1', Authorization: 'Bearer eyJ.session' })
+  })
+
+  it('GraphQL reads carry only the resolved credential', async () => {
+    const mockFetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ data: { __typename: 'Query' } }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    )
+    globalThis.fetch = mockFetch as unknown as typeof fetch
+
+    await createGraphQLClient(config, 'kg_1').request('{ __typename }')
+
+    const init = mockFetch.mock.calls[0][1] as RequestInit
+    const sent = new Headers(init.headers)
+    expect(sent.get('Authorization')).toBe('Bearer eyJ.session')
+    expect(sent.has('X-API-Key')).toBe(false)
+    expect(sent.get('X-Trace')).toBe('1')
   })
 })

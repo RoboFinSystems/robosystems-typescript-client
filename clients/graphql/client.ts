@@ -165,6 +165,10 @@ function createTimeoutFetch(timeoutMs: number): typeof fetch {
  * sending a JWT as `X-API-Key` or an API key as Bearer both 401.
  */
 function applyAuthHeader(headers: Headers, token: string): void {
+  // The resolved credential replaces any the static headers carry, so
+  // exactly one is sent.
+  headers.delete('X-API-Key')
+  headers.delete('Authorization')
   for (const [name, value] of Object.entries(authHeaderFor(token))) {
     headers.set(name, value)
   }
