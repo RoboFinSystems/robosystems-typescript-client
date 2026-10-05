@@ -85,9 +85,16 @@ export class SSEClient {
   }
 
   async connect(operationId: string, fromSequence: number = 0): Promise<void> {
+    return this.open(operationId, fromSequence, false)
+  }
+
+  private async open(operationId: string, fromSequence: number, reconnect: boolean): Promise<void> {
     // Resolved per attempt so a rotated JWT is picked up by every connect,
     // not just the first one after construction.
     const token = await this.resolveToken()
+
+    // A close() during the backoff or the token lookup ends a reconnect.
+    if (reconnect && this.closed) return
 
     return new Promise((resolve, reject) => {
       let url = `${this.config.baseUrl}/v1/operations/${operationId}/stream?from_sequence=${fromSequence}`
@@ -99,9 +106,13 @@ export class SSEClient {
         url += `&token=${encodeURIComponent(token)}`
       }
 
-      this.eventSource = new EventSource(url, {
+      // Never leave a previous source running beside its replacement: two
+      // live streams deliver every event twice.
+      this.eventSource?.close()
+      const eventSource = new EventSource(url, {
         withCredentials: this.config.credentials === 'include',
       } as any)
+      this.eventSource = eventSource
 
       let opened = false
 
@@ -112,7 +123,7 @@ export class SSEClient {
         }
       }, 10000)
 
-      this.eventSource.onopen = () => {
+      eventSource.onopen = () => {
         opened = true
         clearTimeout(connectionTimeout)
         this.reconnectAttempts = 0
@@ -120,7 +131,24 @@ export class SSEClient {
         resolve()
       }
 
-      this.eventSource.onerror = (error) => {
+      eventSource.onerror = (error) => {
+        if (this.eventSource !== eventSource) return
+
+        const serverError = readServerError(error)
+        if (serverError) {
+          // The server's own `event: error` — the per-user connection cap, an
+          // unknown or foreign operation, a failed stream — ends the stream
+          // for good. Reconnecting would only repeat it (and, since the
+          // stream opens first, reset the retry budget each time).
+          clearTimeout(connectionTimeout)
+          this.emit('error', serverError)
+          this.close()
+          if (!opened) {
+            reject(new Error(serverError.error))
+          }
+          return
+        }
+
         if (!opened) {
           // Failed before the stream ever opened. Browser EventSource doesn't
           // expose the HTTP status, but a CLOSED readyState at this point
@@ -129,7 +157,7 @@ export class SSEClient {
           // waiting out the 10s connectionTimeout or spinning retries that
           // can never satisfy this promise.
           clearTimeout(connectionTimeout)
-          const nonRetryable = this.eventSource?.readyState === EventSource.CLOSED
+          const nonRetryable = eventSource.readyState === EventSource.CLOSED
           this.close()
           reject(
             new Error(
@@ -145,13 +173,13 @@ export class SSEClient {
         }
       }
 
-      this.eventSource.onmessage = (event) => {
+      eventSource.onmessage = (event) => {
         this.handleMessage(event)
       }
 
       // Set up specific event listeners
       Object.values(EventType).forEach((eventType) => {
-        this.eventSource!.addEventListener(eventType, (event: any) => {
+        eventSource.addEventListener(eventType, (event: any) => {
           this.handleTypedEvent(eventType, event)
         })
       })
@@ -223,6 +251,10 @@ export class SSEClient {
   private async handleError(error: any, operationId: string, fromSequence: number): Promise<void> {
     if (this.closed) return
 
+    // Close the failed source now: a browser EventSource retries on its own,
+    // and that retry would run alongside the reconnect scheduled below.
+    this.eventSource?.close()
+
     if (this.reconnectAttempts < this.config.maxRetries!) {
       this.reconnectAttempts++
       const delay = this.config.retryDelay! * Math.pow(2, this.reconnectAttempts - 1)
@@ -234,8 +266,9 @@ export class SSEClient {
       })
 
       setTimeout(() => {
+        if (this.closed) return
         const resumeFrom = this.lastEventId ? parseInt(this.lastEventId) + 1 : fromSequence
-        this.connect(operationId, resumeFrom).catch(() => {
+        this.open(operationId, resumeFrom, true).catch(() => {
           // Error handled in connect
         })
       }, delay)
@@ -278,5 +311,22 @@ export class SSEClient {
 
   isConnected(): boolean {
     return this.eventSource !== undefined && this.eventSource.readyState === EventSource.OPEN
+  }
+}
+
+/**
+ * The payload of a server-sent `event: error`, or null for a transport
+ * error. A named `error` event reaches `onerror` as a `MessageEvent`
+ * carrying the server's JSON (`{"error": "..."}`); a dropped connection
+ * arrives as a bare `Event` with no data.
+ */
+function readServerError(event: any): { error: string; [key: string]: any } | null {
+  if (typeof event?.data !== 'string' || event.data === '') return null
+  try {
+    const data = JSON.parse(event.data)
+    const message = data?.error ?? data?.message ?? data?.detail
+    return { ...(typeof data === 'object' ? data : {}), error: String(message ?? event.data) }
+  } catch {
+    return { error: event.data }
   }
 }

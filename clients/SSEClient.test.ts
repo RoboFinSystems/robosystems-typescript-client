@@ -465,3 +465,71 @@ describe('SSEClient tokenProvider', () => {
     expect(RecordingEventSource.instances).toHaveLength(0)
   })
 })
+
+const tick = (ms = 5) => new Promise((resolve) => setTimeout(resolve, ms))
+
+describe('SSEClient reconnects', () => {
+  beforeEach(() => {
+    RecordingEventSource.instances = []
+    global.EventSource = RecordingEventSource as any
+  })
+
+  it('closes the dropped source before opening its replacement', async () => {
+    const client = new SSEClient({ baseUrl: 'http://localhost:8000', retryDelay: 1 })
+    const received = vi.fn()
+    client.on(EventType.OPERATION_PROGRESS, received)
+    await client.connect('op_123')
+    const first = RecordingEventSource.last
+
+    first.simulateError()
+    // The browser would retry this source on its own; it must not be left
+    // running beside the reconnect.
+    expect(first.readyState).toBe(MockEventSource.CLOSED)
+
+    await tick()
+    expect(RecordingEventSource.instances).toHaveLength(2)
+    const live = RecordingEventSource.instances.filter(
+      (s) => s.readyState !== MockEventSource.CLOSED
+    )
+    expect(live).toEqual([RecordingEventSource.last])
+    client.close()
+  })
+
+  it('does not reopen a stream closed during the reconnect backoff', async () => {
+    const client = new SSEClient({ baseUrl: 'http://localhost:8000', retryDelay: 1 })
+    await client.connect('op_123')
+
+    RecordingEventSource.last.simulateError()
+    client.close()
+    await tick()
+
+    expect(RecordingEventSource.instances).toHaveLength(1)
+  })
+
+  it("treats the server's in-stream connection-limit error as terminal", async () => {
+    const client = new SSEClient({ baseUrl: 'http://localhost:8000', retryDelay: 1 })
+    const onError = vi.fn()
+    const onClosed = vi.fn()
+    const onReconnecting = vi.fn()
+    client.on('error', onError)
+    client.on('closed', onClosed)
+    client.on('reconnecting', onReconnecting)
+    await client.connect('op_123')
+
+    // The stream opens (200) and then the server sends `event: error`,
+    // which reaches `onerror` as a MessageEvent carrying its JSON.
+    RecordingEventSource.last.onerror?.({
+      type: 'error',
+      data: JSON.stringify({ error: 'Too many concurrent SSE connections (limit: 3)' }),
+    })
+    await tick()
+
+    expect(onError).toHaveBeenCalledWith({
+      error: 'Too many concurrent SSE connections (limit: 3)',
+    })
+    expect(onClosed).toHaveBeenCalledTimes(1)
+    expect(onReconnecting).not.toHaveBeenCalled()
+    expect(RecordingEventSource.instances).toHaveLength(1)
+    expect(RecordingEventSource.last.readyState).toBe(MockEventSource.CLOSED)
+  })
+})

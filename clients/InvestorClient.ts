@@ -59,6 +59,7 @@ import {
   type ListInvestorPositionsQuery,
   type ListInvestorSecuritiesQuery,
 } from './graphql/generated/graphql'
+import { restCallOptions, type RestCallOptions } from './rest'
 
 // Re-export the structured GraphQL error type so consumers importing
 // from the `@robosystems/client/investor` subpath can `instanceof` it.
@@ -96,7 +97,7 @@ interface InvestorClientConfig {
   token?: string
   /**
    * Dynamic credential callback. When set, invoked on every GraphQL
-   * request so refreshes flow through automatically.
+   * request and REST write so refreshes flow through automatically.
    */
   tokenProvider?: TokenProvider
   /** GraphQL request timeout in milliseconds (default 60s). */
@@ -167,11 +168,15 @@ export class InvestorClient {
     graphId: string,
     body: CreatePortfolioBlockRequest
   ): Promise<InvestorPortfolioBlock> {
-    const envelope = await this.callOperation(
-      'Create portfolio block',
-      createPortfolioBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create portfolio block', (o) =>
+      createPortfolioBlock({ ...o, path: { graph_id: graphId }, body })
     )
-    return rawToPortfolioBlock(envelope.result as unknown as RawPortfolioBlockResponse)
+    return rawToPortfolioBlock(
+      this.requireResult(
+        'Create portfolio block',
+        envelope.result
+      ) as unknown as RawPortfolioBlockResponse
+    )
   }
 
   /**
@@ -192,11 +197,15 @@ export class InvestorClient {
       portfolio_id: portfolioId,
       ...updates,
     }
-    const envelope = await this.callOperation(
-      'Update portfolio block',
-      updatePortfolioBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update portfolio block', (o) =>
+      updatePortfolioBlock({ ...o, path: { graph_id: graphId }, body })
     )
-    return rawToPortfolioBlock(envelope.result as unknown as RawPortfolioBlockResponse)
+    return rawToPortfolioBlock(
+      this.requireResult(
+        'Update portfolio block',
+        envelope.result
+      ) as unknown as RawPortfolioBlockResponse
+    )
   }
 
   /**
@@ -214,9 +223,8 @@ export class InvestorClient {
       portfolio_id: portfolioId,
       confirm_active_positions: options?.confirmActivePositions ?? false,
     }
-    const envelope = await this.callOperation(
-      'Delete portfolio block',
-      deletePortfolioBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Delete portfolio block', (o) =>
+      deletePortfolioBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return envelope.result ?? { deleted: true }
   }
@@ -265,11 +273,12 @@ export class InvestorClient {
    * matching entity in the target graph.
    */
   async createSecurity(graphId: string, body: CreateSecurityRequest): Promise<InvestorSecurity> {
-    const envelope = await this.callOperation(
-      'Create security',
-      createSecurity({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create security', (o) =>
+      createSecurity({ ...o, path: { graph_id: graphId }, body })
     )
-    return rawToInvestorSecurity(envelope.result as unknown as RawSecurityResponse)
+    return rawToInvestorSecurity(
+      this.requireResult('Create security', envelope.result) as unknown as RawSecurityResponse
+    )
   }
 
   /** Update a security's metadata. Only provided fields are applied. */
@@ -278,9 +287,9 @@ export class InvestorClient {
     securityId: string,
     updates: Omit<UpdateSecurityOperation, 'security_id'>
   ): Promise<InvestorSecurity> {
-    const envelope = await this.callOperation(
-      'Update security',
+    const envelope = await this.callOperation('Update security', (o) =>
       updateSecurity({
+        ...o,
         path: { graph_id: graphId },
         body: {
           ...updates,
@@ -288,17 +297,15 @@ export class InvestorClient {
         } as UpdateSecurityOperation,
       })
     )
-    return rawToInvestorSecurity(envelope.result as unknown as RawSecurityResponse)
+    return rawToInvestorSecurity(
+      this.requireResult('Update security', envelope.result) as unknown as RawSecurityResponse
+    )
   }
 
   /** Soft-delete a security (sets is_active=false). */
   async deleteSecurity(graphId: string, securityId: string): Promise<{ deleted: boolean }> {
-    const envelope = await this.callOperation(
-      'Delete security',
-      deleteSecurity({
-        path: { graph_id: graphId },
-        body: { security_id: securityId },
-      })
+    const envelope = await this.callOperation('Delete security', (o) =>
+      deleteSecurity({ ...o, path: { graph_id: graphId }, body: { security_id: securityId } })
     )
     return envelope.result ?? { deleted: true }
   }
@@ -389,9 +396,9 @@ export class InvestorClient {
   // continue to land as `OperationEnvelope` automatically.
   private async callOperation<T>(
     label: string,
-    call: Promise<{ data?: T; error?: unknown }>
+    call: (options: RestCallOptions) => Promise<{ data?: T; error?: unknown }>
   ): Promise<T> {
-    const response = await call
+    const response = await call(await restCallOptions(this.config))
     if (response.error !== undefined) {
       throw new Error(`${label} failed: ${JSON.stringify(response.error)}`)
     }
@@ -399,6 +406,18 @@ export class InvestorClient {
       throw new Error(`${label} failed: empty response`)
     }
     return response.data
+  }
+
+  /**
+   * Unwrap the result from an OperationEnvelope. Throws when the server
+   * returned an envelope with no `result` — generally a sign that a
+   * synchronous operation failed silently.
+   */
+  private requireResult<T>(label: string, result: T | null | undefined): T {
+    if (result === null || result === undefined) {
+      throw new Error(`${label}: operation envelope had no result`)
+    }
+    return result
   }
 }
 

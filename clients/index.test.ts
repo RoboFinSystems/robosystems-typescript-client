@@ -121,6 +121,16 @@ describe('RoboSystemsClients', () => {
       expect(config.retryDelay).toBe(1000)
     })
 
+    it('keeps an explicit maxRetries/retryDelay of 0 instead of the defaults', () => {
+      const ext = new RoboSystemsClients({ maxRetries: 0, retryDelay: 0 })
+
+      const config = (ext as any).config
+      expect(config.maxRetries).toBe(0)
+      expect(config.retryDelay).toBe(0)
+      expect((ext.ledger as any).config.maxRetries).toBe(0)
+      expect((ext.createSSEClient() as any).config.maxRetries).toBe(0)
+    })
+
     it('should fall back to SDK client baseUrl or default', () => {
       const ext = new RoboSystemsClients()
 

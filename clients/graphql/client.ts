@@ -165,10 +165,39 @@ function createTimeoutFetch(timeoutMs: number): typeof fetch {
  * sending a JWT as `X-API-Key` or an API key as Bearer both 401.
  */
 function applyAuthHeader(headers: Headers, token: string): void {
-  if (token.startsWith('rfs')) {
-    headers.set('X-API-Key', token)
-  } else {
-    headers.set('Authorization', `Bearer ${token}`)
+  for (const [name, value] of Object.entries(authHeaderFor(token))) {
+    headers.set(name, value)
+  }
+}
+
+/** The auth header for a credential — see {@link applyAuthHeader} for the rule. */
+export function authHeaderFor(token: string): Record<string, string> {
+  return token.startsWith('rfs') ? { 'X-API-Key': token } : { Authorization: `Bearer ${token}` }
+}
+
+/**
+ * The credential for one request: the `tokenProvider` result when one is
+ * configured (`null` means send unauthenticated), otherwise the static
+ * `token`. A throwing provider fails the request fast — the caller meant
+ * to authenticate, and an unauthenticated request would surface as a
+ * confusing 401 far from the real failure (matches the Python client).
+ */
+export async function resolveCredential(
+  config: Pick<GraphQLClientConfig, 'token' | 'tokenProvider'>
+): Promise<string | null> {
+  if (!config.tokenProvider) {
+    return config.token ?? null
+  }
+  try {
+    return (await config.tokenProvider()) ?? null
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err)
+    throw new Error(
+      `RoboSystems SDK: tokenProvider threw while resolving the request credential (${detail}). ` +
+        'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
+        'returns the current token, or null to send an unauthenticated (cookie-based) request.',
+      { cause: err }
+    )
   }
 }
 
@@ -204,25 +233,7 @@ export function createGraphQLClient(config: GraphQLClientConfig, graphId: string
       credentials: config.credentials,
       fetch: timeoutFetch,
       requestMiddleware: async (request) => {
-        let token: string | null | undefined
-        try {
-          token = await providerFn()
-        } catch (err) {
-          // Fail fast — a throwing provider means the caller *intended*
-          // to authenticate but couldn't produce a credential. Sending
-          // the request unauthenticated would surface as a confusing
-          // 401 far from the real failure. (Matches the Python client,
-          // which raises when its credential is missing.) A provider
-          // that deliberately has no credential should return `null`
-          // instead — that still sends an unauthenticated request.
-          const detail = err instanceof Error ? err.message : String(err)
-          throw new Error(
-            `RoboSystems SDK: tokenProvider threw while resolving the request credential (${detail}). ` +
-              'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
-              'returns the current token, or null to send an unauthenticated (cookie-based) request.',
-            { cause: err }
-          )
-        }
+        const token = await resolveCredential({ tokenProvider: providerFn })
         if (!token) {
           return request
         }

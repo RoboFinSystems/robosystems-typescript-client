@@ -169,5 +169,13 @@
     "@graphql-typed-document-node/core": "^3.2.0",
     "graphql": "^16.13.2",
     "graphql-request": "^7.4.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   }
 }

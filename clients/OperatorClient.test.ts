@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { OperatorClient, OperatorRunError, QueuedOperatorError } from './OperatorClient'
+import {
+  OperatorClient,
+  OperatorRequestError,
+  OperatorRunError,
+  QueuedOperatorError,
+} from './OperatorClient'
 
 // Mock EventSource for SSE tests
 class MockEventSource {
@@ -559,6 +564,35 @@ describe('OperatorClient queued runs', () => {
       await expect(pending).resolves.toMatchObject({ content: completedResult.content })
     })
 
+    it('follows the run over status when the server refuses the stream at the connection cap', async () => {
+      global.EventSource = RecordingEventSource as any
+      const client = new OperatorClient({
+        baseUrl: 'http://localhost:8000',
+        token: 'jwt',
+        retryDelay: 1,
+      } as any)
+      mockFetch
+        .mockResolvedValueOnce(queuedResponse('op_456'))
+        .mockResolvedValueOnce(completedStatus())
+
+      const pending = client.executeQuery(
+        'graph_1',
+        { message: 'burn rate?' },
+        { pollIntervalMs: 1 }
+      )
+      await new Promise((r) => setTimeout(r, 5))
+      // 200 first, then the server's in-stream `event: error`.
+      RecordingEventSource.last.onerror?.({
+        type: 'error',
+        data: JSON.stringify({ error: 'Too many concurrent SSE connections (limit: 3)' }),
+      })
+
+      await expect(pending).resolves.toMatchObject({ content: completedResult.content })
+      // No reconnect loop: the one stream, then /status.
+      expect(RecordingEventSource.instances).toHaveLength(1)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+
     it('rejects, and does not poll, when the client itself is closed', async () => {
       global.EventSource = RecordingEventSource as any
       const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
@@ -721,5 +755,63 @@ describe('OperatorClient queued runs', () => {
       code: 'INSUFFICIENT_CREDITS',
       message: 'Not enough credits',
     })
+  })
+})
+
+describe('OperatorClient refused requests', () => {
+  let mockFetch: any
+  const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
+
+  beforeEach(() => {
+    mockFetch = vi.fn()
+    global.fetch = mockFetch
+    globalThis.fetch = mockFetch
+  })
+
+  it('surfaces a 402 credit refusal with its status and the server message', async () => {
+    const detail = {
+      code: 'INSUFFICIENT_CREDITS',
+      message: 'Not enough credits to perform AI analysis',
+      required_credits: 12,
+      available_credits: 3,
+    }
+    mockFetch.mockResolvedValueOnce(createMockResponse({ detail }, { ok: false, status: 402 }))
+
+    const err = await client.executeQuery('graph_1', { message: 'burn rate?' }).catch((e) => e)
+
+    expect(err).toBeInstanceOf(OperatorRequestError)
+    expect(err.status).toBe(402)
+    expect(err.detail).toEqual(detail)
+    expect(err.message).toBe(
+      'Operator request failed (402): Not enough credits to perform AI analysis'
+    )
+  })
+
+  it('surfaces a 403 from a specific operator with the server detail', async () => {
+    mockFetch.mockResolvedValueOnce(
+      createMockResponse(
+        { detail: 'Operator POST operations are currently disabled.' },
+        { ok: false, status: 403 }
+      )
+    )
+
+    await expect(
+      client.executeOperator('graph_1', 'analyst', { message: 'burn rate?' })
+    ).rejects.toThrow(
+      'Operator request failed (403): Operator POST operations are currently disabled.'
+    )
+  })
+
+  it('flattens a 422 validation detail list', async () => {
+    mockFetch.mockResolvedValueOnce(
+      createMockResponse(
+        { detail: [{ loc: ['body', 'message'], msg: 'Field required', type: 'missing' }] },
+        { ok: false, status: 422 }
+      )
+    )
+
+    await expect(client.executeQuery('graph_1', { message: '' })).rejects.toThrow(
+      'Operator request failed (422): Field required'
+    )
   })
 })

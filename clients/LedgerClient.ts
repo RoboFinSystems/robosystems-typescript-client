@@ -13,13 +13,16 @@
  *   Code Generator). The graph is in the URL, not in the query.
  * - **Writes** go through named command operations at
  *   `/extensions/roboledger/{graph_id}/operations/{operation_name}`
- *   (via the OpenAPI-generated command functions in `../sdk/sdk.gen`).
+ *   (via the OpenAPI-generated command functions in `../sdk/sdk.gen`,
+ *   called with this facade's own `baseUrl`, credential and headers).
  *   Each command returns an `OperationEnvelope`; the facade unwraps
- *   `envelope.result` and returns a friendly camelCase type.
+ *   `envelope.result`.
  *
  * Consumers don't need to know which transport a method uses — the
- * facade signature stays stable. The only trick is that write method
- * results are cast from the envelope's untyped `result` field.
+ * facade signature stays stable. Most write results are the generated
+ * (snake_case) response types the typed envelopes carry; a few are
+ * mapped to the camelCase read shapes, and ops whose envelope `result`
+ * is untyped are cast to a local raw type before mapping.
  */
 
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
@@ -249,6 +252,7 @@ import {
   type ReportDownloadFormat,
   type ReportLifecycle,
 } from './graphql/generated/graphql'
+import { restCallOptions, withIdempotencyKey, type RestCallOptions } from './rest'
 
 // Re-export the structured GraphQL error type so consumers importing
 // from the `@robosystems/client/ledger` subpath can `instanceof` it.
@@ -741,7 +745,7 @@ interface LedgerClientConfig {
   token?: string
   /**
    * Dynamic credential callback. When set, invoked on every GraphQL
-   * request so refreshes flow through automatically.
+   * request and REST write so refreshes flow through automatically.
    */
   tokenProvider?: TokenProvider
   /** GraphQL request timeout in milliseconds (default 60s). */
@@ -805,12 +809,8 @@ export class LedgerClient {
    * Returns the updated entity.
    */
   async updateEntity(graphId: string, updates: UpdateEntityRequest): Promise<LedgerEntity> {
-    const envelope = await this.callOperation(
-      'Update entity',
-      updateEntity({
-        path: { graph_id: graphId },
-        body: updates,
-      })
+    const envelope = await this.callOperation('Update entity', (o) =>
+      updateEntity({ ...o, path: { graph_id: graphId }, body: updates })
     )
     // The REST envelope carries LedgerEntityResponse (snake_case); LedgerEntity
     // is the GraphQL camelCase shape that getEntity returns. The old
@@ -1145,9 +1145,8 @@ export class LedgerClient {
     graphId: string,
     body: LinkEntityTaxonomyRequest
   ): Promise<EntityTaxonomyResponse> {
-    const envelope = await this.callOperation(
-      'Link entity taxonomy',
-      linkEntityTaxonomy({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Link entity taxonomy', (o) =>
+      linkEntityTaxonomy({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Link entity taxonomy', envelope.result)
   }
@@ -1161,10 +1160,12 @@ export class LedgerClient {
     body: CreateTaxonomyBlockRequest,
     idempotencyKey?: string
   ): Promise<TaxonomyBlockEnvelope> {
-    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
-    const envelope = await this.callOperation(
-      'Create taxonomy block',
-      createTaxonomyBlock({ path: { graph_id: graphId }, body, headers })
+    const envelope = await this.callOperation('Create taxonomy block', (o) =>
+      createTaxonomyBlock({
+        ...withIdempotencyKey(o, idempotencyKey),
+        path: { graph_id: graphId },
+        body,
+      })
     )
     return this.requireResult('Create taxonomy block', envelope.result)
   }
@@ -1174,9 +1175,8 @@ export class LedgerClient {
     graphId: string,
     body: UpdateTaxonomyBlockRequest
   ): Promise<TaxonomyBlockEnvelope> {
-    const envelope = await this.callOperation(
-      'Update taxonomy block',
-      updateTaxonomyBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update taxonomy block', (o) =>
+      updateTaxonomyBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update taxonomy block', envelope.result)
   }
@@ -1186,9 +1186,8 @@ export class LedgerClient {
     graphId: string,
     body: DeleteTaxonomyBlockRequest
   ): Promise<DeleteTaxonomyBlockResponse> {
-    const envelope = await this.callOperation(
-      'Delete taxonomy block',
-      deleteTaxonomyBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Delete taxonomy block', (o) =>
+      deleteTaxonomyBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as DeleteTaxonomyBlockResponse
   }
@@ -1204,10 +1203,8 @@ export class LedgerClient {
     body: BindTextBlockRequest,
     idempotencyKey?: string
   ): Promise<BindTextBlockResponse> {
-    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
-    const envelope = await this.callOperation(
-      'Bind text block',
-      bindTextBlock({ path: { graph_id: graphId }, body, headers })
+    const envelope = await this.callOperation('Bind text block', (o) =>
+      bindTextBlock({ ...withIdempotencyKey(o, idempotencyKey), path: { graph_id: graphId }, body })
     )
     return this.requireResult('Bind text block', envelope.result)
   }
@@ -1341,9 +1338,8 @@ export class LedgerClient {
     graphId: string,
     body: CreateMappingAssociationOperation
   ): Promise<AssociationResponse> {
-    const envelope = await this.callOperation(
-      'Create mapping association',
-      createMappingAssociation({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create mapping association', (o) =>
+      createMappingAssociation({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Create mapping association', envelope.result)
   }
@@ -1353,9 +1349,8 @@ export class LedgerClient {
     graphId: string,
     body: DeleteMappingAssociationOperation
   ): Promise<DeleteResult> {
-    const envelope = await this.callOperation(
-      'Delete mapping association',
-      deleteMappingAssociation({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Delete mapping association', (o) =>
+      deleteMappingAssociation({ ...o, path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as DeleteResult
   }
@@ -1369,9 +1364,8 @@ export class LedgerClient {
     graphId: string,
     body: AutoMapElementsOperation
   ): Promise<{ operationId: string; status: OperationEnvelope['status'] }> {
-    const envelope = await this.callOperation(
-      'Auto-map elements',
-      autoMapElements({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Auto-map elements', (o) =>
+      autoMapElements({ ...o, path: { graph_id: graphId }, body })
     )
     return { operationId: envelope.operationId, status: envelope.status }
   }
@@ -1476,7 +1470,6 @@ export class LedgerClient {
 
   // ── Schedules ──────────────────────────────────────────────────────
 
-  /** Create a new schedule with pre-generated monthly facts. */
   /**
    * Create an Information Block of any registered block_type.
    *
@@ -1492,14 +1485,11 @@ export class LedgerClient {
     body: CreateInformationBlockRequest,
     options?: { idempotencyKey?: string }
   ): Promise<InformationBlockEnvelope> {
-    const envelope = await this.callOperation(
-      'Create information block',
+    const envelope = await this.callOperation('Create information block', (o) =>
       createInformationBlock({
+        ...withIdempotencyKey(o, options?.idempotencyKey),
         path: { graph_id: graphId },
         body,
-        headers: options?.idempotencyKey
-          ? { 'Idempotency-Key': options.idempotencyKey }
-          : undefined,
       })
     )
     return this.requireResult('Create information block', envelope.result)
@@ -1513,9 +1503,8 @@ export class LedgerClient {
     graphId: string,
     body: UpdateInformationBlockRequest
   ): Promise<InformationBlockEnvelope> {
-    const envelope = await this.callOperation(
-      'Update information block',
-      updateInformationBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update information block', (o) =>
+      updateInformationBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update information block', envelope.result)
   }
@@ -1529,13 +1518,13 @@ export class LedgerClient {
     graphId: string,
     body: DeleteInformationBlockRequest
   ): Promise<DeleteInformationBlockResponse> {
-    const envelope = await this.callOperation(
-      'Delete information block',
-      deleteInformationBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Delete information block', (o) =>
+      deleteInformationBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as DeleteInformationBlockResponse
   }
 
+  /** Create a new schedule with pre-generated monthly facts. */
   async createSchedule(
     graphId: string,
     options: CreateScheduleOptions
@@ -1567,9 +1556,8 @@ export class LedgerClient {
           : undefined,
       },
     }
-    const envelope = await this.callOperation(
-      'Create schedule',
-      createInformationBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create schedule', (o) =>
+      createInformationBlock({ ...o, path: { graph_id: graphId }, body })
     )
     // `create-information-block` returns an InformationBlockEnvelope, not the
     // ScheduleCreatedResponse shape this used to decode — there is no
@@ -1587,7 +1575,10 @@ export class LedgerClient {
     }
   }
 
-  /** Update mutable fields on a schedule (name, entry_template, metadata). */
+  /**
+   * Rename a schedule. For other block fields use `updateInformationBlock`
+   * with a `schedule` payload.
+   */
   async updateSchedule(
     graphId: string,
     structureId: string,
@@ -1597,9 +1588,8 @@ export class LedgerClient {
       block_type: 'schedule',
       payload: { structure_id: structureId, ...options },
     }
-    const envelope = await this.callOperation(
-      'Update schedule',
-      updateInformationBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update schedule', (o) =>
+      updateInformationBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update schedule', envelope.result)
   }
@@ -1613,9 +1603,8 @@ export class LedgerClient {
       block_type: 'schedule',
       payload: { structure_id: structureId },
     }
-    const envelope = await this.callOperation(
-      'Delete schedule',
-      deleteInformationBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Delete schedule', (o) =>
+      deleteInformationBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as DeleteInformationBlockResponse
   }
@@ -1631,7 +1620,8 @@ export class LedgerClient {
    * a rebuild re-scopes the schedule to today's close state. Use this to
    * pick up a fixed generator without orphaning obligations.
    *
-   * Returns the same shape as `createSchedule`.
+   * Returns the {@link ScheduleCreated} rebuild summary (periods, facts,
+   * rule results) — richer than `createSchedule`'s {@link ScheduleBlockCreated}.
    */
   async rebuildSchedule(
     graphId: string,
@@ -1639,14 +1629,11 @@ export class LedgerClient {
     options?: { idempotencyKey?: string }
   ): Promise<ScheduleCreated> {
     const body: RebuildScheduleRequest = { structure_id: structureId }
-    const envelope = await this.callOperation(
-      'Rebuild schedule',
+    const envelope = await this.callOperation('Rebuild schedule', (o) =>
       rebuildSchedule({
+        ...withIdempotencyKey(o, options?.idempotencyKey),
         path: { graph_id: graphId },
         body,
-        headers: options?.idempotencyKey
-          ? { 'Idempotency-Key': options.idempotencyKey }
-          : undefined,
       })
     )
     const raw = envelope.result as unknown as RawScheduleCreatedResult
@@ -1697,18 +1684,16 @@ export class LedgerClient {
         reason: options.reason ?? 'asset_disposed_event',
       },
     }
-    const envelope = await this.callOperation(
-      'Dispose schedule',
-      createEventBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Dispose schedule', (o) =>
+      createEventBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Dispose schedule', envelope.result)
   }
 
   /** Evaluate taxonomy rules against facts in a structure. */
   async evaluateRules(graphId: string, body: EvaluateRulesRequest): Promise<EvaluateRulesResponse> {
-    const envelope = await this.callOperation(
-      'Evaluate rules',
-      evaluateRules({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Evaluate rules', (o) =>
+      evaluateRules({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Evaluate rules', envelope.result)
   }
@@ -1726,14 +1711,11 @@ export class LedgerClient {
     body: ComputeMetricsRequest,
     options?: { idempotencyKey?: string }
   ): Promise<ComputeMetricsResponse> {
-    const envelope = await this.callOperation(
-      'Compute metrics',
+    const envelope = await this.callOperation('Compute metrics', (o) =>
       computeMetrics({
+        ...withIdempotencyKey(o, options?.idempotencyKey),
         path: { graph_id: graphId },
         body,
-        headers: options?.idempotencyKey
-          ? { 'Idempotency-Key': options.idempotencyKey }
-          : undefined,
       })
     )
     return this.requireResult('Compute metrics', envelope.result)
@@ -1799,9 +1781,8 @@ export class LedgerClient {
         memo: memo ?? null,
       },
     }
-    const envelope = await this.callOperation(
-      'Create closing entry',
-      createEventBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create closing entry', (o) =>
+      createEventBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Create closing entry', envelope.result)
   }
@@ -1844,9 +1825,8 @@ export class LedgerClient {
       auto_seed_schedules: options?.autoSeedSchedules,
       note: options?.note ?? null,
     }
-    const envelope = await this.callOperation(
-      'Initialize ledger',
-      initializeLedger({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Initialize ledger', (o) =>
+      initializeLedger({ ...o, path: { graph_id: graphId }, body })
     )
     const raw = envelope.result as unknown as RawInitializeLedgerResult
     return {
@@ -1885,9 +1865,8 @@ export class LedgerClient {
       entity_type: options?.entityType ?? null,
       name: options?.name ?? null,
     }
-    const envelope = await this.callOperation(
-      'Initialize chart of accounts',
-      initializeChartOfAccounts({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Initialize chart of accounts', (o) =>
+      initializeChartOfAccounts({ ...o, path: { graph_id: graphId }, body })
     )
     const raw = envelope.result as unknown as InitializeChartOfAccountsResponse
     return {
@@ -1909,9 +1888,8 @@ export class LedgerClient {
     note?: string | null
   ): Promise<LedgerFiscalCalendar> {
     const body: SetCloseTargetOperation = { period, note: note ?? null }
-    const envelope = await this.callOperation(
-      'Set close target',
-      setCloseTarget({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Set close target', (o) =>
+      setCloseTarget({ ...o, path: { graph_id: graphId }, body })
     )
     return rawFiscalCalendarToCamel(envelope.result as unknown as RawFiscalCalendar)
   }
@@ -1931,9 +1909,8 @@ export class LedgerClient {
       allow_reconciling_items: options?.allowReconcilingItems,
       allow_unposted_source_events: options?.allowUnpostedSourceEvents,
     }
-    const envelope = await this.callOperation(
-      'Close period',
-      closePeriod({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Close period', (o) =>
+      closePeriod({ ...o, path: { graph_id: graphId }, body })
     )
     const raw = envelope.result as unknown as RawClosePeriodResult
     return {
@@ -1960,9 +1937,8 @@ export class LedgerClient {
       reason,
       note: note ?? null,
     }
-    const envelope = await this.callOperation(
-      'Reopen period',
-      reopenPeriod({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Reopen period', (o) =>
+      reopenPeriod({ ...o, path: { graph_id: graphId }, body })
     )
     return rawFiscalCalendarToCamel(envelope.result as unknown as RawFiscalCalendar)
   }
@@ -1992,9 +1968,8 @@ export class LedgerClient {
    * List the items with `listEventBlocks(graphId, { isReconcilingItem: true })`.
    */
   async previewReconcilingItem(graphId: string, eventId: string): Promise<ReconcilingItemPlan> {
-    const envelope = await this.callOperation(
-      'Preview reconciling item',
-      previewReconcilingItem({ path: { graph_id: graphId }, body: { event_id: eventId } })
+    const envelope = await this.callOperation('Preview reconciling item', (o) =>
+      previewReconcilingItem({ ...o, path: { graph_id: graphId }, body: { event_id: eventId } })
     )
     return this.requireResult('Preview reconciling item', envelope.result)
   }
@@ -2009,9 +1984,8 @@ export class LedgerClient {
     graphId: string,
     body: ResolveReconcilingItemRequest
   ): Promise<ResolveReconcilingItemResponse> {
-    const envelope = await this.callOperation(
-      'Resolve reconciling item',
-      resolveReconcilingItem({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Resolve reconciling item', (o) =>
+      resolveReconcilingItem({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Resolve reconciling item', envelope.result)
   }
@@ -2025,9 +1999,8 @@ export class LedgerClient {
     graphId: string,
     body: PromoteObligationsRequest = {}
   ): Promise<PromoteObligationsResponse> {
-    const envelope = await this.callOperation(
-      'Promote obligations',
-      promoteObligations({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Promote obligations', (o) =>
+      promoteObligations({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Promote obligations', envelope.result)
   }
@@ -2043,9 +2016,8 @@ export class LedgerClient {
       method: options?.method,
       include_tied: options?.includeTied,
     }
-    const envelope = await this.callOperation(
-      'Preview reconciliations',
-      previewReconciliations({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Preview reconciliations', (o) =>
+      previewReconciliations({ ...o, path: { graph_id: graphId }, body })
     )
     return reconciliationPreviewToCamel(envelope.result as unknown as ReconciliationPreviewResponse)
   }
@@ -2056,9 +2028,8 @@ export class LedgerClient {
    */
   async refreshReconciliations(graphId: string, period: string): Promise<LedgerReconciliationList> {
     const body: RefreshReconciliationsRequest = { period }
-    const envelope = await this.callOperation(
-      'Refresh reconciliations',
-      refreshReconciliations({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Refresh reconciliations', (o) =>
+      refreshReconciliations({ ...o, path: { graph_id: graphId }, body })
     )
     return reconciliationListToCamel(envelope.result as unknown as ReconciliationListResponse)
   }
@@ -2078,9 +2049,8 @@ export class LedgerClient {
       document_id: input.documentId ?? null,
       note: input.note ?? null,
     }
-    const envelope = await this.callOperation(
-      'Record statement balance',
-      recordStatementBalance({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Record statement balance', (o) =>
+      recordStatementBalance({ ...o, path: { graph_id: graphId }, body })
     )
     return reconciliationSummaryToCamel(envelope.result as unknown as ReconciliationSummary)
   }
@@ -2098,9 +2068,8 @@ export class LedgerClient {
       review_required: changes.reviewRequired,
       separate_reviewer: changes.separateReviewer,
     }
-    const envelope = await this.callOperation(
-      'Set reconciliation policy',
-      setReconciliationPolicy({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Set reconciliation policy', (o) =>
+      setReconciliationPolicy({ ...o, path: { graph_id: graphId }, body })
     )
     const raw = envelope.result as unknown as ReconciliationPolicyResponse
     return {
@@ -2127,9 +2096,8 @@ export class LedgerClient {
       period,
       note: note ?? null,
     }
-    const envelope = await this.callOperation(
-      'Sign off reconciliation',
-      signOffReconciliation({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Sign off reconciliation', (o) =>
+      signOffReconciliation({ ...o, path: { graph_id: graphId }, body })
     )
     return reconciliationSummaryToCamel(envelope.result as unknown as ReconciliationSummary)
   }
@@ -2175,12 +2143,12 @@ export class LedgerClient {
         transaction_id: options.transactionId ?? null,
       },
     }
-    const headers = options.idempotencyKey
-      ? { 'Idempotency-Key': options.idempotencyKey }
-      : undefined
-    const envelope = await this.callOperation(
-      'Create journal entry',
-      createEventBlock({ path: { graph_id: graphId }, body, headers })
+    const envelope = await this.callOperation('Create journal entry', (o) =>
+      createEventBlock({
+        ...withIdempotencyKey(o, options.idempotencyKey),
+        path: { graph_id: graphId },
+        body,
+      })
     )
     return this.requireResult('Create journal entry', envelope.result)
   }
@@ -2190,9 +2158,8 @@ export class LedgerClient {
     graphId: string,
     body: UpdateJournalEntryRequest
   ): Promise<JournalEntryResponse> {
-    const envelope = await this.callOperation(
-      'Update journal entry',
-      updateJournalEntry({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update journal entry', (o) =>
+      updateJournalEntry({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update journal entry', envelope.result)
   }
@@ -2200,9 +2167,8 @@ export class LedgerClient {
   /** Hard-delete a draft journal entry. Posted entries must be reversed. */
   async deleteJournalEntry(graphId: string, entryId: string): Promise<DeleteResult> {
     const body: DeleteJournalEntryRequest = { entry_id: entryId }
-    const envelope = await this.callOperation(
-      'Delete journal entry',
-      deleteJournalEntry({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Delete journal entry', (o) =>
+      deleteJournalEntry({ ...o, path: { graph_id: graphId }, body })
     )
     return (envelope.result ?? { deleted: true }) as DeleteResult
   }
@@ -2239,14 +2205,39 @@ export class LedgerClient {
         reason: options?.reason ?? null,
       },
     }
-    const envelope = await this.callOperation(
-      'Reverse journal entry',
-      createEventBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Reverse journal entry', (o) =>
+      createEventBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Reverse journal entry', envelope.result)
   }
 
   // ── Event blocks (generic preview + status transitions) ──────────────
+
+  /**
+   * Create an event block directly. Use for support-class events
+   * (`event_class: 'support'`) with categories `approval`, `control`,
+   * `reconciliation`, or `inquiry`, which the specialized helpers don't
+   * cover. Economic events should generally go through
+   * `createJournalEntry`, `createClosingEntry`, etc., but this works for
+   * those too.
+   *
+   * Supply `idempotencyKey` to make the call safe to retry — replays
+   * within 24 hours return the same envelope.
+   */
+  async createEventBlock(
+    graphId: string,
+    body: CreateEventBlockRequest,
+    idempotencyKey?: string
+  ): Promise<EventBlockEnvelope> {
+    const envelope = await this.callOperation('Create event block', (o) =>
+      createEventBlock({
+        ...withIdempotencyKey(o, idempotencyKey),
+        path: { graph_id: graphId },
+        body,
+      })
+    )
+    return this.requireResult('Create event block', envelope.result)
+  }
 
   /**
    * Dry-run an event block — resolve the handler, evaluate metadata, and
@@ -2260,9 +2251,8 @@ export class LedgerClient {
     graphId: string,
     body: CreateEventBlockRequest
   ): Promise<PreviewEventBlockResponse> {
-    const envelope = await this.callOperation(
-      'Preview event block',
-      previewEventBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Preview event block', (o) =>
+      previewEventBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Preview event block', envelope.result)
   }
@@ -2277,9 +2267,8 @@ export class LedgerClient {
     graphId: string,
     body: UpdateEventBlockRequest
   ): Promise<EventBlockEnvelope> {
-    const envelope = await this.callOperation(
-      'Update event block',
-      updateEventBlock({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update event block', (o) =>
+      updateEventBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update event block', envelope.result)
   }
@@ -2297,10 +2286,8 @@ export class LedgerClient {
     body: CreateAgentRequest,
     idempotencyKey?: string
   ): Promise<LedgerAgentResponse> {
-    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined
-    const envelope = await this.callOperation(
-      'Create agent',
-      createAgent({ path: { graph_id: graphId }, body, headers })
+    const envelope = await this.callOperation('Create agent', (o) =>
+      createAgent({ ...withIdempotencyKey(o, idempotencyKey), path: { graph_id: graphId }, body })
     )
     return this.requireResult('Create agent', envelope.result)
   }
@@ -2310,9 +2297,8 @@ export class LedgerClient {
    * metadata object; all other fields replace.
    */
   async updateAgent(graphId: string, body: UpdateAgentRequest): Promise<LedgerAgentResponse> {
-    const envelope = await this.callOperation(
-      'Update agent',
-      updateAgent({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update agent', (o) =>
+      updateAgent({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update agent', envelope.result)
   }
@@ -2329,9 +2315,8 @@ export class LedgerClient {
     graphId: string,
     body: CreateEventHandlerRequest
   ): Promise<EventHandlerResponse> {
-    const envelope = await this.callOperation(
-      'Create event handler',
-      createEventHandler({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create event handler', (o) =>
+      createEventHandler({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Create event handler', envelope.result)
   }
@@ -2344,9 +2329,8 @@ export class LedgerClient {
     graphId: string,
     body: UpdateEventHandlerRequest
   ): Promise<EventHandlerResponse> {
-    const envelope = await this.callOperation(
-      'Update event handler',
-      updateEventHandler({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Update event handler', (o) =>
+      updateEventHandler({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update event handler', envelope.result)
   }
@@ -2363,9 +2347,8 @@ export class LedgerClient {
     graphId: string,
     body: LiveFinancialStatementRequest
   ): Promise<LiveFinancialStatementResponse> {
-    const envelope = await this.callOperation(
-      'Live financial statement',
-      liveFinancialStatement({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Live financial statement', (o) =>
+      liveFinancialStatement({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Live financial statement', envelope.result)
   }
@@ -2380,9 +2363,8 @@ export class LedgerClient {
     graphId: string,
     body: FinancialStatementAnalysisRequest
   ): Promise<FinancialStatementAnalysisResponse> {
-    const envelope = await this.callOperation(
-      'Financial statement analysis',
-      financialStatementAnalysis({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Financial statement analysis', (o) =>
+      financialStatementAnalysis({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Financial statement analysis', envelope.result)
   }
@@ -2397,9 +2379,8 @@ export class LedgerClient {
    * tenant graphs (after materialization) and the SEC shared repository.
    */
   async buildFactGrid(graphId: string, body: CreateViewRequest): Promise<ViewResponse> {
-    const envelope = await this.callOperation(
-      'Build fact grid',
-      buildFactGrid({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Build fact grid', (o) =>
+      buildFactGrid({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Build fact grid', envelope.result)
   }
@@ -2456,9 +2437,8 @@ export class LedgerClient {
     if (options.periods && options.periods.length > 0) {
       body.periods = options.periods
     }
-    const envelope = await this.callOperation(
-      'Create report',
-      createReport({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create report', (o) =>
+      createReport({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Create report', envelope.result)
   }
@@ -2540,9 +2520,9 @@ export class LedgerClient {
     periodStart?: string,
     periodEnd?: string
   ): Promise<ReportResponse> {
-    const envelope = await this.callOperation(
-      'Regenerate report',
+    const envelope = await this.callOperation('Regenerate report', (o) =>
       regenerateReport({
+        ...o,
         path: { graph_id: graphId },
         body: {
           report_id: reportId,
@@ -2556,12 +2536,8 @@ export class LedgerClient {
 
   /** Delete a report and its generated facts. */
   async deleteReport(graphId: string, reportId: string): Promise<DeleteResult> {
-    const envelope = await this.callOperation(
-      'Delete report',
-      deleteReport({
-        path: { graph_id: graphId },
-        body: { report_id: reportId },
-      })
+    const envelope = await this.callOperation('Delete report', (o) =>
+      deleteReport({ ...o, path: { graph_id: graphId }, body: { report_id: reportId } })
     )
     return (envelope.result ?? { deleted: true }) as DeleteResult
   }
@@ -2630,9 +2606,9 @@ export class LedgerClient {
     reportId: string,
     publishListId: string
   ): Promise<ShareReportResponse> {
-    const envelope = await this.callOperation(
-      'Share report',
+    const envelope = await this.callOperation('Share report', (o) =>
       shareReport({
+        ...o,
         path: { graph_id: graphId },
         body: {
           report_id: reportId,
@@ -2651,9 +2627,8 @@ export class LedgerClient {
    */
   async fileReport(graphId: string, reportId: string): Promise<ReportResponse> {
     const body: FileReportRequest = { report_id: reportId }
-    const envelope = await this.callOperation(
-      'File report',
-      fileReport({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('File report', (o) =>
+      fileReport({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('File report', envelope.result)
   }
@@ -2674,9 +2649,8 @@ export class LedgerClient {
       report_id: reportId,
       target_status: targetStatus,
     }
-    const envelope = await this.callOperation(
-      'Transition filing status',
-      transitionFilingStatus({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Transition filing status', (o) =>
+      transitionFilingStatus({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Transition filing status', envelope.result)
   }
@@ -2704,9 +2678,9 @@ export class LedgerClient {
     reportId: string,
     targetGraphId: string
   ): Promise<RevokeReportShareResponse> {
-    const envelope = await this.callOperation(
-      'Revoke report share',
+    const envelope = await this.callOperation('Revoke report share', (o) =>
       revokeReportShare({
+        ...o,
         path: { graph_id: graphId },
         body: {
           report_id: reportId,
@@ -2757,9 +2731,9 @@ export class LedgerClient {
     sourceGraphId: string,
     options?: { reason?: string; purge?: boolean }
   ): Promise<BlockSourceGraphResult> {
-    const envelope = await this.callOperation(
-      'Block source graph',
+    const envelope = await this.callOperation('Block source graph', (o) =>
       blockSourceGraph({
+        ...o,
         path: { graph_id: graphId },
         body: {
           source_graph_id: sourceGraphId,
@@ -2781,9 +2755,9 @@ export class LedgerClient {
     graphId: string,
     sourceGraphId: string
   ): Promise<BlockedSourceGraphResponse> {
-    const envelope = await this.callOperation(
-      'Unblock source graph',
+    const envelope = await this.callOperation('Unblock source graph', (o) =>
       unblockSourceGraph({
+        ...o,
         path: { graph_id: graphId },
         body: {
           source_graph_id: sourceGraphId,
@@ -2823,9 +2797,8 @@ export class LedgerClient {
       name,
       description: description ?? null,
     }
-    const envelope = await this.callOperation(
-      'Create publish list',
-      createPublishList({ path: { graph_id: graphId }, body })
+    const envelope = await this.callOperation('Create publish list', (o) =>
+      createPublishList({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Create publish list', envelope.result)
   }
@@ -2847,28 +2820,21 @@ export class LedgerClient {
     listId: string,
     updates: { name?: string; description?: string | null }
   ): Promise<PublishListResponse> {
-    const envelope = await this.callOperation(
-      'Update publish list',
-      updatePublishList({
-        path: { graph_id: graphId },
-        body: {
-          list_id: listId,
-          name: updates.name,
-          description: updates.description ?? null,
-        } as UpdatePublishListOperation,
-      })
+    // The server applies only the fields present, so an omitted key must
+    // stay off the wire; an explicit `description: null` still clears it.
+    const body: UpdatePublishListOperation = { list_id: listId }
+    if (updates.name !== undefined) body.name = updates.name
+    if (updates.description !== undefined) body.description = updates.description
+    const envelope = await this.callOperation('Update publish list', (o) =>
+      updatePublishList({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update publish list', envelope.result)
   }
 
   /** Delete a publish list. */
   async deletePublishList(graphId: string, listId: string): Promise<DeleteResult> {
-    const envelope = await this.callOperation(
-      'Delete publish list',
-      deletePublishList({
-        path: { graph_id: graphId },
-        body: { list_id: listId },
-      })
+    const envelope = await this.callOperation('Delete publish list', (o) =>
+      deletePublishList({ ...o, path: { graph_id: graphId }, body: { list_id: listId } })
     )
     return (envelope.result ?? { deleted: true }) as DeleteResult
   }
@@ -2879,9 +2845,9 @@ export class LedgerClient {
     listId: string,
     targetGraphIds: string[]
   ): Promise<PublishListMemberResponse[]> {
-    const envelope = await this.callOperation(
-      'Add publish list members',
+    const envelope = await this.callOperation('Add publish list members', (o) =>
       addPublishListMembers({
+        ...o,
         path: { graph_id: graphId },
         body: {
           list_id: listId,
@@ -2898,9 +2864,9 @@ export class LedgerClient {
     listId: string,
     memberId: string
   ): Promise<DeleteResult> {
-    const envelope = await this.callOperation(
-      'Remove publish list member',
+    const envelope = await this.callOperation('Remove publish list member', (o) =>
       removePublishListMember({
+        ...o,
         path: { graph_id: graphId },
         body: { list_id: listId, member_id: memberId },
       })
@@ -2911,8 +2877,9 @@ export class LedgerClient {
   // ── Internal helpers ────────────────────────────────────────────────
 
   /**
-   * Await an SDK-generated command call, throw a readable error on
-   * non-2xx, and return the parsed envelope on success.
+   * Run an SDK-generated command call with this facade's per-call
+   * transport options (`baseUrl`, credential, headers), throw a readable
+   * error on non-2xx, and return the parsed envelope on success.
    *
    * Generic over the SDK call's response shape so typed ops (e.g.
    * `createEventBlock`, which returns
@@ -2922,9 +2889,9 @@ export class LedgerClient {
    */
   private async callOperation<T>(
     label: string,
-    call: Promise<{ data?: T; error?: unknown }>
+    call: (options: RestCallOptions) => Promise<{ data?: T; error?: unknown }>
   ): Promise<T> {
-    const response = await call
+    const response = await call(await restCallOptions(this.config))
     if (response.error !== undefined) {
       throw new Error(`${label} failed: ${JSON.stringify(response.error)}`)
     }
@@ -2944,35 +2911,6 @@ export class LedgerClient {
       throw new Error(`${label}: operation envelope had no result`)
     }
     return result
-  }
-
-  /**
-   * Resolve the current bearer token / API key for non-GraphQL REST
-   * calls. Mirrors the GraphQL client's behaviour — dynamic
-   * ``tokenProvider`` is consulted first (so JWT rotation flows
-   * naturally), then the static ``token`` config. Returns ``null``
-   * when no credential is configured (cookie-based / anonymous flows).
-   * A ``tokenProvider`` that **throws** fails the call fast instead of
-   * silently proceeding unauthenticated — matching the Python client,
-   * which raises when its configured credential cannot be resolved.
-   */
-  private async resolveToken(): Promise<string | null> {
-    if (this.config.tokenProvider) {
-      let token: string | null | undefined
-      try {
-        token = await this.config.tokenProvider()
-      } catch (err) {
-        const detail = err instanceof Error ? err.message : String(err)
-        throw new Error(
-          `RoboSystems SDK: tokenProvider threw while resolving the request credential (${detail}). ` +
-            'Fix the tokenProvider passed in the client config (or via setSDKClientConfig) so it ' +
-            'returns the current token, or null to send an unauthenticated (cookie-based) request.',
-          { cause: err }
-        )
-      }
-      return token ?? null
-    }
-    return this.config.token ?? null
   }
 }
 

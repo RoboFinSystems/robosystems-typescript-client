@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   configureWithJWT,
   extractJWTFromHeader,
@@ -195,5 +195,19 @@ describe('config', () => {
       expect(config.baseUrl).toBe('http://localhost:8000')
       expect(config.timeout).toBe(30000)
     })
+  })
+})
+
+describe('config without a `process` global', () => {
+  it('loads and falls back to the default baseUrl (a browser bundle with no env inlining)', async () => {
+    vi.resetModules()
+    vi.stubGlobal('process', undefined)
+    try {
+      const fresh = await import('./config')
+      expect(fresh.getSDKClientConfig().baseUrl).toBe('http://localhost:8000')
+      expect(fresh.getEnvironmentConfig('production').baseUrl).toBe('https://api.robosystems.ai')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })

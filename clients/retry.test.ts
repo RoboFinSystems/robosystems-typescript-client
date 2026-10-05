@@ -94,6 +94,28 @@ describe('createRetryingFetch', () => {
     expect(inner.calls).toBe(4)
   })
 
+  it('replays a Request write with its body, as the generated SDK sends it', async () => {
+    // Real fetch consumes a Request's body, and a used Request cannot be
+    // sent again. This stub reads the body the same way.
+    const bodies: string[] = []
+    let calls = 0
+    const inner = vi.fn(async (input: RequestInfo | URL) => {
+      bodies.push(await (input as Request).text())
+      calls += 1
+      return calls === 1 ? rateLimited() : ok()
+    })
+    const retrying = createRetryingFetch({ fetch: inner, maxRetries: 3, retryDelay: 1 })
+    const request = new Request('https://api.test/x', {
+      method: 'POST',
+      body: '{"period":"2026-09"}',
+    })
+
+    const response = await retrying(request)
+
+    expect(response.status).toBe(200)
+    expect(bodies).toEqual(['{"period":"2026-09"}', '{"period":"2026-09"}'])
+  })
+
   it('surfaces the 429 once retries are exhausted', async () => {
     const inner = stub(Number.MAX_SAFE_INTEGER)
     const retrying = createRetryingFetch({ fetch: inner.fn, maxRetries: 2, retryDelay: 1 })

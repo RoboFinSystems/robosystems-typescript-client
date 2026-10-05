@@ -7,6 +7,7 @@
 
 import { cancelOperation as cancelOperationSDK, getOperationStatus } from '../sdk/sdk.gen'
 import type { TokenProvider } from './graphql/client'
+import { restCallOptions } from './rest'
 import { EventType, SSEClient } from './SSEClient'
 
 export interface OperationProgress {
@@ -70,8 +71,9 @@ export class OperationClient {
 
       const timeoutHandle = options.timeout
         ? setTimeout(() => {
-            this.cleanupClient(operationId)
+            // Reject before closing: the close settles the promise too.
             reject(new Error(`Operation timeout after ${options.timeout}ms`))
+            this.cleanupClient(operationId)
           }, options.timeout)
         : undefined
 
@@ -154,6 +156,25 @@ export class OperationClient {
             this.scheduleCleanup(operationId, 5000)
             resolve(result)
           })
+
+          // The server ended the stream with its own error (connection cap,
+          // unknown operation, a failed stream). The SSE client closes next.
+          sseClient.on('error', (err) => {
+            if (timeoutHandle) clearTimeout(timeoutHandle)
+            resolve({ success: false, error: err?.error || 'SSE stream error' })
+          })
+
+          // Any other close before a terminal event — a reconnect that failed
+          // before opening, cancelOperation(), closeAll(), the periodic
+          // cleanup. The SSE client drops its listeners as it closes, so this
+          // is the last chance to settle; after a terminal event it is a no-op.
+          sseClient.on('closed', () => {
+            if (timeoutHandle) clearTimeout(timeoutHandle)
+            resolve({
+              success: false,
+              error: 'SSE stream closed before the operation finished',
+            })
+          })
         })
         .catch((error) => {
           if (timeoutHandle) clearTimeout(timeoutHandle)
@@ -184,6 +205,7 @@ export class OperationClient {
    */
   async getStatus(operationId: string): Promise<any> {
     const response = await getOperationStatus({
+      ...(await restCallOptions(this.config)),
       path: { operation_id: operationId },
     })
     return response.data
@@ -198,6 +220,7 @@ export class OperationClient {
 
     // Then cancel the operation
     await cancelOperationSDK({
+      ...(await restCallOptions(this.config)),
       path: { operation_id: operationId },
     })
   }
