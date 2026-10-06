@@ -5545,11 +5545,12 @@ export type EventHandlerResponse = {
  * Request to publish an event to the source-of-truth system.
  *
  * For events on a connection with `write_policy='qb_authoritative'`
- * (or `'hybrid'`), this triggers a synchronous write to QuickBooks
- * via the QB API. The returned `qb_txn_id` lands on
- * `event.metadata.qb_external_id` and the event transitions to
- * `committed` (in flight) → `fulfilled` (QB accepted) or `pending`
- * (QB rejected).
+ * (or `'hybrid'`), this triggers a synchronous write to QuickBooks:
+ * each draft entry posts as its own JournalEntry, with the entry id as
+ * the RequestId, and its QuickBooks id is recorded per entry on
+ * `event.metadata.qb_entry_ids`. The event goes `fulfilled` once no
+ * draft remains, or `pending` when QuickBooks rejects an entry (what
+ * landed is kept).
  *
  * `'native'`-policy events fast-path through with no QB write —
  * RoboSystems IS the source of truth, no outbound publish needed.
@@ -6146,7 +6147,7 @@ export type FiscalCalendarResponse = {
     /**
      * Blockers
      *
-     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations'
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations', 'reconciling_items', 'unposted_source_events', 'unreconciled_accounts'
      */
     blockers?: Array<string>;
     /**
@@ -17165,6 +17166,20 @@ export type SetReconciliationPolicyRequest = {
 };
 
 /**
+ * SetSelectedGraphRequest
+ *
+ * Request model for setting the user's selected graph.
+ */
+export type SetSelectedGraphRequest = {
+    /**
+     * Graph Id
+     *
+     * The graph the apps open on the caller's next load
+     */
+    graph_id: string;
+};
+
+/**
  * SetWritePolicyRequest
  *
  * Request to set a connection's source-of-truth write policy.
@@ -21741,6 +21756,55 @@ export type UpdateUserPasswordResponses = {
 
 export type UpdateUserPasswordResponse = UpdateUserPasswordResponses[keyof UpdateUserPasswordResponses];
 
+export type SetSelectedGraphData = {
+    body: SetSelectedGraphRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/user/selected-graph';
+};
+
+export type SetSelectedGraphErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type SetSelectedGraphError = SetSelectedGraphErrors[keyof SetSelectedGraphErrors];
+
+export type SetSelectedGraphResponses = {
+    /**
+     * Successful Response
+     */
+    200: SuccessResponse;
+};
+
+export type SetSelectedGraphResponse = SetSelectedGraphResponses[keyof SetSelectedGraphResponses];
+
 export type ListUserApiKeysData = {
     body?: never;
     path?: never;
@@ -22756,80 +22820,6 @@ export type GetOrgUsageResponses = {
 
 export type GetOrgUsageResponse = GetOrgUsageResponses[keyof GetOrgUsageResponses];
 
-export type SyncConnectionData = {
-    body: SyncConnectionRequest;
-    headers?: {
-        /**
-         * Idempotency-Key
-         */
-        'Idempotency-Key'?: string | null;
-    };
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-        /**
-         * Connection Id
-         *
-         * Connection identifier
-         */
-        connection_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
-};
-
-export type SyncConnectionErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Idempotency-Key conflict — key reused with different body
-     */
-    409: ErrorResponse;
-    /**
-     * Validation error
-     */
-    422: ErrorResponse;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-    /**
-     * Sync request timed out
-     */
-    504: unknown;
-};
-
-export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
-
-export type SyncConnectionResponses = {
-    /**
-     * Successful Response
-     */
-    202: OperationEnvelope;
-};
-
-export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
-
 export type GetConnectionOptionsData = {
     body?: never;
     path: {
@@ -22883,120 +22873,6 @@ export type GetConnectionOptionsResponses = {
 };
 
 export type GetConnectionOptionsResponse = GetConnectionOptionsResponses[keyof GetConnectionOptionsResponses];
-
-export type InitOAuthData = {
-    body: OAuthInitRequest;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/oauth/init';
-};
-
-export type InitOAuthErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type InitOAuthError = InitOAuthErrors[keyof InitOAuthErrors];
-
-export type InitOAuthResponses = {
-    /**
-     * Successful Response
-     */
-    200: OAuthInitResponse;
-};
-
-export type InitOAuthResponse = InitOAuthResponses[keyof InitOAuthResponses];
-
-export type OauthCallbackData = {
-    body: OAuthCallbackRequest;
-    path: {
-        /**
-         * Provider
-         *
-         * OAuth provider name
-         */
-        provider: string;
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/connections/oauth/callback/{provider}';
-};
-
-export type OauthCallbackErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type OauthCallbackError = OauthCallbackErrors[keyof OauthCallbackErrors];
-
-export type OauthCallbackResponses = {
-    /**
-     * Successful Response
-     */
-    200: OAuthCallbackResponse;
-};
-
-export type OauthCallbackResponse = OauthCallbackResponses[keyof OauthCallbackResponses];
 
 export type ListConnectionsData = {
     body?: never;
@@ -23125,6 +23001,120 @@ export type CreateConnectionResponses = {
 
 export type CreateConnectionResponse = CreateConnectionResponses[keyof CreateConnectionResponses];
 
+export type InitOAuthData = {
+    body: OAuthInitRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/connections/oauth/init';
+};
+
+export type InitOAuthErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type InitOAuthError = InitOAuthErrors[keyof InitOAuthErrors];
+
+export type InitOAuthResponses = {
+    /**
+     * Successful Response
+     */
+    200: OAuthInitResponse;
+};
+
+export type InitOAuthResponse = InitOAuthResponses[keyof InitOAuthResponses];
+
+export type OauthCallbackData = {
+    body: OAuthCallbackRequest;
+    path: {
+        /**
+         * Provider
+         *
+         * OAuth provider name
+         */
+        provider: string;
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/connections/oauth/callback/{provider}';
+};
+
+export type OauthCallbackErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type OauthCallbackError = OauthCallbackErrors[keyof OauthCallbackErrors];
+
+export type OauthCallbackResponses = {
+    /**
+     * Successful Response
+     */
+    200: OAuthCallbackResponse;
+};
+
+export type OauthCallbackResponse = OauthCallbackResponses[keyof OauthCallbackResponses];
+
 export type DeleteConnectionData = {
     body?: never;
     path: {
@@ -23251,6 +23241,80 @@ export type GetConnectionResponses = {
 };
 
 export type GetConnectionResponse = GetConnectionResponses[keyof GetConnectionResponses];
+
+export type SyncConnectionData = {
+    body: SyncConnectionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Connection Id
+         *
+         * Connection identifier
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync';
+};
+
+export type SyncConnectionErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+    /**
+     * Sync request timed out
+     */
+    504: unknown;
+};
+
+export type SyncConnectionError = SyncConnectionErrors[keyof SyncConnectionErrors];
+
+export type SyncConnectionResponses = {
+    /**
+     * Successful Response
+     */
+    202: OperationEnvelope;
+};
+
+export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
 
 export type SetConnectionWritePolicyData = {
     body: SetWritePolicyRequest;
@@ -27121,7 +27185,7 @@ export type StreamOperationEventsData = {
         /**
          * From Sequence
          *
-         * Start streaming from this sequence number (0 = from beginning)
+         * Replay stored events from this sequence number, then stream live ones. A running operation replays nothing at 0 (live events only); a settled one replays its history from here (0 = all) and closes.
          */
         from_sequence?: number;
         /**
