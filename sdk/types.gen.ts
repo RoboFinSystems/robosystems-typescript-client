@@ -701,6 +701,12 @@ export type BackfillPeriodOutcome = {
  */
 export type BackfillPlanHistoryOperation = {
     /**
+     * Entity Id
+     *
+     * The entity whose books this acts on, by id. Omit for the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
+    /**
      * Start Period
      *
      * YYYY-MM period to backfill from. Clamped to the earliest month with ledger data; defaults to that month when omitted. Must be on or before `closed_through`.
@@ -1676,6 +1682,12 @@ export type ClassificationLite = {
  */
 export type ClosePeriodOperation = {
     /**
+     * Entity Id
+     *
+     * The entity whose books this acts on, by id. Omit for the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
+    /**
      * Note
      *
      * Free-form note attached to the close event
@@ -2521,11 +2533,146 @@ export type CreateConnectionRequest = {
 };
 
 /**
+ * CreateEntityRequest
+ *
+ * Add an entity to the graph's reporting group.
+ *
+ * The new entity is a subsidiary of `parent_entity_id`, default the group
+ * parent, and keeps its own books: give it a chart next
+ * (`initialize-chart-of-accounts` with `entity_id`) and a calendar
+ * (`initialize`), then name it with `entity_id` on any ledger operation.
+ * A graph created without an entity gets this one as its group parent.
+ * There is no cap on entities in a graph; capacity is the tier's.
+ */
+export type CreateEntityRequest = {
+    /**
+     * Name
+     *
+     * Display name.
+     */
+    name: string;
+    /**
+     * Legal Name
+     *
+     * Registered legal name. Defaults to `name`.
+     */
+    legal_name?: string | null;
+    /**
+     * Entity Type
+     *
+     * Legal form: `corporation`, `llc`, `partnership`, `sole_proprietorship`, `non_profit`. Picks the default Reporting Style (partnership and llc have equity-form Styles of their own; anything else is corporate) and the equity rows of a chart template.
+     */
+    entity_type?: string | null;
+    /**
+     * Reporting Style Id
+     *
+     * Structure id of the Reporting Style to present under, validated in the graph like change-reporting-style. Omit to derive it from `entity_type`.
+     */
+    reporting_style_id?: string | null;
+    /**
+     * Parent Entity Id
+     *
+     * The entity this one is held under. Omit for the group parent; name a subsidiary to nest a sub-group under it.
+     */
+    parent_entity_id?: string | null;
+    /**
+     * Ownership Pct
+     *
+     * The parent's share of this entity, as a percent (100 = wholly owned). Omit when not recorded. Refused on a graph's first entity, which becomes the group parent.
+     */
+    ownership_pct?: number | null;
+    /**
+     * Ticker
+     *
+     * Short symbol, unique in the graph; it prefixes the entity's account names (`coa-<ticker>:1000`). Derived from the name's initials when omitted.
+     */
+    ticker?: string | null;
+    /**
+     * Uri
+     *
+     * Canonical URL / external identifier.
+     */
+    uri?: string | null;
+    /**
+     * Cik
+     */
+    cik?: string | null;
+    /**
+     * Sic
+     */
+    sic?: string | null;
+    /**
+     * Sic Description
+     */
+    sic_description?: string | null;
+    /**
+     * Category
+     */
+    category?: string | null;
+    /**
+     * State Of Incorporation
+     */
+    state_of_incorporation?: string | null;
+    /**
+     * Fiscal Year End
+     *
+     * Fiscal year-end as MM-DD. Defaults to the parent's: a graph has one fiscal cadence, and every entity's calendar follows it.
+     */
+    fiscal_year_end?: string | null;
+    /**
+     * Tax Id
+     */
+    tax_id?: string | null;
+    /**
+     * Lei
+     */
+    lei?: string | null;
+    /**
+     * Industry
+     */
+    industry?: string | null;
+    /**
+     * Phone
+     */
+    phone?: string | null;
+    /**
+     * Website
+     */
+    website?: string | null;
+    /**
+     * Address Line1
+     */
+    address_line1?: string | null;
+    /**
+     * Address City
+     */
+    address_city?: string | null;
+    /**
+     * Address State
+     */
+    address_state?: string | null;
+    /**
+     * Address Postal Code
+     */
+    address_postal_code?: string | null;
+    /**
+     * Address Country
+     */
+    address_country?: string | null;
+};
+
+/**
  * CreateEventBlockRequest
  *
  * Write surface for a single business event.
  */
 export type CreateEventBlockRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity whose books the event lands in, by id; every GL row its handler writes follows it. Omit for the group parent.
+     */
+    entity_id?: string | null;
     /**
      * Event Type
      *
@@ -3015,6 +3162,12 @@ export type CreatePublishListRequest = {
  * inputs to period generation.
  */
 export type CreateReportRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity the report is for, by id. Omit for the entity whose chart `mapping_id` maps from (the group parent on a one-entity graph). Named alongside a mapping of another entity's chart, it is refused.
+     */
+    entity_id?: string | null;
     /**
      * Name
      *
@@ -6103,13 +6256,19 @@ export type FinancialStatementAnalysisResponse = {
 /**
  * FiscalCalendarResponse
  *
- * Current fiscal calendar state for a graph.
+ * Current fiscal calendar state for one entity of a graph.
  */
 export type FiscalCalendarResponse = {
     /**
      * Graph Id
      */
     graph_id: string;
+    /**
+     * Entity Id
+     *
+     * The entity whose calendar this is.
+     */
+    entity_id?: string | null;
     /**
      * Fiscal Year Start Month
      */
@@ -7858,13 +8017,20 @@ export type InitialEntityData = {
  *
  * Create the graph's chart of accounts from a shipped template.
  *
- * Refused (409) when the graph already has an active `chart_of_accounts`
+ * Refused (409) when the entity already has an active `chart_of_accounts`
  * taxonomy — a QuickBooks-synced tenant never needs this, and a chart is
- * never replaced. The template's equity rows are mapped by the entity's
+ * never replaced. Each entity of the group keeps its own chart; omit
+ * `entity_id` for the group parent. The template's equity rows are mapped by the entity's
  * legal form (`entity_type`: corporation / llc / partnership); omit it
  * to use the graph's primary entity, falling back to corporation.
  */
 export type InitializeChartOfAccountsRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity to give a chart to, by id. Omit for the group parent. A sibling already having one is no bar.
+     */
+    entity_id?: string | null;
     /**
      * Template
      *
@@ -7950,6 +8116,12 @@ export type InitializeChartOfAccountsResponse = {
  * closing toward. Set independently via `set-close-target`.
  */
 export type InitializeLedgerRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity whose books this acts on, by id. Omit for the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
     /**
      * Closed Through
      *
@@ -8576,6 +8748,12 @@ export type LedgerEntityResponse = {
      */
     parent_entity_id?: string | null;
     /**
+     * Ownership Pct
+     *
+     * The parent's share of this entity, as a percent (100 = wholly owned). Null on the group parent, and where it was never recorded.
+     */
+    ownership_pct?: number | null;
+    /**
      * Source
      *
      * Provenance: 'native' | 'sec' | 'quickbooks' | 'xero' | 'plaid'.
@@ -8966,6 +9144,12 @@ export type LineItemMetadataPredicate = {
  */
 export type LinkEntityTaxonomyRequest = {
     /**
+     * Entity Id
+     *
+     * The entity to link, by id. Omit for the group parent.
+     */
+    entity_id?: string | null;
+    /**
      * Taxonomy Id
      *
      * The taxonomy to link to.
@@ -9096,6 +9280,12 @@ export type ListTableFilesResponse = {
  */
 export type LiveFinancialStatementRequest = {
     /**
+     * Entity Id
+     *
+     * The entity whose books this acts on, by id. Omit for the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
+    /**
      * Statement Type
      *
      * income_statement | balance_sheet | cash_flow_statement | equity_statement. `equity_statement` is provisional — equity balances, not a rollforward — and is not offered on the MCP surface until it articulates.
@@ -9126,6 +9316,12 @@ export type LiveFinancialStatementRequest = {
      */
     fiscal_year?: number | null;
     /**
+     * Consolidated
+     *
+     * A combined statement, not a consolidation: every entity of the reporting group rendered under the group parent's Reporting Style and summed per rs-gaap concept, with nothing eliminated between them. Only on the group parent (422 on a subsidiary). An entity with no CoA mapping yet contributes nothing and is left out of `combined_entity_ids`.
+     */
+    consolidated?: boolean;
+    /**
      * Limit
      *
      * Max fact rows returned. Defaults to the ceiling so a statement is never cut mid-section — visible rows would stop footing to visible subtotals. Lower it only for a preview.
@@ -9143,6 +9339,24 @@ export type LiveFinancialStatementResponse = {
      * Graph Id
      */
     graph_id: string;
+    /**
+     * Entity Id
+     *
+     * The entity whose books were rendered.
+     */
+    entity_id?: string | null;
+    /**
+     * Consolidated
+     *
+     * Whether the group's entities were summed into this: a combined statement, not a consolidation — nothing is eliminated between them.
+     */
+    consolidated?: boolean;
+    /**
+     * Combined Entity Ids
+     *
+     * The entities summed into a combined statement, parent first.
+     */
+    combined_entity_ids?: Array<string>;
     /**
      * Statement Type
      */
@@ -15504,6 +15718,12 @@ export type RenderingRowLite = {
  */
 export type ReopenPeriodOperation = {
     /**
+     * Entity Id
+     *
+     * The entity whose books this acts on, by id. Omit for the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
+    /**
      * Reason
      *
      * Required reason for the reopen (captured in audit log)
@@ -15619,9 +15839,15 @@ export type ReportResponse = {
      */
     structures?: Array<StructureSummary>;
     /**
+     * Entity Id
+     *
+     * The entity the report is about. Null on a shared-in copy, and on a report from before entities were recorded, which is the group parent's.
+     */
+    entity_id?: string | null;
+    /**
      * Entity Name
      *
-     * Display name of the primary entity the report is tagged to.
+     * Display name of the entity the report is tagged to.
      */
     entity_name?: string | null;
     /**
@@ -17113,6 +17339,12 @@ export type ServiceOfferingsResponse = {
  * SetCloseTargetOperation
  */
 export type SetCloseTargetOperation = {
+    /**
+     * Entity Id
+     *
+     * The entity whose books this acts on, by id. Omit for the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
     /**
      * Period
      *
@@ -18910,15 +19142,20 @@ export type UpdateAgentRequest = {
 /**
  * UpdateEntityRequest
  *
- * Update the graph's primary entity. All fields are optional —
- * pass only what changes. Identifiers (CIK, LEI, tax_id) are typically
- * set once at onboarding; address fields are flattened to make them
- * easy to project into reporting forms (1099, state filings).
+ * Update an entity of the graph's reporting group. All fields are
+ * optional — pass only what changes. Identifiers (CIK, LEI, tax_id) are
+ * typically set once at onboarding; address fields are flattened to make
+ * them easy to project into reporting forms (1099, state filings).
  *
- * The graph is implicit (URL path) — there's no `entity_id` field
- * because the operation always targets the graph's primary entity.
+ * Omit `entity_id` to target the group parent.
  */
 export type UpdateEntityRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity to update. Omit to target the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
     /**
      * Name
      */
@@ -19009,6 +19246,12 @@ export type UpdateEntityRequest = {
      * Address Country
      */
     address_country?: string | null;
+    /**
+     * Ownership Pct
+     *
+     * The parent's share of this entity, as a percent. Refused on the group parent, which has no owner in the graph.
+     */
+    ownership_pct?: number | null;
 };
 
 /**
@@ -27022,60 +27265,6 @@ export type GetGraphCapacityResponses = {
 
 export type GetGraphCapacityResponse = GetGraphCapacityResponses[keyof GetGraphCapacityResponses];
 
-export type SelectGraphData = {
-    body?: never;
-    path: {
-        /**
-         * Graph Id
-         */
-        graph_id: string;
-    };
-    query?: never;
-    url: '/v1/graphs/{graph_id}/select';
-};
-
-export type SelectGraphErrors = {
-    /**
-     * Invalid request
-     */
-    400: ErrorResponse;
-    /**
-     * Authentication required
-     */
-    401: ErrorResponse;
-    /**
-     * Access denied
-     */
-    403: ErrorResponse;
-    /**
-     * Resource not found
-     */
-    404: ErrorResponse;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-    /**
-     * Rate limit exceeded
-     */
-    429: ErrorResponse;
-    /**
-     * Internal server error
-     */
-    500: ErrorResponse;
-};
-
-export type SelectGraphError = SelectGraphErrors[keyof SelectGraphErrors];
-
-export type SelectGraphResponses = {
-    /**
-     * Successful Response
-     */
-    200: SuccessResponse;
-};
-
-export type SelectGraphResponse = SelectGraphResponses[keyof SelectGraphResponses];
-
 export type ValidateSchemaData = {
     /**
      * Schema definition to validate
@@ -28152,6 +28341,70 @@ export type InitializeChartOfAccountsResponses = {
 };
 
 export type InitializeChartOfAccountsResponse2 = InitializeChartOfAccountsResponses[keyof InitializeChartOfAccountsResponses];
+
+export type CreateEntityData = {
+    body: CreateEntityRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-entity';
+};
+
+export type CreateEntityErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type CreateEntityError = CreateEntityErrors[keyof CreateEntityErrors];
+
+export type CreateEntityResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeLedgerEntityResponse;
+};
+
+export type CreateEntityResponse = CreateEntityResponses[keyof CreateEntityResponses];
 
 export type UpdateEntityData = {
     body: UpdateEntityRequest;
