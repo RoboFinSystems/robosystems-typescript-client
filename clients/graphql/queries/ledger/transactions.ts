@@ -13,6 +13,7 @@ export const LIST_TRANSACTIONS = gql`
     $endDate: Date
     $limit: Int! = 100
     $offset: Int! = 0
+    $entityId: String
   ) {
     transactions(
       type: $type
@@ -20,6 +21,7 @@ export const LIST_TRANSACTIONS = gql`
       endDate: $endDate
       limit: $limit
       offset: $offset
+      entityId: $entityId
     ) {
       transactions {
         id

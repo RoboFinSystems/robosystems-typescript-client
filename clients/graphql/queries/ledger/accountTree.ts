@@ -11,8 +11,8 @@ import { gql } from 'graphql-request'
  * this, add a 5th level of `children { ... }` selections.
  */
 export const GET_ACCOUNT_TREE = gql`
-  query GetLedgerAccountTree {
-    accountTree {
+  query GetLedgerAccountTree($entityId: String) {
+    accountTree(entityId: $entityId) {
       totalAccounts
       roots {
         id

@@ -13,8 +13,15 @@ export const LIST_ACCOUNTS = gql`
     $isActive: Boolean
     $limit: Int! = 100
     $offset: Int! = 0
+    $entityId: String
   ) {
-    accounts(classification: $classification, isActive: $isActive, limit: $limit, offset: $offset) {
+    accounts(
+      classification: $classification
+      isActive: $isActive
+      limit: $limit
+      offset: $offset
+      entityId: $entityId
+    ) {
       accounts {
         id
         code

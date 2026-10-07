@@ -15,9 +15,10 @@ import { gql } from 'graphql-request'
  * free of a second round trip for the case that matters most.
  */
 export const GET_FISCAL_CALENDAR = gql`
-  query GetLedgerFiscalCalendar {
-    fiscalCalendar {
+  query GetLedgerFiscalCalendar($entityId: String) {
+    fiscalCalendar(entityId: $entityId) {
       graphId
+      entityId
       fiscalYearStartMonth
       closedThrough
       closeTarget

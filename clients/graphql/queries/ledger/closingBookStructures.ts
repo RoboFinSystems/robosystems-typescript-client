@@ -6,8 +6,8 @@ import { gql } from 'graphql-request'
  * what's available to close.
  */
 export const GET_CLOSING_BOOK_STRUCTURES = gql`
-  query GetLedgerClosingBookStructures {
-    closingBookStructures {
+  query GetLedgerClosingBookStructures($entityId: String) {
+    closingBookStructures(entityId: $entityId) {
       hasData
       categories {
         label

@@ -6,8 +6,8 @@ import { gql } from 'graphql-request'
  * many drafts exist in total.
  */
 export const GET_PERIOD_CLOSE_STATUS = gql`
-  query GetLedgerPeriodCloseStatus($periodStart: Date!, $periodEnd: Date!) {
-    periodCloseStatus(periodStart: $periodStart, periodEnd: $periodEnd) {
+  query GetLedgerPeriodCloseStatus($periodStart: Date!, $periodEnd: Date!, $entityId: String) {
+    periodCloseStatus(periodStart: $periodStart, periodEnd: $periodEnd, entityId: $entityId) {
       fiscalPeriodStart
       fiscalPeriodEnd
       periodStatus

@@ -7,9 +7,10 @@ import { gql } from 'graphql-request'
  * latest QB sync timestamp from the platform connections table.
  */
 export const GET_SUMMARY = gql`
-  query GetLedgerSummary {
-    summary {
+  query GetLedgerSummary($entityId: String) {
+    summary(entityId: $entityId) {
       graphId
+      entityId
       accountCount
       transactionCount
       entryCount

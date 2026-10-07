@@ -36,6 +36,7 @@ import {
   closePeriod,
   computeMetrics,
   createAgent,
+  createEntity,
   createEventBlock,
   createEventHandler,
   createInformationBlock,
@@ -95,6 +96,7 @@ import type {
   ComputeMetricsRequest,
   ComputeMetricsResponse,
   CreateAgentRequest,
+  CreateEntityRequest,
   CreateEventBlockRequest,
   CreateEventHandlerRequest,
   CreateInformationBlockRequest,
@@ -421,6 +423,7 @@ interface RawObligationDetail {
 
 interface RawFiscalCalendar {
   graph_id: string
+  entity_id?: string | null
   fiscal_year_start_month: number
   closed_through: string | null
   close_target: string | null
@@ -557,6 +560,8 @@ export type LedgerEntryType = 'standard' | 'adjusting' | 'closing' | 'reversing'
 // ── Caller-facing option interfaces ────────────────────────────────────
 
 export interface InitializeLedgerOptions {
+  /** The entity whose calendar is seeded. Omitted: the group parent. */
+  entityId?: string | null
   closedThrough?: string | null
   fiscalYearStartMonth?: number
   earliestDataPeriod?: string | null
@@ -568,6 +573,8 @@ export interface InitializeLedgerOptions {
 export type ChartTemplateKey = InitializeChartOfAccountsRequest['template']
 
 export interface InitializeChartOfAccountsOptions {
+  /** The entity the chart belongs to. Omitted: the group parent. */
+  entityId?: string | null
   /**
    * Legal form for the equity mapping: `corporation`, `llc` or `partnership`.
    * Defaults to the graph's primary entity, then to corporation.
@@ -591,7 +598,17 @@ export interface InitializeChartOfAccountsResult {
   unresolved: string[]
 }
 
-export interface ClosePeriodOptions {
+/**
+ * Which of the graph's entities a call is about. Omitted, it is the group
+ * parent: the entity the graph's own source connection books for. Every
+ * graph has one; a graph with subsidiaries has more, and each keeps its own
+ * books, chart and calendar.
+ */
+export interface EntityScopeOptions {
+  entityId?: string | null
+}
+
+export interface ClosePeriodOptions extends EntityScopeOptions {
   note?: string | null
   allowStaleSync?: boolean
   /**
@@ -777,20 +794,24 @@ export class LedgerClient {
   // ── Entity ──────────────────────────────────────────────────────────
 
   /**
-   * Get the entity (company/organization) for this graph.
-   * Returns null when the ledger has no entity yet.
+   * Get an entity of this graph: the group parent, or the one `entityId`
+   * names. Returns null when the ledger has no entity yet.
    */
-  async getEntity(graphId: string): Promise<LedgerEntity | null> {
+  async getEntity(graphId: string, options?: EntityScopeOptions): Promise<LedgerEntity | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerEntityDocument,
-      undefined,
+      { entityId: options?.entityId ?? null },
       'Get entity',
       (data) => data.entity
     )
   }
 
-  /** List all entities for this graph, optionally filtered by source system. */
+  /**
+   * List the graph's entities, optionally filtered by source system. The
+   * group parent is the row with `isParent`; a subsidiary names its
+   * `parentEntityId` and may carry an `ownershipPct`.
+   */
   async listEntities(
     graphId: string,
     options?: { source?: string }
@@ -823,14 +844,30 @@ export class LedgerClient {
     return entityResponseToCamel(raw)
   }
 
+  /**
+   * Create an entity in this graph. A graph's first entity becomes the group
+   * parent; every later one is a subsidiary of the parent unless
+   * `parent_entity_id` names another entity. The `ticker` prefixes the
+   * entity's account names and is unique in the graph (derived from the
+   * name's initials when omitted). Returns the entity in the shape
+   * `getEntity` returns.
+   */
+  async createEntity(graphId: string, body: CreateEntityRequest): Promise<LedgerEntity> {
+    const envelope = await this.callOperation('Create entity', (o) =>
+      createEntity({ ...o, path: { graph_id: graphId }, body })
+    )
+    const raw = this.requireResult('Create entity', envelope.result)
+    return entityResponseToCamel(raw)
+  }
+
   // ── Summary ────────────────────────────────────────────────────────
 
   /** Ledger rollup counts + QB sync metadata. */
-  async getSummary(graphId: string): Promise<LedgerSummary | null> {
+  async getSummary(graphId: string, options?: EntityScopeOptions): Promise<LedgerSummary | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerSummaryDocument,
-      undefined,
+      { entityId: options?.entityId ?? null },
       'Get summary',
       (data) => data.summary
     )
@@ -846,6 +883,7 @@ export class LedgerClient {
       isActive?: boolean
       limit?: number
       offset?: number
+      entityId?: string | null
     }
   ): Promise<LedgerAccountList | null> {
     return this.gqlQuery(
@@ -856,6 +894,7 @@ export class LedgerClient {
         isActive: options?.isActive ?? null,
         limit: options?.limit ?? 100,
         offset: options?.offset ?? 0,
+        entityId: options?.entityId ?? null,
       },
       'List accounts',
       (data) => data.accounts
@@ -863,11 +902,14 @@ export class LedgerClient {
   }
 
   /** Hierarchical Chart of Accounts (up to 4 levels deep). */
-  async getAccountTree(graphId: string): Promise<LedgerAccountTree | null> {
+  async getAccountTree(
+    graphId: string,
+    options?: EntityScopeOptions
+  ): Promise<LedgerAccountTree | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerAccountTreeDocument,
-      undefined,
+      { entityId: options?.entityId ?? null },
       'Get account tree',
       (data) => data.accountTree
     )
@@ -876,7 +918,7 @@ export class LedgerClient {
   /** Accounts rolled up to reporting concepts via a mapping structure. */
   async getAccountRollups(
     graphId: string,
-    options?: { mappingId?: string; startDate?: string; endDate?: string }
+    options?: { mappingId?: string; startDate?: string; endDate?: string; entityId?: string | null }
   ): Promise<LedgerAccountRollups | null> {
     return this.gqlQuery(
       graphId,
@@ -885,6 +927,7 @@ export class LedgerClient {
         mappingId: options?.mappingId ?? null,
         startDate: options?.startDate ?? null,
         endDate: options?.endDate ?? null,
+        entityId: options?.entityId ?? null,
       },
       'Get account rollups',
       (data) => data.accountRollups
@@ -902,6 +945,7 @@ export class LedgerClient {
       endDate?: string
       limit?: number
       offset?: number
+      entityId?: string | null
     }
   ): Promise<LedgerTransactionList | null> {
     return this.gqlQuery(
@@ -913,6 +957,7 @@ export class LedgerClient {
         endDate: options?.endDate ?? null,
         limit: options?.limit ?? 100,
         offset: options?.offset ?? 0,
+        entityId: options?.entityId ?? null,
       },
       'List transactions',
       (data) => data.transactions
@@ -945,6 +990,7 @@ export class LedgerClient {
       transactionId?: string
       limit?: number
       offset?: number
+      entityId?: string | null
     }
   ): Promise<LedgerJournalEntryList | null> {
     return this.gqlQuery(
@@ -959,6 +1005,7 @@ export class LedgerClient {
         transactionId: options?.transactionId ?? null,
         limit: options?.limit ?? 100,
         offset: options?.offset ?? 0,
+        entityId: options?.entityId ?? null,
       },
       'List journal entries',
       (data) => data.journalEntries
@@ -997,6 +1044,7 @@ export class LedgerClient {
       isReconcilingItem?: boolean
       limit?: number
       offset?: number
+      entityId?: string | null
     }
   ): Promise<LedgerEventBlock[]> {
     return this.gqlQuery(
@@ -1011,6 +1059,7 @@ export class LedgerClient {
         isReconcilingItem: options?.isReconcilingItem ?? null,
         limit: options?.limit ?? 50,
         offset: options?.offset ?? 0,
+        entityId: options?.entityId ?? null,
       },
       'List event blocks',
       (data) => data.eventBlocks
@@ -1076,7 +1125,7 @@ export class LedgerClient {
   /** Trial balance by raw CoA account. */
   async getTrialBalance(
     graphId: string,
-    options?: { startDate?: string; endDate?: string }
+    options?: { startDate?: string; endDate?: string; entityId?: string | null }
   ): Promise<LedgerTrialBalance | null> {
     return this.gqlQuery(
       graphId,
@@ -1084,6 +1133,7 @@ export class LedgerClient {
       {
         startDate: options?.startDate ?? null,
         endDate: options?.endDate ?? null,
+        entityId: options?.entityId ?? null,
       },
       'Get trial balance',
       (data) => data.trialBalance
@@ -1727,23 +1777,28 @@ export class LedgerClient {
   async getPeriodCloseStatus(
     graphId: string,
     periodStart: string,
-    periodEnd: string
+    periodEnd: string,
+    options?: EntityScopeOptions
   ): Promise<LedgerPeriodCloseStatus | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerPeriodCloseStatusDocument,
-      { periodStart, periodEnd },
+      { periodStart, periodEnd, entityId: options?.entityId ?? null },
       'Get period close status',
       (data) => data.periodCloseStatus
     )
   }
 
   /** All draft entries in a period, fully expanded for review pre-close. */
-  async listPeriodDrafts(graphId: string, period: string): Promise<LedgerPeriodDrafts | null> {
+  async listPeriodDrafts(
+    graphId: string,
+    period: string,
+    options?: EntityScopeOptions
+  ): Promise<LedgerPeriodDrafts | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerPeriodDraftsDocument,
-      { period },
+      { period, entityId: options?.entityId ?? null },
       'List period drafts',
       (data) => data.periodDrafts
     )
@@ -1790,11 +1845,14 @@ export class LedgerClient {
   // ── Closing book ───────────────────────────────────────────────────
 
   /** Grouped closing book structures for the close-screen sidebar. */
-  async getClosingBookStructures(graphId: string): Promise<LedgerClosingBookStructures | null> {
+  async getClosingBookStructures(
+    graphId: string,
+    options?: EntityScopeOptions
+  ): Promise<LedgerClosingBookStructures | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerClosingBookStructuresDocument,
-      undefined,
+      { entityId: options?.entityId ?? null },
       'Get closing book structures',
       (data) => data.closingBookStructures
     )
@@ -1802,12 +1860,18 @@ export class LedgerClient {
 
   // ── Fiscal Calendar ────────────────────────────────────────────────
 
-  /** Current fiscal calendar state — pointers, gap, closeable status. */
-  async getFiscalCalendar(graphId: string): Promise<LedgerFiscalCalendar | null> {
+  /**
+   * Current fiscal calendar state — pointers, gap, closeable status — for the
+   * group parent, or for the entity `entityId` names.
+   */
+  async getFiscalCalendar(
+    graphId: string,
+    options?: EntityScopeOptions
+  ): Promise<LedgerFiscalCalendar | null> {
     return this.gqlQuery(
       graphId,
       GetLedgerFiscalCalendarDocument,
-      undefined,
+      { entityId: options?.entityId ?? null },
       'Get fiscal calendar',
       (data) => data.fiscalCalendar
     )
@@ -1819,6 +1883,7 @@ export class LedgerClient {
     options?: InitializeLedgerOptions
   ): Promise<InitializeLedgerResult> {
     const body: InitializeLedgerRequest = {
+      entity_id: options?.entityId ?? null,
       closed_through: options?.closedThrough ?? null,
       fiscal_year_start_month: options?.fiscalYearStartMonth,
       earliest_data_period: options?.earliestDataPeriod ?? null,
@@ -1862,6 +1927,7 @@ export class LedgerClient {
   ): Promise<InitializeChartOfAccountsResult> {
     const body: InitializeChartOfAccountsRequest = {
       template,
+      entity_id: options?.entityId ?? null,
       entity_type: options?.entityType ?? null,
       name: options?.name ?? null,
     }
@@ -1885,16 +1951,24 @@ export class LedgerClient {
   async setCloseTarget(
     graphId: string,
     period: string,
-    note?: string | null
+    note?: string | null,
+    options?: EntityScopeOptions
   ): Promise<LedgerFiscalCalendar> {
-    const body: SetCloseTargetOperation = { period, note: note ?? null }
+    const body: SetCloseTargetOperation = {
+      period,
+      note: note ?? null,
+      entity_id: options?.entityId ?? null,
+    }
     const envelope = await this.callOperation('Set close target', (o) =>
       setCloseTarget({ ...o, path: { graph_id: graphId }, body })
     )
     return rawFiscalCalendarToCamel(envelope.result as unknown as RawFiscalCalendar)
   }
 
-  /** Close a fiscal period — the final commit action. */
+  /**
+   * Close a fiscal period — the final commit action — on the group parent,
+   * or on the entity `entityId` names. Each entity closes on its own.
+   */
   async closePeriod(
     graphId: string,
     period: string,
@@ -1902,6 +1976,7 @@ export class LedgerClient {
   ): Promise<ClosePeriodResult> {
     const body: ClosePeriodOperation = {
       period,
+      entity_id: options?.entityId ?? null,
       note: options?.note ?? null,
       allow_stale_sync: options?.allowStaleSync,
       allow_stranded_obligations: options?.allowStrandedObligations,
@@ -1930,12 +2005,14 @@ export class LedgerClient {
     graphId: string,
     period: string,
     reason: string,
-    note?: string | null
+    note?: string | null,
+    options?: EntityScopeOptions
   ): Promise<LedgerFiscalCalendar> {
     const body: ReopenPeriodOperation = {
       period,
       reason,
       note: note ?? null,
+      entity_id: options?.entityId ?? null,
     }
     const envelope = await this.callOperation('Reopen period', (o) =>
       reopenPeriod({ ...o, path: { graph_id: graphId }, body })
@@ -1951,12 +2028,13 @@ export class LedgerClient {
    */
   async listReconciliations(
     graphId: string,
-    period: string
+    period: string,
+    options?: EntityScopeOptions
   ): Promise<LedgerReconciliationList | null> {
     return this.gqlQuery(
       graphId,
       ListLedgerReconciliationsDocument,
-      { period },
+      { period, entityId: options?.entityId ?? null },
       'List reconciliations',
       (data) => data.reconciliations
     )
@@ -2453,12 +2531,15 @@ export class LedgerClient {
    */
   async listReports(
     graphId: string,
-    options: { lifecycle?: ReportLifecycle } = {}
+    options: { lifecycle?: ReportLifecycle; entityId?: string | null } = {}
   ): Promise<ReportListItem[]> {
     const list = await this.gqlQuery(
       graphId,
       ListLedgerReportsDocument,
-      options.lifecycle ? { lifecycle: options.lifecycle } : undefined,
+      {
+        ...(options.lifecycle ? { lifecycle: options.lifecycle } : {}),
+        entityId: options.entityId ?? null,
+      },
       'List reports',
       (data) => data.reports
     )
@@ -2930,6 +3011,7 @@ function rawObligationDetailToCamel(raw: RawObligationDetail) {
 function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar {
   return {
     graphId: raw.graph_id,
+    entityId: raw.entity_id ?? null,
     fiscalYearStartMonth: raw.fiscal_year_start_month,
     closedThrough: raw.closed_through ?? null,
     closeTarget: raw.close_target ?? null,
@@ -3082,11 +3164,13 @@ function entityResponseToCamel(raw: LedgerEntityResponse): LedgerEntity {
     lei: raw.lei ?? null,
     industry: raw.industry ?? null,
     entityType: raw.entity_type ?? null,
+    reportingStyleId: raw.reporting_style_id ?? null,
     phone: raw.phone ?? null,
     website: raw.website ?? null,
     status: raw.status ?? null,
     isParent: raw.is_parent ?? null,
     parentEntityId: raw.parent_entity_id ?? null,
+    ownershipPct: raw.ownership_pct ?? null,
     source: raw.source ?? null,
     sourceId: raw.source_id ?? null,
     sourceGraphId: raw.source_graph_id ?? null,

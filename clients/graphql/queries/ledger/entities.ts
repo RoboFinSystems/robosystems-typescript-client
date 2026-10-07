@@ -19,6 +19,7 @@ export const LIST_ENTITIES = gql`
       status
       isParent
       parentEntityId
+      ownershipPct
       source
       sourceGraphId
       connectionId

@@ -81,6 +81,24 @@ describe('LedgerClient', () => {
   // ── Reads (GraphQL) ─────────────────────────────────────────────────
 
   describe('getEntity', () => {
+    it('reads the group parent when no entity is named', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await client.getEntity('graph_1')
+      // graphql-request uses positional fetch(url, init) rather than fetch(Request).
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.entityId).toBeNull()
+    })
+
+    it('forwards entityId as a GraphQL variable', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ entity: null }))
+      await client.getEntity('graph_1', { entityId: 'ent_2' })
+      // graphql-request uses positional fetch(url, init) rather than fetch(Request).
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.entityId).toBe('ent_2')
+    })
+
     it('returns the entity from the GraphQL response', async () => {
       mockFetch.mockResolvedValueOnce(
         gqlResponse({
@@ -282,6 +300,32 @@ describe('LedgerClient', () => {
   })
 
   describe('listEntities', () => {
+    it("carries a subsidiary's parent and ownership", async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          entities: [
+            {
+              id: 'ent_1',
+              name: 'Parent',
+              isParent: true,
+              parentEntityId: null,
+              ownershipPct: null,
+            },
+            {
+              id: 'ent_2',
+              name: 'Sub',
+              isParent: false,
+              parentEntityId: 'ent_1',
+              ownershipPct: 100,
+            },
+          ],
+        })
+      )
+      const entities = await client.listEntities('graph_1')
+      expect(entities[1].parentEntityId).toBe('ent_1')
+      expect(entities[1].ownershipPct).toBe(100)
+    })
+
     it('returns the entities array', async () => {
       mockFetch.mockResolvedValueOnce(
         gqlResponse({
@@ -336,6 +380,16 @@ describe('LedgerClient', () => {
   })
 
   describe('listAccounts', () => {
+    it('forwards entityId as a GraphQL variable', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ accounts: null }))
+      await client.listAccounts('graph_1', { entityId: 'ent_2' })
+      // graphql-request uses positional fetch(url, init) rather than fetch(Request).
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.entityId).toBe('ent_2')
+      expect(body.variables.limit).toBe(100)
+    })
+
     it('returns a paginated account list', async () => {
       mockFetch.mockResolvedValueOnce(
         gqlResponse({
@@ -552,7 +606,8 @@ describe('LedgerClient', () => {
       const reports = await client.listReports('graph_1')
       const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
       expect(body.variables?.lifecycle).toBeUndefined()
-      expect(body.query).toContain('reports(lifecycle: $lifecycle)')
+      expect(body.variables?.entityId).toBeNull()
+      expect(body.query).toContain('reports(lifecycle: $lifecycle, entityId: $entityId)')
       expect(body.query).toContain('filingStatus')
       expect(reports).toEqual([{ id: 'rpt_1', filingStatus: 'filed' }])
     })
@@ -790,7 +845,33 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('getPeriodCloseStatus', () => {
+    it('forwards the period window and entityId as GraphQL variables', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ periodCloseStatus: null }))
+      await client.getPeriodCloseStatus('graph_1', '2026-03-01', '2026-03-31', {
+        entityId: 'ent_2',
+      })
+      // graphql-request uses positional fetch(url, init) rather than fetch(Request).
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables).toEqual({
+        periodStart: '2026-03-01',
+        periodEnd: '2026-03-31',
+        entityId: 'ent_2',
+      })
+    })
+  })
+
   describe('getFiscalCalendar', () => {
+    it('forwards entityId as a GraphQL variable', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ fiscalCalendar: null }))
+      await client.getFiscalCalendar('graph_1', { entityId: 'ent_2' })
+      // graphql-request uses positional fetch(url, init) rather than fetch(Request).
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.entityId).toBe('ent_2')
+    })
+
     it('returns the calendar state', async () => {
       mockFetch.mockResolvedValueOnce(
         gqlResponse({
@@ -847,6 +928,52 @@ describe('LedgerClient', () => {
     it('throws a friendly error on 4xx', async () => {
       mockFetch.mockResolvedValueOnce(restErrorResponse('No fields provided', 400))
       await expect(client.updateEntity('graph_1', {})).rejects.toThrow(/Update entity failed/)
+    })
+  })
+
+  describe('createEntity', () => {
+    it('POSTs to the create-entity operation and maps the entity to camelCase', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-entity', {
+          id: 'ent_2',
+          name: 'Driftline Café LLC',
+          entity_type: 'llc',
+          ticker: 'DCL',
+          is_parent: false,
+          parent_entity_id: 'ent_1',
+          ownership_pct: 100,
+          reporting_style_id: 'style_llc',
+          status: 'active',
+        })
+      )
+      const entity = await client.createEntity('graph_42', {
+        name: 'Driftline Café LLC',
+        entity_type: 'llc',
+        ownership_pct: 100,
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/create-entity'
+      )
+      expect(req.method).toBe('POST')
+      expect(JSON.parse(await req.text())).toEqual({
+        name: 'Driftline Café LLC',
+        entity_type: 'llc',
+        ownership_pct: 100,
+      })
+      expect(entity.id).toBe('ent_2')
+      expect(entity.isParent).toBe(false)
+      expect(entity.parentEntityId).toBe('ent_1')
+      expect(entity.ownershipPct).toBe(100)
+      expect(entity.reportingStyleId).toBe('style_llc')
+      expect(entity.ticker).toBe('DCL')
+    })
+
+    it('throws a friendly error on 4xx', async () => {
+      mockFetch.mockResolvedValueOnce(restErrorResponse('Ticker already in use', 409))
+      await expect(client.createEntity('graph_1', { name: 'Sub' })).rejects.toThrow(
+        /Create entity failed/
+      )
     })
   })
 
@@ -946,6 +1073,7 @@ describe('LedgerClient', () => {
       )
       expect(await request.clone().json()).toEqual({
         template: 'saas',
+        entity_id: null,
         entity_type: 'llc',
         name: null,
       })
@@ -959,7 +1087,54 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('setCloseTarget', () => {
+    it('sends entity_id when an entity is named', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('set-close-target', { periods: [] }))
+      await client.setCloseTarget('graph_1', '2026-03', null, { entityId: 'ent_2' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body).toEqual({ period: '2026-03', note: null, entity_id: 'ent_2' })
+    })
+  })
+
+  describe('reopenPeriod', () => {
+    it('sends entity_id when an entity is named', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('reopen-period', { periods: [] }))
+      await client.reopenPeriod('graph_1', '2026-03', 'late invoice', null, { entityId: 'ent_2' })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body).toEqual({
+        period: '2026-03',
+        reason: 'late invoice',
+        note: null,
+        entity_id: 'ent_2',
+      })
+    })
+  })
+
   describe('closePeriod', () => {
+    it('closes the group parent when no entity is named', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', { period: '2026-03', fiscal_calendar: { periods: [] } })
+      )
+      await client.closePeriod('graph_1', '2026-03')
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.entity_id).toBeNull()
+    })
+
+    it('sends entity_id when an entity is named', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', { period: '2026-03', fiscal_calendar: { periods: [] } })
+      )
+      await client.closePeriod('graph_1', '2026-03', { entityId: 'ent_2', allowStaleSync: true })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.entity_id).toBe('ent_2')
+      expect(body.allow_stale_sync).toBe(true)
+      expect(body.period).toBe('2026-03')
+    })
+
     it('returns a close result with the refreshed calendar', async () => {
       mockFetch.mockResolvedValueOnce(
         envelopeResponse('close-period', {
@@ -1217,7 +1392,10 @@ describe('LedgerClient', () => {
       expect(list?.reconciliations[0].status).toBe('not_started')
       const [calledUrl, init] = mockFetch.mock.calls[0]
       expect(String(calledUrl)).toBe('http://localhost:8000/extensions/graph_1/graphql')
-      expect(JSON.parse(init.body as string).variables).toEqual({ period: '2026-08' })
+      expect(JSON.parse(init.body as string).variables).toEqual({
+        period: '2026-08',
+        entityId: null,
+      })
     })
 
     it('refreshes and returns the same shape a read does', async () => {

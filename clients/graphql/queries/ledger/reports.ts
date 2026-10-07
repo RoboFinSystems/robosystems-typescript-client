@@ -11,11 +11,12 @@ import { gql } from 'graphql-request'
  * `sourceGraphId` / `sourceReportId` / `sharedAt` identify shared reports.
  */
 export const LIST_REPORTS = gql`
-  query ListLedgerReports($lifecycle: ReportLifecycle! = CURRENT) {
-    reports(lifecycle: $lifecycle) {
+  query ListLedgerReports($lifecycle: ReportLifecycle! = CURRENT, $entityId: String) {
+    reports(lifecycle: $lifecycle, entityId: $entityId) {
       reports {
         id
         name
+        entityId
         taxonomyId
         generationStatus
         filingStatus
