@@ -9129,6 +9129,110 @@ export type LineItemMetadataPredicate = {
 };
 
 /**
+ * LinkBankAccountRequest
+ *
+ * Point a bank feed's account at a chart account.
+ *
+ * Name `element_id` for an existing active account, or `entity_id` alone to
+ * create one in that entity's chart. The chart the account is in decides
+ * whose books the feed's lines go into, so this is also how a feed account
+ * is bound to a subsidiary. Lines still in the inbox move with it; posted
+ * entries stay where they were posted.
+ */
+export type LinkBankAccountRequest = {
+    /**
+     * Connection Id
+     *
+     * The feed's connection.
+     */
+    connection_id: string;
+    /**
+     * Account Id
+     *
+     * The provider's id for the account.
+     */
+    account_id: string;
+    /**
+     * Element Id
+     *
+     * The chart account to link; its chart's entity takes the feed.
+     */
+    element_id?: string | null;
+    /**
+     * Entity Id
+     *
+     * With `element_id`, the entity the account must belong to. Alone, the entity in whose chart a new account is created for the feed account.
+     */
+    entity_id?: string | null;
+};
+
+/**
+ * LinkBankAccountResponse
+ *
+ * What `link-bank-account` did.
+ */
+export type LinkBankAccountResponse = {
+    /**
+     * Connection Id
+     */
+    connection_id: string;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Account Id
+     */
+    account_id: string;
+    /**
+     * Element Id
+     *
+     * The chart account the feed now books to.
+     */
+    element_id: string;
+    /**
+     * Previous Element Id
+     */
+    previous_element_id: string;
+    /**
+     * Entity Id
+     *
+     * The entity the feed's lines now belong to.
+     */
+    entity_id: string;
+    /**
+     * Account Created
+     *
+     * A new account was created in the entity's chart.
+     */
+    account_created?: boolean;
+    /**
+     * Events Repointed
+     *
+     * Inbox lines moved to the new account (posted entries stay).
+     */
+    events_repointed?: number;
+    /**
+     * Events Unclassified
+     *
+     * Lines returned to `captured`: their classification named an account in the previous entity's chart.
+     */
+    events_unclassified?: number;
+    /**
+     * Pairs Across Entities
+     *
+     * Open transfer pairs whose two legs now sit on two entities, because only one leg's account moved. Intercompany; the commit guard refuses them until the other leg follows.
+     */
+    pairs_across_entities?: number;
+    /**
+     * Changed
+     *
+     * False when the link already stood.
+     */
+    changed?: boolean;
+};
+
+/**
  * LinkEntityTaxonomyRequest
  *
  * Link an entity to a taxonomy (creates the ENTITY_HAS_TAXONOMY edge).
@@ -11669,6 +11773,52 @@ export type OperationEnvelopeLedgerEntityResponse = {
      * Command-specific result payload
      */
     result?: LedgerEntityResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[LinkBankAccountResponse]
+ */
+export type OperationEnvelopeLinkBankAccountResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: LinkBankAccountResponse | null;
     /**
      * At
      *
@@ -28533,6 +28683,70 @@ export type ChangeReportingStyleResponses = {
 };
 
 export type ChangeReportingStyleResponse2 = ChangeReportingStyleResponses[keyof ChangeReportingStyleResponses];
+
+export type LinkBankAccountData = {
+    body: LinkBankAccountRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/link-bank-account';
+};
+
+export type LinkBankAccountErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type LinkBankAccountError = LinkBankAccountErrors[keyof LinkBankAccountErrors];
+
+export type LinkBankAccountResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeLinkBankAccountResponse;
+};
+
+export type LinkBankAccountResponse2 = LinkBankAccountResponses[keyof LinkBankAccountResponses];
 
 export type CreateTaxonomyBlockData = {
     body: CreateTaxonomyBlockRequest;
