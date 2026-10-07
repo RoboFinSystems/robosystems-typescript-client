@@ -9,6 +9,7 @@ export const GET_REPORT = gql`
     report(reportId: $reportId) {
       id
       name
+      entityId
       taxonomyId
       generationStatus
       periodType

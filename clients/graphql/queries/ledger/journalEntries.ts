@@ -23,6 +23,7 @@ export const LIST_JOURNAL_ENTRIES = gql`
     $transactionId: String
     $limit: Int! = 100
     $offset: Int! = 0
+    $entityId: String
   ) {
     journalEntries(
       startDate: $startDate
@@ -33,6 +34,7 @@ export const LIST_JOURNAL_ENTRIES = gql`
       transactionId: $transactionId
       limit: $limit
       offset: $offset
+      entityId: $entityId
     ) {
       entries {
         id

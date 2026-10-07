@@ -14,8 +14,8 @@ import { gql } from 'graphql-request'
  * push to QuickBooks vs. post locally only.
  */
 export const GET_PERIOD_DRAFTS = gql`
-  query GetLedgerPeriodDrafts($period: String!) {
-    periodDrafts(period: $period) {
+  query GetLedgerPeriodDrafts($period: String!, $entityId: String) {
+    periodDrafts(period: $period, entityId: $entityId) {
       period
       periodStart
       periodEnd

@@ -219,6 +219,7 @@ export type GetLedgerAccountRollupsQueryVariables = Exact<{
   mappingId: string | null | undefined
   startDate: string | null | undefined
   endDate: string | null | undefined
+  entityId: string | null | undefined
 }>
 
 export type GetLedgerAccountRollupsQuery = {
@@ -246,7 +247,9 @@ export type GetLedgerAccountRollupsQuery = {
   } | null
 }
 
-export type GetLedgerAccountTreeQueryVariables = Exact<{ [key: string]: never }>
+export type GetLedgerAccountTreeQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
 
 export type GetLedgerAccountTreeQuery = {
   accountTree: {
@@ -299,6 +302,7 @@ export type ListLedgerAccountsQueryVariables = Exact<{
   isActive: boolean | null | undefined
   limit?: number
   offset?: number
+  entityId: string | null | undefined
 }>
 
 export type ListLedgerAccountsQuery = {
@@ -411,7 +415,9 @@ export type ListChartTemplatesQuery = {
   }>
 }
 
-export type GetLedgerClosingBookStructuresQueryVariables = Exact<{ [key: string]: never }>
+export type GetLedgerClosingBookStructuresQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
 
 export type GetLedgerClosingBookStructuresQuery = {
   closingBookStructures: {
@@ -482,6 +488,7 @@ export type ListLedgerEntitiesQuery = {
     status: string
     isParent: boolean
     parentEntityId: string | null
+    ownershipPct: number | null
     source: string
     sourceGraphId: string | null
     connectionId: string | null
@@ -490,7 +497,9 @@ export type ListLedgerEntitiesQuery = {
   }>
 }
 
-export type GetLedgerEntityQueryVariables = Exact<{ [key: string]: never }>
+export type GetLedgerEntityQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
 
 export type GetLedgerEntityQuery = {
   entity: {
@@ -510,11 +519,13 @@ export type GetLedgerEntityQuery = {
     lei: string | null
     industry: string | null
     entityType: string | null
+    reportingStyleId: string | null
     phone: string | null
     website: string | null
     status: string
     isParent: boolean
     parentEntityId: string | null
+    ownershipPct: number | null
     source: string
     sourceId: string | null
     sourceGraphId: string | null
@@ -571,6 +582,7 @@ export type ListLedgerEventBlocksQueryVariables = Exact<{
   isReconcilingItem: boolean | null | undefined
   limit?: number
   offset?: number
+  entityId: string | null | undefined
 }>
 
 export type ListLedgerEventBlocksQuery = {
@@ -602,11 +614,14 @@ export type ListLedgerEventBlocksQuery = {
   }>
 }
 
-export type GetLedgerFiscalCalendarQueryVariables = Exact<{ [key: string]: never }>
+export type GetLedgerFiscalCalendarQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
 
 export type GetLedgerFiscalCalendarQuery = {
   fiscalCalendar: {
     graphId: string
+    entityId: string | null
     fiscalYearStartMonth: number
     closedThrough: string | null
     closeTarget: string | null
@@ -1097,6 +1112,7 @@ export type ListLedgerJournalEntriesQueryVariables = Exact<{
   transactionId: string | null | undefined
   limit?: number
   offset?: number
+  entityId: string | null | undefined
 }>
 
 export type ListLedgerJournalEntriesQuery = {
@@ -1229,6 +1245,7 @@ export type ListLedgerMappingsQuery = {
 export type GetLedgerPeriodCloseStatusQueryVariables = Exact<{
   periodStart: string
   periodEnd: string
+  entityId: string | null | undefined
 }>
 
 export type GetLedgerPeriodCloseStatusQuery = {
@@ -1252,6 +1269,7 @@ export type GetLedgerPeriodCloseStatusQuery = {
 
 export type GetLedgerPeriodDraftsQueryVariables = Exact<{
   period: string
+  entityId: string | null | undefined
 }>
 
 export type GetLedgerPeriodDraftsQuery = {
@@ -1338,6 +1356,7 @@ export type ListLedgerPublishListsQuery = {
 
 export type ListLedgerReconciliationsQueryVariables = Exact<{
   period: string
+  entityId: string | null | undefined
 }>
 
 export type ListLedgerReconciliationsQuery = {
@@ -1412,6 +1431,7 @@ export type GetLedgerReportQuery = {
   report: {
     id: string
     name: string
+    entityId: string | null
     taxonomyId: string
     generationStatus: string
     periodType: string
@@ -1639,6 +1659,7 @@ export type GetLedgerReportingTaxonomyQuery = {
 
 export type ListLedgerReportsQueryVariables = Exact<{
   lifecycle?: ReportLifecycle
+  entityId: string | null | undefined
 }>
 
 export type ListLedgerReportsQuery = {
@@ -1646,6 +1667,7 @@ export type ListLedgerReportsQuery = {
     reports: Array<{
       id: string
       name: string
+      entityId: string | null
       taxonomyId: string
       generationStatus: string
       filingStatus: string
@@ -1717,11 +1739,14 @@ export type ListLedgerStructuresQuery = {
   } | null
 }
 
-export type GetLedgerSummaryQueryVariables = Exact<{ [key: string]: never }>
+export type GetLedgerSummaryQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
 
 export type GetLedgerSummaryQuery = {
   summary: {
     graphId: string
+    entityId: string | null
     accountCount: number
     transactionCount: number
     entryCount: number
@@ -1805,6 +1830,7 @@ export type ListLedgerTransactionsQueryVariables = Exact<{
   endDate: string | null | undefined
   limit?: number
   offset?: number
+  entityId: string | null | undefined
 }>
 
 export type ListLedgerTransactionsQuery = {
@@ -1831,6 +1857,7 @@ export type ListLedgerTransactionsQuery = {
 export type GetLedgerTrialBalanceQueryVariables = Exact<{
   startDate: string | null | undefined
   endDate: string | null | undefined
+  entityId: string | null | undefined
 }>
 
 export type GetLedgerTrialBalanceQuery = {
@@ -2770,6 +2797,11 @@ export const GetLedgerAccountRollupsDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -2792,6 +2824,11 @@ export const GetLedgerAccountRollupsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'endDate' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {
@@ -2846,12 +2883,26 @@ export const GetLedgerAccountTreeDocument = {
       kind: 'OperationDefinition',
       operation: 'query',
       name: { kind: 'Name', value: 'GetLedgerAccountTree' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'accountTree' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
@@ -2977,6 +3028,11 @@ export const ListLedgerAccountsDocument = {
           },
           defaultValue: { kind: 'IntValue', value: '0' },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -3004,6 +3060,11 @@ export const ListLedgerAccountsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'offset' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {
@@ -3339,12 +3400,26 @@ export const GetLedgerClosingBookStructuresDocument = {
       kind: 'OperationDefinition',
       operation: 'query',
       name: { kind: 'Name', value: 'GetLedgerClosingBookStructures' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'closingBookStructures' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
@@ -3562,6 +3637,7 @@ export const ListLedgerEntitiesDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isParent' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'parentEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'ownershipPct' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'connectionId' } },
@@ -3582,12 +3658,26 @@ export const GetLedgerEntityDocument = {
       kind: 'OperationDefinition',
       operation: 'query',
       name: { kind: 'Name', value: 'GetLedgerEntity' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'entity' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
@@ -3607,11 +3697,13 @@ export const GetLedgerEntityDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'lei' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'industry' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'entityType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'reportingStyleId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'phone' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'website' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isParent' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'parentEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'ownershipPct' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
@@ -3752,6 +3844,11 @@ export const ListLedgerEventBlocksDocument = {
           },
           defaultValue: { kind: 'IntValue', value: '0' },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -3800,6 +3897,11 @@ export const ListLedgerEventBlocksDocument = {
                 name: { kind: 'Name', value: 'offset' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
             ],
             selectionSet: {
               kind: 'SelectionSet',
@@ -3843,16 +3945,31 @@ export const GetLedgerFiscalCalendarDocument = {
       kind: 'OperationDefinition',
       operation: 'query',
       name: { kind: 'Name', value: 'GetLedgerFiscalCalendar' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'fiscalCalendar' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
                 { kind: 'Field', name: { kind: 'Name', value: 'graphId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'fiscalYearStartMonth' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'closedThrough' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'closeTarget' } },
@@ -5087,6 +5204,11 @@ export const ListLedgerJournalEntriesDocument = {
           },
           defaultValue: { kind: 'IntValue', value: '0' },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -5134,6 +5256,11 @@ export const ListLedgerJournalEntriesDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'offset' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {
@@ -5511,6 +5638,11 @@ export const GetLedgerPeriodCloseStatusDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -5528,6 +5660,11 @@ export const GetLedgerPeriodCloseStatusDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'periodEnd' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'periodEnd' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {
@@ -5581,6 +5718,11 @@ export const GetLedgerPeriodDraftsDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -5593,6 +5735,11 @@ export const GetLedgerPeriodDraftsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'period' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {
@@ -5817,6 +5964,11 @@ export const ListLedgerReconciliationsDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -5829,6 +5981,11 @@ export const ListLedgerReconciliationsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'period' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {
@@ -5967,6 +6124,7 @@ export const GetLedgerReportDocument = {
               selections: [
                 { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'generationStatus' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'periodType' } },
@@ -6612,6 +6770,11 @@ export const ListLedgerReportsDocument = {
           },
           defaultValue: { kind: 'EnumValue', value: 'CURRENT' },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -6625,6 +6788,11 @@ export const ListLedgerReportsDocument = {
                 name: { kind: 'Name', value: 'lifecycle' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'lifecycle' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
             ],
             selectionSet: {
               kind: 'SelectionSet',
@@ -6637,6 +6805,7 @@ export const ListLedgerReportsDocument = {
                     selections: [
                       { kind: 'Field', name: { kind: 'Name', value: 'id' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'generationStatus' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'filingStatus' } },
@@ -6858,16 +7027,31 @@ export const GetLedgerSummaryDocument = {
       kind: 'OperationDefinition',
       operation: 'query',
       name: { kind: 'Name', value: 'GetLedgerSummary' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'summary' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
                 { kind: 'Field', name: { kind: 'Name', value: 'graphId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'accountCount' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'transactionCount' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'entryCount' } },
@@ -7073,6 +7257,11 @@ export const ListLedgerTransactionsDocument = {
           },
           defaultValue: { kind: 'IntValue', value: '0' },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -7105,6 +7294,11 @@ export const ListLedgerTransactionsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'offset' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {
@@ -7171,6 +7365,11 @@ export const GetLedgerTrialBalanceDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -7188,6 +7387,11 @@ export const GetLedgerTrialBalanceDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'endDate' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {

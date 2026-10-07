@@ -15,8 +15,8 @@ import { gql } from 'graphql-request'
  */
 
 export const GET_ENTITY = gql`
-  query GetLedgerEntity {
-    entity {
+  query GetLedgerEntity($entityId: String) {
+    entity(entityId: $entityId) {
       id
       name
       legalName
@@ -33,11 +33,13 @@ export const GET_ENTITY = gql`
       lei
       industry
       entityType
+      reportingStyleId
       phone
       website
       status
       isParent
       parentEntityId
+      ownershipPct
       source
       sourceId
       sourceGraphId

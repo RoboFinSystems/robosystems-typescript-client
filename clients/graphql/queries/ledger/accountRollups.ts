@@ -7,8 +7,18 @@ import { gql } from 'graphql-request'
  * `startDate` / `endDate` narrow to a specific period (both optional).
  */
 export const GET_ACCOUNT_ROLLUPS = gql`
-  query GetLedgerAccountRollups($mappingId: String, $startDate: Date, $endDate: Date) {
-    accountRollups(mappingId: $mappingId, startDate: $startDate, endDate: $endDate) {
+  query GetLedgerAccountRollups(
+    $mappingId: String
+    $startDate: Date
+    $endDate: Date
+    $entityId: String
+  ) {
+    accountRollups(
+      mappingId: $mappingId
+      startDate: $startDate
+      endDate: $endDate
+      entityId: $entityId
+    ) {
       mappingId
       mappingName
       totalMapped

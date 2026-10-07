@@ -21,6 +21,7 @@ export const LIST_EVENT_BLOCKS = gql`
     $isReconcilingItem: Boolean
     $limit: Int! = 50
     $offset: Int! = 0
+    $entityId: String
   ) {
     eventBlocks(
       eventType: $eventType
@@ -31,6 +32,7 @@ export const LIST_EVENT_BLOCKS = gql`
       isReconcilingItem: $isReconcilingItem
       limit: $limit
       offset: $offset
+      entityId: $entityId
     ) {
       id
       eventType

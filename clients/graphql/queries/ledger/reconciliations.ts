@@ -10,8 +10,8 @@ import { gql } from 'graphql-request'
  * `notes` is only populated on a refresh; a read returns it empty.
  */
 export const LIST_RECONCILIATIONS = gql`
-  query ListLedgerReconciliations($period: String!) {
-    reconciliations(period: $period) {
+  query ListLedgerReconciliations($period: String!, $entityId: String) {
+    reconciliations(period: $period, entityId: $entityId) {
       period
       asOf
       notes
