@@ -385,6 +385,35 @@ export type ListLedgerAgentsQuery = {
   }>
 }
 
+export type ListLedgerBankAccountsQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
+
+export type ListLedgerBankAccountsQuery = {
+  bankAccounts: {
+    total: number
+    accounts: Array<{
+      id: string
+      code: string | null
+      name: string
+      kind: string
+      balanceType: string
+      isActive: boolean
+      entityId: string | null
+      entityName: string | null
+      source: string | null
+      connectionId: string | null
+      institution: string | null
+      feedAccountId: string | null
+      feedAccountName: string | null
+      feedAccountKind: string | null
+      connectionStatus: string | null
+      lastSyncAt: string | null
+      lastSyncStatus: string | null
+    }>
+  } | null
+}
+
 export type ListLedgerBlockedSourceGraphsQueryVariables = Exact<{
   limit?: number
   offset?: number
@@ -3278,6 +3307,71 @@ export const ListLedgerAgentsDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerAgentsQuery, ListLedgerAgentsQueryVariables>
+export const ListLedgerBankAccountsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerBankAccounts' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'bankAccounts' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'accounts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'connectionId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'institution' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'feedAccountId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'feedAccountName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'feedAccountKind' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'connectionStatus' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'lastSyncAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'lastSyncStatus' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLedgerBankAccountsQuery, ListLedgerBankAccountsQueryVariables>
 export const ListLedgerBlockedSourceGraphsDocument = {
   kind: 'Document',
   definitions: [

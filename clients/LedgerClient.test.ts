@@ -356,6 +356,118 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listBankAccounts', () => {
+    it("returns the group's accounts with their entity and source", async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          bankAccounts: {
+            total: 2,
+            accounts: [
+              {
+                id: 'elem_chk',
+                code: '1010',
+                name: 'Chase Checking ••1234',
+                kind: 'bank',
+                balanceType: 'debit',
+                isActive: true,
+                entityId: 'ent_1',
+                entityName: 'Cascade',
+                source: 'plaid',
+                connectionId: 'conn_plaid',
+                institution: 'Chase',
+                feedAccountId: 'acc_1',
+                feedAccountName: 'Chase Checking ••1234',
+                feedAccountKind: 'checking',
+                connectionStatus: 'active',
+                lastSyncAt: '2026-10-07T12:00:00+00:00',
+                lastSyncStatus: 'success',
+              },
+              {
+                id: 'elem_card',
+                code: '2100',
+                name: 'Amex',
+                kind: 'credit',
+                balanceType: 'credit',
+                isActive: true,
+                entityId: 'ent_2',
+                entityName: 'Cadence',
+                source: 'quickbooks',
+                connectionId: 'conn_qb',
+                institution: null,
+                feedAccountId: null,
+                feedAccountName: null,
+                feedAccountKind: null,
+                connectionStatus: null,
+                lastSyncAt: null,
+                lastSyncStatus: null,
+              },
+            ],
+          },
+        })
+      )
+      const list = await client.listBankAccounts('graph_1', { entityId: 'ent_1' })
+      // graphql-request uses positional fetch(url, init) rather than fetch(Request).
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables).toEqual({ entityId: 'ent_1' })
+      expect(list?.total).toBe(2)
+      expect(list?.accounts[0].feedAccountId).toBe('acc_1')
+      expect(list?.accounts[1].kind).toBe('credit')
+      expect(list?.accounts[1].entityName).toBe('Cadence')
+    })
+  })
+
+  describe('linkBankAccount', () => {
+    it('POSTs to the link-bank-account operation and returns the result', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('link-bank-account', {
+          connection_id: 'conn_plaid',
+          provider: 'plaid',
+          account_id: 'acc_1',
+          element_id: 'elem_sub',
+          previous_element_id: 'elem_chk',
+          entity_id: 'ent_2',
+          account_created: true,
+          events_repointed: 3,
+          events_unclassified: 1,
+          pairs_across_entities: 0,
+          changed: true,
+        })
+      )
+      const result = await client.linkBankAccount('graph_42', {
+        connection_id: 'conn_plaid',
+        account_id: 'acc_1',
+        entity_id: 'ent_2',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/link-bank-account'
+      )
+      expect(req.method).toBe('POST')
+      expect(JSON.parse(await req.text())).toEqual({
+        connection_id: 'conn_plaid',
+        account_id: 'acc_1',
+        entity_id: 'ent_2',
+      })
+      expect(result.element_id).toBe('elem_sub')
+      expect(result.account_created).toBe(true)
+      expect(result.events_repointed).toBe(3)
+    })
+
+    it('throws a friendly error on 4xx', async () => {
+      mockFetch.mockResolvedValueOnce(
+        restErrorResponse('Account elem_x is already fed by mercury account Ops', 409)
+      )
+      await expect(
+        client.linkBankAccount('graph_1', {
+          connection_id: 'conn_plaid',
+          account_id: 'acc_1',
+          element_id: 'elem_x',
+        })
+      ).rejects.toThrow(/already fed/)
+    })
+  })
+
   describe('getSummary', () => {
     it('returns summary counts', async () => {
       mockFetch.mockResolvedValueOnce(

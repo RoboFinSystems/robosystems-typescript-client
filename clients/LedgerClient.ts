@@ -55,6 +55,7 @@ import {
   financialStatementAnalysis,
   initializeChartOfAccounts,
   initializeLedger,
+  linkBankAccount,
   linkEntityTaxonomy,
   liveFinancialStatement,
   previewEventBlock,
@@ -127,6 +128,8 @@ import type {
   JournalEntryResponse,
   LedgerAgentResponse,
   LedgerEntityResponse,
+  LinkBankAccountRequest,
+  LinkBankAccountResponse,
   LinkEntityTaxonomyRequest,
   LiveFinancialStatementRequest,
   LiveFinancialStatementResponse,
@@ -198,6 +201,8 @@ import {
   ListInformationBlocksDocument,
   ListLedgerAccountsDocument,
   ListLedgerAgentsDocument,
+  ListLedgerBankAccountsDocument,
+  ListLedgerBankAccountsQuery,
   ListLedgerBlockedSourceGraphsDocument,
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
@@ -277,6 +282,8 @@ export type LedgerAccountList = NonNullable<ListLedgerAccountsQuery['accounts']>
 export type LedgerAccount = LedgerAccountList['accounts'][number]
 export type LedgerAccountTree = NonNullable<GetLedgerAccountTreeQuery['accountTree']>
 export type LedgerAccountRollups = NonNullable<GetLedgerAccountRollupsQuery['accountRollups']>
+export type LedgerBankAccountList = NonNullable<ListLedgerBankAccountsQuery['bankAccounts']>
+export type LedgerBankAccount = LedgerBankAccountList['accounts'][number]
 
 export type LedgerTrialBalance = NonNullable<GetLedgerTrialBalanceQuery['trialBalance']>
 export type LedgerMappedTrialBalance = NonNullable<
@@ -932,6 +939,47 @@ export class LedgerClient {
       'Get account rollups',
       (data) => data.accountRollups
     )
+  }
+
+  // ── Bank accounts ─────────────────────────────────────────────────────
+
+  /**
+   * The group's bank and card accounts: every chart account a feed books to,
+   * or that a source system types as a bank or card account, with the entity
+   * whose chart it is in (`entityId`, the books its lines go into), what
+   * writes to it (`source`: a feed provider, `quickbooks`, or null for an
+   * account kept by hand) and the connection's status and last sync. Pass
+   * `entityId` for one entity's accounts; omit it for the whole group.
+   */
+  async listBankAccounts(
+    graphId: string,
+    options?: EntityScopeOptions
+  ): Promise<LedgerBankAccountList | null> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerBankAccountsDocument,
+      { entityId: options?.entityId ?? null },
+      'List bank accounts',
+      (data) => data.bankAccounts
+    )
+  }
+
+  /**
+   * Point a bank feed's account at a chart account. `element_id` links an
+   * existing account (its chart's entity takes the feed); `entity_id` alone
+   * creates one in that entity's chart. This is how a feed account is bound
+   * to a subsidiary: lines still in the inbox move with it, posted entries
+   * stay where they were posted. An account another connection already
+   * feeds is refused.
+   */
+  async linkBankAccount(
+    graphId: string,
+    body: LinkBankAccountRequest
+  ): Promise<LinkBankAccountResponse> {
+    const envelope = await this.callOperation('Link bank account', (o) =>
+      linkBankAccount({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Link bank account', envelope.result)
   }
 
   // ── Transactions ────────────────────────────────────────────────────
