@@ -1787,6 +1787,32 @@ export type ClosePeriodResponse = {
      */
     statements_stamped?: boolean;
     /**
+     * Shadow
+     *
+     * True when the close ran in shadow (the QuickBooks connection's write_policy is 'shadow'): nothing was written to QuickBooks, nothing posted, the in-window drafts were shadowed, and the gates that would have blocked the close are in gate_findings.
+     */
+    shadow?: boolean;
+    /**
+     * Entries Shadowed
+     *
+     * Drafts a shadow close took as expectations (status 'shadowed') instead of posting. Always 0 outside shadow.
+     */
+    entries_shadowed?: number;
+    /**
+     * Gate Findings
+     *
+     * Blocker codes a shadow close recorded instead of enforcing: sync_stale, pending_obligations, stranded_obligations, reconciling_items, unposted_source_events, unreconciled_accounts. Empty outside shadow.
+     */
+    gate_findings?: Array<string>;
+    /**
+     * Gate Finding Counts
+     *
+     * Each finding's size: days stale for sync_stale, a count for the rest.
+     */
+    gate_finding_counts?: {
+        [key: string]: number;
+    };
+    /**
      * Statement Stamp Note
      *
      * Soft-skip reason when statements_stamped is false: no_coa_mapping | no_entity | no_statement_structures | no_taxonomy.
@@ -9227,7 +9253,7 @@ export type LinkBankAccountResponse = {
     /**
      * Changed
      *
-     * False when the link already stood.
+     * False when the link already stood and no line moved.
      */
     changed?: boolean;
 };
@@ -9690,8 +9716,9 @@ export type MemoryRecord = {
  *
  * Mercury bank-feed connection configuration.
  *
- * A bank feed is native accounting: the graph must already have a chart of
- * accounts and no live QuickBooks connection. Over OAuth (the hosted
+ * A bank feed is native accounting: the entity its accounts land on must
+ * already have a chart of accounts and must not be the one QuickBooks keeps
+ * (the group parent, while QuickBooks is connected). Over OAuth (the hosted
  * default) the connection is created `pending_oauth` and activated by the
  * callback. `api_key` — a personal **read-only** Mercury token — connects
  * at once without a browser round-trip, but only on deployments that turn
@@ -17586,9 +17613,9 @@ export type SetWritePolicyRequest = {
     /**
      * Write Policy
      *
-     * 'native' = RoboSystems authoritative, no write-back; 'qb_authoritative' = QuickBooks authoritative, entries publish to QB.
+     * 'qb_authoritative' = QuickBooks authoritative, entries publish to QB; 'shadow' = QuickBooks authoritative and RoboSystems only observes: nothing is written to QuickBooks, the close posts nothing locally, its drafts become shadowed expectations and its gates are findings. 'native', books kept in RoboSystems with no write-back, is what disconnecting or severing leaves, not a choice for a live connection.
      */
-    write_policy: 'native' | 'qb_authoritative';
+    write_policy: 'qb_authoritative' | 'shadow';
 };
 
 /**
