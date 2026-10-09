@@ -720,6 +720,15 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('getMappingCandidates', () => {
+    it('narrows by the named entity', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ mappingCandidates: [] }))
+      await client.getMappingCandidates('graph_1', 'asset', { entityId: 'ent_sub' })
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toEqual({ classification: 'asset', entityId: 'ent_sub' })
+    })
+  })
+
   describe('information blocks', () => {
     const variablesOf = (call: number) =>
       JSON.parse((mockFetch.mock.calls[call][1] as RequestInit).body as string).variables
@@ -1711,6 +1720,24 @@ describe('LedgerClient', () => {
   })
 
   describe('createSchedule', () => {
+    it('books the schedule to a named entity', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-schedule', { id: 'str_1', block_type: 'schedule', name: 'Rent' })
+      )
+      await client.createSchedule('graph_1', {
+        name: 'Rent',
+        elementIds: ['elem_1'],
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+        monthlyAmount: 1000,
+        entryTemplate: { debitElementId: 'elem_rent', creditElementId: 'elem_prepaid' },
+        entityId: 'ent_sub',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.payload.entity_id).toBe('ent_sub')
+    })
+
     it('serializes options into snake_case body and converts the result', async () => {
       // `create-information-block` returns an InformationBlockEnvelope. The
       // previous mock invented a ScheduleCreatedResponse-shaped body that the

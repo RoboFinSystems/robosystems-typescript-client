@@ -1238,6 +1238,7 @@ export type GetLedgerMappingQuery = {
 
 export type MappingCandidatesQueryVariables = Exact<{
   classification: string
+  entityId: string | null | undefined
 }>
 
 export type MappingCandidatesQuery = {
@@ -5632,6 +5633,11 @@ export const MappingCandidatesDocument = {
             type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
           },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -5644,6 +5650,11 @@ export const MappingCandidatesDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'classification' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'classification' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
             ],
             selectionSet: {

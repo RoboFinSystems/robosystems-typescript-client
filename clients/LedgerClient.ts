@@ -739,6 +739,8 @@ export interface CreateScheduleOptions {
      */
     bookedOn?: string
   }
+  /** The entity whose books the schedule belongs to. Omit for the group parent. */
+  entityId?: string | null
 }
 
 export interface JournalEntryLineItem {
@@ -1344,18 +1346,20 @@ export class LedgerClient {
   /**
    * rs-gaap concepts a CoA element of the given EFS `classification`
    * (asset / liability / equity / revenue / expense) may map to — limited
-   * to concepts that render under the graph's active Reporting Style, with
-   * statement-level subtotals excluded. Use this to populate the mapping
-   * picker so it never offers an unreachable target.
+   * to concepts that render under the Reporting Style of the entity whose
+   * chart is being mapped (`options.entityId`, default the group parent),
+   * with statement-level subtotals excluded. Use this to populate the
+   * mapping picker so it never offers an unreachable target.
    */
   async getMappingCandidates(
     graphId: string,
-    classification: string
+    classification: string,
+    options?: { entityId?: string | null }
   ): Promise<LedgerMappingCandidate[]> {
     return this.gqlQuery(
       graphId,
       MappingCandidatesDocument,
-      { classification },
+      { classification, entityId: options?.entityId ?? null },
       'Mapping candidates',
       (data) => data.mappingCandidates
     )
@@ -1669,6 +1673,7 @@ export class LedgerClient {
           memo_template: options.entryTemplate.memoTemplate,
         },
         taxonomy_id: options.taxonomyId,
+        ...(options.entityId ? { entity_id: options.entityId } : {}),
         schedule_metadata: options.scheduleMetadata
           ? {
               method: options.scheduleMetadata.method,
