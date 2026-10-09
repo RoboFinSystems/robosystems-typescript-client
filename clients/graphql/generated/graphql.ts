@@ -1545,6 +1545,7 @@ export type GetLedgerReportPackageQuery = {
         category: string
         taxonomyId: string | null
         taxonomyName: string | null
+        entityId: string | null
         informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
         artifact: {
           topic: string | null
@@ -6480,6 +6481,7 @@ export const GetLedgerReportPackageDocument = {
                             { kind: 'Field', name: { kind: 'Name', value: 'category' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                             {
                               kind: 'Field',
                               name: { kind: 'Name', value: 'informationModel' },
