@@ -412,6 +412,12 @@ export interface CreateReportOptions {
   periodType?: string
   comparative?: boolean
   periods?: PeriodSpecInput[]
+  /**
+   * The entity the report is for. Omit for the entity whose chart
+   * `mappingId` maps from; named alongside another entity's mapping, the
+   * server refuses it.
+   */
+  entityId?: string | null
 }
 
 // ── Write result shapes (envelope.result payloads) ─────────────────────
@@ -733,6 +739,8 @@ export interface CreateScheduleOptions {
      */
     bookedOn?: string
   }
+  /** The entity whose books the schedule belongs to. Omit for the group parent. */
+  entityId?: string | null
 }
 
 export interface JournalEntryLineItem {
@@ -1338,18 +1346,20 @@ export class LedgerClient {
   /**
    * rs-gaap concepts a CoA element of the given EFS `classification`
    * (asset / liability / equity / revenue / expense) may map to — limited
-   * to concepts that render under the graph's active Reporting Style, with
-   * statement-level subtotals excluded. Use this to populate the mapping
-   * picker so it never offers an unreachable target.
+   * to concepts that render under the Reporting Style of the entity whose
+   * chart is being mapped (`options.entityId`, default the group parent),
+   * with statement-level subtotals excluded. Use this to populate the
+   * mapping picker so it never offers an unreachable target.
    */
   async getMappingCandidates(
     graphId: string,
-    classification: string
+    classification: string,
+    options?: { entityId?: string | null }
   ): Promise<LedgerMappingCandidate[]> {
     return this.gqlQuery(
       graphId,
       MappingCandidatesDocument,
-      { classification },
+      { classification, entityId: options?.entityId ?? null },
       'Mapping candidates',
       (data) => data.mappingCandidates
     )
@@ -1393,13 +1403,18 @@ export class LedgerClient {
 
   /**
    * List active CoA→reporting mapping structures, the book mapping first.
-   * Each carries `framework`: the reporting framework it maps the chart into.
+   * Each carries `framework`: the reporting framework it maps the chart into,
+   * and `entityId`: the entity whose chart it maps from, so whose reports it
+   * can produce. `options.entityId` keeps that entity's mappings only.
    */
-  async listMappings(graphId: string): Promise<LedgerMappingInfo[]> {
+  async listMappings(
+    graphId: string,
+    options?: { entityId?: string | null }
+  ): Promise<LedgerMappingInfo[]> {
     const list = await this.gqlQuery(
       graphId,
       ListLedgerMappingsDocument,
-      undefined,
+      { entityId: options?.entityId ?? null },
       'List mappings',
       (data) => data.mappings
     )
@@ -1493,6 +1508,12 @@ export class LedgerClient {
    * window arguments — a pre-window server rejects it. Callers that
    * never pass a window keep the un-windowed document and stay
    * compatible with older backends.
+   *
+   * `options.entityId` picks whose books a block shared by the group
+   * reads (statements, metrics, disclosures); omitted, the scenario's
+   * entity, else the group parent. A schedule, reconciliation or forecast
+   * always reads its own entity's. The envelope's `entityId` names the
+   * entity it read.
    */
   async getInformationBlock(
     graphId: string,
@@ -1502,6 +1523,7 @@ export class LedgerClient {
       series?: boolean
       seriesHistory?: number
       seriesForecast?: number
+      entityId?: string | null
     }
   ): Promise<InformationBlock | null> {
     const windowed = options?.seriesHistory !== undefined || options?.seriesForecast !== undefined
@@ -1515,6 +1537,7 @@ export class LedgerClient {
             series: options?.series ?? false,
             seriesHistory: options?.seriesHistory ?? null,
             seriesForecast: options?.seriesForecast ?? null,
+            entityId: options?.entityId ?? null,
           },
           'Get information block',
           (data) => data.informationBlock ?? null
@@ -1526,6 +1549,7 @@ export class LedgerClient {
             id,
             scenarioId: options?.scenarioId ?? null,
             series: options?.series ?? false,
+            entityId: options?.entityId ?? null,
           },
           'Get information block',
           (data) => data.informationBlock ?? null
@@ -1539,6 +1563,11 @@ export class LedgerClient {
    * `{blockType: 'schedule'}` to get the same set of blocks.
    * `options.scenarioId` threads into each envelope's FactSet binding
    * (the block list itself is scenario-independent).
+   *
+   * `options.entityId` (omitted: the scenario's entity, else the group
+   * parent) lists the blocks shared by the group plus that entity's own
+   * schedules, reconciliations and forecasts, never another entity's;
+   * shared blocks read its books.
    */
   async listInformationBlocks(
     graphId: string,
@@ -1548,6 +1577,7 @@ export class LedgerClient {
       limit?: number
       offset?: number
       scenarioId?: string
+      entityId?: string | null
     }
   ): Promise<InformationBlockList> {
     const blocks = await this.gqlQuery(
@@ -1559,6 +1589,7 @@ export class LedgerClient {
         limit: options?.limit ?? null,
         offset: options?.offset ?? null,
         scenarioId: options?.scenarioId ?? null,
+        entityId: options?.entityId ?? null,
       },
       'List information blocks',
       (data) => data.informationBlocks
@@ -1642,6 +1673,7 @@ export class LedgerClient {
           memo_template: options.entryTemplate.memoTemplate,
         },
         taxonomy_id: options.taxonomyId,
+        ...(options.entityId ? { entity_id: options.entityId } : {}),
         schedule_metadata: options.scheduleMetadata
           ? {
               method: options.scheduleMetadata.method,
@@ -2564,6 +2596,9 @@ export class LedgerClient {
     }
     if (options.periods && options.periods.length > 0) {
       body.periods = options.periods
+    }
+    if (options.entityId) {
+      body.entity_id = options.entityId
     }
     const envelope = await this.callOperation('Create report', (o) =>
       createReport({ ...o, path: { graph_id: graphId }, body })

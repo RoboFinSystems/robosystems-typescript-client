@@ -8,8 +8,13 @@ import { gql } from 'graphql-request'
  * branch. See `local/docs/specs/information-block.md` §2.
  */
 export const GET_INFORMATION_BLOCK = gql`
-  query GetInformationBlock($id: ID!, $scenarioId: String, $series: Boolean! = false) {
-    informationBlock(id: $id, scenarioId: $scenarioId, series: $series) {
+  query GetInformationBlock(
+    $id: ID!
+    $scenarioId: String
+    $series: Boolean! = false
+    $entityId: String
+  ) {
+    informationBlock(id: $id, scenarioId: $scenarioId, series: $series, entityId: $entityId) {
       id
       blockType
       name
@@ -17,6 +22,7 @@ export const GET_INFORMATION_BLOCK = gql`
       category
       taxonomyId
       taxonomyName
+      entityId
       informationModel {
         conceptArrangement
         memberArrangement
@@ -179,6 +185,7 @@ export const GET_INFORMATION_BLOCK_WINDOWED = gql`
     $series: Boolean! = false
     $seriesHistory: Int
     $seriesForecast: Int
+    $entityId: String
   ) {
     informationBlock(
       id: $id
@@ -186,6 +193,7 @@ export const GET_INFORMATION_BLOCK_WINDOWED = gql`
       series: $series
       seriesHistory: $seriesHistory
       seriesForecast: $seriesForecast
+      entityId: $entityId
     ) {
       id
       blockType
@@ -194,6 +202,7 @@ export const GET_INFORMATION_BLOCK_WINDOWED = gql`
       category
       taxonomyId
       taxonomyName
+      entityId
       informationModel {
         conceptArrangement
         memberArrangement
@@ -351,6 +360,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
     $limit: Int
     $offset: Int
     $scenarioId: String
+    $entityId: String
   ) {
     informationBlocks(
       blockType: $blockType
@@ -358,6 +368,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
       limit: $limit
       offset: $offset
       scenarioId: $scenarioId
+      entityId: $entityId
     ) {
       id
       blockType
@@ -366,6 +377,7 @@ export const LIST_INFORMATION_BLOCKS = gql`
       category
       taxonomyId
       taxonomyName
+      entityId
       informationModel {
         conceptArrangement
         memberArrangement

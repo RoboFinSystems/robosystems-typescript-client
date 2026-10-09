@@ -273,7 +273,7 @@ export type AssertMetricsRequest = {
     /**
      * Entity Id
      *
-     * Entity to assert for. Defaults to the graph's earliest-created entity (the primary entity for single-entity graphs).
+     * The entity the asserted values belong to, by id. Omit for the group parent.
      */
     entity_id?: string | null;
     /**
@@ -1172,7 +1172,7 @@ export type BindTextBlockRequest = {
     /**
      * Entity Id
      *
-     * Entity the fact belongs to; defaults to the primary entity.
+     * Entity the fact belongs to, by id; omit for the group parent.
      */
     entity_id?: string | null;
 };
@@ -1404,7 +1404,7 @@ export type ChangeReportingStyleRequest = {
     /**
      * Entity Id
      *
-     * Target entity. Omit to target the graph's primary (earliest-created) entity — the single-entity default.
+     * The entity whose style to change, by id. Omit for the group parent.
      */
     entity_id?: string | null;
 };
@@ -1965,7 +1965,7 @@ export type ComputeMetricsRequest = {
     /**
      * Entity Id
      *
-     * Entity to compute for. Defaults to the graph's earliest-created entity (the primary entity for single-entity graphs).
+     * The entity whose metrics to compute, by id. Omit for the group parent.
      */
     entity_id?: string | null;
     /**
@@ -2985,7 +2985,7 @@ export type CreateForecastRequest = {
     /**
      * Entity Id
      *
-     * Entity the scenario belongs to. Defaults to the graph's earliest-created entity (single-entity convention).
+     * The entity the scenario belongs to, by id: its history and its computed months are that entity's books. Omit for the group parent.
      */
     entity_id?: string | null;
 };
@@ -3324,6 +3324,12 @@ export type CreateScheduleRequest = {
      * Schedule name
      */
     name: string;
+    /**
+     * Entity Id
+     *
+     * The entity whose books the schedule belongs to, by id. Omit for the group parent. Its facts, obligations and closing entries land in that entity's books, against that entity's own accounts.
+     */
+    entity_id?: string | null;
     /**
      * Taxonomy Id
      *
@@ -7722,6 +7728,12 @@ export type InformationBlockEnvelope = {
      * Qname of the named Disclosure this block corresponds to (e.g., 'disclosures:BalanceSheet'), when an inbound reportedDisclosure-requiresDisclosure arc identifies one. Null for tenant-authored blocks without a Disclosure mapping.
      */
     disclosure_id?: string | null;
+    /**
+     * Entity Id
+     *
+     * The entity whose books the envelope reads. A schedule, reconciliation or forecast is one entity's own and always reads its owner's; a block shared by the group (statements, metrics) reads the entity asked for, else the group parent. Null on the library and on a graph with no entity yet.
+     */
+    entity_id?: string | null;
     information_model: InformationModelResponse;
     artifact: ArtifactResponse;
     /**
