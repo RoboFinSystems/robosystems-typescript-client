@@ -686,6 +686,64 @@ describe('LedgerClient', () => {
       mockFetch.mockResolvedValueOnce(gqlResponse({ mappings: null }))
       expect(await client.listMappings('graph_1')).toEqual([])
     })
+
+    it('names whose chart each mapping maps, and keeps one entity on request', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          mappings: {
+            structures: [
+              {
+                id: 'map_sub',
+                name: 'CoA → GAAP',
+                description: null,
+                blockType: 'coa_mapping',
+                taxonomyId: 'tax_map_sub',
+                isActive: true,
+                framework: 'rs-gaap',
+                entityId: 'ent_sub',
+              },
+            ],
+          },
+        })
+      )
+      const mappings = await client.listMappings('graph_1', { entityId: 'ent_sub' })
+      expect(mappings[0].entityId).toBe('ent_sub')
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables.entityId).toBe('ent_sub')
+    })
+
+    it('sends a null entity to list every entity mapping', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ mappings: { structures: [] } }))
+      await client.listMappings('graph_1')
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables.entityId).toBeNull()
+    })
+  })
+
+  describe('information blocks', () => {
+    const variablesOf = (call: number) =>
+      JSON.parse((mockFetch.mock.calls[call][1] as RequestInit).body as string).variables
+
+    it('getInformationBlock sends the entity, windowed or not', async () => {
+      mockFetch.mockResolvedValue(gqlResponse({ informationBlock: null }))
+      await client.getInformationBlock('graph_1', 'struct_bs', { entityId: 'ent_sub' })
+      await client.getInformationBlock('graph_1', 'struct_bs', {
+        entityId: 'ent_sub',
+        series: true,
+        seriesHistory: 12,
+      })
+      await client.getInformationBlock('graph_1', 'struct_bs')
+      expect(variablesOf(0).entityId).toBe('ent_sub')
+      expect(variablesOf(1).entityId).toBe('ent_sub')
+      expect(variablesOf(1).seriesHistory).toBe(12)
+      expect(variablesOf(2).entityId).toBeNull()
+    })
+
+    it('listInformationBlocks sends the entity', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ informationBlocks: [] }))
+      await client.listInformationBlocks('graph_1', { blockType: 'forecast', entityId: 'ent_sub' })
+      expect(variablesOf(0)).toMatchObject({ blockType: 'forecast', entityId: 'ent_sub' })
+    })
   })
 
   describe('getMappingCoverage', () => {
@@ -1806,6 +1864,21 @@ describe('LedgerClient', () => {
       expect(body.mapping_id).toBe('map_1')
       expect(body.period_start).toBe('2025-01-01')
       expect(body.period_end).toBe('2025-12-31')
+      expect(body).not.toHaveProperty('entity_id')
+    })
+
+    it('passes the entity the report is for', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-report', { id: 'rpt_1' }))
+      await client.createReport('graph_42', {
+        name: 'FY25',
+        mappingId: 'map_sub',
+        periodStart: '2025-01-01',
+        periodEnd: '2025-12-31',
+        entityId: 'ent_sub',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.entity_id).toBe('ent_sub')
     })
 
     it('throws when the envelope carries no result', async () => {

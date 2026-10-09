@@ -697,6 +697,7 @@ export type GetInformationBlockQueryVariables = Exact<{
   id: string | number
   scenarioId: string | null | undefined
   series?: boolean
+  entityId: string | null | undefined
 }>
 
 export type GetInformationBlockQuery = {
@@ -708,6 +709,7 @@ export type GetInformationBlockQuery = {
     category: string
     taxonomyId: string | null
     taxonomyName: string | null
+    entityId: string | null
     informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
     artifact: {
       topic: string | null
@@ -844,6 +846,7 @@ export type GetInformationBlockWindowedQueryVariables = Exact<{
   series?: boolean
   seriesHistory: number | null | undefined
   seriesForecast: number | null | undefined
+  entityId: string | null | undefined
 }>
 
 export type GetInformationBlockWindowedQuery = {
@@ -855,6 +858,7 @@ export type GetInformationBlockWindowedQuery = {
     category: string
     taxonomyId: string | null
     taxonomyName: string | null
+    entityId: string | null
     informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
     artifact: {
       topic: string | null
@@ -991,6 +995,7 @@ export type ListInformationBlocksQueryVariables = Exact<{
   limit: number | null | undefined
   offset: number | null | undefined
   scenarioId: string | null | undefined
+  entityId: string | null | undefined
 }>
 
 export type ListInformationBlocksQuery = {
@@ -1002,6 +1007,7 @@ export type ListInformationBlocksQuery = {
     category: string
     taxonomyId: string | null
     taxonomyName: string | null
+    entityId: string | null
     informationModel: { conceptArrangement: string | null; memberArrangement: string | null }
     artifact: {
       topic: string | null
@@ -1255,7 +1261,9 @@ export type GetLedgerMappingCoverageQuery = {
   } | null
 }
 
-export type ListLedgerMappingsQueryVariables = Exact<{ [key: string]: never }>
+export type ListLedgerMappingsQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
 
 export type ListLedgerMappingsQuery = {
   mappings: {
@@ -1267,6 +1275,7 @@ export type ListLedgerMappingsQuery = {
       taxonomyId: string
       isActive: boolean
       framework: string | null
+      entityId: string | null
     }>
   } | null
 }
@@ -4162,6 +4171,11 @@ export const GetInformationBlockDocument = {
           },
           defaultValue: { kind: 'BooleanValue', value: false },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -4185,6 +4199,11 @@ export const GetInformationBlockDocument = {
                 name: { kind: 'Name', value: 'series' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'series' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
             ],
             selectionSet: {
               kind: 'SelectionSet',
@@ -4196,6 +4215,7 @@ export const GetInformationBlockDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'category' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'informationModel' },
@@ -4530,6 +4550,11 @@ export const GetInformationBlockWindowedDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'seriesForecast' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -4563,6 +4588,11 @@ export const GetInformationBlockWindowedDocument = {
                 name: { kind: 'Name', value: 'seriesForecast' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'seriesForecast' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
             ],
             selectionSet: {
               kind: 'SelectionSet',
@@ -4574,6 +4604,7 @@ export const GetInformationBlockWindowedDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'category' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'informationModel' },
@@ -4904,6 +4935,11 @@ export const ListInformationBlocksDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -4937,6 +4973,11 @@ export const ListInformationBlocksDocument = {
                 name: { kind: 'Name', value: 'scenarioId' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
             ],
             selectionSet: {
               kind: 'SelectionSet',
@@ -4948,6 +4989,7 @@ export const ListInformationBlocksDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'category' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'informationModel' },
@@ -5675,12 +5717,26 @@ export const ListLedgerMappingsDocument = {
       kind: 'OperationDefinition',
       operation: 'query',
       name: { kind: 'Name', value: 'ListLedgerMappings' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
       selectionSet: {
         kind: 'SelectionSet',
         selections: [
           {
             kind: 'Field',
             name: { kind: 'Name', value: 'mappings' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
@@ -5697,6 +5753,7 @@ export const ListLedgerMappingsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'framework' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                     ],
                   },
                 },
