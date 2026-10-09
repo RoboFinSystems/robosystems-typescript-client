@@ -46,6 +46,7 @@ export const GET_REPORT_PACKAGE = gql`
           category
           taxonomyId
           taxonomyName
+          entityId
           informationModel {
             conceptArrangement
             memberArrangement

@@ -360,6 +360,13 @@ export type LedgerReconciliationComponent = LedgerReconciliation['components'][n
 export type Report = NonNullable<GetLedgerReportQuery['report']>
 export type ReportPackage = NonNullable<GetLedgerReportPackageQuery['reportPackage']>
 export type ReportPackageItem = ReportPackage['items'][number]
+// A report's block renders through the same viewers as a read block, so its
+// selection must keep pace with the information-block documents.
+type AssertTrue<T extends true> = T
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ReportBlockIsInformationBlock = AssertTrue<
+  ReportPackageItem['block'] extends InformationBlock ? true : false
+>
 export type ReportListItem = NonNullable<ListLedgerReportsQuery['reports']>['reports'][number]
 export type StatementData = NonNullable<GetLedgerStatementQuery['statement']>
 export type StatementPeriod = StatementData['periods'][number]
