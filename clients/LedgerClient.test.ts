@@ -923,6 +923,7 @@ describe('LedgerClient', () => {
             replacesEventId: null,
             obligatedByEventId: null,
             dischargesEventId: null,
+            documentId: 'doc_inv_1001',
             createdAt: '2026-04-15T01:00:00Z',
             createdBy: 'sync',
           },
@@ -930,6 +931,7 @@ describe('LedgerClient', () => {
       )
       const evt = await client.getEventBlock('graph_1', 'evt_1')
       expect(evt?.id).toBe('evt_1')
+      expect(evt?.documentId).toBe('doc_inv_1001')
       const meta = evt?.metadata as { entries: Array<{ line_items: unknown[] }> }
       expect(meta.entries).toHaveLength(1)
       expect(meta.entries[0].line_items).toHaveLength(2)

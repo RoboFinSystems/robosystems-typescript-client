@@ -597,6 +597,7 @@ export type GetLedgerEventBlockQuery = {
     replacesEventId: string | null
     obligatedByEventId: string | null
     dischargesEventId: string | null
+    documentId: string | null
     createdAt: string
     createdBy: string
   } | null
@@ -638,6 +639,7 @@ export type ListLedgerEventBlocksQuery = {
     replacesEventId: string | null
     obligatedByEventId: string | null
     dischargesEventId: string | null
+    documentId: string | null
     createdAt: string
     createdBy: string
   }>
@@ -3883,6 +3885,7 @@ export const GetLedgerEventBlockDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'replacesEventId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'obligatedByEventId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'dischargesEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'documentId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
               ],
@@ -4033,6 +4036,7 @@ export const ListLedgerEventBlocksDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'replacesEventId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'obligatedByEventId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'dischargesEventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'documentId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
               ],
