@@ -1413,6 +1413,7 @@ export type ListLedgerReconciliationsQuery = {
       elementId: string | null
       requiredForClose: boolean
       materiality: number
+      statementCycle: string | null
       period: string
       asOf: string
       status: string
@@ -1435,11 +1436,25 @@ export type ListLedgerReconciliationsQuery = {
       components: Array<{
         name: string
         amount: number
+        kind: string | null
+        postingDate: string | null
+        entryId: string | null
         structureId: string | null
         eventId: string | null
         documentId: string | null
         note: string | null
       }>
+      rollForward: {
+        statementAsOf: string
+        through: string
+        bankLines: number
+        bankActivity: number
+        bankBalance: number
+        ledgerBalance: number
+        outstanding: number
+        feedBalance: number | null
+        feedBalanceReadOn: string | null
+      } | null
       differences: Array<{
         elementId: string | null
         accountCode: string | null
@@ -1454,11 +1469,25 @@ export type ListLedgerReconciliationsQuery = {
         components: Array<{
           name: string
           amount: number
+          kind: string | null
+          postingDate: string | null
+          entryId: string | null
           structureId: string | null
           eventId: string | null
           documentId: string | null
           note: string | null
         }>
+        rollForward: {
+          statementAsOf: string
+          through: string
+          bankLines: number
+          bankActivity: number
+          bankBalance: number
+          ledgerBalance: number
+          outstanding: number
+          feedBalance: number | null
+          feedBalanceReadOn: string | null
+        } | null
       }>
     }>
   } | null
@@ -6174,6 +6203,7 @@ export const ListLedgerReconciliationsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'requiredForClose' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'materiality' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'statementCycle' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'period' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'asOf' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'status' } },
@@ -6191,10 +6221,31 @@ export const ListLedgerReconciliationsDocument = {
                           selections: [
                             { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'postingDate' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'entryId' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'documentId' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'note' } },
+                          ],
+                        },
+                      },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rollForward' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'statementAsOf' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'through' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'bankLines' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'bankActivity' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'bankBalance' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'ledgerBalance' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'outstanding' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'feedBalance' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'feedBalanceReadOn' } },
                           ],
                         },
                       },
@@ -6232,10 +6283,34 @@ export const ListLedgerReconciliationsDocument = {
                                 selections: [
                                   { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'postingDate' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'entryId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'structureId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'documentId' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'note' } },
+                                ],
+                              },
+                            },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'rollForward' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'statementAsOf' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'through' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'bankLines' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'bankActivity' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'bankBalance' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'ledgerBalance' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'outstanding' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'feedBalance' } },
+                                  {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'feedBalanceReadOn' },
+                                  },
                                 ],
                               },
                             },
