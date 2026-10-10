@@ -1385,6 +1385,57 @@ export type CeremonyOptionsResponse = {
 };
 
 /**
+ * ChangeCalendarStartRequest
+ *
+ * Move where an entity's calendar starts, before its first close.
+ *
+ * Earlier adds open months back to `first_open_period`, for history that
+ * predates the start (a bank feed's backfill, a cutover moved earlier).
+ * Later removes empty leading months. Refused once any month has closed,
+ * and when moving later would drop months that hold entries or unposted
+ * source lines.
+ */
+export type ChangeCalendarStartRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity whose books this acts on, by id. Omit for the group parent — the single-entity default.
+     */
+    entity_id?: string | null;
+    /**
+     * First Open Period
+     *
+     * YYYY-MM: the new first month of the calendar, open.
+     */
+    first_open_period: string;
+    /**
+     * Note
+     *
+     * Free-form note attached to the audit event
+     */
+    note?: string | null;
+};
+
+/**
+ * ChangeCalendarStartResponse
+ */
+export type ChangeCalendarStartResponse = {
+    fiscal_calendar: FiscalCalendarResponse;
+    /**
+     * Periods Created
+     *
+     * Open FiscalPeriod rows added by moving the start earlier
+     */
+    periods_created?: number;
+    /**
+     * Periods Removed
+     *
+     * Empty FiscalPeriod rows removed by moving the start later
+     */
+    periods_removed?: number;
+};
+
+/**
  * ChangeReportingStyleRequest
  *
  * Switch a reporting entity's Reporting Style.
@@ -1834,6 +1885,38 @@ export type ClosePeriodResponse = {
     statement_rule_summary?: {
         [key: string]: number;
     } | null;
+};
+
+/**
+ * CompleteDocumentUploadOp
+ *
+ * Body for complete-document-upload: store the uploaded file as a document.
+ */
+export type CompleteDocumentUploadOp = {
+    /**
+     * Upload Id
+     *
+     * The upload create-document-upload returned.
+     */
+    upload_id: string;
+    /**
+     * Title
+     *
+     * Document title
+     */
+    title: string;
+    /**
+     * Tags
+     *
+     * Optional labels
+     */
+    tags?: Array<string> | null;
+    /**
+     * Folder
+     *
+     * Optional folder
+     */
+    folder?: string | null;
 };
 
 /**
@@ -2559,6 +2642,32 @@ export type CreateConnectionRequest = {
 };
 
 /**
+ * CreateDocumentUploadOp
+ *
+ * Body for create-document-upload: where to upload a document's file.
+ */
+export type CreateDocumentUploadOp = {
+    /**
+     * File Name
+     *
+     * The file's name, ending in its type's extension (`.pdf`, `.png`, `.jpg` or `.jpeg`).
+     */
+    file_name: string;
+    /**
+     * Content Type
+     *
+     * The file's media type.
+     */
+    content_type?: 'application/pdf' | 'image/png' | 'image/jpeg';
+    /**
+     * File Size Bytes
+     *
+     * The file's exact size in bytes, at most 25 MB. When given it is signed into the upload URL, so an upload of any other size fails. Completing the upload checks the size either way.
+     */
+    file_size_bytes?: number | null;
+};
+
+/**
  * CreateEntityRequest
  *
  * Add an entity to the graph's reporting group.
@@ -2815,6 +2924,12 @@ export type CreateEventBlockRequest = {
      * Settlement link: the obligation this event discharges (e.g. cash_received pointing at the originating sale_invoiced).
      */
     discharges_event_id?: string | null;
+    /**
+     * Document Id
+     *
+     * The stored document this event rests on, as evidence: the invoice PDF, the vendor bill, the receipt photo (upload it with create-document-upload and complete-document-upload). Must be a document on this graph. While the event is live, the document cannot be deleted.
+     */
+    document_id?: string | null;
     /**
      * Apply Handlers
      *
@@ -4785,6 +4900,16 @@ export type DocumentDetailResponse = {
      */
     sections_indexed: number;
     /**
+     * The stored file, for a document that is one; its `content` is empty. Download it from `GET /documents/{document_id}/file`.
+     */
+    file?: DocumentFileInfo | null;
+    /**
+     * Evidence For
+     *
+     * The live events that name this document as their evidence (an invoice, a bill, a statement balance), newest first, at most 50. While any are listed, the document cannot be deleted.
+     */
+    evidence_for?: Array<DocumentEvidence>;
+    /**
      * Created At
      */
     created_at: string;
@@ -4792,6 +4917,87 @@ export type DocumentDetailResponse = {
      * Updated At
      */
     updated_at: string;
+};
+
+/**
+ * DocumentEvidence
+ *
+ * A live event on the books that names the document as its evidence.
+ */
+export type DocumentEvidence = {
+    /**
+     * Event Id
+     */
+    event_id: string;
+    /**
+     * Event Type
+     */
+    event_type: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Occurred At
+     */
+    occurred_at: string;
+};
+
+/**
+ * DocumentFileDownloadResponse
+ *
+ * A short-lived link to a stored document file.
+ */
+export type DocumentFileDownloadResponse = {
+    /**
+     * Document Id
+     */
+    document_id: string;
+    /**
+     * Download Url
+     *
+     * Presigned URL to GET the file.
+     */
+    download_url: string;
+    /**
+     * Expires In
+     *
+     * Seconds until the URL expires.
+     */
+    expires_in: number;
+    file: DocumentFileInfo;
+};
+
+/**
+ * DocumentFileInfo
+ *
+ * The stored file behind a document, when it is one.
+ */
+export type DocumentFileInfo = {
+    /**
+     * File Name
+     *
+     * The file's name as uploaded.
+     */
+    file_name: string;
+    /**
+     * Content Type
+     *
+     * The file's media type.
+     */
+    content_type: string;
+    /**
+     * Size Bytes
+     *
+     * The stored file's size.
+     */
+    size_bytes: number;
+    /**
+     * Sha256
+     *
+     * Hex SHA-256 of the stored bytes, taken when the upload completed. A stored file never changes, so this identifies it.
+     */
+    sha256: string;
 };
 
 /**
@@ -4850,6 +5056,10 @@ export type DocumentListItem = {
      * Tags
      */
     tags?: Array<string> | null;
+    /**
+     * The stored file, for a document that is one.
+     */
+    file?: DocumentFileInfo | null;
     /**
      * Created At
      */
@@ -5620,6 +5830,12 @@ export type EventBlockEnvelope = {
      * Settlement link — the obligation this event discharges (e.g. `cash_received` pointing at the originating `sale_invoiced`).
      */
     discharges_event_id?: string | null;
+    /**
+     * Document Id
+     *
+     * The stored document the event rests on (an invoice, a bill, a receipt, a statement); read it with get-document.
+     */
+    document_id?: string | null;
     /**
      * Created At
      *
@@ -9741,7 +9957,7 @@ export type MercuryConnectionConfig = {
     /**
      * Since Date
      *
-     * First day of the backfill (ISO 8601). Defaults to 1 January of last year. Incremental syncs never look back before it.
+     * First day of the backfill (ISO 8601). Defaults to two years back. Incremental syncs never look back before it, and lines dated in a closed period are never captured.
      */
     since_date?: string | null;
     /**
@@ -10668,6 +10884,52 @@ export type OperationEnvelopeBlockedSourceGraphResponse = {
      * Command-specific result payload
      */
     result?: BlockedSourceGraphResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ChangeCalendarStartResponse]
+ */
+export type OperationEnvelopeChangeCalendarStartResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ChangeCalendarStartResponse | null;
     /**
      * At
      *
@@ -13931,7 +14193,7 @@ export type PlaidConnectionConfig = {
     /**
      * Since Date
      *
-     * First day of the backfill (ISO 8601), and how much history Plaid is asked to pull for the new Item (at most two years). Defaults to 1 January of last year.
+     * First day of the backfill (ISO 8601), and how much history Plaid is asked to pull for the new Item (at most two years). Defaults to as far back as Plaid goes. Lines dated in a closed period are never captured, whatever the window.
      */
     since_date?: string | null;
     /**
@@ -14455,6 +14717,12 @@ export type PreviewReconciliationsRequest = {
      * Also return the accounts that tie. Off by default: the differences are the work, and the counts cover the rest.
      */
     include_tied?: boolean;
+    /**
+     * Entity Id
+     *
+     * The entity whose books to compare, by id. Omit for the group parent. `source_ledger` applies to the group parent only: QuickBooks keeps its books, not a subsidiary's.
+     */
+    entity_id?: string | null;
 };
 
 /**
@@ -15588,6 +15856,12 @@ export type RecordStatementBalanceRequest = {
      */
     element_id: string;
     /**
+     * Entity Id
+     *
+     * The entity whose books the account is in, by id. Omit for the group parent. The account must be in that entity's chart.
+     */
+    entity_id?: string | null;
+    /**
      * As Of
      *
      * The statement's ending date.
@@ -15661,6 +15935,12 @@ export type RefreshReconciliationsRequest = {
      * Period to reconcile at its last day, as YYYY-MM.
      */
     period: string;
+    /**
+     * Entity Id
+     *
+     * The entity whose books to reconcile, by id. Omit for the group parent. Each entity's reconciliations, and the close they hold, are its own.
+     */
+    entity_id?: string | null;
 };
 
 /**
@@ -19520,6 +19800,12 @@ export type UpdateEventBlockRequest = {
      * Set/update the settlement link.
      */
     discharges_event_id?: string | null;
+    /**
+     * Document Id
+     *
+     * Set or replace the stored document the event rests on; an empty string detaches it. Must be a document on this graph. Unset = unchanged.
+     */
+    document_id?: string | null;
 };
 
 /**
@@ -25953,6 +26239,64 @@ export type GetDocumentResponses = {
 
 export type GetDocumentResponse = GetDocumentResponses[keyof GetDocumentResponses];
 
+export type GetDocumentFileData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Document Id
+         */
+        document_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/documents/{document_id}/file';
+};
+
+export type GetDocumentFileErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetDocumentFileError = GetDocumentFileErrors[keyof GetDocumentFileErrors];
+
+export type GetDocumentFileResponses = {
+    /**
+     * Successful Response
+     */
+    200: DocumentFileDownloadResponse;
+};
+
+export type GetDocumentFileResponse = GetDocumentFileResponses[keyof GetDocumentFileResponses];
+
 export type ListMemoriesData = {
     body?: never;
     path: {
@@ -26911,6 +27255,134 @@ export type DeleteDocumentResponses = {
 };
 
 export type DeleteDocumentResponse = DeleteDocumentResponses[keyof DeleteDocumentResponses];
+
+export type CreateDocumentUploadData = {
+    body: CreateDocumentUploadOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/create-document-upload';
+};
+
+export type CreateDocumentUploadErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type CreateDocumentUploadError = CreateDocumentUploadErrors[keyof CreateDocumentUploadErrors];
+
+export type CreateDocumentUploadResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type CreateDocumentUploadResponse = CreateDocumentUploadResponses[keyof CreateDocumentUploadResponses];
+
+export type CompleteDocumentUploadData = {
+    body: CompleteDocumentUploadOp;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/operations/complete-document-upload';
+};
+
+export type CompleteDocumentUploadErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type CompleteDocumentUploadError = CompleteDocumentUploadErrors[keyof CompleteDocumentUploadErrors];
+
+export type CompleteDocumentUploadResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelope;
+};
+
+export type CompleteDocumentUploadResponse = CompleteDocumentUploadResponses[keyof CompleteDocumentUploadResponses];
 
 export type CreateFileUploadData = {
     body: FileUploadRequest;
@@ -28479,6 +28951,70 @@ export type InitializeLedgerResponses = {
 };
 
 export type InitializeLedgerResponse2 = InitializeLedgerResponses[keyof InitializeLedgerResponses];
+
+export type ChangeCalendarStartData = {
+    body: ChangeCalendarStartRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/change-calendar-start';
+};
+
+export type ChangeCalendarStartErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ChangeCalendarStartError = ChangeCalendarStartErrors[keyof ChangeCalendarStartErrors];
+
+export type ChangeCalendarStartResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeChangeCalendarStartResponse;
+};
+
+export type ChangeCalendarStartResponse2 = ChangeCalendarStartResponses[keyof ChangeCalendarStartResponses];
 
 export type InitializeChartOfAccountsData = {
     body: InitializeChartOfAccountsRequest;
