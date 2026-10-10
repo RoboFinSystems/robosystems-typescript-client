@@ -56,6 +56,7 @@ export const LIST_EVENT_BLOCKS = gql`
       replacesEventId
       obligatedByEventId
       dischargesEventId
+      documentId
       createdAt
       createdBy
     }
