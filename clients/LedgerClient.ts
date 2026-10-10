@@ -33,6 +33,7 @@ import {
   bindTextBlock,
   blockSourceGraph,
   buildFactGrid,
+  changeCalendarStart,
   closePeriod,
   computeMetrics,
   createAgent,
@@ -93,6 +94,7 @@ import type {
   BindTextBlockResponse,
   BlockedSourceGraphResponse,
   BlockSourceGraphResult,
+  ChangeCalendarStartRequest,
   ClosePeriodOperation,
   ComputeMetricsRequest,
   ComputeMetricsResponse,
@@ -628,6 +630,17 @@ export interface EntityScopeOptions {
   entityId?: string | null
 }
 
+export interface ChangeCalendarStartOptions extends EntityScopeOptions {
+  note?: string | null
+}
+
+/** The calendar after its start moved, and how many months that opened or removed. */
+export interface ChangeCalendarStartResult {
+  fiscalCalendar: LedgerFiscalCalendar
+  periodsCreated: number
+  periodsRemoved: number
+}
+
 export interface ClosePeriodOptions extends EntityScopeOptions {
   note?: string | null
   allowStaleSync?: boolean
@@ -662,7 +675,7 @@ export interface ClosePeriodOptions extends EntityScopeOptions {
 /** Which reconciliation check to run. */
 export type ReconciliationMethod = NonNullable<PreviewReconciliationsRequest['method']>
 
-export interface PreviewReconciliationsOptions {
+export interface PreviewReconciliationsOptions extends EntityScopeOptions {
   /** Defaults to `source_ledger`, which needs a connected QuickBooks ledger. */
   method?: ReconciliationMethod
   /** Also return the accounts that tie. */
@@ -691,6 +704,8 @@ export interface LedgerReconciliationPreview {
 export interface RecordStatementBalanceInput {
   /** The balance-sheet account the statement is for. */
   elementId: string
+  /** The subsidiary whose account it is; omitted, the group parent. */
+  entityId?: string | null
   /** The statement's ending date, as YYYY-MM-DD. */
   asOf: string
   /**
@@ -2053,6 +2068,36 @@ export class LedgerClient {
   }
 
   /**
+   * Move the calendar's first open month (YYYY-MM), allowed only until the
+   * entity's first close. Earlier opens months back to it; later removes the
+   * leading months, refused while they hold any entry.
+   */
+  async changeCalendarStart(
+    graphId: string,
+    firstOpenPeriod: string,
+    options?: ChangeCalendarStartOptions
+  ): Promise<ChangeCalendarStartResult> {
+    const body: ChangeCalendarStartRequest = {
+      first_open_period: firstOpenPeriod,
+      entity_id: options?.entityId ?? null,
+      note: options?.note ?? null,
+    }
+    const envelope = await this.callOperation('Change calendar start', (o) =>
+      changeCalendarStart({ ...o, path: { graph_id: graphId }, body })
+    )
+    const raw = envelope.result as unknown as {
+      fiscal_calendar: RawFiscalCalendar
+      periods_created?: number
+      periods_removed?: number
+    }
+    return {
+      fiscalCalendar: rawFiscalCalendarToCamel(raw.fiscal_calendar),
+      periodsCreated: raw.periods_created ?? 0,
+      periodsRemoved: raw.periods_removed ?? 0,
+    }
+  }
+
+  /**
    * Close a fiscal period — the final commit action — on the group parent,
    * or on the entity `entityId` names. Each entity closes on its own.
    */
@@ -2182,6 +2227,7 @@ export class LedgerClient {
       period,
       method: options?.method,
       include_tied: options?.includeTied,
+      entity_id: options?.entityId ?? null,
     }
     const envelope = await this.callOperation('Preview reconciliations', (o) =>
       previewReconciliations({ ...o, path: { graph_id: graphId }, body })
@@ -2193,8 +2239,12 @@ export class LedgerClient {
    * Run every reconciliation that applies at a period end and record each
    * result on its block. `notes` names any check that could not run.
    */
-  async refreshReconciliations(graphId: string, period: string): Promise<LedgerReconciliationList> {
-    const body: RefreshReconciliationsRequest = { period }
+  async refreshReconciliations(
+    graphId: string,
+    period: string,
+    options?: EntityScopeOptions
+  ): Promise<LedgerReconciliationList> {
+    const body: RefreshReconciliationsRequest = { period, entity_id: options?.entityId ?? null }
     const envelope = await this.callOperation('Refresh reconciliations', (o) =>
       refreshReconciliations({ ...o, path: { graph_id: graphId }, body })
     )
@@ -2211,6 +2261,7 @@ export class LedgerClient {
   ): Promise<LedgerReconciliation> {
     const body: RecordStatementBalanceRequest = {
       element_id: input.elementId,
+      entity_id: input.entityId ?? null,
       as_of: input.asOf,
       balance: input.balance,
       document_id: input.documentId ?? null,

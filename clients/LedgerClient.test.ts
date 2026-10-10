@@ -1276,6 +1276,31 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('changeCalendarStart', () => {
+    it('moves the first open month and reports what changed', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('change-calendar-start', {
+          fiscal_calendar: { periods: [] },
+          periods_created: 7,
+          periods_removed: 0,
+        })
+      )
+      const result = await client.changeCalendarStart('graph_1', '2026-02', {
+        entityId: 'ent_2',
+        note: 'history from February',
+      })
+      expect(result.periodsCreated).toBe(7)
+      expect(result.periodsRemoved).toBe(0)
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toContain('/operations/change-calendar-start')
+      expect(JSON.parse(await req.text())).toEqual({
+        first_open_period: '2026-02',
+        entity_id: 'ent_2',
+        note: 'history from February',
+      })
+    })
+  })
+
   describe('reopenPeriod', () => {
     it('sends entity_id when an entity is named', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('reopen-period', { periods: [] }))
@@ -1639,6 +1664,7 @@ describe('LedgerClient', () => {
         period: '2026-08',
         method: 'schedule_register',
         include_tied: true,
+        entity_id: null,
       })
     })
 
@@ -1656,11 +1682,55 @@ describe('LedgerClient', () => {
       expect(req.url).toContain('/operations/record-statement-balance')
       expect(JSON.parse(await req.text())).toEqual({
         element_id: 'elem_loan',
+        entity_id: null,
         as_of: '2026-08-31',
         balance: 4800,
         document_id: 'doc_1',
         note: null,
       })
+    })
+
+    it("records a subsidiary's statement against its own entity", async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('record-statement-balance', summary))
+      await client.recordStatementBalance('graph_1', {
+        elementId: 'elem_cash',
+        entityId: 'ent_2',
+        asOf: '2026-08-31',
+        balance: 1200,
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text())).toMatchObject({ entity_id: 'ent_2' })
+    })
+
+    it('refreshes and previews one entity when it is named', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('refresh-reconciliations', {
+          period: '2026-08',
+          as_of: '2026-08-31',
+          notes: [],
+          reconciliations: [],
+        })
+      )
+      await client.refreshReconciliations('graph_1', '2026-08', { entityId: 'ent_2' })
+      const refresh = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await refresh.text())).toEqual({ period: '2026-08', entity_id: 'ent_2' })
+
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-reconciliations', {
+          period: '2026-08',
+          as_of: '2026-08-31',
+          method: 'statement',
+          total_difference: 0,
+          rows: [],
+          notes: [],
+        })
+      )
+      await client.previewReconciliations('graph_1', '2026-08', {
+        method: 'statement',
+        entityId: 'ent_2',
+      })
+      const preview = mockFetch.mock.calls[1][0] as Request
+      expect(JSON.parse(await preview.text())).toMatchObject({ entity_id: 'ent_2' })
     })
 
     it('changes only the policy fields given', async () => {
