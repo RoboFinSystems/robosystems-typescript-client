@@ -8,6 +8,10 @@ import { gql } from 'graphql-request'
  * A block not yet compared for the period reads `not_started`. Comparisons
  * are recorded by `refreshReconciliations` and `recordStatementBalance`.
  * `notes` is only populated on a refresh; a read returns it empty.
+ *
+ * On a bank-fed account a statement's `components` list the ledger lines the
+ * bank had not cleared (`kind: outstanding`), and a statement ending before
+ * the period's last day carries a `rollForward` to it.
  */
 export const LIST_RECONCILIATIONS = gql`
   query ListLedgerReconciliations($period: String!, $entityId: String) {
@@ -23,6 +27,7 @@ export const LIST_RECONCILIATIONS = gql`
         elementId
         requiredForClose
         materiality
+        statementCycle
         period
         asOf
         status
@@ -35,10 +40,24 @@ export const LIST_RECONCILIATIONS = gql`
         components {
           name
           amount
+          kind
+          postingDate
+          entryId
           structureId
           eventId
           documentId
           note
+        }
+        rollForward {
+          statementAsOf
+          through
+          bankLines
+          bankActivity
+          bankBalance
+          ledgerBalance
+          outstanding
+          feedBalance
+          feedBalanceReadOn
         }
         source
         comparedAt
@@ -64,10 +83,24 @@ export const LIST_RECONCILIATIONS = gql`
           components {
             name
             amount
+            kind
+            postingDate
+            entryId
             structureId
             eventId
             documentId
             note
+          }
+          rollForward {
+            statementAsOf
+            through
+            bankLines
+            bankActivity
+            bankBalance
+            ledgerBalance
+            outstanding
+            feedBalance
+            feedBalanceReadOn
           }
         }
       }

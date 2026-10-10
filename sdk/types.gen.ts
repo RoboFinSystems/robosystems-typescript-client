@@ -14708,7 +14708,7 @@ export type PreviewReconciliationsRequest = {
     /**
      * Method
      *
-     * Which check to preview. `source_ledger` compares every account with the synced accounting system's own trial balance. `schedule_register` compares each asset account a schedule carries a balance on with what its schedules say it holds. `statement` compares each account that has a statement balance recorded in the period with that balance.
+     * Which check to preview. `source_ledger` compares every account with the synced accounting system's own trial balance. `schedule_register` compares each asset account a schedule carries a balance on with what its schedules say it holds. `statement` compares each account that has a statement covering the period with that balance, adjusted on a bank-fed account by the lines the bank had not cleared.
      */
     method?: 'source_ledger' | 'schedule_register' | 'statement';
     /**
@@ -15123,13 +15123,14 @@ export type RebuildScheduleRequest = {
  * ReconciliationComponent
  *
  * One part of an account's independent balance: what a single schedule
- * says the account carries, or a recorded statement balance.
+ * says the account carries, a recorded statement balance, or a ledger line
+ * outstanding at the statement's date.
  */
 export type ReconciliationComponent = {
     /**
      * Name
      *
-     * The schedule's name, or the statement and its date.
+     * The schedule's name, the statement and its date, or the outstanding line's description.
      */
     name: string;
     /**
@@ -15139,6 +15140,24 @@ export type ReconciliationComponent = {
      */
     amount: number;
     /**
+     * Kind
+     *
+     * `schedule`, `statement`, or `outstanding`: a ledger line on a bank-fed account that did not come from the feed, dated on or before the statement, so the bank had not cleared it.
+     */
+    kind?: string | null;
+    /**
+     * Posting Date
+     *
+     * An `outstanding` line's posting date.
+     */
+    posting_date?: string | null;
+    /**
+     * Entry Id
+     *
+     * The journal entry an `outstanding` line belongs to.
+     */
+    entry_id?: string | null;
+    /**
      * Structure Id
      *
      * The schedule, for a `schedule_register` part.
@@ -15147,7 +15166,7 @@ export type ReconciliationComponent = {
     /**
      * Event Id
      *
-     * The recorded balance, for a `statement` part.
+     * The recorded balance, for a `statement` part; the event behind an `outstanding` line, when it has one.
      */
     event_id?: string | null;
     /**
@@ -15253,6 +15272,12 @@ export type ReconciliationMechanics = {
      * Whether the person who signs off must be someone other than the person who ran the comparison.
      */
     separate_reviewer?: boolean;
+    /**
+     * Statement Cycle
+     *
+     * `statement` blocks only: how often the account's statement is issued; unset is monthly. A period is covered by the latest statement ending within the cycle that ends with it.
+     */
+    statement_cycle?: 'monthly' | 'quarterly' | 'annual' | null;
 };
 
 /**
@@ -15281,6 +15306,12 @@ export type ReconciliationPolicyResponse = {
      * Separate Reviewer
      */
     separate_reviewer: boolean;
+    /**
+     * Statement Cycle
+     *
+     * `statement` blocks only: how often the statement is issued.
+     */
+    statement_cycle?: 'monthly' | 'quarterly' | 'annual' | null;
 };
 
 /**
@@ -15364,6 +15395,69 @@ export type ReconciliationPreviewResponse = {
 };
 
 /**
+ * ReconciliationRollForward
+ *
+ * A statement carried from its ending date to the period's last day on a
+ * bank-fed account, where every line the feed brought is the bank's own.
+ */
+export type ReconciliationRollForward = {
+    /**
+     * Statement As Of
+     *
+     * The statement's ending date.
+     */
+    statement_as_of: string;
+    /**
+     * Through
+     *
+     * The period's last day.
+     */
+    through: string;
+    /**
+     * Bank Lines
+     *
+     * Booked feed lines dated after the statement, to the period end.
+     */
+    bank_lines: number;
+    /**
+     * Bank Activity
+     *
+     * Their net effect on the account, debit-positive.
+     */
+    bank_activity: number;
+    /**
+     * Bank Balance
+     *
+     * The statement balance carried to the period end by those lines: what the bank held then, debit-positive.
+     */
+    bank_balance: number;
+    /**
+     * Ledger Balance
+     *
+     * The ledger's balance at the period end, as the close will leave it, debit-positive.
+     */
+    ledger_balance: number;
+    /**
+     * Outstanding
+     *
+     * Ledger lines not from the feed and dated on or before the period end, net: the ledger minus the carried bank balance.
+     */
+    outstanding: number;
+    /**
+     * Feed Balance
+     *
+     * A cross-check, never the figure reconciled: the bank feed's own balance from the first reading on or after the period end, less the booked feed lines between the period end and that reading. Null when the feed has no reading within ten days.
+     */
+    feed_balance?: number | null;
+    /**
+     * Feed Balance Read On
+     *
+     * The day of the feed reading `feed_balance` starts from.
+     */
+    feed_balance_read_on?: string | null;
+};
+
+/**
  * ReconciliationRow
  *
  * One account: the ledger's balance, the independent balance, the difference.
@@ -15410,7 +15504,7 @@ export type ReconciliationRow = {
     /**
      * Independent Balance
      *
-     * What the independent source says.
+     * What the independent source says. For a `statement` on a bank-fed account, the statement balance adjusted by its outstanding lines.
      */
     independent_balance: number;
     /**
@@ -15434,9 +15528,13 @@ export type ReconciliationRow = {
     /**
      * Components
      *
-     * Account-scope methods only: what makes up the independent balance. One entry per schedule for `schedule_register`; the recorded statement for `statement`.
+     * Account-scope methods only: what makes up the independent balance. One entry per schedule for `schedule_register`; the recorded statement for `statement`, then each outstanding line.
      */
     components?: Array<ReconciliationComponent>;
+    /**
+     * `statement` on a bank-fed account whose statement ends before the period's last day: the statement carried to it by the feed's lines.
+     */
+    roll_forward?: ReconciliationRollForward | null;
 };
 
 /**
@@ -15488,6 +15586,12 @@ export type ReconciliationSummary = {
      */
     materiality: number;
     /**
+     * Statement Cycle
+     *
+     * `statement` blocks only: how often the account's statement is issued, `monthly`, `quarterly` or `annual`.
+     */
+    statement_cycle?: string | null;
+    /**
      * Period
      *
      * The period, as YYYY-MM.
@@ -15538,15 +15642,19 @@ export type ReconciliationSummary = {
     /**
      * Balance As Of
      *
-     * Account-scope only: the date the two balances are stated at. The period's last day, unless a statement ended earlier in the period.
+     * Account-scope only: the date the two balances are stated at. The period's last day, unless the statement covering it ended earlier.
      */
     balance_as_of?: string | null;
     /**
      * Components
      *
-     * Account-scope only: what makes up the independent balance. One entry per schedule for `schedule_register`; the recorded statement for `statement`.
+     * Account-scope only: what makes up the independent balance. One entry per schedule for `schedule_register`; the recorded statement for `statement`, then each outstanding line.
      */
     components?: Array<ReconciliationComponent>;
+    /**
+     * `statement` on a bank-fed account whose statement ends before the period's last day: the statement carried to it by the feed's lines.
+     */
+    roll_forward?: ReconciliationRollForward | null;
     /**
      * Source
      *
@@ -17877,6 +17985,12 @@ export type SetReconciliationPolicyRequest = {
      * Whether the person who signs off must be someone other than the person who ran the comparison. It can only be turned on when the graph has at least two members who can write. Omit to keep.
      */
     separate_reviewer?: boolean | null;
+    /**
+     * Statement Cycle
+     *
+     * `statement` blocks only: how often the account's statement is issued. A period is covered by the latest statement ending within the cycle that ends with it, so a quarterly statement covers the two months before the next one. Omit to keep.
+     */
+    statement_cycle?: 'monthly' | 'quarterly' | 'annual' | null;
 };
 
 /**

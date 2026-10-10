@@ -147,6 +147,7 @@ import type {
   ReconciliationListResponse,
   ReconciliationPolicyResponse,
   ReconciliationPreviewResponse,
+  ReconciliationRollForward,
   ReconciliationRow,
   ReconciliationSummary,
   ReconcilingItemPlan,
@@ -357,6 +358,12 @@ export type LedgerReconciliation = LedgerReconciliationList['reconciliations'][n
 export type LedgerReconciliationRow = LedgerReconciliation['differences'][number]
 /** One part of an account's independent balance: a schedule, or a statement. */
 export type LedgerReconciliationComponent = LedgerReconciliation['components'][number]
+
+/** A statement carried to the period's last day by the bank feed's own lines. */
+export type LedgerReconciliationRollForward = NonNullable<LedgerReconciliation['rollForward']>
+
+/** How often an account's statement is issued. */
+export type StatementCycle = 'monthly' | 'quarterly' | 'annual'
 
 // Reports + publish lists + statements
 export type Report = NonNullable<GetLedgerReportQuery['report']>
@@ -725,6 +732,8 @@ export interface ReconciliationPolicyChanges {
   materiality?: number
   reviewRequired?: boolean
   separateReviewer?: boolean
+  /** Statement reconciliations only: how often the statement is issued. */
+  statementCycle?: StatementCycle
 }
 
 export interface LedgerReconciliationPolicy {
@@ -733,6 +742,8 @@ export interface LedgerReconciliationPolicy {
   materiality: number
   reviewRequired: boolean
   separateReviewer: boolean
+  /** Statement reconciliations only; null for any other. */
+  statementCycle: StatementCycle | null
 }
 
 export interface CreateScheduleOptions {
@@ -2285,6 +2296,7 @@ export class LedgerClient {
       materiality: changes.materiality,
       review_required: changes.reviewRequired,
       separate_reviewer: changes.separateReviewer,
+      statement_cycle: changes.statementCycle,
     }
     const envelope = await this.callOperation('Set reconciliation policy', (o) =>
       setReconciliationPolicy({ ...o, path: { graph_id: graphId }, body })
@@ -2296,6 +2308,7 @@ export class LedgerClient {
       materiality: raw.materiality,
       reviewRequired: raw.review_required,
       separateReviewer: raw.separate_reviewer,
+      statementCycle: raw.statement_cycle ?? null,
     }
   }
 
@@ -3193,10 +3206,30 @@ function reconciliationComponentToCamel(
   return {
     name: raw.name,
     amount: raw.amount,
+    kind: raw.kind ?? null,
+    postingDate: raw.posting_date ?? null,
+    entryId: raw.entry_id ?? null,
     structureId: raw.structure_id ?? null,
     eventId: raw.event_id ?? null,
     documentId: raw.document_id ?? null,
     note: raw.note ?? null,
+  }
+}
+
+function reconciliationRollForwardToCamel(
+  raw: ReconciliationRollForward | null | undefined
+): LedgerReconciliationRollForward | null {
+  if (!raw) return null
+  return {
+    statementAsOf: raw.statement_as_of,
+    through: raw.through,
+    bankLines: raw.bank_lines,
+    bankActivity: raw.bank_activity,
+    bankBalance: raw.bank_balance,
+    ledgerBalance: raw.ledger_balance,
+    outstanding: raw.outstanding,
+    feedBalance: raw.feed_balance ?? null,
+    feedBalanceReadOn: raw.feed_balance_read_on ?? null,
   }
 }
 
@@ -3213,6 +3246,7 @@ function reconciliationRowToCamel(raw: ReconciliationRow): LedgerReconciliationR
     status: raw.status,
     asOf: raw.as_of ?? null,
     components: (raw.components ?? []).map(reconciliationComponentToCamel),
+    rollForward: reconciliationRollForwardToCamel(raw.roll_forward),
   }
 }
 
@@ -3229,6 +3263,7 @@ function reconciliationSummaryToCamel(raw: ReconciliationSummary): LedgerReconci
     elementId: raw.element_id ?? null,
     requiredForClose: raw.required_for_close,
     materiality: raw.materiality,
+    statementCycle: raw.statement_cycle ?? null,
     period: raw.period,
     asOf: raw.as_of,
     status: raw.status,
@@ -3239,6 +3274,7 @@ function reconciliationSummaryToCamel(raw: ReconciliationSummary): LedgerReconci
     independentBalance: raw.independent_balance ?? null,
     balanceAsOf: raw.balance_as_of ?? null,
     components: (raw.components ?? []).map(reconciliationComponentToCamel),
+    rollForward: reconciliationRollForwardToCamel(raw.roll_forward),
     source: raw.source ?? null,
     comparedAt: raw.compared_at ?? null,
     factSetId: raw.fact_set_id ?? null,

@@ -1621,6 +1621,9 @@ describe('LedgerClient', () => {
       expect(rec.components[0]).toEqual({
         name: 'Statement ending 2026-08-31',
         amount: -4800,
+        kind: null,
+        postingDate: null,
+        entryId: null,
         structureId: null,
         eventId: 'evt_1',
         documentId: 'doc_1',
@@ -1753,6 +1756,96 @@ describe('LedgerClient', () => {
       expect(JSON.parse(await req.text())).toEqual({
         structure_id: 'struct_1',
         required_for_close: true,
+      })
+    })
+
+    it('carries the outstanding lines and the roll-forward of a bank statement', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('record-statement-balance', {
+          ...summary,
+          name: 'Checking (statement)',
+          statement_cycle: 'monthly',
+          ledger_balance: 1250,
+          independent_balance: 1250,
+          balance_as_of: '2026-09-05',
+          components: [
+            { name: 'Statement ending 2026-09-05', amount: 1500, kind: 'statement' },
+            {
+              name: 'Vendor payment',
+              amount: -50,
+              kind: 'outstanding',
+              posting_date: '2026-09-04',
+              entry_id: 'je_1',
+            },
+          ],
+          roll_forward: {
+            statement_as_of: '2026-09-05',
+            through: '2026-09-30',
+            bank_lines: 1,
+            bank_activity: -200,
+            bank_balance: 1300,
+            ledger_balance: 1250,
+            outstanding: -50,
+            feed_balance: 1300,
+            feed_balance_read_on: '2026-10-03',
+          },
+        })
+      )
+      const rec = await client.recordStatementBalance('graph_1', {
+        elementId: 'elem_cash',
+        asOf: '2026-09-05',
+        balance: 1500,
+      })
+      expect(rec.statementCycle).toBe('monthly')
+      expect(rec.components[1]).toMatchObject({
+        kind: 'outstanding',
+        postingDate: '2026-09-04',
+        entryId: 'je_1',
+      })
+      expect(rec.components[0]).toMatchObject({ kind: 'statement', entryId: null })
+      expect(rec.rollForward).toEqual({
+        statementAsOf: '2026-09-05',
+        through: '2026-09-30',
+        bankLines: 1,
+        bankActivity: -200,
+        bankBalance: 1300,
+        ledgerBalance: 1250,
+        outstanding: -50,
+        feedBalance: 1300,
+        feedBalanceReadOn: '2026-10-03',
+      })
+    })
+
+    it('leaves the roll-forward empty when the statement ends on the last day', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('record-statement-balance', summary))
+      const rec = await client.recordStatementBalance('graph_1', {
+        elementId: 'elem_loan',
+        asOf: '2026-08-31',
+        balance: 4800,
+      })
+      expect(rec.rollForward).toBeNull()
+      expect(rec.statementCycle).toBeNull()
+    })
+
+    it("sets a statement reconciliation's cycle", async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('set-reconciliation-policy', {
+          structure_id: 'struct_1',
+          required_for_close: false,
+          materiality: 0,
+          review_required: false,
+          separate_reviewer: false,
+          statement_cycle: 'quarterly',
+        })
+      )
+      const policy = await client.setReconciliationPolicy('graph_1', 'struct_1', {
+        statementCycle: 'quarterly',
+      })
+      expect(policy.statementCycle).toBe('quarterly')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text())).toEqual({
+        structure_id: 'struct_1',
+        statement_cycle: 'quarterly',
       })
     })
 
