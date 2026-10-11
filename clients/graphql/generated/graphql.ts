@@ -351,6 +351,16 @@ export type GetLedgerAgentQuery = {
     createdAt: string | null
     updatedAt: string | null
     createdBy: string | null
+    classification: {
+      elementId: string
+      accountName: string | null
+      mode: string
+      confirmations: number
+      overrides: number
+      setBy: string | null
+      setAt: string | null
+      learnedFrom: string | null
+    } | null
   } | null
 }
 
@@ -382,6 +392,16 @@ export type ListLedgerAgentsQuery = {
     createdAt: string | null
     updatedAt: string | null
     createdBy: string | null
+    classification: {
+      elementId: string
+      accountName: string | null
+      mode: string
+      confirmations: number
+      overrides: number
+      setBy: string | null
+      setAt: string | null
+      learnedFrom: string | null
+    } | null
   }>
 }
 
@@ -3233,6 +3253,23 @@ export const GetLedgerAgentDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'is1099Recipient' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'classification' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'mode' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'confirmations' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'overrides' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'learnedFrom' } },
+                    ],
+                  },
+                },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
@@ -3338,6 +3375,23 @@ export const ListLedgerAgentsDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'externalId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'is1099Recipient' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'classification' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'mode' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'confirmations' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'overrides' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'learnedFrom' } },
+                    ],
+                  },
+                },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },

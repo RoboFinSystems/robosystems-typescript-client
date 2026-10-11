@@ -145,6 +145,63 @@ export type AddPublishListMembersOperation = {
 };
 
 /**
+ * AgentClassification
+ *
+ * A counterparty's default account, learned from committed lines or set by
+ * hand.
+ */
+export type AgentClassification = {
+    /**
+     * Element Id
+     *
+     * The default chart account.
+     */
+    element_id: string;
+    /**
+     * Account Name
+     *
+     * The account's name.
+     */
+    account_name?: string | null;
+    /**
+     * Mode
+     *
+     * `suggest`: offered on each new line. `always_ask`: never offered.
+     */
+    mode: string;
+    /**
+     * Confirmations
+     *
+     * Committed lines that went to this account.
+     */
+    confirmations: number;
+    /**
+     * Overrides
+     *
+     * Committed lines that went elsewhere while it was the default.
+     */
+    overrides: number;
+    /**
+     * Set By
+     *
+     * Who set or last moved it.
+     */
+    set_by?: string | null;
+    /**
+     * Set At
+     *
+     * When it was set or last moved.
+     */
+    set_at?: string | null;
+    /**
+     * Learned From
+     *
+     * The committed line it was learned from, when it was.
+     */
+    learned_from?: string | null;
+};
+
+/**
  * AnalyticalStatementFactRow
  *
  * A single fact row from the graph-backed statement analysis.
@@ -8782,6 +8839,56 @@ export type JournalEntryResponse = {
 };
 
 /**
+ * LearnClassificationDefaultsRequest
+ *
+ * Seed counterparty defaults from the bank lines already committed.
+ */
+export type LearnClassificationDefaultsRequest = {
+    /**
+     * Dry Run
+     *
+     * Report what would be learned without writing it.
+     */
+    dry_run?: boolean;
+};
+
+/**
+ * LearnClassificationDefaultsResponse
+ *
+ * What seeding the defaults learned.
+ */
+export type LearnClassificationDefaultsResponse = {
+    /**
+     * Agents Learned
+     *
+     * Counterparties given a default from their committed lines.
+     */
+    agents_learned: number;
+    /**
+     * Agents Kept
+     *
+     * Counterparties that already had a default, left as they were.
+     */
+    agents_kept: number;
+    /**
+     * Lines Read
+     *
+     * Committed lines classified to a single account that were read.
+     */
+    lines_read: number;
+    /**
+     * Open Lines Resuggested
+     *
+     * Still-open lines whose suggestion changed as a result.
+     */
+    open_lines_resuggested: number;
+    /**
+     * Dry Run
+     */
+    dry_run: boolean;
+};
+
+/**
  * LedgerAgentResponse
  */
 export type LedgerAgentResponse = {
@@ -8847,6 +8954,10 @@ export type LedgerAgentResponse = {
      * Is 1099 Recipient
      */
     is_1099_recipient: boolean;
+    /**
+     * The default account its bank lines are suggested.
+     */
+    classification?: AgentClassification | null;
     /**
      * Created At
      */
@@ -11988,6 +12099,52 @@ export type OperationEnvelopeJournalEntryResponse = {
      * Command-specific result payload
      */
     result?: JournalEntryResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[LearnClassificationDefaultsResponse]
+ */
+export type OperationEnvelopeLearnClassificationDefaultsResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: LearnClassificationDefaultsResponse | null;
     /**
      * At
      *
@@ -19726,9 +19883,21 @@ export type UpdateAgentRequest = {
      */
     is_1099_recipient?: boolean | null;
     /**
+     * Classification Element Id
+     *
+     * The chart account this counterparty's bank lines are usually classified to, suggested on each new line. An empty string clears it. Its still-open lines are re-suggested at once. Omit to keep.
+     */
+    classification_element_id?: string | null;
+    /**
+     * Classification Mode
+     *
+     * `suggest` offers the default on each line; `always_ask` offers none, for a counterparty whose lines go to different accounts. Omit to keep.
+     */
+    classification_mode?: 'suggest' | 'always_ask' | null;
+    /**
      * Metadata Patch
      *
-     * Deep-merged into agent.metadata. Pass `{}` to leave unchanged.
+     * Deep-merged into agent.metadata. Pass `{}` to leave unchanged. The default classification is set with the fields above, not here.
      */
     metadata_patch?: {
         [key: string]: unknown;
@@ -30537,6 +30706,70 @@ export type UpdateAgentResponses = {
 };
 
 export type UpdateAgentResponse = UpdateAgentResponses[keyof UpdateAgentResponses];
+
+export type LearnClassificationDefaultsData = {
+    body: LearnClassificationDefaultsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/learn-classification-defaults';
+};
+
+export type LearnClassificationDefaultsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type LearnClassificationDefaultsError = LearnClassificationDefaultsErrors[keyof LearnClassificationDefaultsErrors];
+
+export type LearnClassificationDefaultsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeLearnClassificationDefaultsResponse;
+};
+
+export type LearnClassificationDefaultsResponse2 = LearnClassificationDefaultsResponses[keyof LearnClassificationDefaultsResponses];
 
 export type CreateEventBlockData = {
     body: CreateEventBlockRequest;

@@ -1020,6 +1020,31 @@ describe('LedgerClient', () => {
       expect(agt?.name).toBe('Office Supplies Co')
     })
 
+    it("carries the counterparty's default account", async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          agent: {
+            id: 'agt_1',
+            name: 'Gusto',
+            classification: {
+              elementId: 'elem_payroll',
+              accountName: 'Payroll',
+              mode: 'suggest',
+              confirmations: 7,
+              overrides: 1,
+              setBy: 'usr_1',
+              setAt: '2026-10-10T00:00:00Z',
+              learnedFrom: 'evt_1',
+            },
+          },
+        })
+      )
+      const agt = await client.getAgent('graph_1', 'agt_1')
+      expect(agt?.classification).toMatchObject({ accountName: 'Payroll', confirmations: 7 })
+      const [, init] = mockFetch.mock.calls[0]
+      expect(JSON.parse(init.body as string).query).toContain('classification')
+    })
+
     it('returns null when agent is missing', async () => {
       mockFetch.mockResolvedValueOnce(gqlResponse({ agent: null }))
       expect(await client.getAgent('graph_1', 'agt_missing')).toBeNull()
@@ -2853,6 +2878,20 @@ describe('LedgerClient', () => {
       expect(body.metadata_patch).toEqual({ region: 'us-west' })
     })
 
+    it("sets a counterparty's default account", async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('update-agent', {}))
+      await client.updateAgent('graph_1', {
+        agent_id: 'agt_1',
+        classification_element_id: 'elem_payroll',
+        classification_mode: 'suggest',
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body).toMatchObject({
+        classification_element_id: 'elem_payroll',
+        classification_mode: 'suggest',
+      })
+    })
+
     it('POSTs to the update-agent URL', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('update-agent', {}))
       await client.updateAgent('graph_42', { agent_id: 'agt_1' })
@@ -2860,6 +2899,25 @@ describe('LedgerClient', () => {
       expect(req.url).toBe(
         'http://localhost:8000/extensions/roboledger/graph_42/operations/update-agent'
       )
+    })
+  })
+
+  describe('learnClassificationDefaults', () => {
+    it('sends dry_run and returns what was learned', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('learn-classification-defaults', {
+          agents_learned: 12,
+          agents_kept: 0,
+          lines_read: 61,
+          open_lines_resuggested: 9,
+          dry_run: true,
+        })
+      )
+      const result = await client.learnClassificationDefaults('graph_1', { dryRun: true })
+      expect(result.agents_learned).toBe(12)
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toContain('/operations/learn-classification-defaults')
+      expect(JSON.parse(await req.text())).toEqual({ dry_run: true })
     })
   })
 

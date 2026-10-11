@@ -4,7 +4,9 @@ import { gql } from 'graphql-request'
  * Get a single agent by id (the agents detail view).
  *
  * `address` is a JSON dict — typically QB-shaped with `Line1`/`City`/
- * `CountrySubDivisionCode`/`PostalCode` keys.
+ * `CountrySubDivisionCode`/`PostalCode` keys. `classification` is the
+ * account its bank lines are suggested, learned from committed lines or set
+ * with `updateAgent`; null until it has one.
  */
 export const GET_AGENT = gql`
   query GetLedgerAgent($id: String!) {
@@ -24,6 +26,16 @@ export const GET_AGENT = gql`
       externalId
       isActive
       is1099Recipient
+      classification {
+        elementId
+        accountName
+        mode
+        confirmations
+        overrides
+        setBy
+        setAt
+        learnedFrom
+      }
       createdAt
       updatedAt
       createdBy
