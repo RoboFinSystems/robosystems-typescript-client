@@ -56,6 +56,7 @@ import {
   financialStatementAnalysis,
   initializeChartOfAccounts,
   initializeLedger,
+  learnClassificationDefaults,
   linkBankAccount,
   linkEntityTaxonomy,
   liveFinancialStatement,
@@ -128,6 +129,7 @@ import type {
   InitializeChartOfAccountsResponse,
   InitializeLedgerRequest,
   JournalEntryResponse,
+  LearnClassificationDefaultsResponse,
   LedgerAgentResponse,
   LedgerEntityResponse,
   LinkBankAccountRequest,
@@ -2525,13 +2527,36 @@ export class LedgerClient {
 
   /**
    * Update an agent. `metadata_patch` is a partial merge into the existing
-   * metadata object; all other fields replace.
+   * metadata object; all other fields replace. `classification_element_id`
+   * sets the account its bank lines are suggested (an empty string clears
+   * it) and `classification_mode: 'always_ask'` stops suggesting one; its
+   * open lines are re-suggested at once.
    */
   async updateAgent(graphId: string, body: UpdateAgentRequest): Promise<LedgerAgentResponse> {
     const envelope = await this.callOperation('Update agent', (o) =>
       updateAgent({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Update agent', envelope.result)
+  }
+
+  /**
+   * Give each counterparty with committed bank lines and no default the
+   * account most of its lines went to, and re-suggest its open lines. Run
+   * once on books classified before defaults were learned; `dryRun` reports
+   * without writing.
+   */
+  async learnClassificationDefaults(
+    graphId: string,
+    options?: { dryRun?: boolean }
+  ): Promise<LearnClassificationDefaultsResponse> {
+    const envelope = await this.callOperation('Learn classification defaults', (o) =>
+      learnClassificationDefaults({
+        ...o,
+        path: { graph_id: graphId },
+        body: { dry_run: options?.dryRun ?? false },
+      })
+    )
+    return this.requireResult('Learn classification defaults', envelope.result)
   }
 
   // ── Event handlers (DSL handler registry) ────────────────────────────
