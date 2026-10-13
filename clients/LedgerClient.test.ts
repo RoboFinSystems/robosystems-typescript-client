@@ -2487,6 +2487,29 @@ describe('LedgerClient', () => {
       expect(result).toMatchObject({ id: 'evt_1', event_type: 'journal_entry_recorded' })
     })
 
+    it('sends the entity the entry is for', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
+      await client.createJournalEntry('graph_1', {
+        postingDate: '2026-03-31',
+        memo: 'Opening balance',
+        lineItems,
+        entityId: 'ent_sub',
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.entity_id).toBe('ent_sub')
+    })
+
+    it('leaves the entity to the server when none is named', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
+      await client.createJournalEntry('graph_1', {
+        postingDate: '2026-03-31',
+        memo: 'X',
+        lineItems,
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.entity_id).toBeUndefined()
+    })
+
     it('wraps options in journal_entry_recorded metadata', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.createJournalEntry('graph_1', {

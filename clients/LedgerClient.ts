@@ -800,6 +800,8 @@ export interface CreateJournalEntryOptions {
    */
   source?: string
   idempotencyKey?: string | null
+  /** The entity whose books the entry goes into. Omitted: the group parent. */
+  entityId?: string | null
 }
 
 // ── Client ──────────────────────────────────────────────────────────────
@@ -2362,6 +2364,7 @@ export class LedgerClient {
       source: options.source ?? 'manual',
       occurred_at: `${options.postingDate}T00:00:00Z`,
       apply_handlers: true,
+      ...(options.entityId ? { entity_id: options.entityId } : {}),
       metadata: {
         posting_date: options.postingDate,
         memo: options.memo,
