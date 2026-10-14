@@ -729,6 +729,37 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('getFlowCandidates', () => {
+    it('reads the named entity, or the group parent', async () => {
+      mockFetch.mockResolvedValue(gqlResponse({ flowCandidates: [] }))
+      await client.getFlowCandidates('graph_1', { entityId: 'ent_sub' })
+      await client.getFlowCandidates('graph_1')
+      const variablesOf = (call: number) =>
+        JSON.parse((mockFetch.mock.calls[call][1] as RequestInit).body as string).variables
+      expect(variablesOf(0)).toEqual({ entityId: 'ent_sub' })
+      expect(variablesOf(1)).toEqual({ entityId: null })
+    })
+
+    it('returns the rows as the statement orders them', async () => {
+      const rows = [
+        {
+          elementId: 'el_capex',
+          qname: 'rs-gaap:PaymentsToAcquirePropertyPlantAndEquipment',
+          name: 'Payments to Acquire Property, Plant, and Equipment',
+          activity: 'investing',
+        },
+        {
+          elementId: 'el_std',
+          qname: 'rs-gaap:ProceedsFromShortTermDebt',
+          name: 'Proceeds from Short-Term Debt',
+          activity: 'financing',
+        },
+      ]
+      mockFetch.mockResolvedValueOnce(gqlResponse({ flowCandidates: rows }))
+      expect(await client.getFlowCandidates('graph_1')).toEqual(rows)
+    })
+  })
+
   describe('information blocks', () => {
     const variablesOf = (call: number) =>
       JSON.parse((mockFetch.mock.calls[call][1] as RequestInit).body as string).variables

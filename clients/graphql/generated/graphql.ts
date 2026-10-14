@@ -715,6 +715,14 @@ export type GetLedgerFiscalCalendarQuery = {
   } | null
 }
 
+export type FlowCandidatesQueryVariables = Exact<{
+  entityId: string | null | undefined
+}>
+
+export type FlowCandidatesQuery = {
+  flowCandidates: Array<{ elementId: string; qname: string; name: string; activity: string }>
+}
+
 export type GetInformationBlockQueryVariables = Exact<{
   id: string | number
   scenarioId: string | null | undefined
@@ -4230,6 +4238,48 @@ export const GetLedgerFiscalCalendarDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLedgerFiscalCalendarQuery, GetLedgerFiscalCalendarQueryVariables>
+export const FlowCandidatesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'FlowCandidates' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'flowCandidates' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'activity' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<FlowCandidatesQuery, FlowCandidatesQueryVariables>
 export const GetInformationBlockDocument = {
   kind: 'Document',
   definitions: [

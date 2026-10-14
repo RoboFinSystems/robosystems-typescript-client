@@ -179,6 +179,7 @@ import type {
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache, toGraphQLError } from './graphql/client'
 import {
+  FlowCandidatesDocument,
   GetInformationBlockDocument,
   GetInformationBlockWindowedDocument,
   GetLedgerAccountRollupsDocument,
@@ -222,6 +223,7 @@ import {
   ListLedgerTransactionsDocument,
   ListLedgerUnmappedElementsDocument,
   MappingCandidatesDocument,
+  type FlowCandidatesQuery,
   type GetInformationBlockQuery,
   type GetLedgerAccountRollupsQuery,
   type GetLedgerAccountTreeQuery,
@@ -317,6 +319,7 @@ export type LedgerTaxonomy = LedgerTaxonomyList['taxonomies'][number]
 export type LedgerElementList = NonNullable<ListLedgerElementsQuery['elements']>
 export type LedgerElement = LedgerElementList['elements'][number]
 export type LedgerMappingCandidate = MappingCandidatesQuery['mappingCandidates'][number]
+export type LedgerFlowCandidate = FlowCandidatesQuery['flowCandidates'][number]
 export type LedgerUnmappedElement = ListLedgerUnmappedElementsQuery['unmappedElements'][number]
 
 export type LedgerStructureList = NonNullable<ListLedgerStructuresQuery['structures']>
@@ -1399,6 +1402,29 @@ export class LedgerClient {
       { classification, entityId: options?.entityId ?? null },
       'Mapping candidates',
       (data) => data.mappingCandidates
+    )
+  }
+
+  /**
+   * The cash flow rows a line may be tagged with: the leaf investing and
+   * financing rows of the entity's cash flow statement under its Reporting
+   * Style (`options.entityId`, default the group parent), in statement
+   * order. A flow is a second classification beside the account — it
+   * overrides the account's default flow on the cash flow and equity
+   * statements — and this is the set the write path accepts, so a picker
+   * built from it never offers a row the statement cannot present. The
+   * `qname` is what a bank line's `classified_flow_qname` takes.
+   */
+  async getFlowCandidates(
+    graphId: string,
+    options?: { entityId?: string | null }
+  ): Promise<LedgerFlowCandidate[]> {
+    return this.gqlQuery(
+      graphId,
+      FlowCandidatesDocument,
+      { entityId: options?.entityId ?? null },
+      'Flow candidates',
+      (data) => data.flowCandidates
     )
   }
 
