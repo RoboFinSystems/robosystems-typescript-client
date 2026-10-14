@@ -2975,6 +2975,109 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('acceptSuggestions', () => {
+    it('sends the filters and returns the counts with every line answered', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('accept-suggestions', {
+          selected: 3,
+          classified: 0,
+          committed: 2,
+          skipped: 1,
+          truncated: false,
+          dry_run: false,
+          lines: [
+            {
+              event_id: 'evt_1',
+              outcome: 'committed',
+              reason: null,
+              detail: null,
+              element_id: 'elem_software',
+              description: 'GUSTO 10-01',
+            },
+            {
+              event_id: 'evt_2',
+              outcome: 'skipped',
+              reason: 'closed_period',
+              detail: 'Period 2026-08 is closed.',
+              element_id: 'elem_software',
+              description: 'GUSTO 08-12',
+            },
+          ],
+        })
+      )
+      const result = await client.acceptSuggestions('graph_1', {
+        entity_id: 'ent_sub',
+        suggestion_source: 'agent_default',
+        commit: true,
+      })
+      expect(result.committed).toBe(2)
+      expect(result.lines[1].reason).toBe('closed_period')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toContain('/operations/accept-suggestions')
+      expect(JSON.parse(await req.text())).toEqual({
+        entity_id: 'ent_sub',
+        suggestion_source: 'agent_default',
+        commit: true,
+      })
+    })
+
+    it('with nothing named sends an empty body: every open suggested line, classified only', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('accept-suggestions', {
+          selected: 0,
+          classified: 0,
+          committed: 0,
+          skipped: 0,
+          truncated: false,
+          dry_run: false,
+          lines: [],
+        })
+      )
+      await client.acceptSuggestions('graph_1')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text())).toEqual({})
+    })
+  })
+
+  describe('getClassificationStats', () => {
+    it('reads the named entity, or the group parent', async () => {
+      mockFetch.mockResolvedValue(gqlResponse({ classificationStats: null }))
+      await client.getClassificationStats('graph_1', '2026-10', { entityId: 'ent_sub' })
+      await client.getClassificationStats('graph_1', '2026-10')
+      const variablesOf = (call: number) =>
+        JSON.parse((mockFetch.mock.calls[call][1] as RequestInit).body as string).variables
+      expect(variablesOf(0)).toEqual({ period: '2026-10', entityId: 'ent_sub' })
+      expect(variablesOf(1)).toEqual({ period: '2026-10', entityId: null })
+    })
+
+    it("returns the month's counts per source", async () => {
+      const stats = {
+        period: '2026-10',
+        entityId: 'ent_sub',
+        lines: 5,
+        accepted: 2,
+        overridden: 1,
+        unsuggested: 1,
+        split: 1,
+        unstamped: 1,
+        humanChoiceShare: 0.6,
+        openLines: 2,
+        bySource: [
+          {
+            source: 'agent_default',
+            lines: 3,
+            accepted: 2,
+            overridden: 1,
+            unsuggested: 0,
+            split: 0,
+          },
+        ],
+      }
+      mockFetch.mockResolvedValueOnce(gqlResponse({ classificationStats: stats }))
+      expect(await client.getClassificationStats('graph_1', '2026-10')).toEqual(stats)
+    })
+  })
+
   // ── Event handlers ────────────────────────────────────────────────────
 
   describe('createEventHandler', () => {

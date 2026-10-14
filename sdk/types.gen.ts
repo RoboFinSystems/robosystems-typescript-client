@@ -81,6 +81,168 @@ export type ApiKeysResponse = {
 };
 
 /**
+ * AcceptSuggestionLine
+ *
+ * What the batch did with one line.
+ */
+export type AcceptSuggestionLine = {
+    /**
+     * Event Id
+     *
+     * The line.
+     */
+    event_id: string;
+    /**
+     * Outcome
+     *
+     * What happened to it.
+     */
+    outcome: 'classified' | 'committed' | 'skipped';
+    /**
+     * Reason
+     *
+     * Why a skipped line was not taken: `not_open` (already classified, posted or retracted), `no_suggestion` (nothing to take, or a name that matches no account), `source_changed` (the feed changed it after capture), `closed_period`, `locked` (another process holds it; retry), or `refused` (the handler would not post the choice).
+     */
+    reason?: string | null;
+    /**
+     * Detail
+     *
+     * The refusal's own words, when there was one.
+     */
+    detail?: string | null;
+    /**
+     * Element Id
+     *
+     * The account the suggestion names.
+     */
+    element_id?: string | null;
+    /**
+     * Description
+     *
+     * The line's description.
+     */
+    description?: string | null;
+};
+
+/**
+ * AcceptSuggestionsRequest
+ *
+ * Take the suggestion on every open bank line the filters select.
+ */
+export type AcceptSuggestionsRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity whose inbox to act on. Omit for the group parent.
+     */
+    entity_id?: string | null;
+    /**
+     * Event Ids
+     *
+     * Explicit lines, as from the inbox's multi-select; each is answered, even one that cannot be taken. The other filters still narrow them.
+     */
+    event_ids?: Array<string> | null;
+    /**
+     * Source
+     *
+     * Only lines from this feed (`plaid`, `mercury`).
+     */
+    source?: string | null;
+    /**
+     * Agent Id
+     *
+     * Only one counterparty's lines.
+     */
+    agent_id?: string | null;
+    /**
+     * Suggestion Source
+     *
+     * Only lines whose suggestion came from here: `agent_default` (the counterparty's learned default), `tier0` (the bank's category) or `ai`.
+     */
+    suggestion_source?: string | null;
+    /**
+     * Occurred From
+     *
+     * Only lines dated on or after this day.
+     */
+    occurred_from?: string | null;
+    /**
+     * Occurred To
+     *
+     * Only lines dated on or before this day.
+     */
+    occurred_to?: string | null;
+    /**
+     * Commit
+     *
+     * Post each taken line as well (captured → committed). Off, the lines are classified and wait for a person to post them.
+     */
+    commit?: boolean;
+    /**
+     * Limit
+     *
+     * At most this many lines per call, oldest first; `truncated` in the response says whether more matched.
+     */
+    limit?: number;
+    /**
+     * Dry Run
+     *
+     * Report what each line would do without writing. A closed month is found only when a line actually posts, so a real run can still skip one a dry run counted.
+     */
+    dry_run?: boolean;
+};
+
+/**
+ * AcceptSuggestionsResponse
+ *
+ * The batch's counts, and every line it looked at.
+ */
+export type AcceptSuggestionsResponse = {
+    /**
+     * Selected
+     *
+     * Lines the filters matched, before the limit.
+     */
+    selected: number;
+    /**
+     * Classified
+     *
+     * Lines classified to their suggestion and left to post.
+     */
+    classified: number;
+    /**
+     * Committed
+     *
+     * Lines classified to their suggestion and posted.
+     */
+    committed: number;
+    /**
+     * Skipped
+     *
+     * Lines not taken, each with a reason.
+     */
+    skipped: number;
+    /**
+     * Truncated
+     *
+     * More lines matched than the limit allowed in this call.
+     */
+    truncated: boolean;
+    /**
+     * Dry Run
+     *
+     * Nothing was written.
+     */
+    dry_run: boolean;
+    /**
+     * Lines
+     *
+     * Each line looked at, oldest first.
+     */
+    lines: Array<AcceptSuggestionLine>;
+};
+
+/**
  * AccountInfo
  *
  * Provider account information.
@@ -3537,7 +3699,7 @@ export type CreateScheduleRequest = {
     /**
      * Closed Through
      *
-     * Watermark for onboarding. Facts with period_end ≤ this date are flagged 'historical' and their schedule_entry_due obligations are emitted 'voided', so the close workflow starts drafting at the first open period. Set this to the last day of the fiscal calendar's closed_through month (calendar '2026-05' → '2026-05-31') whether those months were actually closed in RoboLedger or just baseline-watermarked at initialization. Omitting it (when prior periods exist) leaves pre-watermark periods as 'pending' obligations that block the first close.
+     * Watermark for onboarding. Facts with period_end ≤ this date are flagged 'historical' and their schedule_entry_due obligations are emitted 'voided', so the close workflow starts drafting at the first open period. Defaults to the calendar's history end: the last day of its closed_through month (calendar '2026-05' → '2026-05-31'), or the day before its first month when nothing has closed yet. An earlier date is raised to it, since an obligation there could never post; set a later one only to treat more months as already booked.
      */
     closed_through?: string | null;
     /**
@@ -10740,6 +10902,52 @@ export type OperationEnvelope = {
 };
 
 /**
+ * OperationEnvelope[AcceptSuggestionsResponse]
+ */
+export type OperationEnvelopeAcceptSuggestionsResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: AcceptSuggestionsResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[AssertMetricsResponse]
  */
 export type OperationEnvelopeAssertMetricsResponse = {
@@ -15263,8 +15471,9 @@ export type ReadTextResponse = {
  * monthly_amount / period bounds on the Structure's metadata).
  *
  * The historical-vs-in-scope split is re-derived from the CURRENT fiscal
- * calendar `closed_through`, so a rebuild re-scopes the schedule to
- * today's close state. Use this to pick up a fixed generator (e.g. the
+ * calendar (months through its `closed_through`, or before its first
+ * month, are history), so a rebuild re-scopes the schedule to today's
+ * close state. Use this to pick up a fixed generator (e.g. the
  * roll-forward direction fix) without orphaning obligations.
  */
 export type RebuildScheduleRequest = {
@@ -30770,6 +30979,70 @@ export type LearnClassificationDefaultsResponses = {
 };
 
 export type LearnClassificationDefaultsResponse2 = LearnClassificationDefaultsResponses[keyof LearnClassificationDefaultsResponses];
+
+export type AcceptSuggestionsData = {
+    body: AcceptSuggestionsRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/accept-suggestions';
+};
+
+export type AcceptSuggestionsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type AcceptSuggestionsError = AcceptSuggestionsErrors[keyof AcceptSuggestionsErrors];
+
+export type AcceptSuggestionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeAcceptSuggestionsResponse;
+};
+
+export type AcceptSuggestionsResponse2 = AcceptSuggestionsResponses[keyof AcceptSuggestionsResponses];
 
 export type CreateEventBlockData = {
     body: CreateEventBlockRequest;
