@@ -464,6 +464,34 @@ export type ListChartTemplatesQuery = {
   }>
 }
 
+export type ClassificationStatsQueryVariables = Exact<{
+  period: string
+  entityId: string | null | undefined
+}>
+
+export type ClassificationStatsQuery = {
+  classificationStats: {
+    period: string
+    entityId: string | null
+    lines: number
+    accepted: number
+    overridden: number
+    unsuggested: number
+    split: number
+    unstamped: number
+    humanChoiceShare: number | null
+    openLines: number
+    bySource: Array<{
+      source: string
+      lines: number
+      accepted: number
+      overridden: number
+      unsuggested: number
+      split: number
+    }>
+  } | null
+}
+
 export type GetLedgerClosingBookStructuresQueryVariables = Exact<{
   entityId: string | null | undefined
 }>
@@ -3591,6 +3619,82 @@ export const ListChartTemplatesDocument = {
     },
   ],
 } as unknown as DocumentNode<ListChartTemplatesQuery, ListChartTemplatesQueryVariables>
+export const ClassificationStatsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ClassificationStats' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'classificationStats' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'period' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lines' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'accepted' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'overridden' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unsuggested' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'split' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unstamped' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'humanChoiceShare' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openLines' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'bySource' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'lines' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'accepted' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'overridden' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'unsuggested' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'split' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ClassificationStatsQuery, ClassificationStatsQueryVariables>
 export const GetLedgerClosingBookStructuresDocument = {
   kind: 'Document',
   definitions: [

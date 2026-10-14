@@ -28,6 +28,7 @@
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
 import { ClientError } from 'graphql-request'
 import {
+  acceptSuggestions,
   addPublishListMembers,
   autoMapElements,
   bindTextBlock,
@@ -88,6 +89,8 @@ import {
   updateTaxonomyBlock,
 } from '../sdk/sdk.gen'
 import type {
+  AcceptSuggestionsRequest,
+  AcceptSuggestionsResponse,
   AddPublishListMembersOperation,
   AssociationResponse,
   AutoMapElementsOperation,
@@ -179,6 +182,7 @@ import type {
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache, toGraphQLError } from './graphql/client'
 import {
+  ClassificationStatsDocument,
   FlowCandidatesDocument,
   GetInformationBlockDocument,
   GetInformationBlockWindowedDocument,
@@ -223,6 +227,7 @@ import {
   ListLedgerTransactionsDocument,
   ListLedgerUnmappedElementsDocument,
   MappingCandidatesDocument,
+  type ClassificationStatsQuery,
   type FlowCandidatesQuery,
   type GetInformationBlockQuery,
   type GetLedgerAccountRollupsQuery,
@@ -320,6 +325,8 @@ export type LedgerElementList = NonNullable<ListLedgerElementsQuery['elements']>
 export type LedgerElement = LedgerElementList['elements'][number]
 export type LedgerMappingCandidate = MappingCandidatesQuery['mappingCandidates'][number]
 export type LedgerFlowCandidate = FlowCandidatesQuery['flowCandidates'][number]
+export type LedgerClassificationStats = NonNullable<ClassificationStatsQuery['classificationStats']>
+export type LedgerClassificationSourceStats = LedgerClassificationStats['bySource'][number]
 export type LedgerUnmappedElement = ListLedgerUnmappedElementsQuery['unmappedElements'][number]
 
 export type LedgerStructureList = NonNullable<ListLedgerStructuresQuery['structures']>
@@ -2586,6 +2593,46 @@ export class LedgerClient {
       })
     )
     return this.requireResult('Learn classification defaults', envelope.result)
+  }
+
+  /**
+   * Take the suggestion on every open bank line the filters select, oldest
+   * first, through the same update a single line goes through; `commit`
+   * posts them too. A line that cannot be taken comes back `skipped` with
+   * its reason, never forced. `dry_run` counts without writing, `limit`
+   * bounds a call and `truncated` says more matched; explicit `event_ids`
+   * from a multi-select are each answered.
+   */
+  async acceptSuggestions(
+    graphId: string,
+    body: AcceptSuggestionsRequest = {}
+  ): Promise<AcceptSuggestionsResponse> {
+    const envelope = await this.callOperation('Accept suggestions', (o) =>
+      acceptSuggestions({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Accept suggestions', envelope.result)
+  }
+
+  /**
+   * How one month's bank lines were classified, per suggestion source:
+   * taken as suggested, overridden, split, or chosen with no suggestion to
+   * take, and the share that needed a person's choice. `period` is
+   * `YYYY-MM` over the lines' own dates; `options.entityId` defaults to
+   * the group parent. Lines posted before outcomes were recorded are
+   * `unstamped`, outside the share.
+   */
+  async getClassificationStats(
+    graphId: string,
+    period: string,
+    options?: { entityId?: string | null }
+  ): Promise<LedgerClassificationStats | null> {
+    return this.gqlQuery(
+      graphId,
+      ClassificationStatsDocument,
+      { period, entityId: options?.entityId ?? null },
+      'Classification stats',
+      (data) => data.classificationStats
+    )
   }
 
   // ── Event handlers (DSL handler registry) ────────────────────────────
