@@ -670,6 +670,18 @@ export type AssociationResponse = {
      * Approved By
      */
     approved_by?: string | null;
+    /**
+     * Replaced Association Id
+     *
+     * The arc this write removed in the same transaction, when the call named one in `replaces_association_id`.
+     */
+    replaced_association_id?: string | null;
+    /**
+     * Reclassified Periods
+     *
+     * Closed months whose live statements now read through this arc while their stamped sets keep the answer as closed. Empty unless the write replaced an arc on an account with landed history in a closed month.
+     */
+    reclassified_periods?: Array<string>;
 };
 
 /**
@@ -3458,6 +3470,18 @@ export type CreateMappingAssociationOperation = {
      * Target mapping structure ID.
      */
     mapping_id: string;
+    /**
+     * Replaces Association Id
+     *
+     * The account's current mapping arc in this structure, removed in the same write: a remap in one call. When the account has landed history in a closed month the move is judged as a reclassification: allowed when the new concept sits on the same primary statement as the old one (the stamped statements keep the answer as closed; live renders follow the new arc; `reclassified_periods` names the months), refused when it crosses one.
+     */
+    replaces_association_id?: string | null;
+    /**
+     * Reason
+     *
+     * Why the account is reclassified. Recorded on the new arc beside the months it reaches.
+     */
+    reason?: string | null;
 };
 
 /**
@@ -6447,6 +6471,12 @@ export type FactSetLite = {
     provenance?: {
         [key: string]: unknown;
     } | null;
+    /**
+     * Created At
+     *
+     * When the set was computed. For a close-stamped canonical set (`report_id` null, type `report`) this is the month as closed on this date: its facts keep that answer while a live render reads through the mapping arcs as they stand now.
+     */
+    created_at?: string | null;
 };
 
 /**
