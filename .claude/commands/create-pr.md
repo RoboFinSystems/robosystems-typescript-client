@@ -11,7 +11,7 @@ The previous flow outsourced PR-description authoring to a GitHub Action that on
 
 This is `@robosystems/client` — a **published, post-1.0 TypeScript SDK**, largely generated from the RoboSystems API's OpenAPI document and GraphQL schema. Its description is read by integrators deciding whether an upgrade is safe, so precision about the public surface matters more here than in an application repo.
 
-**This repository is public.** The PR title and body are world-readable the moment they're pushed — and, because publishing is triggered by a push to `release/**` rather than by a merge, the text is often public well before the version that carries it. Treat the description as a publication.
+**This repository is public.** The PR title and body are world-readable the moment they're pushed — and, because publishing happens only when a release is dispatched rather than on merge, the text is often public well before the version that carries it. Treat the description as a publication.
 
 ## Instructions
 
@@ -26,7 +26,7 @@ TARGET=${1:-main}            # override target via the first argument
 ```
 
 - **Never PR from the default branch.** If `CURRENT` is `main` (or `master`/`staging`), stop and tell the user to switch to a feature branch first. New branches are created via `npm run feature:create`, not by hand.
-- **Never target a release branch.** `release/**` is what `publish.yml` watches; a PR into one is a publish trigger, not a code review. Target `main`.
+- **Never target a release branch.** `release/<version>` is a cut record that `create-release.yml` tags and publishes from; a PR into one changes nothing on `main` and is not a code review. Target `main`.
 - **Source ≠ target.** If `CURRENT == TARGET`, stop.
 - **Uncommitted changes.** Run `git status --porcelain`. If there are uncommitted/staged changes, surface them and ask whether to commit them (respecting the repo's commit rules — never on `main`, stage files by name, no `git add -A`) or proceed without them. The PR description must reflect committed state.
 - **Existing PR.** Check `gh pr list --head "$CURRENT" --base "$TARGET" --json url,number`. If a PR already exists, do **not** create a duplicate — offer to update its title/body with `gh pr edit` instead.
@@ -66,7 +66,7 @@ This is the whole point — ground the description in what actually happened:
 
   A regeneration is not automatically additive: an API schema change can narrow a type or drop a field, and that reaches consumers as a break even though no hand-written line changed. Diff the emitted types before classifying.
 
-- **Version and publish are not this PR's job.** `create-release.yml` bumps the version on `main` and cuts `release/<version>`; the push to that branch is what triggers `publish.yml`. Never bump `package.json` in a feature PR and never imply the PR publishes anything.
+- **Version and publish are not this PR's job.** `create-release.yml` bumps the version on `main` and cuts `release/<version>`, tags it, and publishes from the tag in the same run. Never bump `package.json` in a feature PR and never imply the PR publishes anything.
 
 - **Security-fix disclosure.** If the PR fixes a security issue, the prose is often _more_ actionable than the diff — keep it terse and non-actionable. Name the area hardened, never the mechanism. No exploit mechanics, attack scenarios, endpoint enumerations, or payloads. For coordinated disclosure use a private GitHub Security Advisory, never a public issue.
 
