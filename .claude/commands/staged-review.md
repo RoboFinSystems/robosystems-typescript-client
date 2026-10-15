@@ -45,7 +45,7 @@ Post-1.0, the emitted type surface **is** the contract. For anything staged here
 ## Packaging
 
 - Changes to `prepare.js`, `package.json` `files`/`exports`/`types`, or the build output change **what ships**. A wrong `exports` map breaks consumers in ways nothing in this repo tests — cross-check against how the apps actually import.
-- Never stage a `package.json` version bump in a feature branch: `create-release.yml` owns the bump on `main`, and pushing `release/**` is what triggers `publish.yml`.
+- Never stage a `package.json` version bump in a feature branch: `create-release.yml` owns the bump on `main` and publishes from the tag it cuts.
 
 ## Testing
 
