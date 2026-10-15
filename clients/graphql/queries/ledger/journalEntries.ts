@@ -62,6 +62,7 @@ export const LIST_JOURNAL_ENTRIES = gql`
           creditAmount
           description
           lineOrder
+          flowQname
         }
       }
       pagination {

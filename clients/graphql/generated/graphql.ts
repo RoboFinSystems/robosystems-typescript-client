@@ -1236,6 +1236,7 @@ export type ListLedgerJournalEntriesQuery = {
         creditAmount: number
         description: string | null
         lineOrder: number
+        flowQname: string | null
       }>
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
@@ -5681,6 +5682,7 @@ export const ListLedgerJournalEntriesDocument = {
                             { kind: 'Field', name: { kind: 'Name', value: 'creditAmount' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'lineOrder' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'flowQname' } },
                           ],
                         },
                       },

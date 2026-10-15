@@ -793,6 +793,14 @@ export interface JournalEntryLineItem {
   debitAmount?: number
   creditAmount?: number
   description?: string | null
+  /**
+   * The cash flow row this line's cash belongs to (a `qname` from
+   * `getFlowCandidates`). Only for a loan drawn or repaid, capital put in
+   * or taken out, an asset bought or sold; omitted, the account's default
+   * flow applies. A flow on one side of the entry tags the untagged lines
+   * on the other. Refused when it is not a row of the entity's statement.
+   */
+  flowQname?: string | null
 }
 
 export interface CreateJournalEntryOptions {
@@ -2406,6 +2414,7 @@ export class LedgerClient {
           debit_amount: li.debitAmount,
           credit_amount: li.creditAmount,
           description: li.description ?? null,
+          ...(li.flowQname ? { flow_qname: li.flowQname } : {}),
         })),
         type: options.type ?? 'standard',
         status: options.status ?? 'draft',
@@ -2422,7 +2431,14 @@ export class LedgerClient {
     return this.requireResult('Create journal entry', envelope.result)
   }
 
-  /** Update a draft journal entry. Posted entries are immutable. */
+  /**
+   * Update a draft journal entry, or re-tag any entry's flows.
+   *
+   * `line_flows` sets the cash flow row of the named lines in place — on a
+   * posted entry too, closed month included, since a flow moves no balance;
+   * the lines on the other side of the entry follow. It is the only change
+   * a posted entry accepts; everything else there is a reversal.
+   */
   async updateJournalEntry(
     graphId: string,
     body: UpdateJournalEntryRequest

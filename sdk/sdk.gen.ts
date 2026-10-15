@@ -2396,7 +2396,7 @@ export const signOffReconciliation = <ThrowOnError extends boolean = false>(opti
 /**
  * Update Journal Entry
  *
- * Update a draft journal entry. Posted entries are immutable and must be corrected via `create-event-block(event_type='journal_entry_reversed')`. If line_items is provided, existing line items are replaced atomically, the new set must balance, and a line on a retired (`is_active=false`) account is refused.
+ * Update a draft journal entry, or re-tag any entry's flows. If line_items is provided, existing line items are replaced atomically, the new set must balance, and a line on a retired (`is_active=false`) account is refused. `line_flows` sets the cash flow row of the named lines in place, on a posted entry too, closed month included, since a flow moves no balance; the lines on the other side of the entry follow when that side carries one flow. Posted entries accept nothing else and are corrected via `create-event-block(event_type='journal_entry_reversed')`.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

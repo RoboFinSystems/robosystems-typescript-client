@@ -2518,6 +2518,27 @@ describe('LedgerClient', () => {
       expect(result).toMatchObject({ id: 'evt_1', event_type: 'journal_entry_recorded' })
     })
 
+    it("maps a line's flow to flow_qname and leaves untagged lines without one", async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
+      await client.createJournalEntry('graph_1', {
+        postingDate: '2026-07-20',
+        memo: 'Note drawn',
+        lineItems: [
+          { elementId: 'elem_cash', debitAmount: 50000 },
+          {
+            elementId: 'elem_note',
+            creditAmount: 50000,
+            flowQname: 'rs-gaap:ProceedsFromIssuanceOfLongTermDebt',
+          },
+        ],
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.metadata.line_items[0]).not.toHaveProperty('flow_qname')
+      expect(body.metadata.line_items[1].flow_qname).toBe(
+        'rs-gaap:ProceedsFromIssuanceOfLongTermDebt'
+      )
+    })
+
     it('sends the entity the entry is for', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.createJournalEntry('graph_1', {
@@ -2620,6 +2641,31 @@ describe('LedgerClient', () => {
       expect(req.url).toBe(
         'http://localhost:8000/extensions/roboledger/graph_42/operations/update-journal-entry'
       )
+    })
+
+    it('sends line_flows for an in-place re-tag of a posted entry', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-journal-entry', {
+          id: 'je_1',
+          status: 'posted',
+          line_items: [
+            { id: 'li_1', flow_qname: 'rs-gaap:ProceedsFromIssuanceOfLongTermDebt' },
+            { id: 'li_2', flow_qname: 'rs-gaap:ProceedsFromIssuanceOfLongTermDebt' },
+          ],
+        })
+      )
+      const result = await client.updateJournalEntry('graph_1', {
+        entry_id: 'je_1',
+        line_flows: [{ line_id: 'li_2', flow_qname: 'rs-gaap:ProceedsFromIssuanceOfLongTermDebt' }],
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.line_flows).toEqual([
+        { line_id: 'li_2', flow_qname: 'rs-gaap:ProceedsFromIssuanceOfLongTermDebt' },
+      ])
+      expect(result.line_items?.map((li) => li.flow_qname)).toEqual([
+        'rs-gaap:ProceedsFromIssuanceOfLongTermDebt',
+        'rs-gaap:ProceedsFromIssuanceOfLongTermDebt',
+      ])
     })
   })
 

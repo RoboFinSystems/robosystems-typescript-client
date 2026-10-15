@@ -8900,6 +8900,26 @@ export type InvoicesResponse = {
 };
 
 /**
+ * JournalEntryLineFlow
+ *
+ * A line's cash flow row, set in place.
+ */
+export type JournalEntryLineFlow = {
+    /**
+     * Line Id
+     *
+     * The line to re-tag, by id.
+     */
+    line_id: string;
+    /**
+     * Flow Qname
+     *
+     * The rs-gaap flow qname the line takes; null clears it, back to the account's default flow.
+     */
+    flow_qname?: string | null;
+};
+
+/**
  * JournalEntryLineItemInput
  *
  * One debit/credit line in a journal entry create/update payload.
@@ -8932,6 +8952,12 @@ export type JournalEntryLineItemInput = {
      * Per-line memo (overrides the entry-level memo on this line).
      */
     description?: string | null;
+    /**
+     * Flow Qname
+     *
+     * The cash flow row this line's cash belongs to, an rs-gaap flow qname (`flowCandidates(entityId)` lists the rows this company's statement offers). Only for a loan drawn or repaid, capital put in or taken out, an asset bought or sold; omitted, the account's default flow applies. A flow set on one side of the entry tags the untagged lines on the other: the cash flow statement reads the cash line and the roll-forwards read the account line. Refused when it is not a row of the entity's cash flow statement.
+     */
+    flow_qname?: string | null;
     /**
      * Metadata
      *
@@ -8972,6 +8998,12 @@ export type JournalEntryLineItemResponse = {
      * Line Order
      */
     line_order: number;
+    /**
+     * Flow Qname
+     *
+     * The cash flow row this line carries, when tagged; null means the account's default flow.
+     */
+    flow_qname?: string | null;
 };
 
 /**
@@ -20542,8 +20574,11 @@ export type UpdateInformationBlockRequest = ({
 /**
  * UpdateJournalEntryRequest
  *
- * Update a draft journal entry. Posted entries cannot be updated —
- * create a reversal and a corrected entry instead.
+ * Update a draft journal entry, or re-tag any entry's flows.
+ *
+ * Posted entries accept only `line_flows`: a flow moves no balance, so it
+ * changes in place, closed month or not. Anything else on a posted entry is
+ * a reversal and a corrected entry.
  *
  * Omitted fields are left unchanged. If `line_items` is provided, the
  * existing line items are replaced entirely (atomic delete + insert)
@@ -20581,6 +20616,12 @@ export type UpdateJournalEntryRequest = {
      * Replacement line items. Whole-list replacement (not patch). The new set must still balance (total_debit == total_credit). Omit to leave existing lines untouched.
      */
     line_items?: Array<JournalEntryLineItemInput> | null;
+    /**
+     * Line Flows
+     *
+     * Re-tag lines in place: each named line takes its `flow_qname` (null clears it), and when every line on that side of the entry then carries one flow, the lines on the other side not named here take it too, so the cash line and the account line agree. Allowed on a posted entry, closed month included, and the only change one accepts; recorded on the entry as `flow_retags`. Not combinable with `line_items`, which replaces the lines (set `flow_qname` on them).
+     */
+    line_flows?: Array<JournalEntryLineFlow> | null;
 };
 
 /**
