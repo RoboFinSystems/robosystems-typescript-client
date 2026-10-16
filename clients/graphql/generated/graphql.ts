@@ -1196,6 +1196,30 @@ export type ListInformationBlocksQuery = {
   }>
 }
 
+export type ListInformationBlockSummariesQueryVariables = Exact<{
+  blockType: string | null | undefined
+  category: string | null | undefined
+  limit: number | null | undefined
+  offset: number | null | undefined
+  scenarioId: string | null | undefined
+  entityId: string | null | undefined
+}>
+
+export type ListInformationBlockSummariesQuery = {
+  informationBlockSummaries: Array<{
+    id: string
+    blockType: string
+    name: string
+    displayName: string
+    category: string
+    taxonomyId: string | null
+    taxonomyName: string | null
+    entityId: string | null
+    factCount: number
+    connectionCount: number
+  }>
+}
+
 export type ListLedgerJournalEntriesQueryVariables = Exact<{
   startDate: string | null | undefined
   endDate: string | null | undefined
@@ -5528,6 +5552,107 @@ export const ListInformationBlocksDocument = {
     },
   ],
 } as unknown as DocumentNode<ListInformationBlocksQuery, ListInformationBlocksQueryVariables>
+export const ListInformationBlockSummariesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListInformationBlockSummaries' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'category' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'informationBlockSummaries' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'blockType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'blockType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'category' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'category' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'scenarioId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'scenarioId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'blockType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'displayName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'category' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'taxonomyName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'factCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'connectionCount' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ListInformationBlockSummariesQuery,
+  ListInformationBlockSummariesQueryVariables
+>
 export const ListLedgerJournalEntriesDocument = {
   kind: 'Document',
   definitions: [
