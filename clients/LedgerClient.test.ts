@@ -784,6 +784,35 @@ describe('LedgerClient', () => {
       await client.listInformationBlocks('graph_1', { blockType: 'forecast', entityId: 'ent_sub' })
       expect(variablesOf(0)).toMatchObject({ blockType: 'forecast', entityId: 'ent_sub' })
     })
+
+    it('listInformationBlockSummaries returns identities and counts', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          informationBlockSummaries: [
+            {
+              id: 'str_1',
+              blockType: 'schedule',
+              name: 'Depreciation',
+              displayName: 'Schedule',
+              category: 'Close',
+              taxonomyId: 'tax_1',
+              taxonomyName: 'My CoA',
+              entityId: 'ent_parent',
+              factCount: 12,
+              connectionCount: 3,
+            },
+          ],
+        })
+      )
+      const rows = await client.listInformationBlockSummaries('graph_1', {
+        limit: 200,
+        entityId: 'ent_sub',
+      })
+      expect(rows).toHaveLength(1)
+      expect(rows[0].factCount).toBe(12)
+      expect(rows[0]).not.toHaveProperty('facts')
+      expect(variablesOf(0)).toMatchObject({ limit: 200, entityId: 'ent_sub' })
+    })
   })
 
   describe('getMappingCoverage', () => {

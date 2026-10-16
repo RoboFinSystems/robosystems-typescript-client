@@ -209,6 +209,7 @@ import {
   GetLedgerTrialBalanceDocument,
   ListChartTemplatesDocument,
   ListInformationBlocksDocument,
+  ListInformationBlockSummariesDocument,
   ListLedgerAccountsDocument,
   ListLedgerAgentsDocument,
   ListLedgerBankAccountsDocument,
@@ -252,6 +253,7 @@ import {
   type GetLedgerTrialBalanceQuery,
   type ListChartTemplatesQuery,
   type ListInformationBlocksQuery,
+  type ListInformationBlockSummariesQuery,
   type ListLedgerAccountsQuery,
   type ListLedgerAgentsQuery,
   type ListLedgerBlockedSourceGraphsQuery,
@@ -339,6 +341,8 @@ export type LedgerMappingCoverage = NonNullable<GetLedgerMappingCoverageQuery['m
 
 export type InformationBlock = NonNullable<GetInformationBlockQuery['informationBlock']>
 export type InformationBlockList = ListInformationBlocksQuery['informationBlocks']
+export type InformationBlockSummaryList =
+  ListInformationBlockSummariesQuery['informationBlockSummaries']
 export type InformationBlockElement = InformationBlock['elements'][number]
 export type InformationBlockConnection = InformationBlock['connections'][number]
 export type InformationBlockFact = InformationBlock['facts'][number]
@@ -1673,6 +1677,42 @@ export class LedgerClient {
       (data) => data.informationBlocks
     )
     return blocks ?? []
+  }
+
+  /**
+   * List Information Blocks as identities and counts, one row per block —
+   * the rows, filters, order and page of `listInformationBlocks`, read in
+   * one query instead of an envelope build per block. The call that fills
+   * a picker: `factCount > 0` marks a block whose envelope carries facts
+   * (a library-seeded structure variant carries none); a block's atoms
+   * come from `getInformationBlock`.
+   */
+  async listInformationBlockSummaries(
+    graphId: string,
+    options?: {
+      blockType?: string
+      category?: string
+      limit?: number
+      offset?: number
+      scenarioId?: string
+      entityId?: string | null
+    }
+  ): Promise<InformationBlockSummaryList> {
+    const rows = await this.gqlQuery(
+      graphId,
+      ListInformationBlockSummariesDocument,
+      {
+        blockType: options?.blockType ?? null,
+        category: options?.category ?? null,
+        limit: options?.limit ?? null,
+        offset: options?.offset ?? null,
+        scenarioId: options?.scenarioId ?? null,
+        entityId: options?.entityId ?? null,
+      },
+      'List information block summaries',
+      (data) => data.informationBlockSummaries
+    )
+    return rows ?? []
   }
 
   // ── Schedules ──────────────────────────────────────────────────────

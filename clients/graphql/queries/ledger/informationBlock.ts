@@ -521,3 +521,40 @@ export const LIST_INFORMATION_BLOCKS = gql`
     }
   }
 `
+
+/**
+ * List Information Blocks as identities and counts, one row per block —
+ * the rows, filters, order and page of `ListInformationBlocks`, read in
+ * one query instead of an envelope build per block. The document a
+ * picker fills from.
+ */
+export const LIST_INFORMATION_BLOCK_SUMMARIES = gql`
+  query ListInformationBlockSummaries(
+    $blockType: String
+    $category: String
+    $limit: Int
+    $offset: Int
+    $scenarioId: String
+    $entityId: String
+  ) {
+    informationBlockSummaries(
+      blockType: $blockType
+      category: $category
+      limit: $limit
+      offset: $offset
+      scenarioId: $scenarioId
+      entityId: $entityId
+    ) {
+      id
+      blockType
+      name
+      displayName
+      category
+      taxonomyId
+      taxonomyName
+      entityId
+      factCount
+      connectionCount
+    }
+  }
+`
