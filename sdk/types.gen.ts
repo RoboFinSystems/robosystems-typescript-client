@@ -2948,6 +2948,24 @@ export type CreateEntityRequest = {
      */
     ownership_pct?: number | null;
     /**
+     * Consolidation Method
+     *
+     * How the group's consolidated statements treat this entity: `full` (its books are summed and an outside owner's share is carried as noncontrolling interest), `equity` (one investment line and one income line), `cost` (an investment at cost) or `none` (the group parent, the consolidation entity, a linked counterparty). Derived from `ownership_pct` when not given — 50 and above `full`, 20 to 50 `equity`, below 20 `cost`, unrecorded `full` — and set by a person where control is not the percentage: a managing member with a minority stake consolidates in full, a majority without control takes the equity method. Omit to derive it; a graph's first entity and a `consolidation` entity take `none`.
+     */
+    consolidation_method?: 'full' | 'equity' | 'cost' | 'none' | null;
+    /**
+     * Entity Role
+     *
+     * `operating` keeps a company's books. `consolidation` is the group's one entity for the consolidating entries — eliminations, noncontrolling interest, the equity-method pick-up — the adjustments column of a consolidation worksheet, which only the consolidated statements read and no operating company's statements ever include. Its method is `none`. Default `operating`; a graph's first entity, its group parent, is always operating. Start a consolidation entity's chart from the `consolidation` template.
+     */
+    entity_role?: 'operating' | 'consolidation' | null;
+    /**
+     * Joined On
+     *
+     * The month this entity became a member of the group, as any date in it; null is a member since the beginning. The consolidated statements include it from that month. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Omit for a subsidiary formed by the parent; give the acquisition month for one acquired, whose books in this graph then hold only what follows it.
+     */
+    joined_on?: string | null;
+    /**
      * Ticker
      *
      * Short symbol, unique in the graph; it prefixes the entity's account names (`coa-<ticker>:1000`). Derived from the name's initials when omitted.
@@ -8537,9 +8555,9 @@ export type InitializeChartOfAccountsRequest = {
     /**
      * Template
      *
-     * Template key: `saas` (subscription software — deferred revenue, cost of revenue, R&D / S&M / G&A), `services` (professional services — no inventory, no COGS), `product` (inventory and cost of goods sold, direct + wholesale + subscription revenue).
+     * Template key: `saas` (subscription software — deferred revenue, cost of revenue, R&D / S&M / G&A), `services` (professional services — no inventory, no COGS), `product` (inventory and cost of goods sold, direct + wholesale + subscription revenue), `consolidation` (a group's consolidation entity: the eliminated investment, intercompany and subsidiary-equity rows, noncontrolling interest and its share of income — the adjustments column, never an operating company's chart).
      */
-    template: 'saas' | 'services' | 'product';
+    template: 'saas' | 'services' | 'product' | 'consolidation';
     /**
      * Entity Type
      *
@@ -8571,7 +8589,7 @@ export type InitializeChartOfAccountsResponse = {
     /**
      * Template
      */
-    template: 'saas' | 'services' | 'product';
+    template: 'saas' | 'services' | 'product' | 'consolidation';
     /**
      * Entity Type
      *
@@ -8955,7 +8973,7 @@ export type JournalEntryLineItemInput = {
     /**
      * Flow Qname
      *
-     * The cash flow row this line's cash belongs to, an rs-gaap flow qname (`flowCandidates(entityId)` lists the rows this company's statement offers). Only for a loan drawn or repaid, capital put in or taken out, an asset bought or sold; omitted, the account's default flow applies. A flow set on one side of the entry tags the untagged lines on the other: the cash flow statement reads the cash line and the roll-forwards read the account line. Refused when it is not a row of the entity's cash flow statement.
+     * The cash flow row this line's cash belongs to, an rs-gaap flow qname (`flowCandidates(entityId)` lists the rows this company's statement offers). Only for a loan drawn or repaid, capital put in or taken out, an asset bought or sold; omitted, the account's default flow applies. A flow set on one side of the entry tags the untagged lines on the other: the cash flow statement reads the cash line and the roll-forwards read the account line. On the group's consolidation entity, which moves no cash, every tagged line counts on its own, cash-effect signed (a credit is an inflow), so an elimination offsets the flow a member's line produced. Refused when it is not a row of the entity's cash flow statement.
      */
     flow_qname?: string | null;
     /**
@@ -9342,6 +9360,30 @@ export type LedgerEntityResponse = {
      * The parent's share of this entity, as a percent (100 = wholly owned). Null on the group parent, and where it was never recorded.
      */
     ownership_pct?: number | null;
+    /**
+     * Consolidation Method
+     *
+     * How the group's consolidated statements treat this entity: `full` (its books are summed and an outside owner's share is carried as noncontrolling interest), `equity` (one investment line and one income line), `cost` (an investment at cost) or `none` (the group parent, the consolidation entity, a linked counterparty). Derived from `ownership_pct` when not given — 50 and above `full`, 20 to 50 `equity`, below 20 `cost`, unrecorded `full` — and set by a person where control is not the percentage: a managing member with a minority stake consolidates in full, a majority without control takes the equity method.
+     */
+    consolidation_method?: string;
+    /**
+     * Entity Role
+     *
+     * `operating` keeps a company's books. `consolidation` is the group's one entity for the consolidating entries — eliminations, noncontrolling interest, the equity-method pick-up — the adjustments column of a consolidation worksheet, which only the consolidated statements read and no operating company's statements ever include. Its method is `none`.
+     */
+    entity_role?: string;
+    /**
+     * Joined On
+     *
+     * The month this entity became a member of the group, as any date in it; null is a member since the beginning. The consolidated statements include it from that month. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged.
+     */
+    joined_on?: string | null;
+    /**
+     * Left On
+     *
+     * The month this entity left the group, as any date in it; null is a member still. The consolidated statements include it through that month and leave it out after. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged.
+     */
+    left_on?: string | null;
     /**
      * Source
      *
@@ -10009,9 +10051,15 @@ export type LiveFinancialStatementRequest = {
      */
     fiscal_year?: number | null;
     /**
+     * Scope
+     *
+     * `entity` (the default): one entity's own books. `combined`: on the group parent, every member consolidated in full rendered under the parent's Reporting Style and summed per rs-gaap concept, each for the months it was a member — the pre-adjustment total, nothing eliminated. `consolidated`: the same sum plus the consolidation entity, whose eliminations and noncontrolling interest are the adjustments column, so a group that posts its consolidating entries there reads its consolidated statement. An equity-method or cost member is never summed (its `consolidation_method` says so). Both group scopes are read on the group parent only (422 on a subsidiary). An entity with no CoA mapping yet contributes nothing and is left out of `combined_entity_ids`.
+     */
+    scope?: 'entity' | 'combined' | 'consolidated' | null;
+    /**
      * Consolidated
      *
-     * A combined statement, not a consolidation: every entity of the reporting group rendered under the group parent's Reporting Style and summed per rs-gaap concept, with nothing eliminated between them. Only on the group parent (422 on a subsidiary). An entity with no CoA mapping yet contributes nothing and is left out of `combined_entity_ids`.
+     * The older spelling of `scope: consolidated`, kept for callers that pass it; `scope` wins when both are given.
      */
     consolidated?: boolean;
     /**
@@ -10039,15 +10087,21 @@ export type LiveFinancialStatementResponse = {
      */
     entity_id?: string | null;
     /**
+     * Scope
+     *
+     * What was rendered: `entity`, `combined` (the members summed, nothing eliminated) or `consolidated` (the members plus the consolidation entity's adjustments).
+     */
+    scope?: string;
+    /**
      * Consolidated
      *
-     * Whether the group's entities were summed into this: a combined statement, not a consolidation — nothing is eliminated between them.
+     * Whether the group's entities were summed into this — true for the `combined` and `consolidated` scopes.
      */
     consolidated?: boolean;
     /**
      * Combined Entity Ids
      *
-     * The entities summed into a combined statement, parent first.
+     * The entities summed, parent first; on `consolidated` the consolidation entity comes last.
      */
     combined_entity_ids?: Array<string>;
     /**
@@ -10112,6 +10166,12 @@ export type LiveStatementFactRow = {
      * Is Subtotal
      */
     is_subtotal?: boolean;
+    /**
+     * Period Role
+     *
+     * On the equity roll-forward, `start` for the beginning-balance row and `end` for the ending-balance row. Null elsewhere.
+     */
+    period_role?: string | null;
 };
 
 /**
@@ -19728,6 +19788,12 @@ export type TaxonomyBlockStructureRequest = {
      */
     target_framework?: string | null;
     /**
+     * Extends Network
+     *
+     * `reporting_extension` only: the role URI of the Reporting Style network this structure extends (e.g. `https://robosystems.ai/seattle/cm-roles/roles/rs-gaap-presentation/CashFlow-indirect`). Its arcs then render as rows of that statement for every entity whose Style composes it. `block_type` must be that network's statement type. A row's parent must be on the network, a balance sheet, income statement or cash flow row needs a calculation arc from its section subtotal, an equity movement hangs from the roll-forward's root, and a tenant concept placed as a row must set `parent_ref` to the rs-gaap concept it refines — prefer the rs-gaap concept itself (any library concept may be named, including ones not yet in this graph).
+     */
+    extends_network?: string | null;
+    /**
      * Metadata
      */
     metadata?: {
@@ -20285,9 +20351,33 @@ export type UpdateEntityRequest = {
     /**
      * Ownership Pct
      *
-     * The parent's share of this entity, as a percent. Refused on the group parent, which has no owner in the graph.
+     * The parent's share of this entity, as a percent. Refused on the group parent, which has no owner in the graph. A new share re-derives `consolidation_method` unless that is given too.
      */
     ownership_pct?: number | null;
+    /**
+     * Consolidation Method
+     *
+     * How the group's consolidated statements treat this entity: `full` (its books are summed and an outside owner's share is carried as noncontrolling interest), `equity` (one investment line and one income line), `cost` (an investment at cost) or `none` (the group parent, the consolidation entity, a linked counterparty). Derived from `ownership_pct` when not given — 50 and above `full`, 20 to 50 `equity`, below 20 `cost`, unrecorded `full` — and set by a person where control is not the percentage: a managing member with a minority stake consolidates in full, a majority without control takes the equity method. On the group parent and the consolidation entity only `none` holds.
+     */
+    consolidation_method?: 'full' | 'equity' | 'cost' | 'none' | null;
+    /**
+     * Entity Role
+     *
+     * `operating` keeps a company's books. `consolidation` is the group's one entity for the consolidating entries — eliminations, noncontrolling interest, the equity-method pick-up — the adjustments column of a consolidation worksheet, which only the consolidated statements read and no operating company's statements ever include. Its method is `none`. Refused on the group parent. Marking an entity `consolidation` sets its method to `none`.
+     */
+    entity_role?: 'operating' | 'consolidation' | null;
+    /**
+     * Joined On
+     *
+     * The month this entity became a member of the group, as any date in it; null is a member since the beginning. The consolidated statements include it from that month. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Pass null to clear it.
+     */
+    joined_on?: string | null;
+    /**
+     * Left On
+     *
+     * The month this entity left the group, as any date in it; null is a member still. The consolidated statements include it through that month and leave it out after. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Must not precede `joined_on`. Set it when a subsidiary is sold, dissolved or deconsolidated; its closed months and stamped statements stay readable under the group. Pass null to reopen membership.
+     */
+    left_on?: string | null;
 };
 
 /**
