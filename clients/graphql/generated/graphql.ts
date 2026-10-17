@@ -566,6 +566,10 @@ export type ListLedgerEntitiesQuery = {
     isParent: boolean
     parentEntityId: string | null
     ownershipPct: number | null
+    consolidationMethod: string
+    entityRole: string
+    joinedOn: string | null
+    leftOn: string | null
     source: string
     sourceGraphId: string | null
     connectionId: string | null
@@ -603,6 +607,10 @@ export type GetLedgerEntityQuery = {
     isParent: boolean
     parentEntityId: string | null
     ownershipPct: number | null
+    consolidationMethod: string
+    entityRole: string
+    joinedOn: string | null
+    leftOn: string | null
     source: string
     sourceId: string | null
     sourceGraphId: string | null
@@ -3965,6 +3973,10 @@ export const ListLedgerEntitiesDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'isParent' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'parentEntityId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'ownershipPct' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'consolidationMethod' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityRole' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'joinedOn' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'leftOn' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'connectionId' } },
@@ -4031,6 +4043,10 @@ export const GetLedgerEntityDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'isParent' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'parentEntityId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'ownershipPct' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'consolidationMethod' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityRole' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'joinedOn' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'leftOn' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },

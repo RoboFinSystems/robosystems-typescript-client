@@ -20,6 +20,10 @@ export const LIST_ENTITIES = gql`
       isParent
       parentEntityId
       ownershipPct
+      consolidationMethod
+      entityRole
+      joinedOn
+      leftOn
       source
       sourceGraphId
       connectionId
