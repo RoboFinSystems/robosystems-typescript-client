@@ -10223,6 +10223,12 @@ export type LiveFinancialStatementResponse = {
      */
     periods: Array<PeriodSpec>;
     /**
+     * Omitted Periods
+     *
+     * Columns left out because they reach back before the books begin: on books that start from an opening balance, a flow statement column that starts before the first day it covers, or a balance sheet dated before it. They would show a partial figure, not the months before the books.
+     */
+    omitted_periods?: Array<PeriodSpec>;
+    /**
      * Facts
      */
     facts: Array<LiveStatementFactRow>;
@@ -11022,6 +11028,34 @@ export type OfferingRepositoryPlan = {
     rate_limits?: {
         [key: string]: number | null;
     } | null;
+};
+
+/**
+ * OpeningBalanceInput
+ *
+ * One account's balance on the day the books begin, in its normal
+ * direction: an asset as a debit, a liability or equity account as a credit
+ * (a contra account the other way).
+ */
+export type OpeningBalanceInput = {
+    /**
+     * Element Id
+     *
+     * The balance-sheet account, by id.
+     */
+    element_id: string;
+    /**
+     * Debit Amount
+     *
+     * Debit balance in cents.
+     */
+    debit_amount?: number;
+    /**
+     * Credit Amount
+     *
+     * Credit balance in cents.
+     */
+    credit_amount?: number;
 };
 
 /**
@@ -16591,6 +16625,38 @@ export type ReconcilingItemRegenerated = {
      * Entry Ids
      */
     entry_ids?: Array<string>;
+};
+
+/**
+ * RecordOpeningBalanceRequest
+ *
+ * The balance sheet a ledger starts from.
+ */
+export type RecordOpeningBalanceRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity whose books start here; omit for the group parent.
+     */
+    entity_id?: string | null;
+    /**
+     * Balances
+     *
+     * One balance per balance-sheet account (assets, liabilities, equity). An income or expense account is refused: income before the books begin is already in retained earnings.
+     */
+    balances: Array<OpeningBalanceInput>;
+    /**
+     * Equity Element Id
+     *
+     * The equity account that takes any difference between debits and credits, usually Opening Balance Equity. Required when the balances do not balance; a non-zero balance left there is a review item.
+     */
+    equity_element_id?: string | null;
+    /**
+     * Memo
+     *
+     * The entry's memo; defaults to 'Opening balances'.
+     */
+    memo?: string | null;
 };
 
 /**
@@ -32290,6 +32356,70 @@ export type SignOffReconciliationResponses = {
 };
 
 export type SignOffReconciliationResponse = SignOffReconciliationResponses[keyof SignOffReconciliationResponses];
+
+export type RecordOpeningBalanceData = {
+    body: RecordOpeningBalanceRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/record-opening-balance';
+};
+
+export type RecordOpeningBalanceErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RecordOpeningBalanceError = RecordOpeningBalanceErrors[keyof RecordOpeningBalanceErrors];
+
+export type RecordOpeningBalanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeJournalEntryResponse;
+};
+
+export type RecordOpeningBalanceResponse = RecordOpeningBalanceResponses[keyof RecordOpeningBalanceResponses];
 
 export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;

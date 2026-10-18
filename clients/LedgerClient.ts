@@ -67,6 +67,7 @@ import {
   previewReconcilingItem,
   promoteObligations,
   rebuildSchedule,
+  recordOpeningBalance,
   recordStatementBalance,
   refreshReconciliations,
   regenerateReport,
@@ -159,6 +160,7 @@ import type {
   ReconciliationRow,
   ReconciliationSummary,
   ReconcilingItemPlan,
+  RecordOpeningBalanceRequest,
   RecordStatementBalanceRequest,
   RefreshReconciliationsRequest,
   ReopenPeriodOperation,
@@ -2537,6 +2539,26 @@ export class LedgerClient {
       createEventBlock({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Reverse journal entry', envelope.result)
+  }
+
+  /**
+   * Record the balance sheet an entity's books start from: one balance per
+   * balance-sheet account, in cents, in the account's normal direction. It
+   * posts as one `opening` entry dated the day before the first fiscal
+   * month, so every month's opening balances include it and no month's
+   * activity does. `equity_element_id` (usually Opening Balance Equity) takes
+   * any difference between debits and credits; unbalanced balances without
+   * one are refused. Recording again replaces the entry until the entity's
+   * first close.
+   */
+  async recordOpeningBalance(
+    graphId: string,
+    body: RecordOpeningBalanceRequest
+  ): Promise<JournalEntryResponse> {
+    const envelope = await this.callOperation('Record opening balance', (o) =>
+      recordOpeningBalance({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Record opening balance', envelope.result)
   }
 
   // ── Event blocks (generic preview + status transitions) ──────────────

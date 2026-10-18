@@ -401,6 +401,10 @@ class RejectedEventSource {
   }
 }
 
+/** Waits until the run's stream is constructed and open: a fixed delay races a slow runner. */
+const streamOpened = () =>
+  vi.waitFor(() => expect(RecordingEventSource.last?.readyState).toBe(MockEventSource.OPEN))
+
 const queuedResponse = (operationId: string) =>
   createMockResponse({ status: 'queued', operation_id: operationId, message: 'Queued' })
 
@@ -431,7 +435,7 @@ describe('OperatorClient queued runs', () => {
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
     const pending = client.executeQuery('graph_1', { message: 'burn rate?' })
-    await new Promise((r) => setTimeout(r, 5))
+    await streamOpened()
 
     const stream = RecordingEventSource.last
     expect(stream.url).toContain('/v1/operations/op_456/stream')
@@ -459,7 +463,7 @@ describe('OperatorClient queued runs', () => {
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
     const pending = client.executeQuery('graph_1', { message: 'burn rate?' })
-    await new Promise((r) => setTimeout(r, 5))
+    await streamOpened()
 
     expect(new URL(RecordingEventSource.last.url).searchParams.get('token')).toBe('jwt-rotated')
     RecordingEventSource.last.simulateMessage('operation_completed', { result: completedResult })
@@ -531,7 +535,7 @@ describe('OperatorClient queued runs', () => {
         { message: 'burn rate?' },
         { pollIntervalMs: 1 }
       )
-      await new Promise((r) => setTimeout(r, 5))
+      await streamOpened()
       // The reconnect is refused before it opens (an expired token, say).
       global.EventSource = RejectedEventSource as any
       RecordingEventSource.last.onerror?.({ type: 'error' })
@@ -558,7 +562,7 @@ describe('OperatorClient queued runs', () => {
         { message: 'burn rate?' },
         { pollIntervalMs: 1 }
       )
-      await new Promise((r) => setTimeout(r, 5))
+      await streamOpened()
       RecordingEventSource.last.onerror?.({ type: 'error' })
 
       await expect(pending).resolves.toMatchObject({ content: completedResult.content })
@@ -580,7 +584,7 @@ describe('OperatorClient queued runs', () => {
         { message: 'burn rate?' },
         { pollIntervalMs: 1 }
       )
-      await new Promise((r) => setTimeout(r, 5))
+      await streamOpened()
       // 200 first, then the server's in-stream `event: error`.
       RecordingEventSource.last.onerror?.({
         type: 'error',
@@ -599,7 +603,7 @@ describe('OperatorClient queued runs', () => {
       mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
       const pending = client.executeQuery('graph_1', { message: 'burn rate?' })
-      await new Promise((r) => setTimeout(r, 5))
+      await streamOpened()
       client.close()
 
       await expect(pending).rejects.toThrow('Operator client closed')
@@ -673,7 +677,7 @@ describe('OperatorClient queued runs', () => {
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
     const pending = client.executeQuery('graph_1', { message: 'add Notion Labs' }).catch((e) => e)
-    await new Promise((r) => setTimeout(r, 5))
+    await streamOpened()
     RecordingEventSource.last.simulateMessage('operation_error', {
       error: 'Task timed out after 600s',
       error_details: { error_type: 'TimeoutError', writes: [{ id: 'agt_2' }] },
