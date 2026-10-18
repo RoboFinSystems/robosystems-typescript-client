@@ -2726,6 +2726,52 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('proposeConsolidationEntries', () => {
+    it('POSTs the period to propose-consolidation-entries and returns the drafts', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('propose-consolidation-entries', {
+          period: '2026-08',
+          consolidation_entity_id: 'ent_adj',
+          closed: false,
+          entries: [],
+          replaced: 2,
+        })
+      )
+      const result = await client.proposeConsolidationEntries('graph_42', '2026-08')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/propose-consolidation-entries'
+      )
+      expect(JSON.parse(await req.text())).toEqual({ period: '2026-08' })
+      expect(result.replaced).toBe(2)
+    })
+  })
+
+  describe('setAllocationOverride', () => {
+    it('POSTs the share and basis to set-allocation-override', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('set-allocation-override', {
+          entity_id: 'ent_cafe',
+          period: '2026-08',
+          amount: 250000,
+        })
+      )
+      const result = await client.setAllocationOverride('graph_42', {
+        entity_id: 'ent_cafe',
+        period: '2026-08',
+        amount: 250000,
+        basis: 'Preferred return first',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/set-allocation-override'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.basis).toBe('Preferred return first')
+      expect(result.amount).toBe(250000)
+    })
+  })
+
   describe('deleteJournalEntry', () => {
     it('returns deleted: true from the envelope', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('delete-journal-entry', { deleted: true }))
@@ -3286,6 +3332,25 @@ describe('LedgerClient', () => {
       const body = JSON.parse(await req.text())
       expect(body.period_end).toBe('2026-08-31')
       expect(result.columns[0].kind).toBe('consolidated')
+    })
+  })
+
+  describe('previewConsolidationEntries', () => {
+    it('POSTs the period to preview-consolidation-entries', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-consolidation-entries', {
+          period: '2026-08',
+          proposals: [],
+          up_to_date: true,
+        })
+      )
+      const result = await client.previewConsolidationEntries('graph_42', '2026-08')
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/preview-consolidation-entries'
+      )
+      expect(JSON.parse(await req.text())).toEqual({ period: '2026-08' })
+      expect(result.up_to_date).toBe(true)
     })
   })
 
