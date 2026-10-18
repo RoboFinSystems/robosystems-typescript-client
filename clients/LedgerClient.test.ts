@@ -3235,6 +3235,32 @@ describe('LedgerClient', () => {
 
   // ── Financial statements ─────────────────────────────────────────────
 
+  describe('consolidationWorksheet', () => {
+    it('POSTs the window to the consolidation-worksheet URL and returns the columns', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('consolidation-worksheet', {
+          statement_type: 'balance_sheet',
+          columns: [
+            { key: 'consolidated', label: 'Consolidated', kind: 'consolidated', in_sum: true },
+          ],
+          rows: [],
+        })
+      )
+      const result = await client.consolidationWorksheet('graph_42', {
+        statement_type: 'balance_sheet',
+        period_start: '2026-08-01',
+        period_end: '2026-08-31',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/consolidation-worksheet'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.period_end).toBe('2026-08-31')
+      expect(result.columns[0].kind).toBe('consolidated')
+    })
+  })
+
   describe('liveFinancialStatement', () => {
     it('returns the statement payload', async () => {
       mockFetch.mockResolvedValueOnce(

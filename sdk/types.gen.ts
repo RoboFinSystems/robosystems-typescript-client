@@ -2598,6 +2598,114 @@ export type ConnectionResponse = {
 };
 
 /**
+ * ConsolidationWorksheetRequest
+ *
+ * Request for consolidation-worksheet (OLTP, entity graphs only).
+ */
+export type ConsolidationWorksheetRequest = {
+    /**
+     * Statement Type
+     *
+     * income_statement | balance_sheet | cash_flow_statement | equity_statement.
+     */
+    statement_type: string;
+    /**
+     * Period Start
+     *
+     * Explicit window start. Overrides period_type/fiscal_year.
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     *
+     * Explicit window end. Overrides period_type/fiscal_year.
+     */
+    period_end?: string | null;
+    /**
+     * Period Type
+     *
+     * annual | quarterly | instant (ignored when dates supplied)
+     */
+    period_type?: string | null;
+    /**
+     * Fiscal Year
+     *
+     * Fiscal year for annual window (anchored on FiscalCalendar)
+     */
+    fiscal_year?: number | null;
+    /**
+     * Limit
+     *
+     * Max rows returned. Defaults to the ceiling: the whole statement.
+     */
+    limit?: number;
+};
+
+/**
+ * ConsolidationWorksheetResponse
+ *
+ * The group's statement with the entity as the column.
+ */
+export type ConsolidationWorksheetResponse = {
+    /**
+     * Graph Id
+     *
+     * The graph read.
+     */
+    graph_id: string;
+    /**
+     * Entity Id
+     *
+     * The group parent.
+     */
+    entity_id: string;
+    /**
+     * Statement Type
+     *
+     * The statement rendered.
+     */
+    statement_type: string;
+    /**
+     * The window every column reads. The cash flow also pivots the prior window of equal length as its delta basis; it is not rendered.
+     */
+    period: PeriodSpec;
+    /**
+     * Columns
+     *
+     * The parent, each member consolidated in full, `combined`, the consolidation entity's adjustments (when the group has one), `consolidated`, then the equity-method and cost members outside the sum. A member outside its membership interval for the period has no column.
+     */
+    columns: Array<WorksheetColumn>;
+    /**
+     * Rows
+     *
+     * The union of every column's lines in the parent's Style order; a line zero in every column is left out.
+     */
+    rows: Array<WorksheetRow>;
+    /**
+     * The guard-rail outcome for the consolidated column, the same checks live-financial-statement runs.
+     */
+    validation?: ValidationCheckResponse | null;
+    /**
+     * Unmapped Entity Ids
+     *
+     * Entities with no CoA mapping yet, so with no column.
+     */
+    unmapped_entity_ids?: Array<string>;
+    /**
+     * Unmapped Count
+     *
+     * Unmapped accounts across the summed columns.
+     */
+    unmapped_count?: number;
+    /**
+     * Truncated
+     *
+     * Whether `limit` cut rows.
+     */
+    truncated?: boolean;
+};
+
+/**
  * ContentLimits
  *
  * Per-operation materialization limits.
@@ -11555,6 +11663,52 @@ export type OperationEnvelopeComputeMetricsResponse = {
      * Command-specific result payload
      */
     result?: ComputeMetricsResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ConsolidationWorksheetResponse]
+ */
+export type OperationEnvelopeConsolidationWorksheetResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ConsolidationWorksheetResponse | null;
     /**
      * At
      *
@@ -21584,6 +21738,106 @@ export type ViewResponse = {
     summary?: {
         [key: string]: ElementSummary;
     } | null;
+};
+
+/**
+ * WorksheetColumn
+ *
+ * One column of the consolidation worksheet.
+ */
+export type WorksheetColumn = {
+    /**
+     * Key
+     *
+     * The entity id for an entity's column; `combined` and `consolidated` for the two totals.
+     */
+    key: string;
+    /**
+     * Label
+     *
+     * The entity's name, or the total's.
+     */
+    label: string;
+    /**
+     * Kind
+     *
+     * `member`: the parent or a member consolidated in full. `combined`: the members' sum, nothing eliminated. `adjustments`: the consolidation entity's entries. `consolidated`: combined plus the adjustments. `not_summed`: an equity-method or cost member, shown beside the sum and never in it.
+     */
+    kind: 'member' | 'combined' | 'adjustments' | 'consolidated' | 'not_summed';
+    /**
+     * Entity Id
+     *
+     * The entity the column reads; null on a total.
+     */
+    entity_id?: string | null;
+    /**
+     * Consolidation Method
+     *
+     * The entity's `consolidation_method`; null on a total.
+     */
+    consolidation_method?: string | null;
+    /**
+     * Ownership Pct
+     *
+     * The parent's share of the entity, where it has one.
+     */
+    ownership_pct?: number | null;
+    /**
+     * In Sum
+     *
+     * Whether the column is part of the consolidated total.
+     */
+    in_sum: boolean;
+};
+
+/**
+ * WorksheetRow
+ *
+ * One line of the consolidation worksheet, a value per column.
+ */
+export type WorksheetRow = {
+    /**
+     * Qname
+     *
+     * The rs-gaap concept of the line.
+     */
+    qname: string;
+    /**
+     * Name
+     *
+     * The line's label.
+     */
+    name: string;
+    /**
+     * Trait
+     *
+     * The concept's classification.
+     */
+    trait?: string | null;
+    /**
+     * Values
+     *
+     * One value per column, aligned with `columns`.
+     */
+    values: Array<number | null>;
+    /**
+     * Depth
+     *
+     * Indentation in the statement.
+     */
+    depth?: number;
+    /**
+     * Is Subtotal
+     *
+     * Whether the line is a total.
+     */
+    is_subtotal?: boolean;
+    /**
+     * Period Role
+     *
+     * On the equity roll-forward, `start` for the beginning-balance row and `end` for the ending-balance row. Null elsewhere.
+     */
+    period_role?: string | null;
 };
 
 /**
@@ -34020,6 +34274,70 @@ export type LiveFinancialStatementResponses = {
 };
 
 export type LiveFinancialStatementResponse2 = LiveFinancialStatementResponses[keyof LiveFinancialStatementResponses];
+
+export type ConsolidationWorksheetData = {
+    body: ConsolidationWorksheetRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/consolidation-worksheet';
+};
+
+export type ConsolidationWorksheetErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ConsolidationWorksheetError = ConsolidationWorksheetErrors[keyof ConsolidationWorksheetErrors];
+
+export type ConsolidationWorksheetResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeConsolidationWorksheetResponse;
+};
+
+export type ConsolidationWorksheetResponse2 = ConsolidationWorksheetResponses[keyof ConsolidationWorksheetResponses];
 
 export type CreatePortfolioBlockData = {
     body: CreatePortfolioBlockRequest;

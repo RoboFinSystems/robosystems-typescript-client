@@ -37,6 +37,7 @@ import {
   changeCalendarStart,
   closePeriod,
   computeMetrics,
+  consolidationWorksheet,
   createAgent,
   createEntity,
   createEventBlock,
@@ -102,6 +103,8 @@ import type {
   ClosePeriodOperation,
   ComputeMetricsRequest,
   ComputeMetricsResponse,
+  ConsolidationWorksheetRequest,
+  ConsolidationWorksheetResponse,
   CreateAgentRequest,
   CreateEntityRequest,
   CreateEventBlockRequest,
@@ -2739,6 +2742,22 @@ export class LedgerClient {
       liveFinancialStatement({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Live financial statement', envelope.result)
+  }
+
+  /**
+   * The group's statement for one window with the entity as the column:
+   * each member consolidated in full, their combined sum, the consolidation
+   * entity's adjustments, the consolidated total, and each equity-method or
+   * cost member beside the sum. Read on the group parent.
+   */
+  async consolidationWorksheet(
+    graphId: string,
+    body: ConsolidationWorksheetRequest
+  ): Promise<ConsolidationWorksheetResponse> {
+    const envelope = await this.callOperation('Consolidation worksheet', (o) =>
+      consolidationWorksheet({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Consolidation worksheet', envelope.result)
   }
 
   /**
