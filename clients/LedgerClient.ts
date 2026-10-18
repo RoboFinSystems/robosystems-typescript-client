@@ -62,10 +62,12 @@ import {
   linkBankAccount,
   linkEntityTaxonomy,
   liveFinancialStatement,
+  previewConsolidationEntries,
   previewEventBlock,
   previewReconciliations,
   previewReconcilingItem,
   promoteObligations,
+  proposeConsolidationEntries,
   rebuildSchedule,
   recordOpeningBalance,
   recordStatementBalance,
@@ -75,6 +77,7 @@ import {
   reopenPeriod,
   resolveReconcilingItem,
   revokeReportShare,
+  setAllocationOverride,
   setCloseTarget,
   setReconciliationPolicy,
   shareReport,
@@ -94,6 +97,7 @@ import type {
   AcceptSuggestionsRequest,
   AcceptSuggestionsResponse,
   AddPublishListMembersOperation,
+  AllocationOverrideResponse,
   AssociationResponse,
   AutoMapElementsOperation,
   BindTextBlockRequest,
@@ -145,10 +149,12 @@ import type {
   LiveFinancialStatementRequest,
   LiveFinancialStatementResponse,
   OperationEnvelope,
+  PreviewConsolidationEntriesResponse,
   PreviewEventBlockResponse,
   PreviewReconciliationsRequest,
   PromoteObligationsRequest,
   PromoteObligationsResponse,
+  ProposeConsolidationEntriesResponse,
   PublishListMemberResponse,
   PublishListResponse,
   RebuildScheduleRequest,
@@ -168,6 +174,7 @@ import type {
   ResolveReconcilingItemRequest,
   ResolveReconcilingItemResponse,
   RevokeReportShareResponse,
+  SetAllocationOverrideRequest,
   SetCloseTargetOperation,
   SetReconciliationPolicyRequest,
   ShareReportResponse,
@@ -2561,6 +2568,39 @@ export class LedgerClient {
     return this.requireResult('Record opening balance', envelope.result)
   }
 
+  /**
+   * Draft a month's consolidating entries in the group's consolidation
+   * entity, replacing the drafts the engine wrote for it before; the
+   * consolidation entity's close posts them. `period` is `YYYY-MM`. A
+   * residual or a disagreement comes back beside the drafts, never plugged;
+   * a closed month comes back `closed`, with nothing written.
+   */
+  async proposeConsolidationEntries(
+    graphId: string,
+    period: string
+  ): Promise<ProposeConsolidationEntriesResponse> {
+    const envelope = await this.callOperation('Propose consolidation entries', (o) =>
+      proposeConsolidationEntries({ ...o, path: { graph_id: graphId }, body: { period } })
+    )
+    return this.requireResult('Propose consolidation entries', envelope.result)
+  }
+
+  /**
+   * Set the outside owners' share of a member's result for one month in
+   * place of the pro-rata share: `amount` in cents (negative for a share of
+   * a loss) or `percentage` of the month's result, with the `basis`.
+   * `clear: true` removes it. Only for a member consolidated in full.
+   */
+  async setAllocationOverride(
+    graphId: string,
+    body: SetAllocationOverrideRequest
+  ): Promise<AllocationOverrideResponse> {
+    const envelope = await this.callOperation('Set allocation override', (o) =>
+      setAllocationOverride({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Set allocation override', envelope.result)
+  }
+
   // ── Event blocks (generic preview + status transitions) ──────────────
 
   /**
@@ -2780,6 +2820,22 @@ export class LedgerClient {
       consolidationWorksheet({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Consolidation worksheet', envelope.result)
+  }
+
+  /**
+   * The consolidating entries a group's month needs, computed from the books
+   * and posting nothing: each kind and member brought to its month-end
+   * balance, less what the consolidation entity already holds. `period` is
+   * `YYYY-MM`.
+   */
+  async previewConsolidationEntries(
+    graphId: string,
+    period: string
+  ): Promise<PreviewConsolidationEntriesResponse> {
+    const envelope = await this.callOperation('Preview consolidation entries', (o) =>
+      previewConsolidationEntries({ ...o, path: { graph_id: graphId }, body: { period } })
+    )
+    return this.requireResult('Preview consolidation entries', envelope.result)
   }
 
   /**

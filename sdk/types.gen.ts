@@ -364,6 +364,56 @@ export type AgentClassification = {
 };
 
 /**
+ * AllocationOverrideResponse
+ *
+ * A member's allocation override for one month.
+ */
+export type AllocationOverrideResponse = {
+    /**
+     * Entity Id
+     *
+     * The member.
+     */
+    entity_id: string;
+    /**
+     * Period
+     *
+     * The month, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * Amount
+     *
+     * The share, in cents, when set so.
+     */
+    amount?: number | null;
+    /**
+     * Percentage
+     *
+     * The share as a percentage, when set so.
+     */
+    percentage?: number | null;
+    /**
+     * Basis
+     *
+     * Why it differs from pro rata.
+     */
+    basis?: string | null;
+    /**
+     * Set By
+     *
+     * Who set it.
+     */
+    set_by?: string | null;
+    /**
+     * Cleared
+     *
+     * True when the override was removed.
+     */
+    cleared?: boolean;
+};
+
+/**
  * AnalyticalStatementFactRow
  *
  * A single fact row from the graph-backed statement analysis.
@@ -2595,6 +2645,178 @@ export type ConnectionResponse = {
     metadata: {
         [key: string]: unknown;
     };
+};
+
+/**
+ * ConsolidationProposal
+ *
+ * One consolidating entry the month needs: the difference between the
+ * balance this kind of adjustment should hold for the member at the month
+ * end and what the consolidation entity already holds for it.
+ */
+export type ConsolidationProposal = {
+    /**
+     * Adjustment Kind
+     *
+     * What the entry adjusts.
+     */
+    adjustment_kind: 'elimination_investment' | 'elimination_intercompany' | 'elimination_unrealized_profit' | 'nci_allocation' | 'nci_distribution' | 'equity_method_pickup' | 'equity_method_distribution' | 'acquisition' | 'deconsolidation' | 'translation' | 'manual';
+    /**
+     * Adjusts Entity Id
+     *
+     * The entity whose figures the entry adjusts.
+     */
+    adjusts_entity_id: string;
+    /**
+     * Adjusts Entity Name
+     *
+     * That entity's name.
+     */
+    adjusts_entity_name: string;
+    /**
+     * Posting Date
+     *
+     * The month's last day.
+     */
+    posting_date: string;
+    /**
+     * Memo
+     *
+     * The entry's memo.
+     */
+    memo: string;
+    /**
+     * Basis
+     *
+     * How the amounts were computed.
+     */
+    basis: string;
+    /**
+     * Lines
+     *
+     * The entry's lines; they balance.
+     */
+    lines: Array<ConsolidationProposalLine>;
+};
+
+/**
+ * ConsolidationProposalLine
+ *
+ * One line of a proposed consolidating entry, in the consolidation
+ * entity's chart.
+ */
+export type ConsolidationProposalLine = {
+    /**
+     * Element Id
+     *
+     * The consolidation entity's account.
+     */
+    element_id: string;
+    /**
+     * Account Name
+     *
+     * The account's name.
+     */
+    account_name: string;
+    /**
+     * Concept
+     *
+     * The rs-gaap concept the account maps to.
+     */
+    concept: string;
+    /**
+     * Debit Amount
+     *
+     * Debit, in cents.
+     */
+    debit_amount?: number;
+    /**
+     * Credit Amount
+     *
+     * Credit, in cents.
+     */
+    credit_amount?: number;
+    /**
+     * Flow Qname
+     *
+     * The cash flow row the line offsets, when it eliminates one: the row the member's own line produced, so the consolidated cash flow nets it.
+     */
+    flow_qname?: string | null;
+};
+
+/**
+ * ConsolidationReconcilingItem
+ *
+ * Two of the group's entities whose intercompany figures do not agree.
+ * The lower amount is eliminated where one side matches the other; what is
+ * left stays in the consolidated statements until the books agree.
+ */
+export type ConsolidationReconcilingItem = {
+    /**
+     * Entity Ids
+     *
+     * The two entities.
+     */
+    entity_ids: Array<string>;
+    /**
+     * Concept
+     *
+     * The rs-gaap concept left uneliminated.
+     */
+    concept: string;
+    /**
+     * Entity Id
+     *
+     * The entity whose figure is left.
+     */
+    entity_id: string;
+    /**
+     * Amount
+     *
+     * Cents left uneliminated, debit-positive.
+     */
+    amount: number;
+    /**
+     * Description
+     *
+     * What does not agree.
+     */
+    description: string;
+};
+
+/**
+ * ConsolidationResidual
+ *
+ * A difference the engine cannot eliminate on its own: the parent's
+ * investment in a member against the parent's share of that member's
+ * capital. Its entry is withheld until the difference is explained or
+ * posted by hand with a basis; it is never plugged.
+ */
+export type ConsolidationResidual = {
+    /**
+     * Entity Id
+     *
+     * The member.
+     */
+    entity_id: string;
+    /**
+     * Entity Name
+     *
+     * The member's name.
+     */
+    entity_name: string;
+    /**
+     * Amount
+     *
+     * Cents: the parent's investment balance less its share of the member's capital. Positive when the parent carries more than its share.
+     */
+    amount: number;
+    /**
+     * Explanation
+     *
+     * What the two figures are.
+     */
+    explanation: string;
 };
 
 /**
@@ -9081,7 +9303,7 @@ export type JournalEntryLineItemInput = {
     /**
      * Flow Qname
      *
-     * The cash flow row this line's cash belongs to, an rs-gaap flow qname (`flowCandidates(entityId)` lists the rows this company's statement offers). Only for a loan drawn or repaid, capital put in or taken out, an asset bought or sold; omitted, the account's default flow applies. A flow set on one side of the entry tags the untagged lines on the other: the cash flow statement reads the cash line and the roll-forwards read the account line. On the group's consolidation entity, which moves no cash, every tagged line counts on its own, cash-effect signed (a credit is an inflow), so an elimination offsets the flow a member's line produced. Refused when it is not a row of the entity's cash flow statement.
+     * The cash flow row this line's cash belongs to, an rs-gaap flow qname (`flowCandidates(entityId)` lists the rows this company's statement offers). Only for a loan drawn or repaid, capital put in or taken out, an asset bought or sold; omitted, the account's default flow applies. A flow set on one side of the entry tags the untagged lines on the other: the cash flow statement reads the cash line and the roll-forwards read the account line. On the group's consolidation entity, which moves no cash, every tagged line counts on its own, cash-effect signed (a credit is an inflow), so an elimination offsets the flow a member's line produced, and a tag does not spread to the other side. Refused when it is not a row of the entity's cash flow statement.
      */
     flow_qname?: string | null;
     /**
@@ -9186,6 +9408,14 @@ export type JournalEntryResponse = {
      * Total Credit
      */
     total_credit: number;
+    /**
+     * Adjustment Kind
+     */
+    adjustment_kind?: string | null;
+    /**
+     * Adjusts Entity Id
+     */
+    adjusts_entity_id?: string | null;
 };
 
 /**
@@ -11212,6 +11442,52 @@ export type OperationEnvelopeAcceptSuggestionsResponse = {
 };
 
 /**
+ * OperationEnvelope[AllocationOverrideResponse]
+ */
+export type OperationEnvelopeAllocationOverrideResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: AllocationOverrideResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[AssertMetricsResponse]
  */
 export type OperationEnvelopeAssertMetricsResponse = {
@@ -12914,6 +13190,52 @@ export type OperationEnvelopePortfolioBlockEnvelope = {
 };
 
 /**
+ * OperationEnvelope[PreviewConsolidationEntriesResponse]
+ */
+export type OperationEnvelopePreviewConsolidationEntriesResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: PreviewConsolidationEntriesResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[PreviewEventBlockResponse]
  */
 export type OperationEnvelopePreviewEventBlockResponse = {
@@ -12985,6 +13307,52 @@ export type OperationEnvelopePromoteObligationsResponse = {
      * Command-specific result payload
      */
     result?: PromoteObligationsResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[ProposeConsolidationEntriesResponse]
+ */
+export type OperationEnvelopeProposeConsolidationEntriesResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: ProposeConsolidationEntriesResponse | null;
     /**
      * At
      *
@@ -15340,6 +15708,94 @@ export type PositionBlock = {
 };
 
 /**
+ * PreviewConsolidationEntriesRequest
+ *
+ * The month to compute the consolidating entries for.
+ */
+export type PreviewConsolidationEntriesRequest = {
+    /**
+     * Period
+     *
+     * The month, as YYYY-MM.
+     */
+    period: string;
+};
+
+/**
+ * PreviewConsolidationEntriesResponse
+ *
+ * The consolidating entries a month needs, computed from the books.
+ */
+export type PreviewConsolidationEntriesResponse = {
+    /**
+     * Period
+     *
+     * The month, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * Period Start
+     *
+     * The month's first day.
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * The month's last day.
+     */
+    period_end: string;
+    /**
+     * Consolidation Entity Id
+     *
+     * The entity the entries post in.
+     */
+    consolidation_entity_id: string;
+    /**
+     * Proposals
+     *
+     * The entries to post; empty when the month is up to date.
+     */
+    proposals?: Array<ConsolidationProposal>;
+    /**
+     * Residuals
+     *
+     * Differences withheld from the proposals until explained.
+     */
+    residuals?: Array<ConsolidationResidual>;
+    /**
+     * Reconciling Items
+     *
+     * Intercompany figures the two sides do not agree on.
+     */
+    reconciling_items?: Array<ConsolidationReconcilingItem>;
+    /**
+     * Notes
+     *
+     * Anything the engine left out, and why.
+     */
+    notes?: Array<string>;
+    /**
+     * Up To Date
+     *
+     * True when nothing is proposed, withheld or left out: the consolidation entity already holds what the month needs. A closed month is up to date as posted; read `closed` first.
+     */
+    up_to_date: boolean;
+    /**
+     * Closed
+     *
+     * True when the consolidation entity has closed the month: its entries are as posted, and nothing is recomputed.
+     */
+    closed?: boolean;
+    /**
+     * Drafted Entry Ids
+     *
+     * The month's drafts propose-consolidation-entries wrote, waiting for the consolidation entity's close to post them.
+     */
+    drafted_entry_ids?: Array<string>;
+};
+
+/**
  * PreviewEventBlockResponse
  *
  * Dry-run result — what would happen if this event block were created.
@@ -15487,6 +15943,76 @@ export type PromoteObligationsResponse = {
     errors?: Array<{
         [key: string]: string;
     }>;
+};
+
+/**
+ * ProposeConsolidationEntriesRequest
+ *
+ * The month to draft the consolidating entries for.
+ */
+export type ProposeConsolidationEntriesRequest = {
+    /**
+     * Period
+     *
+     * The month, as YYYY-MM.
+     */
+    period: string;
+};
+
+/**
+ * ProposeConsolidationEntriesResponse
+ *
+ * The consolidating entries drafted for a month.
+ */
+export type ProposeConsolidationEntriesResponse = {
+    /**
+     * Period
+     *
+     * The month, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * Consolidation Entity Id
+     *
+     * The entity the drafts are in.
+     */
+    consolidation_entity_id: string;
+    /**
+     * Closed
+     *
+     * True when the month is closed and nothing was drafted.
+     */
+    closed?: boolean;
+    /**
+     * Entries
+     *
+     * The drafts written; the consolidation entity's close posts them.
+     */
+    entries?: Array<JournalEntryResponse>;
+    /**
+     * Replaced
+     *
+     * Earlier drafts of this month's entries, replaced by these.
+     */
+    replaced?: number;
+    /**
+     * Residuals
+     *
+     * Differences withheld from the drafts until explained.
+     */
+    residuals?: Array<ConsolidationResidual>;
+    /**
+     * Reconciling Items
+     *
+     * Intercompany figures the two sides do not agree on.
+     */
+    reconciling_items?: Array<ConsolidationReconcilingItem>;
+    /**
+     * Notes
+     *
+     * Anything the engine left out, and why.
+     */
+    notes?: Array<string>;
 };
 
 /**
@@ -18631,6 +19157,52 @@ export type ServiceOfferingsResponse = {
      * Summary information
      */
     summary: ServiceOfferingSummary;
+};
+
+/**
+ * SetAllocationOverrideRequest
+ *
+ * The outside owners' share of a member's result for one month, set by a
+ * person in place of the pro-rata share: a preferred return, a waterfall, a
+ * special allocation.
+ */
+export type SetAllocationOverrideRequest = {
+    /**
+     * Entity Id
+     *
+     * The member, consolidated in full.
+     */
+    entity_id: string;
+    /**
+     * Period
+     *
+     * The month, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * Amount
+     *
+     * The outside owners' share of the month's result, in cents; negative for a share of a loss.
+     */
+    amount?: number | null;
+    /**
+     * Percentage
+     *
+     * The outside owners' share as a percentage of the month's result.
+     */
+    percentage?: number | null;
+    /**
+     * Basis
+     *
+     * Why the share differs from the ownership percentage; required to set one.
+     */
+    basis?: string | null;
+    /**
+     * Clear
+     *
+     * Remove the month's override, back to the pro-rata share.
+     */
+    clear?: boolean;
 };
 
 /**
@@ -32421,6 +32993,134 @@ export type RecordOpeningBalanceResponses = {
 
 export type RecordOpeningBalanceResponse = RecordOpeningBalanceResponses[keyof RecordOpeningBalanceResponses];
 
+export type ProposeConsolidationEntriesData = {
+    body: ProposeConsolidationEntriesRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/propose-consolidation-entries';
+};
+
+export type ProposeConsolidationEntriesErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ProposeConsolidationEntriesError = ProposeConsolidationEntriesErrors[keyof ProposeConsolidationEntriesErrors];
+
+export type ProposeConsolidationEntriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeProposeConsolidationEntriesResponse;
+};
+
+export type ProposeConsolidationEntriesResponse2 = ProposeConsolidationEntriesResponses[keyof ProposeConsolidationEntriesResponses];
+
+export type SetAllocationOverrideData = {
+    body: SetAllocationOverrideRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/set-allocation-override';
+};
+
+export type SetAllocationOverrideErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type SetAllocationOverrideError = SetAllocationOverrideErrors[keyof SetAllocationOverrideErrors];
+
+export type SetAllocationOverrideResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeAllocationOverrideResponse;
+};
+
+export type SetAllocationOverrideResponse = SetAllocationOverrideResponses[keyof SetAllocationOverrideResponses];
+
 export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;
     headers?: {
@@ -34468,6 +35168,70 @@ export type ConsolidationWorksheetResponses = {
 };
 
 export type ConsolidationWorksheetResponse2 = ConsolidationWorksheetResponses[keyof ConsolidationWorksheetResponses];
+
+export type PreviewConsolidationEntriesData = {
+    body: PreviewConsolidationEntriesRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/preview-consolidation-entries';
+};
+
+export type PreviewConsolidationEntriesErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type PreviewConsolidationEntriesError = PreviewConsolidationEntriesErrors[keyof PreviewConsolidationEntriesErrors];
+
+export type PreviewConsolidationEntriesResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopePreviewConsolidationEntriesResponse;
+};
+
+export type PreviewConsolidationEntriesResponse2 = PreviewConsolidationEntriesResponses[keyof PreviewConsolidationEntriesResponses];
 
 export type CreatePortfolioBlockData = {
     body: CreatePortfolioBlockRequest;
