@@ -2698,6 +2698,34 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('recordOpeningBalance', () => {
+    it('POSTs the balances to record-opening-balance and returns the entry', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('record-opening-balance', {
+          id: 'je_open',
+          type: 'opening',
+          posting_date: '2025-12-31',
+        })
+      )
+      const result = await client.recordOpeningBalance('graph_42', {
+        entity_id: 'ent_1',
+        balances: [
+          { element_id: 'elem_cash', debit_amount: 1500000 },
+          { element_id: 'elem_loan', credit_amount: 1000000 },
+        ],
+        equity_element_id: 'elem_obe',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/record-opening-balance'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.balances).toHaveLength(2)
+      expect(body.equity_element_id).toBe('elem_obe')
+      expect(result).toMatchObject({ type: 'opening', posting_date: '2025-12-31' })
+    })
+  })
+
   describe('deleteJournalEntry', () => {
     it('returns deleted: true from the envelope', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('delete-journal-entry', { deleted: true }))
