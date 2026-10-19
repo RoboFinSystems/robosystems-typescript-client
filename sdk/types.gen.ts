@@ -10242,14 +10242,12 @@ export type LinkBankAccountResponse = {
  *
  * Link an entity to a taxonomy (creates the ENTITY_HAS_TAXONOMY edge).
  *
- * This is how a graph declares "this entity reports under this taxonomy."
- * For `chart_of_accounts` taxonomies, this tells the platform which CoA
- * the entity uses. For reporting taxonomies, which standard (us-gaap,
- * ifrs). Idempotent — re-linking returns the existing edge unchanged.
- *
- * CoA blocks auto-link at create time; use this to switch the primary
- * CoA, link a reporting extension, or attach a custom ontology
- * explicitly.
+ * A `chart_of_accounts` link tells the platform which chart the entity
+ * keeps its books in; CoA blocks auto-link at create time, so use this to
+ * switch the primary one. The other bases record the association and
+ * nothing reads them: statements render from the entity's reporting style,
+ * whatever taxonomy is linked. Idempotent — re-linking returns the
+ * existing edge unchanged.
  */
 export type LinkEntityTaxonomyRequest = {
     /**
@@ -10267,7 +10265,7 @@ export type LinkEntityTaxonomyRequest = {
     /**
      * Basis
      *
-     * Linkage role: `chart_of_accounts` (the entity's CoA), `reporting` (reporting standard like us-gaap), `mapping` (CoA→reporting rollup), `schedule` (schedule structure).
+     * Linkage role: `chart_of_accounts` (the entity's CoA), `reporting` (a reporting standard), `mapping` (CoA→reporting rollup), `schedule` (schedule structure). Only `chart_of_accounts` is read; the others are recorded and do not change how statements render.
      */
     basis?: 'reporting' | 'chart_of_accounts' | 'mapping' | 'schedule';
     /**
@@ -15823,6 +15821,12 @@ export type PreviewConsolidationEntriesResponse = {
      * True when the consolidation entity has closed the month: its entries are as posted, and nothing is recomputed.
      */
     closed?: boolean;
+    /**
+     * Incomplete
+     *
+     * True when the engine left an entry out — a member's books it cannot read, an account the consolidation entity lacks; `notes` says which. The group close waits on it whatever the residuals.
+     */
+    incomplete?: boolean;
     /**
      * Drafted Entry Ids
      *

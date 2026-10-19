@@ -1903,7 +1903,7 @@ export const deleteTaxonomyBlock = <ThrowOnError extends boolean = false>(option
 /**
  * Link Entity to Taxonomy
  *
- * Link the graph's entity to a taxonomy. Idempotent — returns existing linkage if it already exists. CoA blocks auto-link at create time; use this only to switch the primary CoA or link a reporting extension / custom ontology explicitly.
+ * Link an entity to a taxonomy. Idempotent — returns the existing linkage if it already exists. CoA blocks auto-link at create time; use this to switch an entity's primary chart of accounts. Only the `chart_of_accounts` basis changes behavior: a `reporting`, `mapping` or `schedule` link records the association and nothing reads it. Statements render from the entity's reporting style (change-reporting-style), and custom statement rows come from a reporting extension of that style.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
