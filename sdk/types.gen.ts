@@ -101,7 +101,7 @@ export type AcceptSuggestionLine = {
     /**
      * Reason
      *
-     * Why a skipped line was not taken: `not_open` (already classified, posted or retracted), `no_suggestion` (nothing to take, or a name that matches no account), `source_changed` (the feed changed it after capture), `closed_period`, `locked` (another process holds it; retry), or `refused` (the handler would not post the choice).
+     * Why a skipped line was not taken: `not_open` (already classified, posted or retracted), `no_suggestion` (nothing to take, or a name that matches no account), `source_changed` (the feed changed it after capture), `suggestion_changed` (a line taken earlier in the batch moved the counterparty's default, so this one's suggestion is not the one selected; review it again), `closed_period`, `locked` (another process holds it; retry), or `refused` (the handler would not post the choice).
      */
     reason?: string | null;
     /**
@@ -309,10 +309,16 @@ export type AddPublishListMembersOperation = {
 /**
  * AgentClassification
  *
- * A counterparty's default account, learned from committed lines or set by
- * hand.
+ * A counterparty's default account for one entity's lines, learned from
+ * committed lines or set by hand.
  */
 export type AgentClassification = {
+    /**
+     * Entity Id
+     *
+     * The entity whose lines it is for.
+     */
+    entity_id: string;
     /**
      * Element Id
      *
@@ -9477,13 +9483,13 @@ export type LearnClassificationDefaultsResponse = {
     /**
      * Agents Learned
      *
-     * Counterparties given a default from their committed lines.
+     * Defaults learned from committed lines, one per counterparty and entity.
      */
     agents_learned: number;
     /**
      * Agents Kept
      *
-     * Counterparties that already had a default, left as they were.
+     * Counterparty and entity pairs that already had a default, left as they were.
      */
     agents_kept: number;
     /**
@@ -9571,9 +9577,15 @@ export type LedgerAgentResponse = {
      */
     is_1099_recipient: boolean;
     /**
-     * The default account its bank lines are suggested.
+     * The default account the group parent's bank lines are suggested.
      */
     classification?: AgentClassification | null;
+    /**
+     * Classifications
+     *
+     * The default account for each entity's bank lines, one per entity.
+     */
+    classifications?: Array<AgentClassification>;
     /**
      * Created At
      */
@@ -21063,6 +21075,12 @@ export type UpdateAgentRequest = {
      * `suggest` offers the default on each line; `always_ask` offers none, for a counterparty whose lines go to different accounts. Omit to keep.
      */
     classification_mode?: 'suggest' | 'always_ask' | null;
+    /**
+     * Classification Entity Id
+     *
+     * The entity whose bank lines the default above is for. Each entity keeps its own default, on its own chart. Omit for the group parent.
+     */
+    classification_entity_id?: string | null;
     /**
      * Metadata Patch
      *

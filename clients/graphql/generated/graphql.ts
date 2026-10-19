@@ -352,6 +352,7 @@ export type GetLedgerAgentQuery = {
     updatedAt: string | null
     createdBy: string | null
     classification: {
+      entityId: string
       elementId: string
       accountName: string | null
       mode: string
@@ -361,6 +362,17 @@ export type GetLedgerAgentQuery = {
       setAt: string | null
       learnedFrom: string | null
     } | null
+    classifications: Array<{
+      entityId: string
+      elementId: string
+      accountName: string | null
+      mode: string
+      confirmations: number
+      overrides: number
+      setBy: string | null
+      setAt: string | null
+      learnedFrom: string | null
+    }>
   } | null
 }
 
@@ -393,6 +405,7 @@ export type ListLedgerAgentsQuery = {
     updatedAt: string | null
     createdBy: string | null
     classification: {
+      entityId: string
       elementId: string
       accountName: string | null
       mode: string
@@ -402,6 +415,17 @@ export type ListLedgerAgentsQuery = {
       setAt: string | null
       learnedFrom: string | null
     } | null
+    classifications: Array<{
+      entityId: string
+      elementId: string
+      accountName: string | null
+      mode: string
+      confirmations: number
+      overrides: number
+      setBy: string | null
+      setAt: string | null
+      learnedFrom: string | null
+    }>
   }>
 }
 
@@ -3332,6 +3356,25 @@ export const GetLedgerAgentDocument = {
                   selectionSet: {
                     kind: 'SelectionSet',
                     selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'mode' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'confirmations' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'overrides' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'learnedFrom' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'classifications' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'mode' } },
@@ -3454,6 +3497,25 @@ export const ListLedgerAgentsDocument = {
                   selectionSet: {
                     kind: 'SelectionSet',
                     selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'mode' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'confirmations' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'overrides' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'setAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'learnedFrom' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'classifications' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'mode' } },

@@ -39,6 +39,18 @@ export const LIST_AGENTS = gql`
       isActive
       is1099Recipient
       classification {
+        entityId
+        elementId
+        accountName
+        mode
+        confirmations
+        overrides
+        setBy
+        setAt
+        learnedFrom
+      }
+      classifications {
+        entityId
         elementId
         accountName
         mode
