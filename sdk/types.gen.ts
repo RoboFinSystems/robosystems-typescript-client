@@ -1030,6 +1030,12 @@ export type BackfillPlanHistoryOperation = {
      */
     allow_unreconciled_accounts?: boolean;
     /**
+     * Allow Unexplained Residuals
+     *
+     * Override the group close's residual gate on each reclose of the consolidation entity's months.
+     */
+    allow_unexplained_residuals?: boolean;
+    /**
      * Restamp
      *
      * Also re-derive months that ALREADY have canonical statement sets (default: skip them). Use after an engine improvement changes what a stamp produces — each month reruns the full reopen → reclose cycle and replaces its sets. A restamp run is not self-resuming (every month in range stays a candidate); advance `start_period` between chunks.
@@ -2055,6 +2061,12 @@ export type ClosePeriodOperation = {
      * Override the reconciliation gate — close even though a reconciliation the close waits on is not reconciled for the period, or was never compared for it. The books are then closed without that check. Prefer refresh-reconciliations and clearing what it reports first. The override is recorded in the close audit note.
      */
     allow_unreconciled_accounts?: boolean;
+    /**
+     * Allow Unexplained Residuals
+     *
+     * On the consolidation entity, the group close: close even though a residual or an intercompany disagreement is left unexplained. Its difference stays in the consolidated statements. Prefer correcting the books or posting the explaining entry with its basis. The override, and each item it closed over, is recorded in the close audit note.
+     */
+    allow_unexplained_residuals?: boolean;
     /**
      * Period
      *
@@ -7151,7 +7163,7 @@ export type FiscalCalendarResponse = {
     /**
      * Blockers
      *
-     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations', 'reconciling_items', 'unposted_source_events', 'unreconciled_accounts'
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations', 'reconciling_items', 'unposted_source_events', 'unreconciled_accounts'; on the consolidation entity, whose close is the group's, also 'entity_open', 'adjustments_unposted', 'residual_unexplained', 'consolidated_does_not_foot'
      */
     blockers?: Array<string>;
     /**
@@ -7226,6 +7238,30 @@ export type FiscalCalendarResponse = {
      * Name and status of up to 5 of those reconciliations, so the blocker names what is holding the close.
      */
     unreconciled_account_sample?: Array<string>;
+    /**
+     * Group Open Entities
+     *
+     * The group close: the entities the month consolidates, the parent and its equity-method members included, that have not closed it. Close each first.
+     */
+    group_open_entities?: Array<string>;
+    /**
+     * Group Pending Adjustments
+     *
+     * The group close: the consolidating entries the consolidation entity neither holds nor has drafted, by kind and member, or what the engine left out and why. Run propose-consolidation-entries.
+     */
+    group_pending_adjustments?: Array<string>;
+    /**
+     * Group Unexplained
+     *
+     * The group close: residuals and intercompany disagreements left unexplained. Correct the books or post the explaining entry, or close over them knowingly with allow_unexplained_residuals.
+     */
+    group_unexplained?: Array<string>;
+    /**
+     * Group Not Footing
+     *
+     * The group close: the consolidated balance sheet's and equity statement's validation failures for the month.
+     */
+    group_not_footing?: Array<string>;
     /**
      * Last Close At
      */
@@ -15778,7 +15814,7 @@ export type PreviewConsolidationEntriesResponse = {
     /**
      * Up To Date
      *
-     * True when nothing is proposed, withheld or left out: the consolidation entity already holds what the month needs. A closed month is up to date as posted; read `closed` first.
+     * True when nothing is withheld or left out and the consolidation entity holds what the month needs, posted or in the month's drafts (then `proposals` lists what the drafts hold). A closed month is up to date as posted; read `closed` first.
      */
     up_to_date: boolean;
     /**

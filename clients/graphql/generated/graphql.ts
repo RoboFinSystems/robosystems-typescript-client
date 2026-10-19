@@ -726,6 +726,10 @@ export type GetLedgerFiscalCalendarQuery = {
     unpostedSourceEventSample: Array<string>
     unreconciledAccountCount: number
     unreconciledAccountSample: Array<string>
+    groupOpenEntities: Array<string>
+    groupPendingAdjustments: Array<string>
+    groupUnexplained: Array<string>
+    groupNotFooting: Array<string>
     lastCloseAt: string | null
     initializedAt: string | null
     lastSyncAt: string | null
@@ -4358,6 +4362,10 @@ export const GetLedgerFiscalCalendarDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'unpostedSourceEventSample' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountCount' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountSample' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'groupOpenEntities' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'groupPendingAdjustments' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'groupUnexplained' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'groupNotFooting' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'lastCloseAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'initializedAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'lastSyncAt' } },

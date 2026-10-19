@@ -503,6 +503,10 @@ interface RawFiscalCalendar {
   unposted_source_event_sample?: string[]
   unreconciled_account_count?: number
   unreconciled_account_sample?: string[]
+  group_open_entities?: string[]
+  group_pending_adjustments?: string[]
+  group_unexplained?: string[]
+  group_not_footing?: string[]
   last_close_at: string | null
   initialized_at: string | null
   last_sync_at: string | null
@@ -693,6 +697,13 @@ export interface ClosePeriodOptions extends EntityScopeOptions {
    * recorded in the close audit note.
    */
   allowUnreconciledAccounts?: boolean
+  /**
+   * On the consolidation entity, whose close is the group's: close despite a
+   * residual or intercompany disagreement left unexplained. Its difference
+   * stays in the consolidated statements and each item is named in the
+   * close audit note.
+   */
+  allowUnexplainedResiduals?: boolean
   /**
    * Close despite posted events whose source payload changed afterwards and
    * that nobody has decided on. Prefer `resolveReconcilingItem` on each.
@@ -2223,6 +2234,7 @@ export class LedgerClient {
       allow_unreconciled_accounts: options?.allowUnreconciledAccounts,
       allow_reconciling_items: options?.allowReconcilingItems,
       allow_unposted_source_events: options?.allowUnpostedSourceEvents,
+      allow_unexplained_residuals: options?.allowUnexplainedResiduals,
     }
     const envelope = await this.callOperation('Close period', (o) =>
       closePeriod({ ...o, path: { graph_id: graphId }, body })
@@ -3441,6 +3453,10 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
     unpostedSourceEventSample: raw.unposted_source_event_sample ?? [],
     unreconciledAccountCount: raw.unreconciled_account_count ?? 0,
     unreconciledAccountSample: raw.unreconciled_account_sample ?? [],
+    groupOpenEntities: raw.group_open_entities ?? [],
+    groupPendingAdjustments: raw.group_pending_adjustments ?? [],
+    groupUnexplained: raw.group_unexplained ?? [],
+    groupNotFooting: raw.group_not_footing ?? [],
     lastCloseAt: raw.last_close_at ?? null,
     initializedAt: raw.initialized_at ?? null,
     lastSyncAt: raw.last_sync_at ?? null,
