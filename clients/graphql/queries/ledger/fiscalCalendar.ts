@@ -48,6 +48,10 @@ export const GET_FISCAL_CALENDAR = gql`
       unpostedSourceEventSample
       unreconciledAccountCount
       unreconciledAccountSample
+      groupOpenEntities
+      groupPendingAdjustments
+      groupUnexplained
+      groupNotFooting
       lastCloseAt
       initializedAt
       lastSyncAt

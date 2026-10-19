@@ -1967,6 +1967,32 @@ describe('LedgerClient', () => {
       const req = mockFetch.mock.calls[0][0] as Request
       expect(JSON.parse(await req.text()).allow_unreconciled_accounts).toBe(true)
     })
+
+    it('names what holds the group close and carries its override', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', {
+          period: '2026-08',
+          entries_posted: 4,
+          target_auto_advanced: false,
+          fiscal_calendar: {
+            ...fiscalCalendar,
+            group_open_entities: ['Driftline Café LLC'],
+            group_unexplained: ['Harbor Café LLC: 500.00 more than its share'],
+          },
+        })
+      )
+      const result = await client.closePeriod('graph_1', '2026-08', {
+        entityId: 'ent_cons',
+        allowUnexplainedResiduals: true,
+      })
+      expect(result.fiscalCalendar.groupOpenEntities).toEqual(['Driftline Café LLC'])
+      expect(result.fiscalCalendar.groupUnexplained).toEqual([
+        'Harbor Café LLC: 500.00 more than its share',
+      ])
+      expect(result.fiscalCalendar.groupPendingAdjustments).toEqual([])
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text()).allow_unexplained_residuals).toBe(true)
+    })
   })
 
   describe('createSchedule', () => {
