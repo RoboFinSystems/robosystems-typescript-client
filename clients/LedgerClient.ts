@@ -39,6 +39,7 @@ import {
   computeMetrics,
   consolidationWorksheet,
   createAgent,
+  createDimension,
   createEntity,
   createEventBlock,
   createEventHandler,
@@ -85,6 +86,7 @@ import {
   transitionFilingStatus,
   unblockSourceGraph,
   updateAgent,
+  updateDimension,
   updateEntity,
   updateEventBlock,
   updateEventHandler,
@@ -112,6 +114,7 @@ import type {
   ConsolidationWorksheetRequest,
   ConsolidationWorksheetResponse,
   CreateAgentRequest,
+  CreateDimensionRequest,
   CreateEntityRequest,
   CreateEventBlockRequest,
   CreateEventHandlerRequest,
@@ -128,6 +131,7 @@ import type {
   DeleteResult,
   DeleteTaxonomyBlockRequest,
   DeleteTaxonomyBlockResponse,
+  DimensionResponse,
   EntityTaxonomyResponse,
   EvaluateRulesRequest,
   EvaluateRulesResponse,
@@ -183,6 +187,7 @@ import type {
   TaxonomyBlockEnvelope,
   TransitionFilingStatusRequest,
   UpdateAgentRequest,
+  UpdateDimensionRequest,
   UpdateEntityRequest,
   UpdateEventBlockRequest,
   UpdateEventHandlerRequest,
@@ -231,6 +236,7 @@ import {
   ListLedgerBankAccountsDocument,
   ListLedgerBankAccountsQuery,
   ListLedgerBlockedSourceGraphsDocument,
+  ListLedgerDimensionsDocument,
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
   ListLedgerEventBlocksDocument,
@@ -276,6 +282,7 @@ import {
   type ListLedgerAccountsQuery,
   type ListLedgerAgentsQuery,
   type ListLedgerBlockedSourceGraphsQuery,
+  type ListLedgerDimensionsQuery,
   type ListLedgerElementsQuery,
   type ListLedgerEntitiesQuery,
   type ListLedgerEventBlocksQuery,
@@ -358,6 +365,9 @@ export type LedgerControlTieOut = LedgerAgedBalances['tieOuts'][number]
 export type LedgerIntercompanyPair = LedgerAgedBalances['pairs'][number]
 export type LedgerOpenItem = OpenItemsForAgentQuery['openItemsForAgent'][number]
 export type LedgerDischargeCandidates = NonNullable<DischargeCandidatesQuery['dischargeCandidates']>
+
+export type LedgerDimensionList = NonNullable<ListLedgerDimensionsQuery['dimensions']>
+export type LedgerDimension = LedgerDimensionList['dimensions'][number]
 /** `receivables` (invoices) or `payables` (bills). */
 export type LedgerOpenItemKind = 'receivables' | 'payables'
 
@@ -1383,12 +1393,79 @@ export class LedgerClient {
     )
   }
 
+  // ── Management dimensions ─────────────────────────────────────────
+
+  /**
+   * The graph's management dimension members — departments, classes,
+   * locations, projects — by axis then name, each with how many lines carry
+   * it. `types` lists the axes the graph has members on. Retired members
+   * are left out unless `options.includeInactive`.
+   */
+  async getDimensions(
+    graphId: string,
+    options?: { dimensionType?: string | null; includeInactive?: boolean }
+  ): Promise<LedgerDimensionList | null> {
+    return this.gqlQuery(
+      graphId,
+      ListLedgerDimensionsDocument,
+      {
+        dimensionType: options?.dimensionType ?? null,
+        includeInactive: options?.includeInactive ?? false,
+      },
+      'List dimensions',
+      (data) => data.dimensions
+    )
+  }
+
+  /**
+   * Add a member to a management dimension (`dimension_type`: department,
+   * class, location, project, or an axis of your own). `value`, the
+   * member's key within its axis, defaults to a slug of the name; a
+   * duplicate key is refused (409).
+   */
+  async createDimension(
+    graphId: string,
+    body: CreateDimensionRequest,
+    idempotencyKey?: string
+  ): Promise<DimensionResponse> {
+    const envelope = await this.callOperation('Create dimension', (o) =>
+      createDimension({
+        ...withIdempotencyKey(o, idempotencyKey),
+        path: { graph_id: graphId },
+        body,
+      })
+    )
+    return this.requireResult('Create dimension', envelope.result)
+  }
+
+  /**
+   * Rename a member, or retire it with `is_active: false`: it stays on the
+   * lines that carry it and goes on no new ones. A member synced from
+   * QuickBooks keeps QuickBooks's name.
+   */
+  async updateDimension(graphId: string, body: UpdateDimensionRequest): Promise<DimensionResponse> {
+    const envelope = await this.callOperation('Update dimension', (o) =>
+      updateDimension({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Update dimension', envelope.result)
+  }
+
   // ── Trial Balance ──────────────────────────────────────────────────
 
-  /** Trial balance by raw CoA account. */
+  /**
+   * Trial balance by raw CoA account. `options.dimension` sums one
+   * management dimension member's lines (`memberId: 'unallocated'` for the
+   * lines no member of the axis tags); such a balance need not foot, and
+   * says so in `sliced`.
+   */
   async getTrialBalance(
     graphId: string,
-    options?: { startDate?: string; endDate?: string; entityId?: string | null }
+    options?: {
+      startDate?: string
+      endDate?: string
+      entityId?: string | null
+      dimension?: { type: string; memberId: string } | null
+    }
   ): Promise<LedgerTrialBalance | null> {
     return this.gqlQuery(
       graphId,
@@ -1397,6 +1474,8 @@ export class LedgerClient {
         startDate: options?.startDate ?? null,
         endDate: options?.endDate ?? null,
         entityId: options?.entityId ?? null,
+        dimensionType: options?.dimension?.type ?? null,
+        dimensionMemberId: options?.dimension?.memberId ?? null,
       },
       'Get trial balance',
       (data) => data.trialBalance
