@@ -657,6 +657,70 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('management dimensions', () => {
+    it('slices the trial balance by one member', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          trialBalance: { totalDebits: 0, totalCredits: 500, sliced: true, rows: [] },
+        })
+      )
+      const tb = await client.getTrialBalance('graph_1', {
+        dimension: { type: 'department', memberId: 'dim_sales' },
+      })
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables.dimensionType).toBe('department')
+      expect(body.variables.dimensionMemberId).toBe('dim_sales')
+      expect(tb?.sliced).toBe(true)
+    })
+
+    it('leaves the trial balance unsliced by default', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({ trialBalance: { totalDebits: 0, totalCredits: 0, rows: [] } })
+      )
+      await client.getTrialBalance('graph_1')
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables.dimensionType).toBeNull()
+      expect(body.variables.dimensionMemberId).toBeNull()
+    })
+
+    it('lists the members and their axes', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          dimensions: {
+            types: ['department'],
+            dimensions: [{ id: 'dim_sales', dimensionType: 'department', name: 'Sales' }],
+          },
+        })
+      )
+      const list = await client.getDimensions('graph_1', { dimensionType: 'department' })
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toEqual({ dimensionType: 'department', includeInactive: false })
+      expect(list?.types).toEqual(['department'])
+    })
+
+    it('creates and retires a member', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-dimension', { id: 'dim_1', name: 'Sales' })
+      )
+      const created = await client.createDimension('graph_1', {
+        dimension_type: 'department',
+        name: 'Sales',
+      })
+      expect(created).toMatchObject({ id: 'dim_1' })
+
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('update-dimension', { id: 'dim_1', is_active: false })
+      )
+      const retired = await client.updateDimension('graph_1', {
+        dimension_id: 'dim_1',
+        is_active: false,
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[1][0] as Request).text())
+      expect(body).toEqual({ dimension_id: 'dim_1', is_active: false })
+      expect(retired).toMatchObject({ is_active: false })
+    })
+  })
+
   describe('listMappings', () => {
     it('returns the inner structures array', async () => {
       mockFetch.mockResolvedValueOnce(

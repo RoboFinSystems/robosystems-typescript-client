@@ -63,6 +63,11 @@ export const LIST_JOURNAL_ENTRIES = gql`
           description
           lineOrder
           flowQname
+          dimensions {
+            id
+            dimensionType
+            name
+          }
         }
       }
       pagination {

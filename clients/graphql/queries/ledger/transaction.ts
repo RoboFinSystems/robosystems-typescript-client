@@ -40,6 +40,12 @@ export const GET_TRANSACTION = gql`
           creditAmount
           description
           lineOrder
+          flowQname
+          dimensions {
+            id
+            dimensionType
+            name
+          }
         }
       }
     }

@@ -3209,6 +3209,32 @@ export type CreateConnectionRequest = {
 };
 
 /**
+ * CreateDimensionRequest
+ *
+ * Add a member to a management dimension.
+ */
+export type CreateDimensionRequest = {
+    /**
+     * Dimension Type
+     *
+     * The axis: `department`, `class`, `location` or `project`, or any other lowercase name, which starts an axis of its own. `scenario` is reserved for forecasts.
+     */
+    dimension_type: string;
+    /**
+     * Name
+     *
+     * The member's label.
+     */
+    name: string;
+    /**
+     * Value
+     *
+     * The member's stable key within the axis; omitted, a slug of the name. Refused (409) when the axis already has it.
+     */
+    value?: string | null;
+};
+
+/**
  * CreateDocumentUploadOp
  *
  * Body for create-document-upload: where to upload a document's file.
@@ -3506,7 +3532,7 @@ export type CreateEventBlockRequest = {
     /**
      * Dimension Ids
      *
-     * IDs of dimension members tagging this event (e.g. department, fund, project). Propagate to the GL entries produced by the handler.
+     * Management dimension members tagging this event (department, class, location, project), one per axis. Every line its handler writes carries them on the axes the line does not tag itself.
      */
     dimension_ids?: Array<string>;
     /**
@@ -5362,6 +5388,62 @@ export type Dimension = {
 };
 
 /**
+ * DimensionResponse
+ *
+ * One member of a management dimension.
+ */
+export type DimensionResponse = {
+    /**
+     * Id
+     *
+     * The member's id, as lines carry it.
+     */
+    id: string;
+    /**
+     * Dimension Type
+     *
+     * The axis: department, class, location, project, or another.
+     */
+    dimension_type: string;
+    /**
+     * Name
+     *
+     * The member's label.
+     */
+    name: string;
+    /**
+     * Value
+     *
+     * The member's stable key within its axis: the source's id for a synced member, a slug of the name for one created here.
+     */
+    value: string;
+    /**
+     * Source
+     *
+     * Where the member came from: `native` or `quickbooks`.
+     */
+    source?: string;
+    /**
+     * Is Active
+     *
+     * False once retired: the member stays on the lines that carry it and can no longer be put on new ones.
+     */
+    is_active: boolean;
+    /**
+     * Line Count
+     *
+     * How many ledger lines carry the member.
+     */
+    line_count?: number;
+    /**
+     * Created At
+     *
+     * When it was created.
+     */
+    created_at?: string | null;
+};
+
+/**
  * DimensionType
  */
 export type DimensionType = 'element' | 'period' | 'entity';
@@ -6199,6 +6281,12 @@ export type EntryTemplateRequest = {
      * Auto-generate a reversing entry on the first day of the next period
      */
     auto_reverse?: boolean;
+    /**
+     * Dimension Ids
+     *
+     * The management dimension members (department, class, location, project) every entry the schedule drafts carries on both lines, one per axis: a department's depreciation lands in that department.
+     */
+    dimension_ids?: Array<string>;
 };
 
 /**
@@ -9286,6 +9374,26 @@ export type InvoicesResponse = {
 };
 
 /**
+ * JournalEntryLineDimensions
+ *
+ * A line's management dimension members, set in place.
+ */
+export type JournalEntryLineDimensions = {
+    /**
+     * Line Id
+     *
+     * The line to re-tag, by id.
+     */
+    line_id: string;
+    /**
+     * Dimension Ids
+     *
+     * The members the line carries from now on, replacing what it carried; empty clears them. At most one per axis.
+     */
+    dimension_ids: Array<string>;
+};
+
+/**
  * JournalEntryLineFlow
  *
  * A line's cash flow row, set in place.
@@ -9345,6 +9453,12 @@ export type JournalEntryLineItemInput = {
      */
     flow_qname?: string | null;
     /**
+     * Dimension Ids
+     *
+     * The management dimension members this line carries (department, class, location, project), by id from `dimensions`; at most one per axis. An untagged line is read as the axis's Unallocated.
+     */
+    dimension_ids?: Array<string> | null;
+    /**
      * Metadata
      *
      * Optional per-line metadata stamped on `LineItem.metadata_`. Used to carry source-system fields the standard columns don't cover — e.g. an external flow-tag code that drives rollforward attribution (`transaction_description_code`), an external memo, or a cost-center hint. Pass-through is non-validating; the renderer / filter engine reads keys it knows about and ignores the rest. `None` is normalized to `{}` at persist time.
@@ -9390,6 +9504,12 @@ export type JournalEntryLineItemResponse = {
      * The cash flow row this line carries, when tagged; null means the account's default flow.
      */
     flow_qname?: string | null;
+    /**
+     * Dimension Ids
+     *
+     * The management dimension members the line carries, by id.
+     */
+    dimension_ids?: Array<string>;
 };
 
 /**
@@ -10448,6 +10568,10 @@ export type LiveFinancialStatementRequest = {
      * Max fact rows returned. Defaults to the ceiling so a statement is never cut mid-section — visible rows would stop footing to visible subtotals. Lower it only for a preview.
      */
     limit?: number;
+    /**
+     * Slice an income statement by a management dimension (department, class, location, project). `{type, member_id}` reads one member's lines, current and prior; `member_id: unallocated` reads the lines no member of the axis tags. `{type}` alone reads the current window with one column per member, then Unallocated, then Total, and says in `dimension.ties_out` whether every row's members plus Unallocated equal its Total. Composes with `scope` and `entity_id`; a consolidation entity's lines are untagged, so eliminations read as Unallocated. Refused (422) on any other statement.
+     */
+    dimension?: StatementDimension | null;
 };
 
 /**
@@ -10520,6 +10644,10 @@ export type LiveFinancialStatementResponse = {
      * Truncated
      */
     truncated?: boolean;
+    /**
+     * How the statement was sliced by a management dimension, when it was: the axis, the one member read, or the columns and whether they tie out to the Total.
+     */
+    dimension?: StatementDimensionResponse | null;
 };
 
 /**
@@ -12291,6 +12419,52 @@ export type OperationEnvelopeDescribeFilingResponse = {
      * Command-specific result payload
      */
     result?: DescribeFilingResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[DimensionResponse]
+ */
+export type OperationEnvelopeDimensionResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DimensionResponse | null;
     /**
      * At
      *
@@ -19564,6 +19738,84 @@ export type SqlStatementResponse = {
 };
 
 /**
+ * StatementDimension
+ *
+ * A management slice of a statement or trial balance.
+ */
+export type StatementDimension = {
+    /**
+     * Type
+     *
+     * The axis to slice by: `department`, `class`, and so on.
+     */
+    type: string;
+    /**
+     * Member Id
+     *
+     * One member's lines only, by id, or `unallocated` for the lines no member of the axis tags. Omitted, a statement returns one column per member, then Unallocated, then Total, for the current window.
+     */
+    member_id?: string | null;
+};
+
+/**
+ * StatementDimensionColumn
+ *
+ * One column of a statement read by dimension.
+ */
+export type StatementDimensionColumn = {
+    /**
+     * Member Id
+     *
+     * The member the column reads, `unallocated` for the untagged lines, null for the Total.
+     */
+    member_id?: string | null;
+    /**
+     * Name
+     *
+     * The column's label.
+     */
+    name: string;
+};
+
+/**
+ * StatementDimensionResponse
+ *
+ * How a statement was sliced, and whether the slice ties out.
+ */
+export type StatementDimensionResponse = {
+    /**
+     * Type
+     *
+     * The axis the statement was sliced by.
+     */
+    type: string;
+    /**
+     * Member Id
+     *
+     * The one member read, when the statement was filtered to one; null when it was read by column.
+     */
+    member_id?: string | null;
+    /**
+     * Columns
+     *
+     * Read by column: one per member, then Unallocated, then Total, aligned with each row's `values` and with `periods`. Empty when filtered to one member.
+     */
+    columns?: Array<StatementDimensionColumn>;
+    /**
+     * Ties Out
+     *
+     * Read by column: whether every row's members plus Unallocated equal its Total. Null when filtered to one member.
+     */
+    ties_out?: boolean | null;
+    /**
+     * Differences
+     *
+     * The rows whose members plus Unallocated miss the Total, by qname.
+     */
+    differences?: Array<string>;
+};
+
+/**
  * StatementMechanics
  *
  * Renderer mechanics for the statement family of block types.
@@ -21082,6 +21334,33 @@ export type UpdateAgentRequest = {
 };
 
 /**
+ * UpdateDimensionRequest
+ *
+ * Rename or retire a member. Members are never deleted: lines reference
+ * them.
+ */
+export type UpdateDimensionRequest = {
+    /**
+     * Dimension Id
+     *
+     * The member to change.
+     */
+    dimension_id: string;
+    /**
+     * Name
+     *
+     * The new label. Refused on a synced member, whose name follows its source.
+     */
+    name?: string | null;
+    /**
+     * Is Active
+     *
+     * False retires the member: lines that carry it keep it, and it can no longer be put on new ones. True brings it back.
+     */
+    is_active?: boolean | null;
+};
+
+/**
  * UpdateEntityRequest
  *
  * Update an entity of the graph's reporting group. All fields are
@@ -21518,9 +21797,9 @@ export type UpdateInformationBlockRequest = ({
  *
  * Update a draft journal entry, or re-tag any entry's flows.
  *
- * Posted entries accept only `line_flows`: a flow moves no balance, so it
- * changes in place, closed month or not. Anything else on a posted entry is
- * a reversal and a corrected entry.
+ * Posted entries accept only `line_flows` and `line_dimensions`: neither
+ * moves a balance, so each changes in place, closed month or not. Anything
+ * else on a posted entry is a reversal and a corrected entry.
  *
  * Omitted fields are left unchanged. If `line_items` is provided, the
  * existing line items are replaced entirely (atomic delete + insert)
@@ -21564,6 +21843,12 @@ export type UpdateJournalEntryRequest = {
      * Re-tag lines in place: each named line takes its `flow_qname` (null clears it), and when every line on that side of the entry then carries one flow, the lines on the other side not named here follow when they were in step with it — untagged, or carrying the flow the named lines carried before — so the cash line and the account line agree; a line tagged differently on purpose keeps its tag. Allowed on a posted entry, closed month included, and the only change one accepts; recorded on the entry as `flow_retags`, with what each changed line carried before. Not combinable with `line_items`, which replaces the lines (set `flow_qname` on them).
      */
     line_flows?: Array<JournalEntryLineFlow> | null;
+    /**
+     * Line Dimensions
+     *
+     * Re-tag lines' management dimensions in place: each named line carries exactly the members given (empty clears them). A dimension moves no balance, so this is allowed on a posted entry, closed month included; recorded on the entry as `dimension_retags`, with what each line carried before. Not combinable with `line_items` (set `dimension_ids` on the new lines).
+     */
+    line_dimensions?: Array<JournalEntryLineDimensions> | null;
 };
 
 /**
@@ -32028,6 +32313,134 @@ export type UpdateAgentResponses = {
 };
 
 export type UpdateAgentResponse = UpdateAgentResponses[keyof UpdateAgentResponses];
+
+export type CreateDimensionData = {
+    body: CreateDimensionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/create-dimension';
+};
+
+export type CreateDimensionErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type CreateDimensionError = CreateDimensionErrors[keyof CreateDimensionErrors];
+
+export type CreateDimensionResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeDimensionResponse;
+};
+
+export type CreateDimensionResponse = CreateDimensionResponses[keyof CreateDimensionResponses];
+
+export type UpdateDimensionData = {
+    body: UpdateDimensionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/update-dimension';
+};
+
+export type UpdateDimensionErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type UpdateDimensionError = UpdateDimensionErrors[keyof UpdateDimensionErrors];
+
+export type UpdateDimensionResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeDimensionResponse;
+};
+
+export type UpdateDimensionResponse = UpdateDimensionResponses[keyof UpdateDimensionResponses];
 
 export type LearnClassificationDefaultsData = {
     body: LearnClassificationDefaultsRequest;

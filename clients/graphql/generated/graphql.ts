@@ -824,6 +824,27 @@ export type GetLedgerClosingBookStructuresQuery = {
   } | null
 }
 
+export type ListLedgerDimensionsQueryVariables = Exact<{
+  dimensionType: string | null | undefined
+  includeInactive?: boolean
+}>
+
+export type ListLedgerDimensionsQuery = {
+  dimensions: {
+    types: Array<string>
+    dimensions: Array<{
+      id: string
+      dimensionType: string
+      name: string
+      value: string
+      source: string
+      isActive: boolean
+      lineCount: number
+      createdAt: string | null
+    }>
+  } | null
+}
+
 export type ListLedgerElementsQueryVariables = Exact<{
   taxonomyId: string | null | undefined
   source: string | null | undefined
@@ -1584,6 +1605,7 @@ export type ListLedgerJournalEntriesQuery = {
         description: string | null
         lineOrder: number
         flowQname: string | null
+        dimensions: Array<{ id: string; dimensionType: string; name: string }>
       }>
     }>
     pagination: { total: number; limit: number; offset: number; hasMore: boolean }
@@ -2294,6 +2316,8 @@ export type GetLedgerTransactionQuery = {
         creditAmount: number
         description: string | null
         lineOrder: number
+        flowQname: string | null
+        dimensions: Array<{ id: string; dimensionType: string; name: string }>
       }>
     }>
   } | null
@@ -2333,12 +2357,15 @@ export type GetLedgerTrialBalanceQueryVariables = Exact<{
   startDate: string | null | undefined
   endDate: string | null | undefined
   entityId: string | null | undefined
+  dimensionType: string | null | undefined
+  dimensionMemberId: string | null | undefined
 }>
 
 export type GetLedgerTrialBalanceQuery = {
   trialBalance: {
     totalDebits: number
     totalCredits: number
+    sliced: boolean
     rows: Array<{
       accountId: string
       accountCode: string
@@ -4934,6 +4961,76 @@ export const GetLedgerClosingBookStructuresDocument = {
   GetLedgerClosingBookStructuresQuery,
   GetLedgerClosingBookStructuresQueryVariables
 >
+export const ListLedgerDimensionsDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerDimensions' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeInactive' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dimensions' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'dimensionType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeInactive' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeInactive' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'types' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'dimensions' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'dimensionType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'lineCount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLedgerDimensionsQuery, ListLedgerDimensionsQueryVariables>
 export const ListLedgerElementsDocument = {
   kind: 'Document',
   definitions: [
@@ -6967,6 +7064,18 @@ export const ListLedgerJournalEntriesDocument = {
                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'lineOrder' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'flowQname' } },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'dimensions' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'dimensionType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                ],
+                              },
+                            },
                           ],
                         },
                       },
@@ -8939,6 +9048,19 @@ export const GetLedgerTransactionDocument = {
                             { kind: 'Field', name: { kind: 'Name', value: 'creditAmount' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                             { kind: 'Field', name: { kind: 'Name', value: 'lineOrder' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'flowQname' } },
+                            {
+                              kind: 'Field',
+                              name: { kind: 'Name', value: 'dimensions' },
+                              selectionSet: {
+                                kind: 'SelectionSet',
+                                selections: [
+                                  { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'dimensionType' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                ],
+                              },
+                            },
                           ],
                         },
                       },
@@ -9107,6 +9229,16 @@ export const GetLedgerTrialBalanceDocument = {
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
         },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionMemberId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
       ],
       selectionSet: {
         kind: 'SelectionSet',
@@ -9130,12 +9262,23 @@ export const GetLedgerTrialBalanceDocument = {
                 name: { kind: 'Name', value: 'entityId' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
               },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'dimensionType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'dimensionMemberId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionMemberId' } },
+              },
             ],
             selectionSet: {
               kind: 'SelectionSet',
               selections: [
                 { kind: 'Field', name: { kind: 'Name', value: 'totalDebits' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'totalCredits' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'sliced' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'rows' },
