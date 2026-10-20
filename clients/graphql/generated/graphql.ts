@@ -327,6 +327,293 @@ export type ListLedgerAccountsQuery = {
   } | null
 }
 
+export type OpenItemFieldsFragment = {
+  eventId: string
+  entityId: string
+  agentId: string | null
+  occurredOn: string
+  documentNumber: string | null
+  description: string | null
+  originalCents: number
+  settledCents: number
+  openCents: number
+  currency: string
+  dueDate: string
+  dueDateBasis: string
+  daysPastDue: number
+  bucket: string
+}
+
+export type AgedBalancesFieldsFragment = {
+  kind: string
+  asOf: string
+  scope: string
+  entityId: string | null
+  memberEntityIds: Array<string>
+  defaultedDueDateCount: number
+  buckets: {
+    currentCents: number
+    oneToThirtyCents: number
+    thirtyOneToSixtyCents: number
+    sixtyOneToNinetyCents: number
+    overNinetyCents: number
+    unappliedCreditCents: number
+    totalCents: number
+  }
+  agents: Array<{
+    agentId: string | null
+    agentName: string | null
+    openItemCount: number
+    oldestDueDate: string | null
+    buckets: {
+      currentCents: number
+      oneToThirtyCents: number
+      thirtyOneToSixtyCents: number
+      sixtyOneToNinetyCents: number
+      overNinetyCents: number
+      unappliedCreditCents: number
+      totalCents: number
+    }
+  }>
+  intercompany: Array<{
+    eventId: string
+    entityId: string
+    agentId: string | null
+    occurredOn: string
+    documentNumber: string | null
+    description: string | null
+    originalCents: number
+    settledCents: number
+    openCents: number
+    currency: string
+    dueDate: string
+    dueDateBasis: string
+    daysPastDue: number
+    bucket: string
+  }>
+  pairs: Array<{
+    creditorEntityId: string
+    debtorEntityId: string
+    receivableCents: number
+    payableCents: number
+    differenceCents: number
+  }>
+  tieOuts: Array<{
+    entityId: string
+    controlBalanceCents: number | null
+    openItemsCents: number
+    differenceCents: number | null
+    accounts: Array<{ elementId: string; code: string | null; name: string }>
+  }>
+}
+
+export type AgingBucketsFieldsFragment = {
+  currentCents: number
+  oneToThirtyCents: number
+  thirtyOneToSixtyCents: number
+  sixtyOneToNinetyCents: number
+  overNinetyCents: number
+  unappliedCreditCents: number
+  totalCents: number
+}
+
+export type AgedReceivablesQueryVariables = Exact<{
+  asOf: string | null | undefined
+  entityId: string | null | undefined
+  scope?: string
+}>
+
+export type AgedReceivablesQuery = {
+  agedReceivables: {
+    kind: string
+    asOf: string
+    scope: string
+    entityId: string | null
+    memberEntityIds: Array<string>
+    defaultedDueDateCount: number
+    buckets: {
+      currentCents: number
+      oneToThirtyCents: number
+      thirtyOneToSixtyCents: number
+      sixtyOneToNinetyCents: number
+      overNinetyCents: number
+      unappliedCreditCents: number
+      totalCents: number
+    }
+    agents: Array<{
+      agentId: string | null
+      agentName: string | null
+      openItemCount: number
+      oldestDueDate: string | null
+      buckets: {
+        currentCents: number
+        oneToThirtyCents: number
+        thirtyOneToSixtyCents: number
+        sixtyOneToNinetyCents: number
+        overNinetyCents: number
+        unappliedCreditCents: number
+        totalCents: number
+      }
+    }>
+    intercompany: Array<{
+      eventId: string
+      entityId: string
+      agentId: string | null
+      occurredOn: string
+      documentNumber: string | null
+      description: string | null
+      originalCents: number
+      settledCents: number
+      openCents: number
+      currency: string
+      dueDate: string
+      dueDateBasis: string
+      daysPastDue: number
+      bucket: string
+    }>
+    pairs: Array<{
+      creditorEntityId: string
+      debtorEntityId: string
+      receivableCents: number
+      payableCents: number
+      differenceCents: number
+    }>
+    tieOuts: Array<{
+      entityId: string
+      controlBalanceCents: number | null
+      openItemsCents: number
+      differenceCents: number | null
+      accounts: Array<{ elementId: string; code: string | null; name: string }>
+    }>
+  }
+}
+
+export type AgedPayablesQueryVariables = Exact<{
+  asOf: string | null | undefined
+  entityId: string | null | undefined
+  scope?: string
+}>
+
+export type AgedPayablesQuery = {
+  agedPayables: {
+    kind: string
+    asOf: string
+    scope: string
+    entityId: string | null
+    memberEntityIds: Array<string>
+    defaultedDueDateCount: number
+    buckets: {
+      currentCents: number
+      oneToThirtyCents: number
+      thirtyOneToSixtyCents: number
+      sixtyOneToNinetyCents: number
+      overNinetyCents: number
+      unappliedCreditCents: number
+      totalCents: number
+    }
+    agents: Array<{
+      agentId: string | null
+      agentName: string | null
+      openItemCount: number
+      oldestDueDate: string | null
+      buckets: {
+        currentCents: number
+        oneToThirtyCents: number
+        thirtyOneToSixtyCents: number
+        sixtyOneToNinetyCents: number
+        overNinetyCents: number
+        unappliedCreditCents: number
+        totalCents: number
+      }
+    }>
+    intercompany: Array<{
+      eventId: string
+      entityId: string
+      agentId: string | null
+      occurredOn: string
+      documentNumber: string | null
+      description: string | null
+      originalCents: number
+      settledCents: number
+      openCents: number
+      currency: string
+      dueDate: string
+      dueDateBasis: string
+      daysPastDue: number
+      bucket: string
+    }>
+    pairs: Array<{
+      creditorEntityId: string
+      debtorEntityId: string
+      receivableCents: number
+      payableCents: number
+      differenceCents: number
+    }>
+    tieOuts: Array<{
+      entityId: string
+      controlBalanceCents: number | null
+      openItemsCents: number
+      differenceCents: number | null
+      accounts: Array<{ elementId: string; code: string | null; name: string }>
+    }>
+  }
+}
+
+export type OpenItemsForAgentQueryVariables = Exact<{
+  agentId: string
+  kind: string
+  asOf: string | null | undefined
+  entityId: string | null | undefined
+}>
+
+export type OpenItemsForAgentQuery = {
+  openItemsForAgent: Array<{
+    eventId: string
+    entityId: string
+    agentId: string | null
+    occurredOn: string
+    documentNumber: string | null
+    description: string | null
+    originalCents: number
+    settledCents: number
+    openCents: number
+    currency: string
+    dueDate: string
+    dueDateBasis: string
+    daysPastDue: number
+    bucket: string
+  }>
+}
+
+export type DischargeCandidatesQueryVariables = Exact<{
+  eventId: string
+}>
+
+export type DischargeCandidatesQuery = {
+  dischargeCandidates: {
+    eventId: string
+    kind: string | null
+    amountCents: number
+    classifiedToControl: boolean
+    candidates: Array<{
+      eventId: string
+      entityId: string
+      agentId: string | null
+      occurredOn: string
+      documentNumber: string | null
+      description: string | null
+      originalCents: number
+      settledCents: number
+      openCents: number
+      currency: string
+      dueDate: string
+      dueDateBasis: string
+      daysPastDue: number
+      bucket: string
+    }>
+  } | null
+}
+
 export type GetLedgerAgentQueryVariables = Exact<{
   id: string
 }>
@@ -2325,6 +2612,204 @@ export type GetLibraryTaxonomyQuery = {
   } | null
 }
 
+export const AgingBucketsFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AgingBucketsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AgingBuckets' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'currentCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'oneToThirtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'thirtyOneToSixtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sixtyOneToNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'overNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'unappliedCreditCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'totalCents' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AgingBucketsFieldsFragment, unknown>
+export const OpenItemFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'OpenItemFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'OpenItem' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'occurredOn' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'documentNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'settledCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'openCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDateBasis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'daysPastDue' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'bucket' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<OpenItemFieldsFragment, unknown>
+export const AgedBalancesFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AgedBalancesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AgedBalances' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'asOf' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'scope' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'memberEntityIds' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'buckets' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AgingBucketsFields' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'agents' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agentName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openItemCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'oldestDueDate' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'buckets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'AgingBucketsFields' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'defaultedDueDateCount' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'intercompany' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'OpenItemFields' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pairs' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'creditorEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'debtorEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'receivableCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'payableCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'differenceCents' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'tieOuts' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'accounts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'controlBalanceCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openItemsCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'differenceCents' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AgingBucketsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AgingBuckets' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'currentCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'oneToThirtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'thirtyOneToSixtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sixtyOneToNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'overNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'unappliedCreditCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'totalCents' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'OpenItemFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'OpenItem' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'occurredOn' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'documentNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'settledCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'openCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDateBasis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'daysPastDue' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'bucket' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AgedBalancesFieldsFragment, unknown>
 export const GetInvestorHoldingsDocument = {
   kind: 'Document',
   definitions: [
@@ -3302,6 +3787,594 @@ export const ListLedgerAccountsDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerAccountsQuery, ListLedgerAccountsQueryVariables>
+export const AgedReceivablesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'AgedReceivables' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'asOf' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'scope' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+          defaultValue: { kind: 'StringValue', value: 'entity', block: false },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'agedReceivables' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'asOf' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'asOf' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'scope' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'scope' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AgedBalancesFields' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AgingBucketsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AgingBuckets' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'currentCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'oneToThirtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'thirtyOneToSixtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sixtyOneToNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'overNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'unappliedCreditCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'totalCents' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'OpenItemFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'OpenItem' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'occurredOn' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'documentNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'settledCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'openCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDateBasis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'daysPastDue' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'bucket' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AgedBalancesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AgedBalances' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'asOf' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'scope' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'memberEntityIds' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'buckets' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AgingBucketsFields' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'agents' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agentName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openItemCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'oldestDueDate' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'buckets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'AgingBucketsFields' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'defaultedDueDateCount' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'intercompany' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'OpenItemFields' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pairs' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'creditorEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'debtorEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'receivableCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'payableCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'differenceCents' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'tieOuts' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'accounts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'controlBalanceCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openItemsCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'differenceCents' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AgedReceivablesQuery, AgedReceivablesQueryVariables>
+export const AgedPayablesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'AgedPayables' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'asOf' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'scope' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+          defaultValue: { kind: 'StringValue', value: 'entity', block: false },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'agedPayables' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'asOf' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'asOf' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'scope' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'scope' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AgedBalancesFields' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AgingBucketsFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AgingBuckets' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'currentCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'oneToThirtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'thirtyOneToSixtyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'sixtyOneToNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'overNinetyCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'unappliedCreditCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'totalCents' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'OpenItemFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'OpenItem' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'occurredOn' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'documentNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'settledCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'openCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDateBasis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'daysPastDue' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'bucket' } },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AgedBalancesFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AgedBalances' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'asOf' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'scope' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'memberEntityIds' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'buckets' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AgingBucketsFields' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'agents' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'agentName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openItemCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'oldestDueDate' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'buckets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'AgingBucketsFields' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          { kind: 'Field', name: { kind: 'Name', value: 'defaultedDueDateCount' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'intercompany' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'OpenItemFields' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'pairs' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'creditorEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'debtorEntityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'receivableCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'payableCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'differenceCents' } },
+              ],
+            },
+          },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'tieOuts' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'accounts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'controlBalanceCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openItemsCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'differenceCents' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AgedPayablesQuery, AgedPayablesQueryVariables>
+export const OpenItemsForAgentDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'OpenItemsForAgent' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'agentId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'kind' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'asOf' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'openItemsForAgent' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'agentId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'agentId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'kind' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'kind' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'asOf' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'asOf' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'OpenItemFields' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'OpenItemFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'OpenItem' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'occurredOn' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'documentNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'settledCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'openCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDateBasis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'daysPastDue' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'bucket' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<OpenItemsForAgentQuery, OpenItemsForAgentQueryVariables>
+export const DischargeCandidatesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'DischargeCandidates' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'eventId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dischargeCandidates' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'eventId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'eventId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'amountCents' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'classifiedToControl' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'candidates' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'FragmentSpread', name: { kind: 'Name', value: 'OpenItemFields' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'OpenItemFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'OpenItem' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'eventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'occurredOn' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'documentNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'originalCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'settledCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'openCents' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'currency' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'dueDateBasis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'daysPastDue' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'bucket' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DischargeCandidatesQuery, DischargeCandidatesQueryVariables>
 export const GetLedgerAgentDocument = {
   kind: 'Document',
   definitions: [

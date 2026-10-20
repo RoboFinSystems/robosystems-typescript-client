@@ -3281,6 +3281,71 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('getAgedBalances', () => {
+    const variablesOf = (call: number) =>
+      JSON.parse((mockFetch.mock.calls[call][1] as RequestInit).body as string)
+
+    it('asks for the kind, the date and the scope', async () => {
+      mockFetch.mockResolvedValue(gqlResponse({ agedReceivables: { kind: 'receivables' } }))
+      await client.getAgedBalances('graph_1', 'receivables', {
+        asOf: '2026-09-30',
+        entityId: 'ent_parent',
+        scope: 'group',
+      })
+      const sent = variablesOf(0)
+      expect(sent.query).toContain('agedReceivables')
+      expect(sent.variables).toEqual({
+        asOf: '2026-09-30',
+        entityId: 'ent_parent',
+        scope: 'group',
+      })
+    })
+
+    it('reads payables from their own field, one entity today by default', async () => {
+      const aged = { kind: 'payables', buckets: { totalCents: 42000 } }
+      mockFetch.mockResolvedValueOnce(gqlResponse({ agedPayables: aged }))
+      expect(await client.getAgedBalances('graph_1', 'payables')).toEqual(aged)
+      const sent = variablesOf(0)
+      expect(sent.query).toContain('agedPayables')
+      expect(sent.variables).toEqual({ asOf: null, entityId: null, scope: 'entity' })
+    })
+  })
+
+  describe('getOpenItemsForAgent', () => {
+    it("lists the counterparty's open documents", async () => {
+      const item = { eventId: 'evt_1', openCents: 10000, bucket: 'one_to_thirty' }
+      mockFetch.mockResolvedValueOnce(gqlResponse({ openItemsForAgent: [item] }))
+      expect(
+        await client.getOpenItemsForAgent('graph_1', 'agt_acme', 'payables', {
+          asOf: '2026-09-30',
+        })
+      ).toEqual([item])
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toEqual({
+        agentId: 'agt_acme',
+        kind: 'payables',
+        asOf: '2026-09-30',
+        entityId: null,
+      })
+    })
+  })
+
+  describe('getDischargeCandidates', () => {
+    it('ranks what a line may settle, or null for no such event', async () => {
+      const candidates = {
+        eventId: 'evt_line',
+        kind: 'payables',
+        amountCents: 420000,
+        classifiedToControl: true,
+        candidates: [],
+      }
+      mockFetch.mockResolvedValueOnce(gqlResponse({ dischargeCandidates: candidates }))
+      expect(await client.getDischargeCandidates('graph_1', 'evt_line')).toEqual(candidates)
+      mockFetch.mockResolvedValueOnce(gqlResponse({ dischargeCandidates: null }))
+      expect(await client.getDischargeCandidates('graph_1', 'evt_x')).toBeNull()
+    })
+  })
+
   // ── Event handlers ────────────────────────────────────────────────────
 
   describe('createEventHandler', () => {

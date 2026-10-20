@@ -195,7 +195,10 @@ import type {
 import type { TokenProvider } from './graphql/client'
 import { GraphQLClientCache, toGraphQLError } from './graphql/client'
 import {
+  AgedPayablesDocument,
+  AgedReceivablesDocument,
   ClassificationStatsDocument,
+  DischargeCandidatesDocument,
   FlowCandidatesDocument,
   GetInformationBlockDocument,
   GetInformationBlockWindowedDocument,
@@ -241,7 +244,10 @@ import {
   ListLedgerTransactionsDocument,
   ListLedgerUnmappedElementsDocument,
   MappingCandidatesDocument,
+  OpenItemsForAgentDocument,
+  type AgedReceivablesQuery,
   type ClassificationStatsQuery,
+  type DischargeCandidatesQuery,
   type FlowCandidatesQuery,
   type GetInformationBlockQuery,
   type GetLedgerAccountRollupsQuery,
@@ -283,6 +289,7 @@ import {
   type ListLedgerTransactionsQuery,
   type ListLedgerUnmappedElementsQuery,
   type MappingCandidatesQuery,
+  type OpenItemsForAgentQuery,
   type ReportDownloadFormat,
   type ReportLifecycle,
 } from './graphql/generated/graphql'
@@ -343,6 +350,16 @@ export type LedgerFlowCandidate = FlowCandidatesQuery['flowCandidates'][number]
 export type LedgerClassificationStats = NonNullable<ClassificationStatsQuery['classificationStats']>
 export type LedgerClassificationSourceStats = LedgerClassificationStats['bySource'][number]
 export type LedgerUnmappedElement = ListLedgerUnmappedElementsQuery['unmappedElements'][number]
+
+export type LedgerAgedBalances = AgedReceivablesQuery['agedReceivables']
+export type LedgerAgingBuckets = LedgerAgedBalances['buckets']
+export type LedgerAgedAgentRow = LedgerAgedBalances['agents'][number]
+export type LedgerControlTieOut = LedgerAgedBalances['tieOuts'][number]
+export type LedgerIntercompanyPair = LedgerAgedBalances['pairs'][number]
+export type LedgerOpenItem = OpenItemsForAgentQuery['openItemsForAgent'][number]
+export type LedgerDischargeCandidates = NonNullable<DischargeCandidatesQuery['dischargeCandidates']>
+/** `receivables` (invoices) or `payables` (bills). */
+export type LedgerOpenItemKind = 'receivables' | 'payables'
 
 export type LedgerStructureList = NonNullable<ListLedgerStructuresQuery['structures']>
 export type LedgerStructure = LedgerStructureList['structures'][number]
@@ -1271,6 +1288,98 @@ export class LedgerClient {
       { id: agentId },
       'Get agent',
       (data) => data.agent
+    )
+  }
+
+  // ── Receivables and payables ────────────────────────────────────────
+
+  /**
+   * Receivables or payables aged at a date (`options.asOf`, `YYYY-MM-DD`,
+   * default today on the server): totals by days past due, a row per
+   * counterparty, and each entity's open items tied out to its receivables
+   * or payables account (`differenceCents`, never plugged). `options.scope`
+   * is `entity` (one entity's books, `options.entityId` default the group
+   * parent) or `group` (the parent and its members consolidated in full,
+   * with what they owe each other in `intercompany` and `pairs`). An item
+   * with no due date of its own is due on receipt and counted in
+   * `defaultedDueDateCount`.
+   */
+  async getAgedBalances(
+    graphId: string,
+    kind: LedgerOpenItemKind,
+    options?: {
+      asOf?: string | null
+      entityId?: string | null
+      scope?: 'entity' | 'group'
+    }
+  ): Promise<LedgerAgedBalances> {
+    const variables = {
+      asOf: options?.asOf ?? null,
+      entityId: options?.entityId ?? null,
+      scope: options?.scope ?? 'entity',
+    }
+    if (kind === 'receivables') {
+      return this.gqlQuery(
+        graphId,
+        AgedReceivablesDocument,
+        variables,
+        'Aged receivables',
+        (data) => data.agedReceivables
+      )
+    }
+    return this.gqlQuery(
+      graphId,
+      AgedPayablesDocument,
+      variables,
+      'Aged payables',
+      (data) => data.agedPayables
+    )
+  }
+
+  /**
+   * One counterparty's open invoices (`receivables`) or bills (`payables`)
+   * at a date, oldest first, each with its due date, days past due and
+   * bucket — the drill from an aged row into its documents.
+   */
+  async getOpenItemsForAgent(
+    graphId: string,
+    agentId: string,
+    kind: LedgerOpenItemKind,
+    options?: { asOf?: string | null; entityId?: string | null }
+  ): Promise<LedgerOpenItem[]> {
+    return this.gqlQuery(
+      graphId,
+      OpenItemsForAgentDocument,
+      {
+        agentId,
+        kind,
+        asOf: options?.asOf ?? null,
+        entityId: options?.entityId ?? null,
+      },
+      'Open items for agent',
+      (data) => data.openItemsForAgent
+    )
+  }
+
+  /**
+   * The open invoices or bills a payment or bank line may settle: its own
+   * entity's and counterparty's, open at its date, an exact amount match
+   * first, then the oldest due date. `classifiedToControl` says the line
+   * went to a receivables or payables account — when the inbox offers the
+   * pick. Record the choice with `discharge_allocations` on
+   * `updateEventBlock`; nothing settles without one. Null when there is no
+   * such event.
+   */
+  async getDischargeCandidates(
+    graphId: string,
+    eventId: string
+  ): Promise<LedgerDischargeCandidates | null> {
+    return this.gqlQuery(
+      graphId,
+      DischargeCandidatesDocument,
+      { eventId },
+      'Discharge candidates',
+      (data) => data.dischargeCandidates
     )
   }
 
