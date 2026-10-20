@@ -5,7 +5,9 @@ import { gql } from 'graphql-request'
  *
  * `metadata` is a JSON dict — for QB-sourced events it carries the
  * nested `entries[]` shape (memo + posting_date + line_items) that the
- * journal_entry_recorded handler consumes on approve.
+ * journal_entry_recorded handler consumes on approve. `triggeredEntries`
+ * is what the event's handler posted, oldest first — where
+ * `previewEventBlock` is what it would post.
  */
 export const GET_EVENT_BLOCK = gql`
   query GetLedgerEventBlock($id: String!) {
@@ -35,6 +37,27 @@ export const GET_EVENT_BLOCK = gql`
       documentId
       createdAt
       createdBy
+      triggeredEntries {
+        id
+        number
+        type
+        status
+        postingDate
+        memo
+        provenance
+        totalDebit
+        totalCredit
+        lineItems {
+          id
+          accountId
+          accountName
+          accountCode
+          debitAmount
+          creditAmount
+          description
+          lineOrder
+        }
+      }
     }
   }
 `

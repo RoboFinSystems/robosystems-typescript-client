@@ -657,6 +657,55 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('getAccountRegister', () => {
+    it('forwards the account, window, slice and cursor', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          accountRegister: {
+            openingBalance: 100,
+            closingBalance: 125,
+            nextCursor: 'cur_2',
+            lines: [{ lineId: 'li_1', balance: 125, triggeredByEventType: 'sale' }],
+            drafts: [],
+          },
+        })
+      )
+      const register = await client.getAccountRegister('graph_1', 'elem_cash', {
+        startDate: '2026-09-01',
+        endDate: '2026-09-30',
+        entityId: 'ent_sub',
+        dimension: { type: 'department', memberId: 'unallocated' },
+        includeDrafts: true,
+        after: 'cur_1',
+        limit: 50,
+      })
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toMatchObject({
+        accountId: 'elem_cash',
+        startDate: '2026-09-01',
+        endDate: '2026-09-30',
+        entityId: 'ent_sub',
+        dimensionType: 'department',
+        dimensionMemberId: 'unallocated',
+        flowElementId: null,
+        includeDrafts: true,
+        after: 'cur_1',
+        limit: 50,
+      })
+      expect(register?.closingBalance).toBe(125)
+      expect(register?.nextCursor).toBe('cur_2')
+    })
+
+    it('defaults to the first page without drafts', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ accountRegister: null }))
+      const register = await client.getAccountRegister('graph_1', 'elem_cash')
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables.includeDrafts).toBe(false)
+      expect(body.variables.after).toBeNull()
+      expect(register).toBeNull()
+    })
+  })
+
   describe('management dimensions', () => {
     it('slices the trial balance by one member', async () => {
       mockFetch.mockResolvedValueOnce(
