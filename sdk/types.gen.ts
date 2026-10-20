@@ -3448,6 +3448,18 @@ export type CreateEventBlockRequest = {
      */
     effective_at?: string | null;
     /**
+     * Due Date
+     *
+     * When an obligation falls due: an `invoice_issued` or a `bill_received`. Give it, or `terms_days`; with neither, the obligation is due on receipt. Refused on any other event type.
+     */
+    due_date?: string | null;
+    /**
+     * Terms Days
+     *
+     * Net terms in days from `occurred_at` (30 for net 30), in place of `due_date`. Only on an `invoice_issued` or a `bill_received`.
+     */
+    terms_days?: number | null;
+    /**
      * Source
      *
      * 'manual' | 'system' | 'schedule', a connected provider name (e.g. 'quickbooks'), or a source_name registered via an 'external' connection. Validated against the graph's registered connections.
@@ -5355,6 +5367,26 @@ export type Dimension = {
 export type DimensionType = 'element' | 'period' | 'entity';
 
 /**
+ * DischargeAllocation
+ *
+ * How much of a payment went to one invoice or bill.
+ */
+export type DischargeAllocation = {
+    /**
+     * Obligation Event Id
+     *
+     * The `invoice_issued` or `bill_received` event it settles.
+     */
+    obligation_event_id: string;
+    /**
+     * Amount
+     *
+     * Positive cents of the payment applied to it.
+     */
+    amount: number;
+};
+
+/**
  * DisclosuresRequest
  *
  * Request for the disclosures view op — the map of a report's sections.
@@ -6317,6 +6349,12 @@ export type EventBlockEnvelope = {
      * Accounting recognition date, when different from `occurred_at`.
      */
     effective_at?: string | null;
+    /**
+     * Due Date
+     *
+     * When the obligation falls due (an `invoice_issued` or a `bill_received`); null when none was stated, which reads as due on receipt, and on every other event type.
+     */
+    due_date?: string | null;
     /**
      * Source
      *
@@ -21221,6 +21259,12 @@ export type UpdateEventBlockRequest = {
      */
     effective_at?: string | null;
     /**
+     * Due Date
+     *
+     * New due date of an obligation (an `invoice_issued` or a `bill_received`), such as an extension granted. Unset = unchanged. It moves no ledger row, so it is accepted in a closed period.
+     */
+    due_date?: string | null;
+    /**
      * Metadata Patch
      *
      * Key-value pairs merged into existing metadata (additive patch, not replace).
@@ -21243,9 +21287,15 @@ export type UpdateEventBlockRequest = {
     /**
      * Discharges Event Id
      *
-     * Set/update the settlement link.
+     * Set the settlement link: the one invoice or bill this payment settles, at its full amount; an empty string clears it. Replaces any `discharge_allocations`. Checked as they are.
      */
     discharges_event_id?: string | null;
+    /**
+     * Discharge Allocations
+     *
+     * What this payment settles, document by document: one row per invoice or bill with the positive cents applied to it, together at most the payment's amount (the rest is unapplied). Replaces any held; an empty list clears them, and the settlement link becomes the first row's. Each must be an obligation of this event's entity, not voided: an invoice for money in, a bill for money out. A person chooses them; the open items a bank line may settle are `dischargeCandidates` over GraphQL.
+     */
+    discharge_allocations?: Array<DischargeAllocation> | null;
     /**
      * Document Id
      *
