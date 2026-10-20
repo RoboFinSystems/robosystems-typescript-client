@@ -1183,12 +1183,6 @@ export type BackupDownloadUrlResponse = {
  */
 export type BackupLimits = {
     /**
-     * Max Backup Size Gb
-     *
-     * Maximum backup size in GB
-     */
-    max_backup_size_gb: number;
-    /**
      * Backup Retention Days
      *
      * Backup retention period in days
@@ -1197,9 +1191,15 @@ export type BackupLimits = {
     /**
      * Max Backups Per Day
      *
-     * Maximum backups per day
+     * Maximum user-initiated backups per day (-1 for unlimited)
      */
     max_backups_per_day: number;
+    /**
+     * Max Downloads Per Month
+     *
+     * Backup downloads allowed per user per calendar month (UTC)
+     */
+    max_downloads_per_month?: number | null;
 };
 
 /**
@@ -2694,7 +2694,7 @@ export type ConsolidationProposal = {
     /**
      * Posting Date
      *
-     * The month's last day.
+     * The month's last day; for an opening, the eve of the consolidation entity's first month.
      */
     posting_date: string;
     /**
@@ -2715,6 +2715,12 @@ export type ConsolidationProposal = {
      * The entry's lines; they balance.
      */
     lines: Array<ConsolidationProposalLine>;
+    /**
+     * Opening
+     *
+     * Part of the consolidation entity's opening balance: what the members' history before the group's first month already needed eliminated, so the consolidated statements open on it rather than move by it. Proposing records it, posted, replacing the earlier one until the first close.
+     */
+    opening?: boolean;
 };
 
 /**
@@ -2910,6 +2916,12 @@ export type ConsolidationWorksheetResponse = {
      */
     period: PeriodSpec;
     /**
+     * Omitted Periods
+     *
+     * Windows the worksheet does not total, as live-financial-statement leaves them out: before a summed entity's books begin, or, on a cash flow or equity statement, one a member joined or left the group within. When it names `period`, `rows` is empty.
+     */
+    omitted_periods?: Array<PeriodSpec>;
+    /**
      * Columns
      *
      * The parent, each member consolidated in full, `combined`, the consolidation entity's adjustments (when the group has one), `consolidated`, then the equity-method and cost members outside the sum. A member outside its membership interval for the period has no column.
@@ -2974,39 +2986,15 @@ export type ContentLimits = {
 /**
  * CopyOperationLimits
  *
- * Copy/ingestion operation limits.
+ * File upload limits.
  */
 export type CopyOperationLimits = {
     /**
      * Max File Size Gb
      *
-     * Maximum file size in GB
+     * Maximum upload file size in GB
      */
     max_file_size_gb: number;
-    /**
-     * Timeout Seconds
-     *
-     * Operation timeout in seconds
-     */
-    timeout_seconds: number;
-    /**
-     * Concurrent Operations
-     *
-     * Maximum concurrent operations
-     */
-    concurrent_operations: number;
-    /**
-     * Max Files Per Operation
-     *
-     * Maximum files per operation
-     */
-    max_files_per_operation: number;
-    /**
-     * Daily Copy Operations
-     *
-     * Daily operation limit
-     */
-    daily_copy_operations: number;
     /**
      * Supported Formats
      *
@@ -3310,7 +3298,7 @@ export type CreateEntityRequest = {
     /**
      * Joined On
      *
-     * The month this entity became a member of the group, as any date in it; null is a member since the beginning. The consolidated statements include it from that month. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Omit for a subsidiary formed by the parent; give the acquisition month for one acquired, whose books in this graph then hold only what follows it.
+     * The month this entity became a member of the group, as any date in it; null is a member since the beginning. The consolidated statements include it from that month. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Omit for a subsidiary formed by the parent; give the acquisition month for one acquired, whose books in this graph then hold only what follows it. Refused on the consolidation entity.
      */
     joined_on?: string | null;
     /**
@@ -3915,7 +3903,7 @@ export type CreateReportRequest = {
     /**
      * Entity Id
      *
-     * The entity the report is for, by id. Omit for the entity whose chart `mapping_id` maps from (the group parent on a one-entity graph). Named alongside a mapping of another entity's chart, it is refused.
+     * The entity the report is for, by id. Omit for the entity whose chart `mapping_id` maps from (the group parent on a one-entity graph). Named alongside a mapping of another entity's chart, it is refused. The consolidation entity's report is the group's consolidated statements.
      */
     entity_id?: string | null;
     /**
@@ -7713,21 +7701,21 @@ export type GraphLimitsResponse = {
      */
     is_shared_repository: boolean;
     /**
-     * Storage limits and usage
+     * Storage limits and usage (user graphs only)
      */
-    storage: StorageLimits;
+    storage?: StorageLimits | null;
     /**
      * Query operation limits
      */
     queries: QueryLimits;
     /**
-     * Copy/ingestion operation limits
+     * File upload limits (user graphs only)
      */
-    copy_operations: CopyOperationLimits;
+    copy_operations?: CopyOperationLimits | null;
     /**
-     * Backup operation limits
+     * Backup operation limits (user graphs only)
      */
-    backups: BackupLimits;
+    backups?: BackupLimits | null;
     /**
      * API rate limits
      */
@@ -8154,7 +8142,7 @@ export type GraphSubscriptionTier = {
     /**
      * Instance Storage Limit Gb
      *
-     * Soft storage cap for the instance in GB
+     * Instance storage cap in GB; ingest and materialize are refused above it
      */
     instance_storage_limit_gb?: number;
 };
@@ -8202,12 +8190,6 @@ export type GraphSubscriptions = {
  */
 export type GraphTierBackup = {
     /**
-     * Max Backup Size Gb
-     *
-     * Maximum backup size in GB
-     */
-    max_backup_size_gb: number;
-    /**
      * Backup Retention Days
      *
      * Backup retention period in days
@@ -8224,39 +8206,15 @@ export type GraphTierBackup = {
 /**
  * GraphTierCopyOperations
  *
- * Copy operation limits for a tier.
+ * File upload limits for a tier.
  */
 export type GraphTierCopyOperations = {
     /**
      * Max File Size Gb
      *
-     * Maximum file size in GB
+     * Maximum upload file size in GB
      */
     max_file_size_gb: number;
-    /**
-     * Timeout Seconds
-     *
-     * Operation timeout in seconds
-     */
-    timeout_seconds: number;
-    /**
-     * Concurrent Operations
-     *
-     * Maximum concurrent operations
-     */
-    concurrent_operations: number;
-    /**
-     * Max Files Per Operation
-     *
-     * Maximum files per operation
-     */
-    max_files_per_operation: number;
-    /**
-     * Daily Copy Operations
-     *
-     * Daily operation limit
-     */
-    daily_copy_operations: number;
 };
 
 /**
@@ -8386,7 +8344,7 @@ export type GraphTierLimits = {
      */
     max_subgraphs: number | null;
     /**
-     * Copy operation limits
+     * File upload limits
      */
     copy_operations: GraphTierCopyOperations;
     /**
@@ -9089,7 +9047,7 @@ export type InstanceUsage = {
     /**
      * Limit Gb
      *
-     * Soft storage limit for this tier in GB
+     * Instance storage cap in GB; ingest and materialize are refused above it
      */
     limit_gb: number;
     /**
@@ -10501,7 +10459,7 @@ export type LiveFinancialStatementResponse = {
     /**
      * Omitted Periods
      *
-     * Columns left out because they reach back before the books begin: on books that start from an opening balance, a flow statement column that starts before the first day it covers, or a balance sheet dated before it. They would show a partial figure, not the months before the books.
+     * Columns left out because they reach back before the books begin: on books that start from an opening balance, a flow statement column that starts before the first day it covers, or a balance sheet dated before it. They would show a partial figure, not the months before the books. On a group read, also a cash flow or equity statement column a member joined or left the group within.
      */
     omitted_periods?: Array<PeriodSpec>;
     /**
@@ -16170,27 +16128,21 @@ export type QueryLimits = {
     /**
      * Max Timeout Seconds
      *
-     * Maximum query timeout in seconds
+     * Per-query time ceiling the graph engine enforces, in seconds
      */
     max_timeout_seconds: number;
     /**
      * Chunk Size
      *
-     * Maximum chunk size for result streaming
+     * Default rows per streamed chunk (a request may set chunk_size, 10-10,000)
      */
     chunk_size: number;
     /**
      * Max Rows Per Query
      *
-     * Maximum rows returned per query
+     * Rows a non-streaming Cypher query returns before it stops (the response sets `truncated`); a streamed query returns up to 1,000,000
      */
     max_rows_per_query: number;
-    /**
-     * Concurrent Queries
-     *
-     * Maximum concurrent queries allowed
-     */
-    concurrent_queries: number;
 };
 
 /**
@@ -19651,7 +19603,7 @@ export type StorageLimits = {
     /**
      * Max Storage Gb
      *
-     * Maximum storage limit in GB
+     * Instance storage cap in GB; ingest and materialize are refused above it
      */
     max_storage_gb: number;
     /**
@@ -21219,13 +21171,13 @@ export type UpdateEntityRequest = {
     /**
      * Joined On
      *
-     * The month this entity became a member of the group, as any date in it; null is a member since the beginning. The consolidated statements include it from that month. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Pass null to clear it.
+     * The month this entity became a member of the group, as any date in it; null is a member since the beginning. The consolidated statements include it from that month. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Pass null to clear it. Refused on the consolidation entity.
      */
     joined_on?: string | null;
     /**
      * Left On
      *
-     * The month this entity left the group, as any date in it; null is a member still. The consolidated statements include it through that month and leave it out after. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Must not precede `joined_on`. Set it when a subsidiary is sold, dissolved or deconsolidated; its closed months and stamped statements stay readable under the group. Pass null to reopen membership.
+     * The month this entity left the group, as any date in it; null is a member still. The consolidated statements include it through that month and leave it out after. Membership is by month: a period column wider than a month that overlaps the interval is summed whole, so a member's books in this graph should hold only the months it belonged. Must not precede `joined_on`. Set it when a subsidiary is sold, dissolved or deconsolidated; its closed months and stamped statements stay readable under the group. Pass null to reopen membership. Refused on the consolidation entity.
      */
     left_on?: string | null;
 };
