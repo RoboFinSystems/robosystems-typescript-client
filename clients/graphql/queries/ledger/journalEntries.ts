@@ -48,6 +48,7 @@ export const LIST_JOURNAL_ENTRIES = gql`
         sourceStructureId
         sourceStructureName
         triggeredByEventId
+        triggeredByEventType
         reversalOf
         postedAt
         totalDebit

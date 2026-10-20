@@ -10572,6 +10572,12 @@ export type LiveFinancialStatementRequest = {
      * Slice an income statement by a management dimension (department, class, location, project). `{type, member_id}` reads one member's lines, current and prior; `member_id: unallocated` reads the lines no member of the axis tags. `{type}` alone reads the current window with one column per member, then Unallocated, then Total, and says in `dimension.ties_out` whether every row's members plus Unallocated equal its Total. Composes with `scope` and `entity_id`; a consolidation entity's lines are untagged, so eliminations read as Unallocated. Refused (422) on any other statement.
      */
     dimension?: StatementDimension | null;
+    /**
+     * Include Sources
+     *
+     * Add each row's `origin` and, per column, the accounts its figure was summed from (`sources`), each keyed by the entity whose books hold it, so a figure opens on the account registers behind it. Consolidated figures list each member's accounts and the consolidation entity's. Off by default: it multiplies the response. Refused (422) with a `dimension` read by column.
+     */
+    include_sources?: boolean;
 };
 
 /**
@@ -10686,6 +10692,18 @@ export type LiveStatementFactRow = {
      * On the equity roll-forward, `start` for the beginning-balance row and `end` for the ending-balance row. Null elsewhere.
      */
     period_role?: string | null;
+    /**
+     * Origin
+     *
+     * With `include_sources`, how the figure was made: `accounts` (summed from accounts in at least one column; read each column's `sources`, which may be empty where they do not add up), `subtotal` (the rows beneath it), or `computed` (derived from other figures, or a flow, with no accounts of its own). Null without `include_sources`.
+     */
+    origin?: 'accounts' | 'subtotal' | 'computed' | null;
+    /**
+     * Sources
+     *
+     * With `include_sources`, per column (aligned with `values`), the accounts the figure was summed from, largest first; their values add up to the figure. Empty for a column with nothing to show, and for a subtotal or computed row.
+     */
+    sources?: Array<Array<StatementRowSource>> | null;
 };
 
 /**
@@ -19850,6 +19868,45 @@ export type StatementMechanics = {
      * Number of period columns to render in comparative mode: 1 = single-period, 2 = prior-period comparison, 3-4 = multi-year trailing view. Defaults to single-period; overridden by the template when one is attached.
      */
     period_comparisons?: number;
+};
+
+/**
+ * StatementRowSource
+ *
+ * One account's part in a statement figure: what that account, in that
+ * entity's books, contributed to the column.
+ */
+export type StatementRowSource = {
+    /**
+     * Entity Id
+     *
+     * The entity whose books hold the lines, the register to open.
+     */
+    entity_id: string;
+    /**
+     * Account Id
+     *
+     * The account.
+     */
+    account_id: string;
+    /**
+     * Code
+     *
+     * The account's code.
+     */
+    code?: string | null;
+    /**
+     * Name
+     *
+     * The account's name.
+     */
+    name: string;
+    /**
+     * Value
+     *
+     * What the account contributed, in the figure's sign.
+     */
+    value: number;
 };
 
 /**

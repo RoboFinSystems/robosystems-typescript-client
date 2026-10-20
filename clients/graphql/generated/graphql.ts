@@ -215,6 +215,112 @@ export type GetInvestorSecurityQuery = {
   } | null
 }
 
+export type GetLedgerAccountRegisterQueryVariables = Exact<{
+  accountId: string
+  startDate: string | null | undefined
+  endDate: string | null | undefined
+  entityId: string | null | undefined
+  dimensionType: string | null | undefined
+  dimensionMemberId: string | null | undefined
+  flowElementId: string | null | undefined
+  includeDrafts?: boolean
+  after: string | null | undefined
+  limit: number | null | undefined
+}>
+
+export type GetLedgerAccountRegisterQuery = {
+  accountRegister: {
+    entityId: string | null
+    startDate: string | null
+    endDate: string | null
+    openingFrom: string | null
+    openingBalance: number
+    totalDebits: number
+    totalCredits: number
+    closingBalance: number
+    lineCount: number
+    pageOpeningBalance: number
+    nextCursor: string | null
+    sliced: boolean
+    draftsTruncated: boolean
+    account: {
+      id: string
+      code: string | null
+      name: string
+      balanceType: string
+      trait: string | null
+      temporary: boolean
+    }
+    lines: Array<{
+      lineId: string
+      entryId: string
+      entryNumber: string | null
+      postingDate: string
+      entryType: string
+      provenance: string | null
+      status: string
+      memo: string | null
+      description: string | null
+      debit: number
+      credit: number
+      balance: number | null
+      triggeredByEventId: string | null
+      triggeredByEventType: string | null
+      reversalOf: string | null
+      reversedBy: string | null
+      agentId: string | null
+      agentName: string | null
+      flowElementId: string | null
+      dimensions: Array<{ id: string; dimensionType: string; name: string }>
+    }>
+    drafts: Array<{
+      lineId: string
+      entryId: string
+      entryNumber: string | null
+      postingDate: string
+      entryType: string
+      provenance: string | null
+      status: string
+      memo: string | null
+      description: string | null
+      debit: number
+      credit: number
+      balance: number | null
+      triggeredByEventId: string | null
+      triggeredByEventType: string | null
+      reversalOf: string | null
+      reversedBy: string | null
+      agentId: string | null
+      agentName: string | null
+      flowElementId: string | null
+      dimensions: Array<{ id: string; dimensionType: string; name: string }>
+    }>
+  } | null
+}
+
+export type RegisterLineFieldsFragment = {
+  lineId: string
+  entryId: string
+  entryNumber: string | null
+  postingDate: string
+  entryType: string
+  provenance: string | null
+  status: string
+  memo: string | null
+  description: string | null
+  debit: number
+  credit: number
+  balance: number | null
+  triggeredByEventId: string | null
+  triggeredByEventType: string | null
+  reversalOf: string | null
+  reversedBy: string | null
+  agentId: string | null
+  agentName: string | null
+  flowElementId: string | null
+  dimensions: Array<{ id: string; dimensionType: string; name: string }>
+}
+
 export type GetLedgerAccountRollupsQueryVariables = Exact<{
   mappingId: string | null | undefined
   startDate: string | null | undefined
@@ -988,6 +1094,27 @@ export type GetLedgerEventBlockQuery = {
     documentId: string | null
     createdAt: string
     createdBy: string
+    triggeredEntries: Array<{
+      id: string
+      number: string | null
+      type: string
+      status: string
+      postingDate: string
+      memo: string | null
+      provenance: string | null
+      totalDebit: number
+      totalCredit: number
+      lineItems: Array<{
+        id: string
+        accountId: string
+        accountName: string | null
+        accountCode: string | null
+        debitAmount: number
+        creditAmount: number
+        description: string | null
+        lineOrder: number
+      }>
+    }>
   } | null
 }
 
@@ -1590,6 +1717,7 @@ export type ListLedgerJournalEntriesQuery = {
       sourceStructureId: string | null
       sourceStructureName: string | null
       triggeredByEventId: string | null
+      triggeredByEventType: string | null
       reversalOf: string | null
       postedAt: string | null
       totalDebit: number
@@ -2639,6 +2767,52 @@ export type GetLibraryTaxonomyQuery = {
   } | null
 }
 
+export const RegisterLineFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'RegisterLineFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'RegisterLine' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'lineId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entryNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'postingDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entryType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'memo' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'debit' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'credit' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'balance' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'triggeredByEventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'triggeredByEventType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reversalOf' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reversedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentName' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'flowElementId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dimensions' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dimensionType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RegisterLineFieldsFragment, unknown>
 export const AgingBucketsFieldsFragmentDoc = {
   kind: 'Document',
   definitions: [
@@ -3474,6 +3648,236 @@ export const GetInvestorSecurityDocument = {
     },
   ],
 } as unknown as DocumentNode<GetInvestorSecurityQuery, GetInvestorSecurityQueryVariables>
+export const GetLedgerAccountRegisterDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLedgerAccountRegister' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'accountId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'startDate' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Date' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionMemberId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'flowElementId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeDrafts' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'accountRegister' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'accountId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'accountId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'startDate' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'startDate' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'endDate' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'endDate' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'dimensionType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'dimensionMemberId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'dimensionMemberId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'flowElementId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'flowElementId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeDrafts' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeDrafts' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'after' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'after' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'account' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'code' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'balanceType' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'trait' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'temporary' } },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'startDate' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'endDate' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openingFrom' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'openingBalance' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'totalDebits' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'totalCredits' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'closingBalance' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'lineCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'pageOpeningBalance' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'nextCursor' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'sliced' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'draftsTruncated' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'lines' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'RegisterLineFields' },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'drafts' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'RegisterLineFields' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'RegisterLineFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'RegisterLine' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'lineId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entryId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entryNumber' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'postingDate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'entryType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'memo' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'debit' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'credit' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'balance' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'triggeredByEventId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'triggeredByEventType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reversalOf' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'reversedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentId' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'agentName' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'flowElementId' } },
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'dimensions' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'dimensionType' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLedgerAccountRegisterQuery, GetLedgerAccountRegisterQueryVariables>
 export const GetLedgerAccountRollupsDocument = {
   kind: 'Document',
   definitions: [
@@ -5360,6 +5764,41 @@ export const GetLedgerEventBlockDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'documentId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'triggeredEntries' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'number' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'postingDate' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'memo' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'totalDebit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'totalCredit' } },
+                      {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'lineItems' },
+                        selectionSet: {
+                          kind: 'SelectionSet',
+                          selections: [
+                            { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountId' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountName' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'accountCode' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'debitAmount' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'creditAmount' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                            { kind: 'Field', name: { kind: 'Name', value: 'lineOrder' } },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
               ],
             },
           },
@@ -7044,6 +7483,7 @@ export const ListLedgerJournalEntriesDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'sourceStructureId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'sourceStructureName' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'triggeredByEventId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'triggeredByEventType' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'reversalOf' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'postedAt' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'totalDebit' } },

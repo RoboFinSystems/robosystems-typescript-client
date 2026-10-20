@@ -207,6 +207,7 @@ import {
   FlowCandidatesDocument,
   GetInformationBlockDocument,
   GetInformationBlockWindowedDocument,
+  GetLedgerAccountRegisterDocument,
   GetLedgerAccountRollupsDocument,
   GetLedgerAccountTreeDocument,
   GetLedgerAgentDocument,
@@ -256,6 +257,7 @@ import {
   type DischargeCandidatesQuery,
   type FlowCandidatesQuery,
   type GetInformationBlockQuery,
+  type GetLedgerAccountRegisterQuery,
   type GetLedgerAccountRollupsQuery,
   type GetLedgerAccountTreeQuery,
   type GetLedgerAgentQuery,
@@ -327,6 +329,7 @@ export type LedgerBankAccountList = NonNullable<ListLedgerBankAccountsQuery['ban
 export type LedgerBankAccount = LedgerBankAccountList['accounts'][number]
 
 export type LedgerTrialBalance = NonNullable<GetLedgerTrialBalanceQuery['trialBalance']>
+export type LedgerAccountRegister = NonNullable<GetLedgerAccountRegisterQuery['accountRegister']>
 export type LedgerMappedTrialBalance = NonNullable<
   GetLedgerMappedTrialBalanceQuery['mappedTrialBalance']
 >
@@ -1479,6 +1482,47 @@ export class LedgerClient {
       },
       'Get trial balance',
       (data) => data.trialBalance
+    )
+  }
+
+  /**
+   * One entity's posted lines on one account, oldest first, each with the
+   * balance it leaves, between an opening and a closing balance that agree
+   * with the trial balance. An income or expense account opens at the fiscal
+   * year's start. `options.after` takes the last page's `nextCursor`;
+   * `options.dimension` or `options.flowElementId` reads one slice.
+   */
+  async getAccountRegister(
+    graphId: string,
+    accountId: string,
+    options?: {
+      startDate?: string
+      endDate?: string
+      entityId?: string | null
+      dimension?: { type: string; memberId: string } | null
+      flowElementId?: string | null
+      includeDrafts?: boolean
+      after?: string | null
+      limit?: number | null
+    }
+  ): Promise<LedgerAccountRegister | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerAccountRegisterDocument,
+      {
+        accountId,
+        startDate: options?.startDate ?? null,
+        endDate: options?.endDate ?? null,
+        entityId: options?.entityId ?? null,
+        dimensionType: options?.dimension?.type ?? null,
+        dimensionMemberId: options?.dimension?.memberId ?? null,
+        flowElementId: options?.flowElementId ?? null,
+        includeDrafts: options?.includeDrafts ?? false,
+        after: options?.after ?? null,
+        limit: options?.limit ?? null,
+      },
+      'Get account register',
+      (data) => data.accountRegister
     )
   }
 
