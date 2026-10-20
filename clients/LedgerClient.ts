@@ -108,6 +108,7 @@ import type {
   ClosePeriodOperation,
   ComputeMetricsRequest,
   ComputeMetricsResponse,
+  ConsolidationProposal,
   ConsolidationWorksheetRequest,
   ConsolidationWorksheetResponse,
   CreateAgentRequest,
@@ -847,7 +848,22 @@ export interface CreateJournalEntryOptions {
   idempotencyKey?: string | null
   /** The entity whose books the entry goes into. Omitted: the group parent. */
   entityId?: string | null
+  /**
+   * A consolidating entry in the group's consolidation entity: what it
+   * adjusts. Only that entity's books take one; the consolidation engine
+   * counts a tagged entry toward what it already holds, so an elimination
+   * posted by hand is not proposed again.
+   */
+  adjustmentKind?: AdjustmentKind | null
+  /**
+   * The entity whose figures a consolidating entry adjusts. Required with
+   * every `adjustmentKind` but `manual`.
+   */
+  adjustsEntityId?: string | null
 }
+
+/** What a consolidating entry adjusts. */
+export type AdjustmentKind = ConsolidationProposal['adjustment_kind']
 
 // ── Client ──────────────────────────────────────────────────────────────
 
@@ -2483,6 +2499,8 @@ export class LedgerClient {
         type: options.type ?? 'standard',
         status: options.status ?? 'draft',
         transaction_id: options.transactionId ?? null,
+        ...(options.adjustmentKind ? { adjustment_kind: options.adjustmentKind } : {}),
+        ...(options.adjustsEntityId ? { adjusts_entity_id: options.adjustsEntityId } : {}),
       },
     }
     const envelope = await this.callOperation('Create journal entry', (o) =>

@@ -2606,6 +2606,34 @@ describe('LedgerClient', () => {
       expect(body.entity_id).toBe('ent_sub')
     })
 
+    it('tags a consolidating entry with its kind and the entity it adjusts', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
+      await client.createJournalEntry('graph_1', {
+        postingDate: '2026-07-31',
+        memo: 'Intercompany receivable',
+        lineItems,
+        entityId: 'ent_cons',
+        adjustmentKind: 'elimination_intercompany',
+        adjustsEntityId: 'ent_sub',
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.entity_id).toBe('ent_cons')
+      expect(body.metadata.adjustment_kind).toBe('elimination_intercompany')
+      expect(body.metadata.adjusts_entity_id).toBe('ent_sub')
+    })
+
+    it('sends no consolidating tags on an ordinary entry', async () => {
+      mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
+      await client.createJournalEntry('graph_1', {
+        postingDate: '2026-03-31',
+        memo: 'X',
+        lineItems,
+      })
+      const body = JSON.parse(await (mockFetch.mock.calls[0][0] as Request).text())
+      expect(body.metadata).not.toHaveProperty('adjustment_kind')
+      expect(body.metadata).not.toHaveProperty('adjusts_entity_id')
+    })
+
     it('leaves the entity to the server when none is named', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('create-event-block', {}))
       await client.createJournalEntry('graph_1', {
