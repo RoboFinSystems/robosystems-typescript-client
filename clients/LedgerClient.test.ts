@@ -2106,6 +2106,30 @@ describe('LedgerClient', () => {
       const req = mockFetch.mock.calls[0][0] as Request
       expect(JSON.parse(await req.text()).allow_unexplained_residuals).toBe(true)
     })
+
+    it('closes over held bank lines and reads them off the calendar', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('close-period', {
+          period: '2026-08',
+          entries_posted: 0,
+          target_auto_advanced: false,
+          fiscal_calendar: {
+            ...fiscalCalendar,
+            held_bank_line_count: 1,
+            held_bank_line_sample: ['2026-07-30: Late deposit 125.00 [evt_1]'],
+          },
+        })
+      )
+      const result = await client.closePeriod('graph_1', '2026-08', {
+        allowHeldBankLines: true,
+      })
+      expect(result.fiscalCalendar.heldBankLineCount).toBe(1)
+      expect(result.fiscalCalendar.heldBankLineSample).toEqual([
+        '2026-07-30: Late deposit 125.00 [evt_1]',
+      ])
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(JSON.parse(await req.text()).allow_held_bank_lines).toBe(true)
+    })
   })
 
   describe('createSchedule', () => {

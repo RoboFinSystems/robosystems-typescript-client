@@ -534,6 +534,8 @@ interface RawFiscalCalendar {
   unposted_source_event_sample?: string[]
   unreconciled_account_count?: number
   unreconciled_account_sample?: string[]
+  held_bank_line_count?: number
+  held_bank_line_sample?: string[]
   group_open_entities?: string[]
   group_pending_adjustments?: string[]
   group_unexplained?: string[]
@@ -747,6 +749,12 @@ export interface ClosePeriodOptions extends EntityScopeOptions {
    * or voiding each. The override is recorded in the close audit note.
    */
   allowUnpostedSourceEvents?: boolean
+  /**
+   * Close despite bank lines a sync held out of an earlier, closed month.
+   * Each is recorded as decided and none posts; reopening that month gives
+   * them back instead. The override is recorded in the close audit note.
+   */
+  allowHeldBankLines?: boolean
 }
 
 /** Which reconciliation check to run. */
@@ -2483,6 +2491,7 @@ export class LedgerClient {
       allow_reconciling_items: options?.allowReconcilingItems,
       allow_unposted_source_events: options?.allowUnpostedSourceEvents,
       allow_unexplained_residuals: options?.allowUnexplainedResiduals,
+      allow_held_bank_lines: options?.allowHeldBankLines,
     }
     const envelope = await this.callOperation('Close period', (o) =>
       closePeriod({ ...o, path: { graph_id: graphId }, body })
@@ -3705,6 +3714,8 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
     unpostedSourceEventSample: raw.unposted_source_event_sample ?? [],
     unreconciledAccountCount: raw.unreconciled_account_count ?? 0,
     unreconciledAccountSample: raw.unreconciled_account_sample ?? [],
+    heldBankLineCount: raw.held_bank_line_count ?? 0,
+    heldBankLineSample: raw.held_bank_line_sample ?? [],
     groupOpenEntities: raw.group_open_entities ?? [],
     groupPendingAdjustments: raw.group_pending_adjustments ?? [],
     groupUnexplained: raw.group_unexplained ?? [],
