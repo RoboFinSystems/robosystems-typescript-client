@@ -729,13 +729,13 @@ export type AssociationResponse = {
     /**
      * Replaced Association Id
      *
-     * The arc this write removed in the same transaction, when the call named one in `replaces_association_id`.
+     * The arc this one replaced, when the write named one in `replaces_association_id`. On a read, set for an arc whose move reached a closed month.
      */
     replaced_association_id?: string | null;
     /**
      * Reclassified Periods
      *
-     * Closed months whose live statements now read through this arc while their stamped sets keep the answer as closed. Empty unless the write replaced an arc on an account with landed history in a closed month.
+     * Closed months whose live statements read through this arc while their stamped sets keep the answer as closed. Empty unless the arc replaced one on an account with landed history in a closed month.
      */
     reclassified_periods?: Array<string>;
 };
@@ -936,52 +936,6 @@ export type AvailableGraphTiersResponse = {
 };
 
 /**
- * BackfillPeriodOutcome
- *
- * Per-month result of a plan-history backfill pass.
- */
-export type BackfillPeriodOutcome = {
-    /**
-     * Period
-     *
-     * The month, in YYYY-MM
-     */
-    period: string;
-    /**
-     * Status
-     *
-     * stamped: reopen → reclose completed. skipped_drafts: the month holds draft entries the backfill refuses to post — review via list-period-drafts, then close-period or re-run. failed: the reclose raised; processing halted (see detail).
-     */
-    status: string;
-    /**
-     * Statements Stamped
-     *
-     * Whether the reclose stamped canonical statement FactSets. False with a statement_stamp_note soft-skip when reporting isn't set up.
-     */
-    statements_stamped?: boolean;
-    /**
-     * Statement Stamp Note
-     *
-     * Soft-skip reason when statements_stamped is false
-     */
-    statement_stamp_note?: string | null;
-    /**
-     * Statement Rule Summary
-     *
-     * Statement-rule verification tally for the month's stamped sets (pass/fail/error/skipped); None when no rules ran.
-     */
-    statement_rule_summary?: {
-        [key: string]: number;
-    } | null;
-    /**
-     * Detail
-     *
-     * Human-readable detail for skipped/failed months
-     */
-    detail?: string | null;
-};
-
-/**
  * BackfillPlanHistoryOperation
  *
  * Compile monthly statement history behind the close boundary.
@@ -1053,51 +1007,6 @@ export type BackfillPlanHistoryOperation = {
      * Free-form note attached to each close audit event
      */
     note?: string | null;
-};
-
-/**
- * BackfillPlanHistoryResponse
- *
- * Response from one chunked plan-history backfill call.
- */
-export type BackfillPlanHistoryResponse = {
-    fiscal_calendar: FiscalCalendarResponse;
-    /**
-     * Earliest Available Period
-     *
-     * First month with ledger data — the hard floor for backfill
-     */
-    earliest_available_period: string;
-    /**
-     * Effective Start Period
-     *
-     * The start actually used after clamping to earliest_available_period
-     */
-    effective_start_period: string;
-    /**
-     * Closed Through
-     *
-     * The close boundary the backfill runs up to (inclusive)
-     */
-    closed_through: string;
-    /**
-     * Period Rows Created
-     *
-     * FiscalPeriod rows seeded (baseline-closed) for months the calendar didn't cover yet
-     */
-    period_rows_created?: number;
-    /**
-     * Processed
-     *
-     * Months this call attempted, oldest first
-     */
-    processed?: Array<BackfillPeriodOutcome>;
-    /**
-     * Remaining Periods
-     *
-     * Months still lacking canonical statement sets that this call did not attempt (beyond max_periods, or after a failure halt). Loop until empty.
-     */
-    remaining_periods?: Array<string>;
 };
 
 /**
@@ -2068,6 +1977,12 @@ export type ClosePeriodOperation = {
      */
     allow_unreconciled_accounts?: boolean;
     /**
+     * Allow Held Bank Lines
+     *
+     * Override the held-bank-line gate — close even though bank lines a sync held out of an earlier, closed month (dated there, arriving after it closed) are still undecided. Each is recorded as decided by this close and stops blocking; none posts. Prefer reopening the month they are dated in, which gives them back to classify and commit. The override is recorded in the close audit note.
+     */
+    allow_held_bank_lines?: boolean;
+    /**
      * Allow Unexplained Residuals
      *
      * On the consolidation entity, the group close: close even though a residual or an intercompany disagreement is left unexplained. Its difference stays in the consolidated statements. Prefer correcting the books or posting the explaining entry with its basis. The override, and each item it closed over, is recorded in the close audit note.
@@ -2151,7 +2066,7 @@ export type ClosePeriodResponse = {
     /**
      * Gate Findings
      *
-     * Blocker codes a shadow close recorded instead of enforcing: sync_stale, pending_obligations, stranded_obligations, reconciling_items, unposted_source_events, unreconciled_accounts. Empty outside shadow.
+     * Blocker codes a shadow close recorded instead of enforcing: sync_stale, pending_obligations, stranded_obligations, reconciling_items, unposted_source_events, unreconciled_accounts, held_bank_lines. Empty outside shadow.
      */
     gate_findings?: Array<string>;
     /**
@@ -3087,7 +3002,7 @@ export type CreateAgentRequest = {
     /**
      * Tax Id
      *
-     * Tax ID (EIN / SSN / VAT). Used for 1099 / withholding reporting.
+     * Tax ID (EIN / SSN / VAT), kept for 1099 and withholding reporting; no report reads it yet.
      */
     tax_id?: string | null;
     /**
@@ -3145,7 +3060,7 @@ export type CreateAgentRequest = {
     /**
      * Is 1099 Recipient
      *
-     * Marks a vendor as 1099-eligible. Drives year-end 1099 reporting.
+     * Marks a vendor as 1099-eligible: a flag a year-end 1099 summary will read. No report reads it yet.
      */
     is_1099_recipient?: boolean;
     /**
@@ -3648,7 +3563,7 @@ export type CreateEventHandlerRequest = {
     /**
      * Origin
      *
-     * Provenance of the handler. `tenant` = author by graph owner; `hub` = platform-shipped template (immutable for tenants).
+     * Provenance of the handler. `tenant` = authored on this graph, the only value a caller may set; `hub` = platform-shipped template.
      */
     origin?: 'hub' | 'tenant';
     /**
@@ -4271,6 +4186,12 @@ export type CreateTaxonomyBlockRequest = {
      * Required when `taxonomy_type == 'reporting_extension'` — the id of the library `reporting_standard` being extended.
      */
     parent_taxonomy_id?: string | null;
+    /**
+     * Entity Id
+     *
+     * For a `chart_of_accounts`: the entity whose books it keeps, default the group parent. It becomes that entity's primary chart only if the entity has none; otherwise it is linked beside the primary, which stays. Not read by other types.
+     */
+    entity_id?: string | null;
     /**
      * Version
      */
@@ -6360,6 +6281,12 @@ export type EvaluateRulesRequest = {
      * Upper bound on the fact period window (inclusive).
      */
     period_end?: string | null;
+    /**
+     * Entity Id
+     *
+     * The entity whose facts bind, when no `fact_set_id` pins them; default the group parent. On a group, each entity's statements share the structure.
+     */
+    entity_id?: string | null;
 };
 
 /**
@@ -6908,6 +6835,18 @@ export type FactRecord = {
      * Entity name; present only when an entity filter was applied
      */
     entity_name?: string | null;
+    /**
+     * Presentation
+     *
+     * 'as_closed' when the value is the one the period's close stamped, kept as the month closed; null otherwise. A live read of the books (live-financial-statement) can differ from it once a mapping is reclassified after the close.
+     */
+    presentation?: string | null;
+    /**
+     * Stamped At
+     *
+     * When the close stamped the value (ISO 8601); set with 'as_closed'.
+     */
+    stamped_at?: string | null;
 };
 
 /**
@@ -7297,7 +7236,7 @@ export type FiscalCalendarResponse = {
     /**
      * Blockers
      *
-     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations', 'reconciling_items', 'unposted_source_events', 'unreconciled_accounts'; on the consolidation entity, whose close is the group's, also 'entity_open', 'adjustments_unposted', 'residual_unexplained', 'consolidated_does_not_foot'
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations', 'reconciling_items', 'unposted_source_events', 'unreconciled_accounts', 'held_bank_lines'; on the consolidation entity, whose close is the group's, also 'entity_open', 'adjustments_unposted', 'residual_unexplained', 'consolidated_does_not_foot'
      */
     blockers?: Array<string>;
     /**
@@ -7360,6 +7299,18 @@ export type FiscalCalendarResponse = {
      * Source identifiers (or event ids) of up to 5 unposted source events, so the blocker names what is holding the close.
      */
     unposted_source_event_sample?: Array<string>;
+    /**
+     * Held Bank Line Count
+     *
+     * Bank lines a sync held out of an earlier, closed month — dated there, arriving after it closed — that no close has decided on. They block the next close: reopen the month they are dated in, which gives them back to post, or close over them knowingly with allow_held_bank_lines. Listed by list-event-blocks with status='voided' and void_reason 'feed_in_closed_month'.
+     */
+    held_bank_line_count?: number;
+    /**
+     * Held Bank Line Sample
+     *
+     * Up to 5 held lines, oldest first, as 'date: description amount [event id]', so the blocker names what is holding the close.
+     */
+    held_bank_line_sample?: Array<string>;
     /**
      * Unreconciled Account Count
      *
@@ -10629,6 +10580,12 @@ export type LiveFinancialStatementResponse = {
      */
     combined_entity_ids?: Array<string>;
     /**
+     * Presentation
+     *
+     * Always 'live': the books as they stand, through the current mapping. A closed month's figures as its close stamped them (`as_closed` on build-fact-grid and on statement columns) can differ once a mapping was reclassified after the close.
+     */
+    presentation?: string;
+    /**
      * Statement Type
      */
     statement_type: string;
@@ -11761,52 +11718,6 @@ export type OperationEnvelopeAssociationResponse = {
      * Command-specific result payload
      */
     result?: AssociationResponse | null;
-    /**
-     * At
-     *
-     * ISO-8601 UTC timestamp
-     */
-    at: string;
-    /**
-     * Createdby
-     *
-     * User ID that initiated the operation
-     */
-    createdBy?: string | null;
-    /**
-     * Idempotentreplay
-     *
-     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
-     */
-    idempotentReplay?: boolean;
-};
-
-/**
- * OperationEnvelope[BackfillPlanHistoryResponse]
- */
-export type OperationEnvelopeBackfillPlanHistoryResponse = {
-    /**
-     * Operation
-     *
-     * Kebab-case operation name
-     */
-    operation: string;
-    /**
-     * Operationid
-     *
-     * op_-prefixed ULID for audit and SSE correlation
-     */
-    operationId: string;
-    /**
-     * Status
-     *
-     * Operation lifecycle state
-     */
-    status: 'completed' | 'pending' | 'failed';
-    /**
-     * Command-specific result payload
-     */
-    result?: BackfillPlanHistoryResponse | null;
     /**
      * At
      *
@@ -16592,7 +16503,7 @@ export type ReconciliationComponent = {
     /**
      * Kind
      *
-     * `schedule`, `statement`, or `outstanding`: a ledger line on a bank-fed account that did not come from the feed, dated on or before the statement, so the bank had not cleared it.
+     * `schedule`, `statement`, `outstanding`: a ledger line on a bank-fed account that did not come from the feed, dated on or before the statement, so the bank had not cleared it; or `stale_outstanding`: such a line dated before the statement's cycle, which the bank should have cleared by now. A stale line is listed but not counted toward the balance, so the difference it would explain stays unexplained until it clears, is voided or is re-dated.
      */
     kind?: string | null;
     /**
@@ -17466,7 +17377,7 @@ export type RecordStatementBalanceRequest = {
     /**
      * Document Id
      *
-     * The statement itself, as a document already added with create-document. Kept on the record as evidence.
+     * The statement itself, as a document already added with create-document. Kept on the record as evidence. Recording the same account and date again keeps the earlier record's document when this is omitted; an empty string drops it.
      */
     document_id?: string | null;
     /**
@@ -17722,6 +17633,18 @@ export type RenderingPeriodLite = {
      * True when this column comes from a forecast scenario's FactSet — the machine-readable seam marker (labels also carry a '(forecast)' suffix, but consumers should key styling off this flag, not label parsing). None/absent = an actuals column.
      */
     forecast?: boolean | null;
+    /**
+     * Presentation
+     *
+     * 'as_closed' when the column's figures are the ones its month's close stamped, kept as the month closed; a live read of the books (live-financial-statement) can differ from them once a mapping is reclassified after the close. None for a report's own snapshot or a forecast column.
+     */
+    presentation?: string | null;
+    /**
+     * Stamped At
+     *
+     * When the close stamped the column; set with 'as_closed'.
+     */
+    stamped_at?: string | null;
 };
 
 /**
@@ -34044,10 +33967,10 @@ export type BackfillPlanHistoryResponses = {
     /**
      * Successful Response
      */
-    200: OperationEnvelopeBackfillPlanHistoryResponse;
+    202: OperationEnvelope;
 };
 
-export type BackfillPlanHistoryResponse2 = BackfillPlanHistoryResponses[keyof BackfillPlanHistoryResponses];
+export type BackfillPlanHistoryResponse = BackfillPlanHistoryResponses[keyof BackfillPlanHistoryResponses];
 
 export type PromoteObligationsData = {
     body: PromoteObligationsRequest;
