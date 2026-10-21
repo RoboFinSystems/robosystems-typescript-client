@@ -2483,6 +2483,59 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listReportShares', () => {
+    it('unwraps the paginated list, revocation state included', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          reportShares: {
+            reportShares: [
+              {
+                id: 'share_2',
+                reportId: 'rpt_1',
+                targetGraphId: 'graph_2',
+                targetGraphName: 'Harbor Fund',
+                sharedBy: 'usr_1',
+                sharedAt: '2026-10-01T12:00:00Z',
+                revokedAt: null,
+                factCount: 47,
+              },
+              {
+                id: 'share_1',
+                reportId: 'rpt_1',
+                targetGraphId: 'graph_2',
+                targetGraphName: 'Harbor Fund',
+                sharedBy: 'usr_1',
+                sharedAt: '2026-09-01T12:00:00Z',
+                revokedAt: '2026-09-15T12:00:00Z',
+                factCount: 40,
+              },
+            ],
+            pagination: { total: 2, limit: 100, offset: 0, hasMore: false },
+          },
+        })
+      )
+      const shares = await client.listReportShares('graph_1', {
+        reportId: 'rpt_1',
+        includeRevoked: true,
+      })
+      expect(shares).toHaveLength(2)
+      expect(shares[0]).toMatchObject({ id: 'share_2', revokedAt: null })
+      expect(shares[1]).toMatchObject({ id: 'share_1', factCount: 40 })
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string)
+      expect(body.variables).toEqual({
+        reportId: 'rpt_1',
+        includeRevoked: true,
+        limit: 100,
+        offset: 0,
+      })
+    })
+
+    it('returns an empty list when nothing has been shared', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ reportShares: null }))
+      expect(await client.listReportShares('graph_1')).toEqual([])
+    })
+  })
+
   describe('fileReport', () => {
     it('returns the filed report header', async () => {
       mockFetch.mockResolvedValueOnce(

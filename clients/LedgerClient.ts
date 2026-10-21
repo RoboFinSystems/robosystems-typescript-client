@@ -246,6 +246,7 @@ import {
   ListLedgerPublishListsDocument,
   ListLedgerReconciliationsDocument,
   ListLedgerReportsDocument,
+  ListLedgerReportSharesDocument,
   ListLedgerStructuresDocument,
   ListLedgerTaxonomiesDocument,
   ListLedgerTransactionsDocument,
@@ -292,6 +293,7 @@ import {
   type ListLedgerMappingsQuery,
   type ListLedgerPublishListsQuery,
   type ListLedgerReconciliationsQuery,
+  type ListLedgerReportSharesQuery,
   type ListLedgerReportsQuery,
   type ListLedgerStructuresQuery,
   type ListLedgerTaxonomiesQuery,
@@ -449,6 +451,11 @@ export type PublishListMember = PublishListDetail['members'][number]
 export type BlockedSourceGraph = NonNullable<
   ListLedgerBlockedSourceGraphsQuery['blockedSourceGraphs']
 >['blockedSourceGraphs'][number]
+
+/** One delivery of a report to a recipient graph, with its revocation state. */
+export type ReportShare = NonNullable<
+  ListLedgerReportSharesQuery['reportShares']
+>['reportShares'][number]
 
 /**
  * Presigned-URL response for a Report bundle download.
@@ -3453,6 +3460,39 @@ export class LedgerClient {
       })
     )
     return this.requireResult('Revoke report share', envelope.result)
+  }
+
+  /**
+   * Where this graph's reports have been shared — the sender's record behind
+   * `shareReport` and `revokeReportShare`.
+   *
+   * `reportId` narrows to one report; omitted, the list is the graph's whole
+   * distribution log. Revoked shares stay out unless `includeRevoked` is set:
+   * a recipient shared to, revoked, and shared to again has one revoked row
+   * and one live.
+   */
+  async listReportShares(
+    graphId: string,
+    options?: {
+      reportId?: string
+      includeRevoked?: boolean
+      limit?: number
+      offset?: number
+    }
+  ): Promise<ReportShare[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerReportSharesDocument,
+      {
+        reportId: options?.reportId ?? null,
+        includeRevoked: options?.includeRevoked ?? false,
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List report shares',
+      (data) => data.reportShares
+    )
+    return list?.reportShares ?? []
   }
 
   // ── Blocked source graphs ────────────────────────────────────────────

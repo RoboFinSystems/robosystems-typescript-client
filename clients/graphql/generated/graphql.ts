@@ -2273,6 +2273,29 @@ export type GetLedgerReportPackageQuery = {
   } | null
 }
 
+export type ListLedgerReportSharesQueryVariables = Exact<{
+  reportId: string | null | undefined
+  includeRevoked?: boolean
+  limit?: number
+  offset?: number
+}>
+
+export type ListLedgerReportSharesQuery = {
+  reportShares: {
+    reportShares: Array<{
+      id: string
+      reportId: string
+      targetGraphId: string
+      targetGraphName: string | null
+      sharedBy: string
+      sharedAt: string
+      revokedAt: string | null
+      factCount: number
+    }>
+    pagination: { total: number; limit: number; offset: number; hasMore: boolean }
+  } | null
+}
+
 export type GetLedgerReportingTaxonomyQueryVariables = Exact<{ [key: string]: never }>
 
 export type GetLedgerReportingTaxonomyQuery = {
@@ -9020,6 +9043,116 @@ export const GetLedgerReportPackageDocument = {
     },
   ],
 } as unknown as DocumentNode<GetLedgerReportPackageQuery, GetLedgerReportPackageQueryVariables>
+export const ListLedgerReportSharesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerReportShares' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeRevoked' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '100' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'reportShares' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'reportId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'reportId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeRevoked' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeRevoked' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'reportShares' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'reportId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'targetGraphId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'targetGraphName' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'sharedBy' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'sharedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'revokedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'factCount' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'pagination' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'limit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'offset' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'hasMore' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLedgerReportSharesQuery, ListLedgerReportSharesQueryVariables>
 export const GetLedgerReportingTaxonomyDocument = {
   kind: 'Document',
   definitions: [
