@@ -6834,6 +6834,20 @@ export type FactLite = {
      * Fact Set Id
      */
     fact_set_id?: string | null;
+    /**
+     * Provenance
+     *
+     * The fact's own typed `FactProvenance` descriptor (discriminated on `origin`): a `pivot` names the accounts that foot to it, a `rollup` the concepts and weights it summed, a `derived` value its computations and the amounts by part. Null means unknown, never the set's descriptor.
+     */
+    provenance?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Frozen At
+     *
+     * When the fact's column froze: its period fully closed, so the value is the record. Null is a live column that follows the books.
+     */
+    frozen_at?: string | null;
 };
 
 /**

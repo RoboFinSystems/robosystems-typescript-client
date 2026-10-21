@@ -1279,6 +1279,8 @@ export type GetInformationBlockQuery = {
       unit: string
       factScope: string
       factSetId: string | null
+      provenance: unknown
+      frozenAt: string | null
     }>
     rules: Array<{
       id: string
@@ -1428,6 +1430,8 @@ export type GetInformationBlockWindowedQuery = {
       unit: string
       factScope: string
       factSetId: string | null
+      provenance: unknown
+      frozenAt: string | null
     }>
     rules: Array<{
       id: string
@@ -1577,6 +1581,8 @@ export type ListInformationBlocksQuery = {
       unit: string
       factScope: string
       factSetId: string | null
+      provenance: unknown
+      frozenAt: string | null
     }>
     rules: Array<{
       id: string
@@ -2171,6 +2177,8 @@ export type GetLedgerReportPackageQuery = {
           unit: string
           factScope: string
           factSetId: string | null
+          provenance: unknown
+          frozenAt: string | null
         }>
         rules: Array<{
           id: string
@@ -6255,6 +6263,8 @@ export const GetInformationBlockDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'frozenAt' } },
                     ],
                   },
                 },
@@ -6644,6 +6654,8 @@ export const GetInformationBlockWindowedDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'frozenAt' } },
                     ],
                   },
                 },
@@ -7029,6 +7041,8 @@ export const ListInformationBlocksDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'frozenAt' } },
                     ],
                   },
                 },
@@ -8689,6 +8703,8 @@ export const GetLedgerReportPackageDocument = {
                                   { kind: 'Field', name: { kind: 'Name', value: 'unit' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'factScope' } },
                                   { kind: 'Field', name: { kind: 'Name', value: 'factSetId' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'provenance' } },
+                                  { kind: 'Field', name: { kind: 'Name', value: 'frozenAt' } },
                                 ],
                               },
                             },

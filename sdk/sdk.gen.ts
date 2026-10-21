@@ -2651,7 +2651,7 @@ export const createReport = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Regenerate Report
  *
- * Re-runs fact generation for an existing Report against the latest ledger state. Pass `period_start`/`period_end`/`periods` only if you want to change the reporting window.
+ * Rewrites a Report's live columns from the latest ledger state. A column whose period the books have closed is frozen and keeps its facts; an open column already follows the ledger on every read, so pass `period_start`/`period_end`/`periods` to change the reporting window, which drops the frozen facts of any window no column states.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2685,7 +2685,7 @@ export const deleteReport = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * File Report
  *
- * Transitions the Report's filing_status to 'filed' — locks the package. Allowed from 'draft' or 'under_review'. Stamps filed_at + filed_by.
+ * Transitions the Report's filing_status to 'filed' — locks the package. Allowed from 'draft' or 'under_review', and only once the books are closed through every period the Report states. Stamps filed_at + filed_by.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

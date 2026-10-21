@@ -90,6 +90,8 @@ export const GET_REPORT_PACKAGE = gql`
             unit
             factScope
             factSetId
+            provenance
+            frozenAt
           }
           rules {
             id

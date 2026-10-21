@@ -66,6 +66,8 @@ export const GET_INFORMATION_BLOCK = gql`
         unit
         factScope
         factSetId
+        provenance
+        frozenAt
       }
       rules {
         id
@@ -246,6 +248,8 @@ export const GET_INFORMATION_BLOCK_WINDOWED = gql`
         unit
         factScope
         factSetId
+        provenance
+        frozenAt
       }
       rules {
         id
@@ -421,6 +425,8 @@ export const LIST_INFORMATION_BLOCKS = gql`
         unit
         factScope
         factSetId
+        provenance
+        frozenAt
       }
       rules {
         id
