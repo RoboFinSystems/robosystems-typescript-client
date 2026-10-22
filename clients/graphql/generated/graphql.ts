@@ -1008,6 +1008,7 @@ export type ListLedgerElementsQueryVariables = Exact<{
   source: string | null | undefined
   classification: string | null | undefined
   isAbstract: boolean | null | undefined
+  includeInactive?: boolean
   limit?: number
   offset?: number
 }>
@@ -5871,6 +5872,15 @@ export const ListLedgerElementsDocument = {
         },
         {
           kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeInactive' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+          },
+          defaultValue: { kind: 'BooleanValue', value: false },
+        },
+        {
+          kind: 'VariableDefinition',
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
           type: {
             kind: 'NonNullType',
@@ -5914,6 +5924,11 @@ export const ListLedgerElementsDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'isAbstract' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'isAbstract' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'includeInactive' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'includeInactive' } },
               },
               {
                 kind: 'Argument',
