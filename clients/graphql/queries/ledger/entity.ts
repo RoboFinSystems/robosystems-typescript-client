@@ -44,6 +44,7 @@ export const GET_ENTITY = gql`
       entityRole
       joinedOn
       leftOn
+      isFormer
       source
       sourceId
       sourceGraphId

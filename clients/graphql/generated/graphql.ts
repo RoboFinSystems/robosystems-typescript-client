@@ -1061,6 +1061,7 @@ export type ListLedgerEntitiesQuery = {
     entityRole: string
     joinedOn: string | null
     leftOn: string | null
+    isFormer: boolean
     source: string
     sourceGraphId: string | null
     connectionId: string | null
@@ -1102,6 +1103,7 @@ export type GetLedgerEntityQuery = {
     entityRole: string
     joinedOn: string | null
     leftOn: string | null
+    isFormer: boolean
     source: string
     sourceId: string | null
     sourceGraphId: string | null
@@ -1329,6 +1331,8 @@ export type GetLedgerFiscalCalendarQuery = {
     unpostedSourceEventSample: Array<string>
     unreconciledAccountCount: number
     unreconciledAccountSample: Array<string>
+    unmappedAccountCount: number
+    unmappedAccountSample: Array<string>
     heldBankLineCount: number
     heldBankLineSample: Array<string>
     groupOpenEntities: Array<string>
@@ -6038,6 +6042,7 @@ export const ListLedgerEntitiesDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'entityRole' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'joinedOn' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'leftOn' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isFormer' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'connectionId' } },
@@ -6108,6 +6113,7 @@ export const GetLedgerEntityDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'entityRole' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'joinedOn' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'leftOn' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'isFormer' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'source' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
@@ -6670,6 +6676,8 @@ export const GetLedgerFiscalCalendarDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'unpostedSourceEventSample' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountCount' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'unreconciledAccountSample' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unmappedAccountCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'unmappedAccountSample' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'heldBankLineCount' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'heldBankLineSample' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'groupOpenEntities' } },

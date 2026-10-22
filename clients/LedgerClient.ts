@@ -72,6 +72,7 @@ import {
   proposeConsolidationEntries,
   rebuildSchedule,
   recordAcquisition,
+  recordDeconsolidation,
   recordOpeningBalance,
   recordOwnershipChange,
   recordStatementBalance,
@@ -129,6 +130,7 @@ import type {
   CreateScheduleArm,
   CreateTaxonomyBlockRequest,
   CreateViewRequest,
+  DeconsolidationResponse,
   DeleteInformationBlockRequest,
   DeleteInformationBlockResponse,
   DeleteJournalEntryRequest,
@@ -181,6 +183,7 @@ import type {
   ReconciliationSummary,
   ReconcilingItemPlan,
   RecordAcquisitionRequest,
+  RecordDeconsolidationRequest,
   RecordOpeningBalanceRequest,
   RecordOwnershipChangeRequest,
   RecordStatementBalanceRequest,
@@ -582,6 +585,8 @@ interface RawFiscalCalendar {
   unposted_source_event_sample?: string[]
   unreconciled_account_count?: number
   unreconciled_account_sample?: string[]
+  unmapped_account_count?: number
+  unmapped_account_sample?: string[]
   held_bank_line_count?: number
   held_bank_line_sample?: string[]
   group_open_entities?: string[]
@@ -3269,6 +3274,25 @@ export class LedgerClient {
     return this.requireResult('Record ownership change', envelope.result)
   }
 
+  /**
+   * Record a member's leaving the group once `left_on` is set on it: what the
+   * parent received for its shares in cents (0 for a dissolution) and the
+   * basis. Writes a draft in the consolidation entity, dated the first day of
+   * the month after the member's last, that its close posts: what the entity
+   * still held for the member is taken off, a member in full has its results
+   * put back into the group's equity, and the difference is the gain or loss
+   * on its leaving — the group's adjustment to the parent's own gain (ASC 810).
+   */
+  async recordDeconsolidation(
+    graphId: string,
+    body: RecordDeconsolidationRequest
+  ): Promise<DeconsolidationResponse> {
+    const envelope = await this.callOperation('Record deconsolidation', (o) =>
+      recordDeconsolidation({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Record deconsolidation', envelope.result)
+  }
+
   // ── Event blocks (generic preview + status transitions) ──────────────
 
   /**
@@ -4187,6 +4211,8 @@ function rawFiscalCalendarToCamel(raw: RawFiscalCalendar): LedgerFiscalCalendar 
     unpostedSourceEventSample: raw.unposted_source_event_sample ?? [],
     unreconciledAccountCount: raw.unreconciled_account_count ?? 0,
     unreconciledAccountSample: raw.unreconciled_account_sample ?? [],
+    unmappedAccountCount: raw.unmapped_account_count ?? 0,
+    unmappedAccountSample: raw.unmapped_account_sample ?? [],
     heldBankLineCount: raw.held_bank_line_count ?? 0,
     heldBankLineSample: raw.held_bank_line_sample ?? [],
     groupOpenEntities: raw.group_open_entities ?? [],
