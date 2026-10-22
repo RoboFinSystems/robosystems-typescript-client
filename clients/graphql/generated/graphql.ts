@@ -822,6 +822,58 @@ export type ListLedgerAgentsQuery = {
   }>
 }
 
+export type AllocationOverrideFieldsFragment = {
+  period: string
+  amount: number | null
+  percentage: number | null
+  basis: string | null
+  setBy: string | null
+}
+
+export type GetLedgerAllocationShareQueryVariables = Exact<{
+  entityId: string
+  period: string
+}>
+
+export type GetLedgerAllocationShareQuery = {
+  allocationShare: {
+    entityId: string
+    entityName: string
+    period: string
+    consolidationMethod: string
+    ownershipPct: number | null
+    outsidePct: number
+    monthResult: number
+    proRataAmount: number
+    effectiveAmount: number
+    closed: boolean
+    override: {
+      period: string
+      amount: number | null
+      percentage: number | null
+      basis: string | null
+      setBy: string | null
+    } | null
+  } | null
+}
+
+export type ListLedgerAllocationOverridesQueryVariables = Exact<{
+  entityId: string
+}>
+
+export type ListLedgerAllocationOverridesQuery = {
+  allocationOverrides: {
+    entityId: string
+    overrides: Array<{
+      period: string
+      amount: number | null
+      percentage: number | null
+      basis: string | null
+      setBy: string | null
+    }>
+  } | null
+}
+
 export type ListLedgerBankAccountsQueryVariables = Exact<{
   entityId: string | null | undefined
 }>
@@ -3135,6 +3187,29 @@ export const AgedBalancesFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<AgedBalancesFieldsFragment, unknown>
+export const AllocationOverrideFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AllocationOverrideFields' },
+      typeCondition: {
+        kind: 'NamedType',
+        name: { kind: 'Name', value: 'AllocationOverrideRecord' },
+      },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'percentage' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'basis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'setBy' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<AllocationOverrideFieldsFragment, unknown>
 export const EventHandlerFieldsFragmentDoc = {
   kind: 'Document',
   definitions: [
@@ -5202,6 +5277,177 @@ export const ListLedgerAgentsDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerAgentsQuery, ListLedgerAgentsQueryVariables>
+export const GetLedgerAllocationShareDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLedgerAllocationShare' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'allocationShare' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'period' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'period' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'entityName' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'consolidationMethod' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'ownershipPct' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'outsidePct' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'monthResult' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'proRataAmount' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'override' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'AllocationOverrideFields' },
+                      },
+                    ],
+                  },
+                },
+                { kind: 'Field', name: { kind: 'Name', value: 'effectiveAmount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'closed' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AllocationOverrideFields' },
+      typeCondition: {
+        kind: 'NamedType',
+        name: { kind: 'Name', value: 'AllocationOverrideRecord' },
+      },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'percentage' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'basis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'setBy' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLedgerAllocationShareQuery, GetLedgerAllocationShareQueryVariables>
+export const ListLedgerAllocationOverridesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerAllocationOverrides' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'allocationOverrides' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'entityId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'entityId' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'overrides' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'AllocationOverrideFields' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'AllocationOverrideFields' },
+      typeCondition: {
+        kind: 'NamedType',
+        name: { kind: 'Name', value: 'AllocationOverrideRecord' },
+      },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'period' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'amount' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'percentage' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'basis' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'setBy' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  ListLedgerAllocationOverridesQuery,
+  ListLedgerAllocationOverridesQueryVariables
+>
 export const ListLedgerBankAccountsDocument = {
   kind: 'Document',
   definitions: [

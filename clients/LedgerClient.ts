@@ -70,6 +70,7 @@ import {
   promoteObligations,
   proposeConsolidationEntries,
   rebuildSchedule,
+  recordAcquisition,
   recordOpeningBalance,
   recordStatementBalance,
   refreshReconciliations,
@@ -98,6 +99,7 @@ import {
 import type {
   AcceptSuggestionsRequest,
   AcceptSuggestionsResponse,
+  AcquisitionResponse,
   AddPublishListMembersOperation,
   AllocationOverrideResponse,
   AssociationResponse,
@@ -171,6 +173,7 @@ import type {
   ReconciliationRow,
   ReconciliationSummary,
   ReconcilingItemPlan,
+  RecordAcquisitionRequest,
   RecordOpeningBalanceRequest,
   RecordStatementBalanceRequest,
   RefreshReconciliationsRequest,
@@ -211,6 +214,7 @@ import {
   GetLedgerAccountRollupsDocument,
   GetLedgerAccountTreeDocument,
   GetLedgerAgentDocument,
+  GetLedgerAllocationShareDocument,
   GetLedgerClosingBookStructuresDocument,
   GetLedgerEntityDocument,
   GetLedgerEventBlockDocument,
@@ -235,6 +239,7 @@ import {
   ListInformationBlockSummariesDocument,
   ListLedgerAccountsDocument,
   ListLedgerAgentsDocument,
+  ListLedgerAllocationOverridesDocument,
   ListLedgerBankAccountsDocument,
   ListLedgerBankAccountsQuery,
   ListLedgerBlockedSourceGraphsDocument,
@@ -264,6 +269,7 @@ import {
   type GetLedgerAccountRollupsQuery,
   type GetLedgerAccountTreeQuery,
   type GetLedgerAgentQuery,
+  type GetLedgerAllocationShareQuery,
   type GetLedgerClosingBookStructuresQuery,
   type GetLedgerEntityQuery,
   type GetLedgerEventBlockQuery,
@@ -286,6 +292,7 @@ import {
   type ListInformationBlockSummariesQuery,
   type ListLedgerAccountsQuery,
   type ListLedgerAgentsQuery,
+  type ListLedgerAllocationOverridesQuery,
   type ListLedgerBlockedSourceGraphsQuery,
   type ListLedgerDimensionsQuery,
   type ListLedgerElementsQuery,
@@ -459,6 +466,19 @@ export type BlockedSourceGraph = NonNullable<
 export type ReportShare = NonNullable<
   ListLedgerReportSharesQuery['reportShares']
 >['reportShares'][number]
+
+/**
+ * The outside owners' share of a member's result for one month, in cents:
+ * the pro-rata figure its ownership gives (`proRataAmount`), the override if
+ * one is set, and the share the consolidating entries use
+ * (`effectiveAmount`).
+ */
+export type LedgerAllocationShare = NonNullable<GetLedgerAllocationShareQuery['allocationShare']>
+
+/** A member's allocation override for one month. */
+export type LedgerAllocationOverride = NonNullable<
+  ListLedgerAllocationOverridesQuery['allocationOverrides']
+>['overrides'][number]
 
 /**
  * A rule that turns a matching event into GL rows. `awaitingApproval` marks
@@ -2889,6 +2909,58 @@ export class LedgerClient {
       setAllocationOverride({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Set allocation override', envelope.result)
+  }
+
+  /**
+   * The outside owners' share of a member's result for one month: the
+   * pro-rata figure, the override if one is set, and the share the
+   * consolidating entries use. Null when the ledger is not initialized.
+   */
+  async getAllocationShare(
+    graphId: string,
+    entityId: string,
+    period: string
+  ): Promise<LedgerAllocationShare | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerAllocationShareDocument,
+      { entityId, period },
+      'Get allocation share',
+      (data) => data.allocationShare ?? null
+    )
+  }
+
+  /** Every month a member's allocation override is set for, oldest first. */
+  async listAllocationOverrides(
+    graphId: string,
+    entityId: string
+  ): Promise<LedgerAllocationOverride[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerAllocationOverridesDocument,
+      { entityId },
+      'List allocation overrides',
+      (data) => data.allocationOverrides
+    )
+    return list?.overrides ?? []
+  }
+
+  /**
+   * Record a member the parent bought from its outside owners: the
+   * consideration paid the sellers, in cents, with the basis, and optionally
+   * the outside owners' fair value and fair-value step-ups. Writes a draft in
+   * the consolidation entity that its close posts; the excess over the
+   * parent's share of the member's equity at acquisition goes to the
+   * step-ups and goodwill. A bargain purchase needs `confirm_bargain_purchase`.
+   */
+  async recordAcquisition(
+    graphId: string,
+    body: RecordAcquisitionRequest
+  ): Promise<AcquisitionResponse> {
+    const envelope = await this.callOperation('Record acquisition', (o) =>
+      recordAcquisition({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Record acquisition', envelope.result)
   }
 
   // ── Event blocks (generic preview + status transitions) ──────────────

@@ -269,6 +269,100 @@ export type AccountInfo = {
 };
 
 /**
+ * AcquisitionAllocation
+ *
+ * Part of an acquisition's excess assigned to an identifiable asset or
+ * liability at fair value instead of goodwill: a step-up.
+ */
+export type AcquisitionAllocation = {
+    /**
+     * Concept
+     *
+     * The rs-gaap concept stepped up, e.g. `rs-gaap:PropertyPlantAndEquipmentNet`; the consolidation entity needs an account mapped to it.
+     */
+    concept: string;
+    /**
+     * Amount
+     *
+     * Cents, debit-positive: fair value less book value at acquisition. Positive raises an asset; negative raises a liability.
+     */
+    amount: number;
+};
+
+/**
+ * AcquisitionResponse
+ *
+ * A member's acquisition as recorded: the draft in the consolidation
+ * entity its close posts.
+ */
+export type AcquisitionResponse = {
+    /**
+     * Entity Id
+     *
+     * The member.
+     */
+    entity_id: string;
+    /**
+     * Entity Name
+     *
+     * The member's name.
+     */
+    entity_name: string;
+    /**
+     * Joined On
+     *
+     * When it joined the group.
+     */
+    joined_on: string;
+    /**
+     * Equity At Acquisition
+     *
+     * Cents: the member's equity in its opening balance.
+     */
+    equity_at_acquisition: number;
+    /**
+     * Parent Share
+     *
+     * Cents: the parent's share of that equity.
+     */
+    parent_share: number;
+    /**
+     * Consideration
+     *
+     * Cents paid to the sellers.
+     */
+    consideration: number;
+    /**
+     * Excess
+     *
+     * Cents: consideration less the parent's share of the equity.
+     */
+    excess: number;
+    /**
+     * Goodwill
+     *
+     * Cents of goodwill; negative for a bargain purchase gain.
+     */
+    goodwill: number;
+    /**
+     * Noncontrolling Interest
+     *
+     * Cents added to the outside owners' interest beyond their share of the member's book equity.
+     */
+    noncontrolling_interest?: number;
+    /**
+     * The acquisition entry, a draft the close posts.
+     */
+    entry: JournalEntryResponse;
+    /**
+     * Replaced
+     *
+     * True when it replaced an earlier draft of the acquisition.
+     */
+    replaced?: boolean;
+};
+
+/**
  * AddGraphMemberRequest
  *
  * Request to grant an org member access to a graph.
@@ -2719,6 +2813,12 @@ export type ConsolidationResidual = {
      * What the two figures are.
      */
     explanation: string;
+    /**
+     * Cause
+     *
+     * `pre_acquisition` when the member joined the group mid-life and its acquisition is not recorded: the parent paid its sellers, not the member, so `record-acquisition` explains the difference — the consideration, with the excess over the parent's share of the member's equity at acquisition as goodwill or fair-value step-ups.
+     */
+    cause?: 'unexplained' | 'pre_acquisition';
 };
 
 /**
@@ -11502,6 +11602,52 @@ export type OperationEnvelopeAcceptSuggestionsResponse = {
 };
 
 /**
+ * OperationEnvelope[AcquisitionResponse]
+ */
+export type OperationEnvelopeAcquisitionResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: AcquisitionResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[AllocationOverrideResponse]
  */
 export type OperationEnvelopeAllocationOverrideResponse = {
@@ -17211,6 +17357,53 @@ export type ReconcilingItemRegenerated = {
      * Entry Ids
      */
     entry_ids?: Array<string>;
+};
+
+/**
+ * RecordAcquisitionRequest
+ *
+ * A member bought from its outside owners: what the parent paid them,
+ * and how the excess over its share of the member's equity at acquisition is
+ * allocated. The engine never invents a fair value; each comes from the
+ * person, with the basis.
+ */
+export type RecordAcquisitionRequest = {
+    /**
+     * Entity Id
+     *
+     * The member acquired, consolidated in full, with `joined_on` set and its opening balance recorded at acquisition.
+     */
+    entity_id: string;
+    /**
+     * Consideration
+     *
+     * Cents the parent paid the sellers for its interest. Its investment line names the seller, not the member, which is why it is given here.
+     */
+    consideration: number;
+    /**
+     * Nci Fair Value
+     *
+     * Cents: the fair value of the outside owners' interest at acquisition, for goodwill on the whole business (ASC 805). Omitted, the outside owners carry their share of the identifiable net assets and goodwill is the parent's alone.
+     */
+    nci_fair_value?: number | null;
+    /**
+     * Allocations
+     *
+     * Fair-value step-ups; what is left of the excess is goodwill.
+     */
+    allocations?: Array<AcquisitionAllocation>;
+    /**
+     * Basis
+     *
+     * Where the consideration and fair values come from: the purchase agreement, a valuation.
+     */
+    basis: string;
+    /**
+     * Confirm Bargain Purchase
+     *
+     * Required when the parent paid less than its share of the fair value of what it acquired. ASC 805 has the acquirer reassess before recognizing the gain; set it only after that review.
+     */
+    confirm_bargain_purchase?: boolean;
 };
 
 /**
@@ -33318,6 +33511,70 @@ export type SetAllocationOverrideResponses = {
 };
 
 export type SetAllocationOverrideResponse = SetAllocationOverrideResponses[keyof SetAllocationOverrideResponses];
+
+export type RecordAcquisitionData = {
+    body: RecordAcquisitionRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/record-acquisition';
+};
+
+export type RecordAcquisitionErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RecordAcquisitionError = RecordAcquisitionErrors[keyof RecordAcquisitionErrors];
+
+export type RecordAcquisitionResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeAcquisitionResponse;
+};
+
+export type RecordAcquisitionResponse = RecordAcquisitionResponses[keyof RecordAcquisitionResponses];
 
 export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;

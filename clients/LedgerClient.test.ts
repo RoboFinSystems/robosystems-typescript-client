@@ -3066,6 +3066,65 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('recordAcquisition', () => {
+    it('POSTs the consideration and basis to record-acquisition', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('record-acquisition', {
+          entity_id: 'ent_cafe',
+          consideration: 900000,
+          goodwill: 200000,
+        })
+      )
+      const result = await client.recordAcquisition('graph_42', {
+        entity_id: 'ent_cafe',
+        consideration: 900000,
+        basis: 'Purchase agreement',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/record-acquisition'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.consideration).toBe(900000)
+      expect(result.goodwill).toBe(200000)
+    })
+  })
+
+  describe('getAllocationShare', () => {
+    it('sends the member and month and returns the share', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          allocationShare: {
+            entityId: 'ent_cafe',
+            period: '2026-08',
+            proRataAmount: 54750,
+            effectiveAmount: 100000,
+            override: { period: '2026-08', amount: 100000 },
+          },
+        })
+      )
+      const share = await client.getAllocationShare('graph_1', 'ent_cafe', '2026-08')
+      expect(share).toMatchObject({ proRataAmount: 54750, effectiveAmount: 100000 })
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string)
+      expect(body.variables).toEqual({ entityId: 'ent_cafe', period: '2026-08' })
+    })
+  })
+
+  describe('listAllocationOverrides', () => {
+    it('unwraps the overrides, empty when none', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          allocationOverrides: { entityId: 'ent_cafe', overrides: [{ period: '2026-08' }] },
+        })
+      )
+      expect(await client.listAllocationOverrides('graph_1', 'ent_cafe')).toEqual([
+        { period: '2026-08' },
+      ])
+      mockFetch.mockResolvedValueOnce(gqlResponse({ allocationOverrides: null }))
+      expect(await client.listAllocationOverrides('graph_1', 'ent_cafe')).toEqual([])
+    })
+  })
+
   describe('deleteJournalEntry', () => {
     it('returns deleted: true from the envelope', async () => {
       mockFetch.mockResolvedValueOnce(envelopeResponse('delete-journal-entry', { deleted: true }))
