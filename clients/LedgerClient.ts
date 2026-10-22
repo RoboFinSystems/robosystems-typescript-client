@@ -67,6 +67,7 @@ import {
   previewEventBlock,
   previewReconciliations,
   previewReconcilingItem,
+  previewSchedule,
   promoteObligations,
   proposeConsolidationEntries,
   rebuildSchedule,
@@ -125,6 +126,7 @@ import type {
   CreateMappingAssociationOperation,
   CreatePublishListRequest,
   CreateReportRequest,
+  CreateScheduleArm,
   CreateTaxonomyBlockRequest,
   CreateViewRequest,
   DeleteInformationBlockRequest,
@@ -136,6 +138,7 @@ import type {
   DeleteTaxonomyBlockResponse,
   DimensionResponse,
   EntityTaxonomyResponse,
+  EntryTemplateRequest,
   EvaluateRulesRequest,
   EvaluateRulesResponse,
   EventBlockEnvelope,
@@ -156,11 +159,13 @@ import type {
   LinkEntityTaxonomyRequest,
   LiveFinancialStatementRequest,
   LiveFinancialStatementResponse,
+  LoanTermsRequest,
   OperationEnvelope,
   OwnershipChangeResponse,
   PreviewConsolidationEntriesResponse,
   PreviewEventBlockResponse,
   PreviewReconciliationsRequest,
+  PreviewScheduleRequest,
   PromoteObligationsRequest,
   PromoteObligationsResponse,
   ProposeConsolidationEntriesResponse,
@@ -185,6 +190,7 @@ import type {
   ResolveReconcilingItemRequest,
   ResolveReconcilingItemResponse,
   RevokeReportShareResponse,
+  ScheduleMetadataRequest,
   SetAllocationOverrideRequest,
   SetCloseTargetOperation,
   SetReconciliationPolicyRequest,
@@ -866,35 +872,263 @@ export interface LedgerReconciliationPolicy {
   statementCycle: StatementCycle | null
 }
 
+export type ScheduleMethod = 'straight_line' | 'custom' | 'effective_interest'
+/** The columns of a loan schedule's amortization table a leg can post. */
+export type ScheduleCurveColumn = 'interest' | 'interest_paid' | 'principal' | 'payment'
+export type ScheduleDayCount = '30/360' | 'actual/365' | 'actual/360'
+export type SchedulePaymentFrequency = 'monthly' | 'quarterly' | 'annual' | 'at_maturity'
+
+/** One line of the entry a loan schedule drafts each period. */
+export interface ScheduleLeg {
+  elementId: string
+  side: 'debit' | 'credit'
+  /**
+   * The amortization-table column the line takes each period: `interest`
+   * (accrued in the period), `interest_paid` (accrued interest settled by
+   * the period's payment), `principal` (principal repaid), `payment`
+   * (interest_paid + principal).
+   */
+  amountSource: ScheduleCurveColumn
+}
+
+/** The terms a loan schedule's amortization table is computed from. */
+export interface LoanTerms {
+  /** Principal drawn, in cents. */
+  principal: number
+  /** Annual interest rate as a fraction: 0.099 for 9.9%. */
+  annualRate: number
+  /** The day the principal was drawn (YYYY-MM-DD); falls in the schedule's first month. */
+  startDate: string
+  /** `30/360` (default), `actual/365`, or `actual/360` (the usual bank line of credit). */
+  dayCount?: ScheduleDayCount
+  /** How often a payment falls due, applied at the end of the month it falls in. Default monthly. */
+  paymentFrequency?: SchedulePaymentFrequency
+  /** The first payment's date. Omit for one frequency after the schedule's first month. */
+  firstPaymentDate?: string | null
+  /**
+   * Each scheduled payment in cents, interest included. Omit for the level
+   * payment that retires the principal by `maturityDate`, or for the accrued
+   * interest when `interestOnly`.
+   */
+  paymentAmount?: number | null
+  /** Payments settle interest only; the principal is due at maturity. */
+  interestOnly?: boolean
+  /**
+   * When the remaining principal is due: repaid in that month, the
+   * schedule's last. Omit for a line of credit with no maturity, whose
+   * balance carries past the schedule.
+   */
+  maturityDate?: string | null
+  /** Interest is added to the note (a PIK note) rather than accrued apart. */
+  capitalizeInterest?: boolean
+  /**
+   * The liability account the principal is carried in. The schedule states
+   * its balance each period, which the schedule reconciliation compares
+   * with the ledger.
+   */
+  noteElementId: string
+  /**
+   * A current-liability account for the principal due within twelve
+   * months. When set, each period's entry also reclasses between it and
+   * the note so it holds the next twelve months' principal.
+   */
+  currentPortionElementId?: string | null
+}
+
+export interface ScheduleEntryTemplate {
+  /** The account debited: a straight-line or custom schedule's debit; a loan's interest debit leg. */
+  debitElementId: string
+  /** The account credited: the pair's credit; one of a loan's credit legs. */
+  creditElementId: string
+  entryType?: LedgerEntryType
+  memoTemplate?: string
+  /** Auto-generate a reversing entry on the first day of the next period. */
+  autoReverse?: boolean
+  /** The management dimension members every drafted entry carries, one per axis. */
+  dimensionIds?: string[]
+  /**
+   * The lines of a loan schedule's entry (`method: 'effective_interest'`
+   * only), each taking one column of the amortization table; each period's
+   * lines must balance. Accrue and pay through the bank: debit Interest
+   * Expense and credit Accrued Interest, both `interest`. The schedule
+   * settles the payment itself: debit the note `principal`, debit Interest
+   * Expense `interest`, credit cash or a due-to `payment`.
+   */
+  legs?: ScheduleLeg[]
+}
+
+export interface ScheduleMetadata {
+  /**
+   * `straight_line` (default) spreads `monthlyAmount` over the months, the
+   * last absorbing rounding; `custom` takes `periodicAmounts`;
+   * `effective_interest` is a loan computed from `loanTerms`.
+   */
+  method?: ScheduleMethod | (string & {})
+  /** Cost basis in cents. */
+  originalAmount?: number
+  /** Salvage value in cents; the schedule expenses `originalAmount` less this. */
+  residualValue?: number
+  usefulLifeMonths?: number
+  /** Balance-sheet asset element for net book value. */
+  assetElementId?: string
+  /**
+   * The day the cost went on the books (YYYY-MM-DD), when that is before
+   * the schedule's first period. The schedule reconciliation carries the
+   * cost from that day.
+   */
+  bookedOn?: string
+  /**
+   * `custom` only: one cents value per month, non-negative, summing to
+   * `originalAmount` less `residualValue`.
+   */
+  periodicAmounts?: number[]
+  /** `effective_interest` only. */
+  loanTerms?: LoanTerms
+}
+
+/**
+ * A schedule's definition: what `createSchedule` and `previewSchedule`
+ * take, and what `rebuildSchedule` saves back.
+ */
 export interface CreateScheduleOptions {
   name: string
   elementIds: string[]
   periodStart: string
   periodEnd: string
-  monthlyAmount: number
-  entryTemplate: {
-    debitElementId: string
-    creditElementId: string
-    entryType?: LedgerEntryType
-    memoTemplate?: string
-  }
+  /**
+   * Monthly amount in cents. Required for a straight-line schedule; a
+   * custom or loan schedule takes its amounts from its curve.
+   */
+  monthlyAmount?: number
+  entryTemplate: ScheduleEntryTemplate
   taxonomyId?: string
-  scheduleMetadata?: {
-    method?: string
-    originalAmount?: number
-    residualValue?: number
-    usefulLifeMonths?: number
-    assetElementId?: string
-    /**
-     * The day the cost went on the books (YYYY-MM-DD), when that is before
-     * the schedule's first period. The schedule reconciliation carries the
-     * cost from that day.
-     */
-    bookedOn?: string
-  }
+  scheduleMetadata?: ScheduleMetadata
   /** The entity whose books the schedule belongs to. Omit for the group parent. */
   entityId?: string | null
+  /**
+   * Onboarding watermark: months ending on or before it are history the
+   * schedule records but never drafts. Defaults to the calendar's
+   * closed-through month.
+   */
+  closedThrough?: string
 }
+
+export interface PreviewScheduleOptions extends CreateScheduleOptions {
+  /** The schedule this definition would replace, when editing or recreating one. */
+  replacesStructureId?: string | null
+}
+
+export interface RebuildScheduleOptions {
+  idempotencyKey?: string
+  periodStart?: string
+  periodEnd?: string
+  monthlyAmount?: number
+  /** A new entry template, replacing the stored one whole. */
+  entryTemplate?: ScheduleEntryTemplate
+  /** The schedule_metadata fields to change; the rest keep their stored values. */
+  scheduleMetadata?: ScheduleMetadata
+}
+
+/** One period of a previewed schedule: the balance it carries, and what moves it. */
+export interface ScheduleRollForwardPeriod {
+  periodStart: string
+  periodEnd: string
+  opening: number
+  /** What the period recognizes: the entry's debit amount. */
+  amount: number
+  closing: number
+  /** `historical` for a month already in the books' history; `in_scope` for one a close drafts. */
+  scope: 'historical' | 'in_scope'
+  /** Loan schedules only. */
+  interest: number | null
+  payment: number | null
+  principal: number | null
+  currentPortion: number | null
+}
+
+/** What an existing schedule's entries mean for replacing it. */
+export interface ScheduleReplacement {
+  structureId: string
+  name: string
+  postedEntryCount: number
+  /** The months (YYYY-MM) its posted entries are in. */
+  postedPeriods: string[]
+  draftEntryCount: number
+  /** `rebuild` while nothing has posted; `terminate_and_succeed` once an entry has. */
+  path: 'rebuild' | 'terminate_and_succeed'
+}
+
+/** Result of `previewSchedule`: a generated schedule nobody kept. */
+export interface SchedulePreview {
+  /**
+   * The envelope create would leave, in the operation's own snake_case
+   * shape; its ids are provisional. `artifact.mechanics` reads the
+   * definition back.
+   */
+  envelope: InformationBlockEnvelope
+  rollForward: ScheduleRollForwardPeriod[]
+  /** Another active schedule already posting the same accounts over the same months. */
+  warnings: string[]
+  replaces: ScheduleReplacement | null
+}
+
+const toScheduleLeg = (leg: ScheduleLeg) => ({
+  element_id: leg.elementId,
+  side: leg.side,
+  amount_source: leg.amountSource,
+})
+
+const toEntryTemplate = (template: ScheduleEntryTemplate): EntryTemplateRequest => ({
+  debit_element_id: template.debitElementId,
+  credit_element_id: template.creditElementId,
+  entry_type: template.entryType,
+  memo_template: template.memoTemplate,
+  auto_reverse: template.autoReverse,
+  dimension_ids: template.dimensionIds,
+  legs: template.legs?.map(toScheduleLeg),
+})
+
+const toLoanTerms = (terms: LoanTerms): LoanTermsRequest => ({
+  principal: terms.principal,
+  annual_rate: terms.annualRate,
+  start_date: terms.startDate,
+  day_count: terms.dayCount,
+  payment_frequency: terms.paymentFrequency,
+  first_payment_date: terms.firstPaymentDate,
+  payment_amount: terms.paymentAmount,
+  interest_only: terms.interestOnly,
+  maturity_date: terms.maturityDate,
+  capitalize_interest: terms.capitalizeInterest,
+  note_element_id: terms.noteElementId,
+  current_portion_element_id: terms.currentPortionElementId,
+})
+
+const toScheduleMetadata = (metadata: ScheduleMetadata): ScheduleMetadataRequest => ({
+  method: metadata.method,
+  original_amount: metadata.originalAmount,
+  residual_value: metadata.residualValue,
+  useful_life_months: metadata.usefulLifeMonths,
+  asset_element_id: metadata.assetElementId,
+  booked_on: metadata.bookedOn,
+  periodic_amounts: metadata.periodicAmounts,
+  loan_terms: metadata.loanTerms ? toLoanTerms(metadata.loanTerms) : undefined,
+})
+
+/** The definition as the schedule operations take it. */
+const toScheduleDefinition = (options: CreateScheduleOptions): CreateScheduleArm['payload'] => ({
+  name: options.name,
+  element_ids: options.elementIds,
+  period_start: options.periodStart,
+  period_end: options.periodEnd,
+  monthly_amount: options.monthlyAmount,
+  entry_template: toEntryTemplate(options.entryTemplate),
+  taxonomy_id: options.taxonomyId,
+  ...(options.entityId ? { entity_id: options.entityId } : {}),
+  closed_through: options.closedThrough,
+  schedule_metadata: options.scheduleMetadata
+    ? toScheduleMetadata(options.scheduleMetadata)
+    : undefined,
+})
 
 export interface JournalEntryLineItem {
   elementId: string
@@ -2102,31 +2336,7 @@ export class LedgerClient {
   ): Promise<ScheduleBlockCreated> {
     const body: CreateInformationBlockRequest = {
       block_type: 'schedule',
-      payload: {
-        name: options.name,
-        element_ids: options.elementIds,
-        period_start: options.periodStart,
-        period_end: options.periodEnd,
-        monthly_amount: options.monthlyAmount,
-        entry_template: {
-          debit_element_id: options.entryTemplate.debitElementId,
-          credit_element_id: options.entryTemplate.creditElementId,
-          entry_type: options.entryTemplate.entryType,
-          memo_template: options.entryTemplate.memoTemplate,
-        },
-        taxonomy_id: options.taxonomyId,
-        ...(options.entityId ? { entity_id: options.entityId } : {}),
-        schedule_metadata: options.scheduleMetadata
-          ? {
-              method: options.scheduleMetadata.method,
-              original_amount: options.scheduleMetadata.originalAmount,
-              residual_value: options.scheduleMetadata.residualValue,
-              useful_life_months: options.scheduleMetadata.usefulLifeMonths,
-              asset_element_id: options.scheduleMetadata.assetElementId,
-              booked_on: options.scheduleMetadata.bookedOn,
-            }
-          : undefined,
-      },
+      payload: toScheduleDefinition(options),
     }
     const envelope = await this.callOperation('Create schedule', (o) =>
       createInformationBlock({ ...o, path: { graph_id: graphId }, body })
@@ -2144,6 +2354,61 @@ export class LedgerClient {
       name: block.name,
       taxonomyId: block.taxonomy_id ?? null,
       totalFacts: block.facts?.length ?? null,
+    }
+  }
+
+  /**
+   * Generate a schedule from a definition without keeping it: the same
+   * generator and guards as `createSchedule`, run and rolled back. Returns
+   * the envelope create would leave (its ids provisional), the roll-forward
+   * (the balance the schedule carries period by period; a loan's note, with
+   * its interest, payment, principal and current portion), and warnings
+   * naming any active schedule already posting the same accounts in the
+   * same months. A definition create would refuse (a roll-forward that
+   * climbs where it should fall, legs that do not balance) is refused here
+   * with the period that breaks. With `replacesStructureId`, `replaces`
+   * says what the schedule being edited or recreated has posted, by month,
+   * and the path the change takes: `rebuild` (save through
+   * `rebuildSchedule`) while nothing has posted, `terminate_and_succeed`
+   * after.
+   */
+  async previewSchedule(
+    graphId: string,
+    options: PreviewScheduleOptions
+  ): Promise<SchedulePreview> {
+    const body: PreviewScheduleRequest = {
+      ...toScheduleDefinition(options),
+      replaces_structure_id: options.replacesStructureId ?? undefined,
+    }
+    const envelope = await this.callOperation('Preview schedule', (o) =>
+      previewSchedule({ ...o, path: { graph_id: graphId }, body })
+    )
+    const raw = this.requireResult('Preview schedule', envelope.result)
+    return {
+      envelope: raw.envelope,
+      rollForward: (raw.roll_forward ?? []).map((row) => ({
+        periodStart: row.period_start,
+        periodEnd: row.period_end,
+        opening: row.opening,
+        amount: row.amount,
+        closing: row.closing,
+        scope: row.scope,
+        interest: row.interest ?? null,
+        payment: row.payment ?? null,
+        principal: row.principal ?? null,
+        currentPortion: row.current_portion ?? null,
+      })),
+      warnings: raw.warnings ?? [],
+      replaces: raw.replaces
+        ? {
+            structureId: raw.replaces.structure_id,
+            name: raw.replaces.name,
+            postedEntryCount: raw.replaces.posted_entry_count,
+            postedPeriods: raw.replaces.posted_periods ?? [],
+            draftEntryCount: raw.replaces.draft_entry_count ?? 0,
+            path: raw.replaces.path,
+          }
+        : null,
     }
   }
 
@@ -2192,15 +2457,33 @@ export class LedgerClient {
    * a rebuild re-scopes the schedule to today's close state. Use this to
    * pick up a fixed generator without orphaning obligations.
    *
+   * It is also how an edit is saved while nothing has posted: the
+   * definition fields on `options` (`periodStart`, `periodEnd`,
+   * `monthlyAmount`, `entryTemplate` replacing the stored one whole,
+   * `scheduleMetadata` for only the fields named) replace the stored
+   * definition before it regenerates, as the schedule's envelope reads them
+   * back (`artifact.mechanics`). Omitted fields keep their stored values.
+   * Refused once an entry has posted; `previewSchedule` with
+   * `replacesStructureId` says which path an edit takes.
+   *
    * Returns the {@link ScheduleCreated} rebuild summary (periods, facts,
    * rule results) — richer than `createSchedule`'s {@link ScheduleBlockCreated}.
    */
   async rebuildSchedule(
     graphId: string,
     structureId: string,
-    options?: { idempotencyKey?: string }
+    options?: RebuildScheduleOptions
   ): Promise<ScheduleCreated> {
-    const body: RebuildScheduleRequest = { structure_id: structureId }
+    const body: RebuildScheduleRequest = {
+      structure_id: structureId,
+      period_start: options?.periodStart,
+      period_end: options?.periodEnd,
+      monthly_amount: options?.monthlyAmount,
+      entry_template: options?.entryTemplate ? toEntryTemplate(options.entryTemplate) : undefined,
+      schedule_metadata: options?.scheduleMetadata
+        ? toScheduleMetadata(options.scheduleMetadata)
+        : undefined,
+    }
     const envelope = await this.callOperation('Rebuild schedule', (o) =>
       rebuildSchedule({
         ...withIdempotencyKey(o, options?.idempotencyKey),

@@ -2212,6 +2212,208 @@ describe('LedgerClient', () => {
       expect(body.payload.schedule_metadata.booked_on).toBe('2026-01-15')
       expect(body.payload.schedule_metadata.original_amount).toBe(120000)
     })
+
+    it('sends a custom curve without a monthly amount', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-schedule', { id: 'str_3', name: 'Software licence' })
+      )
+      await client.createSchedule('graph_1', {
+        name: 'Software licence',
+        elementIds: ['elem_exp', 'elem_prepaid'],
+        periodStart: '2026-01-01',
+        periodEnd: '2026-03-31',
+        entryTemplate: { debitElementId: 'elem_exp', creditElementId: 'elem_prepaid' },
+        scheduleMetadata: {
+          method: 'custom',
+          originalAmount: 30000,
+          periodicAmounts: [10000, 10000, 10000],
+        },
+      })
+
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.payload.monthly_amount).toBeUndefined()
+      expect(body.payload.schedule_metadata.method).toBe('custom')
+      expect(body.payload.schedule_metadata.original_amount).toBe(30000)
+      expect(body.payload.schedule_metadata.periodic_amounts).toEqual([10000, 10000, 10000])
+      expect(body.payload.entry_template.legs).toBeUndefined()
+    })
+
+    it('serializes a loan: its terms and the legs of its entry', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-schedule', { id: 'str_4', name: 'Line of credit' })
+      )
+      await client.createSchedule('graph_1', {
+        name: 'Line of credit',
+        elementIds: ['elem_interest', 'elem_accrued', 'elem_note'],
+        periodStart: '2026-08-01',
+        periodEnd: '2027-07-31',
+        entryTemplate: {
+          debitElementId: 'elem_interest',
+          creditElementId: 'elem_accrued',
+          legs: [
+            { elementId: 'elem_interest', side: 'debit', amountSource: 'interest' },
+            { elementId: 'elem_accrued', side: 'credit', amountSource: 'interest' },
+          ],
+        },
+        scheduleMetadata: {
+          method: 'effective_interest',
+          loanTerms: {
+            principal: 8000000,
+            annualRate: 0.099,
+            startDate: '2026-08-05',
+            dayCount: 'actual/360',
+            interestOnly: true,
+            noteElementId: 'elem_note',
+          },
+        },
+      })
+
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.payload.schedule_metadata.loan_terms).toEqual({
+        principal: 8000000,
+        annual_rate: 0.099,
+        start_date: '2026-08-05',
+        day_count: 'actual/360',
+        interest_only: true,
+        note_element_id: 'elem_note',
+      })
+      expect(body.payload.entry_template.legs).toEqual([
+        { element_id: 'elem_interest', side: 'debit', amount_source: 'interest' },
+        { element_id: 'elem_accrued', side: 'credit', amount_source: 'interest' },
+      ])
+    })
+  })
+
+  describe('previewSchedule', () => {
+    const loanOptions = {
+      name: 'Line of credit',
+      elementIds: ['elem_interest', 'elem_accrued', 'elem_note'],
+      periodStart: '2026-08-01',
+      periodEnd: '2027-07-31',
+      entryTemplate: {
+        debitElementId: 'elem_interest',
+        creditElementId: 'elem_accrued',
+        legs: [
+          { elementId: 'elem_interest', side: 'debit' as const, amountSource: 'interest' as const },
+          { elementId: 'elem_accrued', side: 'credit' as const, amountSource: 'interest' as const },
+        ],
+      },
+      scheduleMetadata: {
+        method: 'effective_interest',
+        loanTerms: {
+          principal: 8000000,
+          annualRate: 0.099,
+          startDate: '2026-08-05',
+          dayCount: 'actual/360' as const,
+          interestOnly: true,
+          noteElementId: 'elem_note',
+        },
+      },
+    }
+
+    it('POSTs the definition to preview-schedule and converts the roll-forward', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-schedule', {
+          envelope: { id: 'struct_preview', block_type: 'schedule', name: 'Line of credit' },
+          roll_forward: [
+            {
+              period_start: '2026-08-01',
+              period_end: '2026-08-31',
+              opening: 80000,
+              amount: 594,
+              closing: 80000,
+              scope: 'historical',
+              interest: 594,
+              payment: 0,
+              principal: 0,
+              current_portion: null,
+            },
+          ],
+          warnings: ['Line of credit (old) posts the same accounts in 2026-08'],
+          replaces: {
+            structure_id: 'str_old',
+            name: 'Line of credit (old)',
+            posted_entry_count: 2,
+            posted_periods: ['2026-08', '2026-09'],
+            draft_entry_count: 1,
+            path: 'terminate_and_succeed',
+          },
+        })
+      )
+      const preview = await client.previewSchedule('graph_42', {
+        ...loanOptions,
+        replacesStructureId: 'str_old',
+      })
+
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/preview-schedule'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.replaces_structure_id).toBe('str_old')
+      expect(body.schedule_metadata.loan_terms.day_count).toBe('actual/360')
+      expect(body.entry_template.legs).toHaveLength(2)
+
+      expect(preview.envelope.id).toBe('struct_preview')
+      expect(preview.rollForward).toEqual([
+        {
+          periodStart: '2026-08-01',
+          periodEnd: '2026-08-31',
+          opening: 80000,
+          amount: 594,
+          closing: 80000,
+          scope: 'historical',
+          interest: 594,
+          payment: 0,
+          principal: 0,
+          currentPortion: null,
+        },
+      ])
+      expect(preview.warnings).toHaveLength(1)
+      expect(preview.replaces).toEqual({
+        structureId: 'str_old',
+        name: 'Line of credit (old)',
+        postedEntryCount: 2,
+        postedPeriods: ['2026-08', '2026-09'],
+        draftEntryCount: 1,
+        path: 'terminate_and_succeed',
+      })
+    })
+
+    it('reads a bare preview as no warnings and nothing replaced', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('preview-schedule', {
+          envelope: { id: 'struct_preview', block_type: 'schedule', name: 'Prepaid rent' },
+          roll_forward: [
+            {
+              period_start: '2026-01-01',
+              period_end: '2026-01-31',
+              opening: 12000,
+              amount: 1000,
+              closing: 11000,
+              scope: 'in_scope',
+            },
+          ],
+        })
+      )
+      const preview = await client.previewSchedule('graph_1', {
+        name: 'Prepaid rent',
+        elementIds: ['elem_rent', 'elem_prepaid'],
+        periodStart: '2026-01-01',
+        periodEnd: '2026-12-31',
+        monthlyAmount: 100000,
+        entryTemplate: { debitElementId: 'elem_rent', creditElementId: 'elem_prepaid' },
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body.monthly_amount).toBe(100000)
+      expect(body.replaces_structure_id).toBeUndefined()
+      expect(preview.warnings).toEqual([])
+      expect(preview.replaces).toBeNull()
+      expect(preview.rollForward[0].interest).toBeNull()
+    })
   })
 
   describe('createClosingEntry', () => {
@@ -2718,6 +2920,41 @@ describe('LedgerClient', () => {
       await client.rebuildSchedule('graph_1', 'str_1', { idempotencyKey: 'idem_123' })
       const req = mockFetch.mock.calls[0][0] as Request
       expect(req.headers.get('Idempotency-Key')).toBe('idem_123')
+    })
+
+    it('saves an edited definition with the rebuild', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('rebuild-schedule', {
+          structure_id: 'str_1',
+          name: 'Prepaid rent',
+          taxonomy_id: 'tax_1',
+          total_periods: 18,
+          total_facts: 36,
+        })
+      )
+      await client.rebuildSchedule('graph_1', 'str_1', {
+        periodEnd: '2027-06-30',
+        monthlyAmount: 12500,
+        entryTemplate: {
+          debitElementId: 'elem_rent',
+          creditElementId: 'elem_prepaid',
+          memoTemplate: 'Prepaid rent',
+        },
+        scheduleMetadata: { originalAmount: 225000 },
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      const body = JSON.parse(await req.text())
+      expect(body).toEqual({
+        structure_id: 'str_1',
+        period_end: '2027-06-30',
+        monthly_amount: 12500,
+        entry_template: {
+          debit_element_id: 'elem_rent',
+          credit_element_id: 'elem_prepaid',
+          memo_template: 'Prepaid rent',
+        },
+        schedule_metadata: { original_amount: 225000 },
+      })
     })
   })
 
