@@ -4760,6 +4760,74 @@ export type DatabaseStorageEntry = {
 };
 
 /**
+ * DeconsolidationResponse
+ *
+ * A member's leaving as recorded: the draft in the consolidation entity
+ * its close posts, dated the first day of the month after the member's
+ * last.
+ */
+export type DeconsolidationResponse = {
+    /**
+     * Entity Id
+     *
+     * The member that left.
+     */
+    entity_id: string;
+    /**
+     * Entity Name
+     *
+     * The member's name.
+     */
+    entity_name: string;
+    /**
+     * Left On
+     *
+     * The day it left, as the entity records.
+     */
+    left_on: string;
+    /**
+     * Period
+     *
+     * The month the entry is dated in, as YYYY-MM: the first the group reads without the member.
+     */
+    period: string;
+    /**
+     * Consideration
+     *
+     * Cents the parent received.
+     */
+    consideration: number;
+    /**
+     * Derecognized
+     *
+     * What the consolidation entity held for the member beyond the eliminations its leaving reverses on their own, each taken off.
+     */
+    derecognized?: Array<DerecognizedBalance>;
+    /**
+     * Earnings Restored
+     *
+     * Cents: the member's results since it joined, credited to the group's equity as they leave with its books; they were the group's income. Zero for an equity-method member, whose books were never summed.
+     */
+    earnings_restored?: number;
+    /**
+     * Gain Loss
+     *
+     * Cents, a gain positive: the group's adjustment to the parent's own gain or loss on the sale, so the consolidated gain is the consideration less the carrying amount of what left (ASC 810).
+     */
+    gain_loss: number;
+    /**
+     * The deconsolidation entry, a draft the close posts.
+     */
+    entry: JournalEntryResponse;
+    /**
+     * Replaced
+     *
+     * True when it replaced an earlier draft of the deconsolidation.
+     */
+    replaced?: boolean;
+};
+
+/**
  * DeleteDocumentOp
  *
  * Body for delete-document (corpus content-op).
@@ -5142,6 +5210,27 @@ export type DeleteTaxonomyBlockResponse = {
      * Cascade Applied
      */
     cascade_applied?: boolean;
+};
+
+/**
+ * DerecognizedBalance
+ *
+ * A balance the consolidation entity held for a member that left, taken
+ * off by the deconsolidation.
+ */
+export type DerecognizedBalance = {
+    /**
+     * Concept
+     *
+     * The rs-gaap concept.
+     */
+    concept: string;
+    /**
+     * Amount
+     *
+     * Cents as held: positive a debit (goodwill, a step-up), negative a credit (the outside owners' interest, the price above book of the parent's investment).
+     */
+    amount: number;
 };
 
 /**
@@ -9897,6 +9986,12 @@ export type LedgerEntityResponse = {
      */
     left_on?: string | null;
     /**
+     * Is Former
+     *
+     * True once the month this entity left the group is over: its months in the group are history, readable under it, and it is no longer current. False for a member still in, and through the month it leaves.
+     */
+    is_former?: boolean;
+    /**
      * Source
      *
      * Provenance: 'native' | 'sec' | 'quickbooks' | 'xero' | 'plaid'.
@@ -12265,6 +12360,52 @@ export type OperationEnvelopeConsolidationWorksheetResponse = {
      * Command-specific result payload
      */
     result?: ConsolidationWorksheetResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[DeconsolidationResponse]
+ */
+export type OperationEnvelopeDeconsolidationResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: DeconsolidationResponse | null;
     /**
      * At
      *
@@ -15243,6 +15384,12 @@ export type OwnershipChangeResponse = {
      */
     earnings_transferred: number;
     /**
+     * Premium Transferred
+     *
+     * Cents: the share bought of the outside owners' interest beyond their share of book value (from the acquisition at fair value, or its step-ups), moved to the parent.
+     */
+    premium_transferred?: number;
+    /**
      * Equity Adjustment
      *
      * Cents taken from the parent's equity: the price above the carrying amount of what was bought (negative when it paid less).
@@ -17783,6 +17930,35 @@ export type RecordAcquisitionRequest = {
      * Required when the parent paid less than its share of the fair value of what it acquired. ASC 805 has the acquirer reassess before recognizing the gain; set it only after that review.
      */
     confirm_bargain_purchase?: boolean;
+};
+
+/**
+ * RecordDeconsolidationRequest
+ *
+ * A member has left the group (`left_on` set): what the parent received
+ * for its shares, and the basis. The entry derecognizes what the
+ * consolidation entity still holds for the member and takes the gain or
+ * loss on its leaving; the parent's own sale entry stays on its books.
+ */
+export type RecordDeconsolidationRequest = {
+    /**
+     * Entity Id
+     *
+     * The member that left: its `left_on` is set.
+     */
+    entity_id: string;
+    /**
+     * Consideration
+     *
+     * Cents the parent received for its shares; 0 for a dissolution or an abandonment. Recorded with the entry for the record: the parent's own books hold the sale, cash against its investment and its own gain or loss, which this entry adjusts to the group's.
+     */
+    consideration: number;
+    /**
+     * Basis
+     *
+     * The sale agreement, the dissolution, or what sets the price.
+     */
+    basis: string;
 };
 
 /**
@@ -34233,6 +34409,70 @@ export type RecordOwnershipChangeResponses = {
 };
 
 export type RecordOwnershipChangeResponse = RecordOwnershipChangeResponses[keyof RecordOwnershipChangeResponses];
+
+export type RecordDeconsolidationData = {
+    body: RecordDeconsolidationRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/record-deconsolidation';
+};
+
+export type RecordDeconsolidationErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RecordDeconsolidationError = RecordDeconsolidationErrors[keyof RecordDeconsolidationErrors];
+
+export type RecordDeconsolidationResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeDeconsolidationResponse;
+};
+
+export type RecordDeconsolidationResponse = RecordDeconsolidationResponses[keyof RecordDeconsolidationResponses];
 
 export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;
