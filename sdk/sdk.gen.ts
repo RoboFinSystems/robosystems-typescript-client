@@ -2260,7 +2260,7 @@ export const executeEventBlock = <ThrowOnError extends boolean = false>(options:
 /**
  * Create Event Handler
  *
- * Define a rule that fires GL transactions when a matching event block is created with apply_handlers=True. Match criteria (event_type, event_category, match_source, match_agent_type, etc.) act as AND-joined filters — null fields match anything. The highest-priority matching handler wins. AI-suggested handlers (suggested_by='ai') require approval before they are eligible for matching.
+ * Define a rule that fires GL transactions when a matching event block is created with apply_handlers=True. Match criteria (event_type, event_category, match_source, match_agent_type, etc.) act as AND-joined filters — null fields match anything. The highest-priority matching handler wins. A handler created through an AI client is the AI's suggestion (suggested_by='ai'): it takes no part in matching until a person approves it in the app or the API.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2277,7 +2277,7 @@ export const createEventHandler = <ThrowOnError extends boolean = false>(options
 /**
  * Update Event Handler
  *
- * Patch an event handler's match criteria, template, priority, or active state. Pass approve=true to approve an AI-suggested handler; approve=false to revoke approval. Only supplied fields are updated.
+ * Patch an event handler's match criteria, template, priority, or active state. Pass approve=true to approve an AI-suggested handler; approve=false to revoke approval. Only supplied fields are updated. Through an AI client, approve=true is refused, and a change to what the handler matches or books makes it a suggestion again, out of matching until a person approves it.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

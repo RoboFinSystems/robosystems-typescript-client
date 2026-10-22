@@ -501,8 +501,6 @@ export type ArtifactResponse = {
     } & StatementMechanics) | ({
         kind: 'metric';
     } & MetricMechanics) | ({
-        kind: 'rollforward';
-    } & RollforwardMechanics) | ({
         kind: 'forecast';
     } & ForecastMechanics) | ({
         kind: 'reconciliation';
@@ -738,41 +736,6 @@ export type AssociationResponse = {
      * Closed months whose live statements read through this arc while their stamped sets keep the answer as closed. Empty unless the arc replaced one on an account with landed history in a closed month.
      */
     reclassified_periods?: Array<string>;
-};
-
-/**
- * AttributionFilter
- *
- * One flow-concept attribution rule on a rollforward IB.
- *
- * Pairs a target concept (the flow leaf the matched amount counts
- * toward) with a predicate (which LineItems match). The rollforward's
- * `attribution_filters: list[AttributionFilter]` declares every flow
- * the BS source decomposes into; the renderer evaluates them all per
- * period.
- *
- * `target_element_id` is resolved at create time from `target_qname`
- * via the rs-gaap library + tenant taxonomy lookup. Authors only need
- * to provide the qname; the element_id is filled in by the create
- * handler and the resolved value is what the envelope round-trips.
- */
-export type AttributionFilter = {
-    /**
-     * Target Qname
-     *
-     * QName of the flow concept this filter produces facts for — e.g. `rs-gaap:ProceedsFromIssuanceOfCommonStock`. Resolved to `target_element_id` at create time.
-     */
-    target_qname: string;
-    /**
-     * Target Element Id
-     *
-     * Resolved element id for `target_qname`. Null at create time; populated by the handler before persistence. Round-tripped in the envelope.
-     */
-    target_element_id?: string | null;
-    /**
-     * Predicate that determines which LineItems match this filter.
-     */
-    predicate: LineItemMetadataPredicate;
 };
 
 /**
@@ -3698,8 +3661,6 @@ export type CreateGraphRequest = {
 export type CreateInformationBlockRequest = ({
     block_type: 'schedule';
 } & CreateScheduleArm) | ({
-    block_type: 'rollforward';
-} & CreateRollforwardArm) | ({
     block_type: 'forecast';
 } & CreateForecastArm) | ({
     block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'reconciliation' | 'regulatory_disclosure';
@@ -3927,56 +3888,6 @@ export type CreateRepositorySubscriptionRequest = {
      * Subscribe this user instead of yourself. Org owners and admins only, and the target must belong to the same organization. Omit to subscribe yourself. Repository access is per-user while billing is org-level, so the subscriber is what determines who gets access.
      */
     user_id?: string | null;
-};
-
-/**
- * CreateRollforwardRequest
- *
- * Create a rollforward Information Block.
- *
- * Mirrors :class:`CreateScheduleRequest` in shape. The block decomposes
- * the period change in `bs_source_qname` across the declared
- * attribution filters. Residual (Δ BS - Σ filter matches) falls back to
- * the default change tag — or, if no default is declared, surfaces as
- * an unattributed fact tagged with a synthetic residual concept.
- */
-export type CreateRollforwardRequest = {
-    /**
-     * Name
-     *
-     * Human-readable block name.
-     */
-    name: string;
-    /**
-     * Bs Source Qname
-     *
-     * QName of the balance-sheet element whose period delta this block decomposes. Resolved to `bs_source_element_id` at create time.
-     */
-    bs_source_qname: string;
-    /**
-     * Default Change Tag Qname
-     *
-     * QName of the fallback flow concept (Tier 1 default change tag). Residual amount — Δ BS minus the sum of filter-matched amounts — is attributed to this concept. When omitted, residual surfaces unattributed; the validation_mode setting governs whether that's a hard error.
-     */
-    default_change_tag_qname?: string | null;
-    /**
-     * Attribution Filters
-     *
-     * Filter predicates routing LineItems to flow concepts.
-     */
-    attribution_filters?: Array<AttributionFilter>;
-    /**
-     * Validation Mode
-     *
-     * How the renderer arbitrates when Σ filter matches != Δ BS. `strict` raises; `residual_as_default` emits the residual as a default-tag fact (the common case); `warn_only` logs and lets the imbalance pass.
-     */
-    validation_mode?: 'strict' | 'residual_as_default' | 'warn_only';
-    /**
-     * Taxonomy Id
-     *
-     * Owning taxonomy id (auto-resolved from `bs_source_qname` when omitted).
-     */
-    taxonomy_id?: string | null;
 };
 
 /**
@@ -4844,8 +4755,6 @@ export type DeleteGraphOp = {
 export type DeleteInformationBlockRequest = ({
     block_type: 'schedule';
 } & DeleteScheduleArm) | ({
-    block_type: 'rollforward';
-} & DeleteRollforwardArm) | ({
     block_type: 'forecast';
 } & DeleteForecastArm) | ({
     block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'reconciliation' | 'regulatory_disclosure';
@@ -5015,24 +4924,6 @@ export type DeleteResult = {
      * `true` when the row was deleted in this call. Always `true` today — 404 covers the not-found case at the HTTP layer rather than via this field.
      */
     deleted: boolean;
-};
-
-/**
- * DeleteRollforwardRequest
- *
- * Delete a rollforward block.
- *
- * Cascades through any synthetic facts produced by this block's filter
- * evaluations. The underlying ledger LineItems are not touched — only
- * the rollforward IB's projection of them.
- */
-export type DeleteRollforwardRequest = {
-    /**
-     * Structure Id
-     *
-     * Structure ID of the rollforward block.
-     */
-    structure_id: string;
 };
 
 /**
@@ -6502,90 +6393,138 @@ export type EventBlockEnvelope = {
 
 /**
  * EventHandlerResponse
+ *
+ * A rule that turns a matching event into GL rows.
  */
 export type EventHandlerResponse = {
     /**
      * Id
+     *
+     * Handler id (`hdl_`-prefixed).
      */
     id: string;
     /**
      * Name
+     *
+     * Human-readable handler name.
      */
     name: string;
     /**
      * Description
+     *
+     * What the handler is for.
      */
     description?: string | null;
     /**
      * Event Type
+     *
+     * The event type the handler matches.
      */
     event_type: string;
     /**
      * Event Category
+     *
+     * Match on the event's category; null matches any.
      */
     event_category?: string | null;
     /**
      * Match Source
+     *
+     * Match on the event's source system; null matches any.
      */
     match_source?: string | null;
     /**
      * Match Agent Type
+     *
+     * Match on the counterparty's role; null matches any.
      */
     match_agent_type?: string | null;
     /**
      * Match Resource Type
+     *
+     * Match on the resource type; null matches any.
      */
     match_resource_type?: string | null;
     /**
      * Match Metadata Expression
+     *
+     * Equality matches against the event's metadata.
      */
     match_metadata_expression?: {
         [key: string]: unknown;
     } | null;
     /**
      * Transaction Template
+     *
+     * The GL rows the handler books: its DSL template, as JSON.
      */
     transaction_template: {
         [key: string]: unknown;
     };
     /**
      * Priority
+     *
+     * Among handlers that match, the highest priority wins.
      */
     priority: number;
     /**
      * Is Active
+     *
+     * Whether the handler takes part in matching at all.
      */
     is_active: boolean;
     /**
      * Origin
+     *
+     * `hub` for a platform-shipped handler, `tenant` otherwise.
      */
     origin: string;
     /**
      * Suggested By
+     *
+     * `ai` when an AI client created the handler or last changed what it matches or books; null when a person did.
      */
     suggested_by?: string | null;
     /**
      * Confidence
+     *
+     * The suggesting AI's confidence, when it gave one.
      */
     confidence?: number | null;
     /**
      * Approved By
+     *
+     * The user who approved an AI-suggested handler.
      */
     approved_by?: string | null;
     /**
      * Approved At
+     *
+     * When it was approved.
      */
     approved_at?: string | null;
     /**
+     * Awaiting Approval
+     *
+     * True for an AI-suggested handler no one has approved: it takes no part in matching until a person approves it.
+     */
+    awaiting_approval?: boolean;
+    /**
      * Created At
+     *
+     * When it was created.
      */
     created_at?: string | null;
     /**
      * Updated At
+     *
+     * When it last changed.
      */
     updated_at?: string | null;
     /**
      * Created By
+     *
+     * The user who created it.
      */
     created_by?: string | null;
 };
@@ -10186,44 +10125,6 @@ export type LineGrowthRequest = {
     values_by_period?: {
         [key: string]: number;
     } | null;
-};
-
-/**
- * LineItemMetadataPredicate
- *
- * Filter ledger LineItems by flow concept.
- *
- * The single predicate kind shipped to date. `values` are flow-concept
- * qnames — mini's `TransactionDescriptionCode` values, rs-gaap flow
- * concepts (what the enrichment classifier emits for QuickBooks data),
- * future XBRL GL `GenericFlowCategory` codes. The engine resolves them
- * to element_ids and matches the first-class `LineItem.flow_element_id`
- * FK; matched lines aggregate signed into the attributed fact for the
- * period.
- *
- * `field` is accepted but ignored: the flow tag lives in the typed
- * `flow_element_id` FK, not in JSONB metadata. It stays on the wire so
- * existing request bodies keep validating.
- */
-export type LineItemMetadataPredicate = {
-    /**
-     * Kind
-     *
-     * Discriminator value selecting this predicate shape.
-     */
-    kind?: 'line_item_metadata_field';
-    /**
-     * Field
-     *
-     * Accepted but ignored. The flow tag lives in the typed `flow_element_id` FK, not JSONB metadata. Retained for wire-compatibility.
-     */
-    field?: string;
-    /**
-     * Values
-     *
-     * Flow-concept qnames that route to this filter's target concept. A LineItem matches when its `flow_element_id` is one of the elements named here AND the line falls within the rollforward's period.
-     */
-    values: Array<string>;
 };
 
 /**
@@ -18213,66 +18114,6 @@ export type RevokeReportShareResponse = {
 };
 
 /**
- * RollforwardMechanics
- *
- * Filter-based attribution mechanics for `block_type='rollforward'`.
- *
- * Filter-based attribution: each block decomposes one BS source
- * element's period delta into a list of flow concepts via declared
- * :class:`AttributionFilter` predicates. The renderer evaluates the
- * filters against ledger LineItems at envelope-build time, emits one
- * attributed fact per filter per period, and arbitrates any residual
- * against the default change tag fallback.
- *
- * Reads directly from the typed `structures.artifact_mechanics` JSONB
- * column. `attribution_filters` rides as nested JSON; the predicate
- * union widens as new predicate shapes are added — currently only
- * `line_item_metadata_field` is carried.
- */
-export type RollforwardMechanics = {
-    /**
-     * Kind
-     */
-    kind?: 'rollforward';
-    /**
-     * Bs Source Element Id
-     *
-     * Element id of the balance-sheet source whose period delta this block decomposes. Resolved from `bs_source_qname` at create time.
-     */
-    bs_source_element_id: string;
-    /**
-     * Bs Source Qname
-     *
-     * QName of the BS source element (e.g. `mini:CashAndCashEquivalents`). Round-tripped for caller convenience; `bs_source_element_id` is authoritative.
-     */
-    bs_source_qname: string;
-    /**
-     * Default Change Tag Element Id
-     *
-     * Element id of the default change tag — the fallback flow concept that receives any residual (Δ BS − Σ filter matches). Null when no default is declared; behavior on residual then follows `validation_mode`.
-     */
-    default_change_tag_element_id?: string | null;
-    /**
-     * Default Change Tag Qname
-     *
-     * QName of the default change tag (e.g. `rs-gaap:IncreaseDecreaseInCashAndCashEquivalents`). Round-tripped for caller convenience and operator-readable envelopes; `default_change_tag_element_id` is authoritative. Null iff `default_change_tag_element_id` is null.
-     */
-    default_change_tag_qname?: string | null;
-    /**
-     * Attribution Filters
-     *
-     * Filter predicates routing LineItems to flow concepts. The renderer evaluates each filter against the period's LineItems, aggregates signed amounts, and emits one fact per filter per period.
-     */
-    attribution_filters?: Array<AttributionFilter>;
-    /**
-     * Validation Mode
-     *
-     * Renderer arbitration policy when Σ filter matches != Δ BS. `strict` raises; `residual_as_default` emits the residual as a default-tag fact (the common case); `warn_only` logs and lets the imbalance pass.
-     */
-    validation_mode?: 'strict' | 'residual_as_default' | 'warn_only';
-};
-
-/**
  * RuleLite
  *
  * Rule projection for the Information Block envelope.
@@ -21779,8 +21620,6 @@ export type UpdateGraphMetadataOp = {
 export type UpdateInformationBlockRequest = ({
     block_type: 'schedule';
 } & UpdateScheduleArm) | ({
-    block_type: 'rollforward';
-} & UpdateRollforwardArm) | ({
     block_type: 'forecast';
 } & UpdateForecastArm) | ({
     block_type: 'balance_sheet' | 'cash_flow_statement' | 'comprehensive_income' | 'equity_statement' | 'income_statement' | 'metric' | 'reconciliation' | 'regulatory_disclosure';
@@ -21992,50 +21831,6 @@ export type UpdatePublishListOperation = {
      * The publish list to update.
      */
     list_id: string;
-};
-
-/**
- * UpdateRollforwardRequest
- *
- * Update mutable fields on a rollforward block.
- *
- * Editable: name, default_change_tag_qname, attribution_filters,
- * validation_mode. The BS source is fixed at creation — changing it would
- * invalidate every period already rendered — so switching BS source means
- * delete and re-create.
- *
- * **Partial-update semantics**: an omitted (`None`) field means "leave
- * unchanged". There is no wire-level way to *clear* the default change tag or
- * empty the attribution_filters list; delete and re-create the block instead.
- * The asymmetry is deliberate — a clear-sentinel costs wire-shape complexity
- * for a case that rarely arises, since default tags get swapped rather than
- * removed.
- */
-export type UpdateRollforwardRequest = {
-    /**
-     * Structure Id
-     *
-     * Structure ID of the rollforward block.
-     */
-    structure_id: string;
-    /**
-     * Name
-     */
-    name?: string | null;
-    /**
-     * Default Change Tag Qname
-     *
-     * New default change tag qname. Pass a value to *change* the default; omit (`None`) to leave unchanged. There is no wire-level way to clear the default — see the class docstring.
-     */
-    default_change_tag_qname?: string | null;
-    /**
-     * Attribution Filters
-     */
-    attribution_filters?: Array<AttributionFilter> | null;
-    /**
-     * Validation Mode
-     */
-    validation_mode?: 'strict' | 'residual_as_default' | 'warn_only' | null;
 };
 
 /**
@@ -22874,28 +22669,6 @@ export type CreateLegacyArm = {
 };
 
 /**
- * _CreateRollforwardArm
- *
- * Create-information-block body for `block_type="rollforward"`.
- *
- * Carries a typed rollforward payload. The block decomposes the period
- * change in a BS source element across the declared attribution
- * filters.
- */
-export type CreateRollforwardArm = {
-    /**
-     * Block Type
-     *
-     * Discriminator value selecting this arm.
-     */
-    block_type: 'rollforward';
-    /**
-     * Rollforward creation payload.
-     */
-    payload: CreateRollforwardRequest;
-};
-
-/**
  * _CreateScheduleArm
  *
  * Create-information-block body for `block_type="schedule"`.
@@ -22965,27 +22738,6 @@ export type DeleteLegacyArm = {
 };
 
 /**
- * _DeleteRollforwardArm
- *
- * Delete-information-block body for `block_type="rollforward"`.
- *
- * Cascades through any synthetic facts produced by this block's filter
- * evaluations. The underlying ledger LineItems are not touched.
- */
-export type DeleteRollforwardArm = {
-    /**
-     * Block Type
-     *
-     * Discriminator value selecting this arm.
-     */
-    block_type: 'rollforward';
-    /**
-     * Rollforward delete payload.
-     */
-    payload: DeleteRollforwardRequest;
-};
-
-/**
  * _DeleteScheduleArm
  *
  * Delete-information-block body for `block_type="schedule"`.
@@ -23052,27 +22804,6 @@ export type UpdateLegacyArm = {
     payload?: {
         [key: string]: unknown;
     };
-};
-
-/**
- * _UpdateRollforwardArm
- *
- * Update-information-block body for `block_type="rollforward"`.
- *
- * Carries a typed rollforward update payload. Mutable fields: name,
- * default_change_tag_qname, attribution_filters, validation_mode.
- */
-export type UpdateRollforwardArm = {
-    /**
-     * Block Type
-     *
-     * Discriminator value selecting this arm.
-     */
-    block_type: 'rollforward';
-    /**
-     * Rollforward update payload.
-     */
-    payload: UpdateRollforwardRequest;
 };
 
 /**

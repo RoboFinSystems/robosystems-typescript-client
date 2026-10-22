@@ -214,6 +214,7 @@ import {
   GetLedgerClosingBookStructuresDocument,
   GetLedgerEntityDocument,
   GetLedgerEventBlockDocument,
+  GetLedgerEventHandlerDocument,
   GetLedgerFiscalCalendarDocument,
   GetLedgerMappedTrialBalanceDocument,
   GetLedgerMappingCoverageDocument,
@@ -241,6 +242,7 @@ import {
   ListLedgerElementsDocument,
   ListLedgerEntitiesDocument,
   ListLedgerEventBlocksDocument,
+  ListLedgerEventHandlersDocument,
   ListLedgerJournalEntriesDocument,
   ListLedgerMappingsDocument,
   ListLedgerPublishListsDocument,
@@ -289,6 +291,7 @@ import {
   type ListLedgerElementsQuery,
   type ListLedgerEntitiesQuery,
   type ListLedgerEventBlocksQuery,
+  type ListLedgerEventHandlersQuery,
   type ListLedgerJournalEntriesQuery,
   type ListLedgerMappingsQuery,
   type ListLedgerPublishListsQuery,
@@ -456,6 +459,15 @@ export type BlockedSourceGraph = NonNullable<
 export type ReportShare = NonNullable<
   ListLedgerReportSharesQuery['reportShares']
 >['reportShares'][number]
+
+/**
+ * A rule that turns a matching event into GL rows. `awaitingApproval` marks
+ * an AI client's suggestion, which takes no part in matching until a person
+ * approves it with `updateEventHandler(..., { approve: true })`.
+ */
+export type LedgerEventHandler = NonNullable<
+  ListLedgerEventHandlersQuery['eventHandlers']
+>['eventHandlers'][number]
 
 /**
  * Presigned-URL response for a Report bundle download.
@@ -3055,8 +3067,51 @@ export class LedgerClient {
   }
 
   /**
-   * Update a registered event handler. Pass `approve: true` to flip an
-   * AI-suggested handler from unapproved to active.
+   * The graph's event handlers, highest priority first, active or not.
+   * `awaitingApproval: true` narrows to the AI's suggestions no one has
+   * approved; `false` to everything else.
+   */
+  async listEventHandlers(
+    graphId: string,
+    options?: {
+      eventType?: string
+      isActive?: boolean
+      awaitingApproval?: boolean
+      limit?: number
+      offset?: number
+    }
+  ): Promise<LedgerEventHandler[]> {
+    const list = await this.gqlQuery(
+      graphId,
+      ListLedgerEventHandlersDocument,
+      {
+        eventType: options?.eventType ?? null,
+        isActive: options?.isActive ?? null,
+        awaitingApproval: options?.awaitingApproval ?? null,
+        limit: options?.limit ?? 100,
+        offset: options?.offset ?? 0,
+      },
+      'List event handlers',
+      (data) => data.eventHandlers
+    )
+    return list?.eventHandlers ?? []
+  }
+
+  /** One event handler, or null. */
+  async getEventHandler(graphId: string, id: string): Promise<LedgerEventHandler | null> {
+    return this.gqlQuery(
+      graphId,
+      GetLedgerEventHandlerDocument,
+      { id },
+      'Get event handler',
+      (data) => data.eventHandler ?? null
+    )
+  }
+
+  /**
+   * Update a registered event handler. Pass `approve: true` to approve an
+   * AI-suggested handler — a person's action: through an AI client it is
+   * refused.
    */
   async updateEventHandler(
     graphId: string,
