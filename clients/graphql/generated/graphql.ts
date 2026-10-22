@@ -1160,6 +1160,97 @@ export type ListLedgerEventBlocksQuery = {
   }>
 }
 
+export type EventHandlerFieldsFragment = {
+  id: string
+  name: string
+  description: string | null
+  eventType: string
+  eventCategory: string | null
+  matchSource: string | null
+  matchAgentType: string | null
+  matchResourceType: string | null
+  matchMetadataExpression: unknown
+  transactionTemplate: unknown
+  priority: number
+  isActive: boolean
+  origin: string
+  suggestedBy: string | null
+  confidence: number | null
+  approvedBy: string | null
+  approvedAt: string | null
+  awaitingApproval: boolean
+  createdAt: string | null
+  updatedAt: string | null
+  createdBy: string | null
+}
+
+export type ListLedgerEventHandlersQueryVariables = Exact<{
+  eventType: string | null | undefined
+  isActive: boolean | null | undefined
+  awaitingApproval: boolean | null | undefined
+  limit?: number
+  offset?: number
+}>
+
+export type ListLedgerEventHandlersQuery = {
+  eventHandlers: {
+    eventHandlers: Array<{
+      id: string
+      name: string
+      description: string | null
+      eventType: string
+      eventCategory: string | null
+      matchSource: string | null
+      matchAgentType: string | null
+      matchResourceType: string | null
+      matchMetadataExpression: unknown
+      transactionTemplate: unknown
+      priority: number
+      isActive: boolean
+      origin: string
+      suggestedBy: string | null
+      confidence: number | null
+      approvedBy: string | null
+      approvedAt: string | null
+      awaitingApproval: boolean
+      createdAt: string | null
+      updatedAt: string | null
+      createdBy: string | null
+    }>
+    pagination: { total: number; limit: number; offset: number; hasMore: boolean }
+  } | null
+}
+
+export type GetLedgerEventHandlerQueryVariables = Exact<{
+  id: string
+}>
+
+export type GetLedgerEventHandlerQuery = {
+  eventHandler: {
+    id: string
+    name: string
+    description: string | null
+    eventType: string
+    eventCategory: string | null
+    matchSource: string | null
+    matchAgentType: string | null
+    matchResourceType: string | null
+    matchMetadataExpression: unknown
+    transactionTemplate: unknown
+    priority: number
+    isActive: boolean
+    origin: string
+    suggestedBy: string | null
+    confidence: number | null
+    approvedBy: string | null
+    approvedAt: string | null
+    awaitingApproval: boolean
+    createdAt: string | null
+    updatedAt: string | null
+    createdBy: string | null
+  } | null
+}
+
 export type GetLedgerFiscalCalendarQueryVariables = Exact<{
   entityId: string | null | undefined
 }>
@@ -3044,6 +3135,42 @@ export const AgedBalancesFieldsFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<AgedBalancesFieldsFragment, unknown>
+export const EventHandlerFieldsFragmentDoc = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'EventHandlerFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'EventHandler' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'eventType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'eventCategory' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchSource' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchAgentType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchResourceType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchMetadataExpression' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transactionTemplate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'priority' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'origin' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'suggestedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'confidence' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'approvedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'approvedAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'awaitingApproval' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<EventHandlerFieldsFragment, unknown>
 export const GetInvestorHoldingsDocument = {
   kind: 'Document',
   definitions: [
@@ -5991,6 +6118,222 @@ export const ListLedgerEventBlocksDocument = {
     },
   ],
 } as unknown as DocumentNode<ListLedgerEventBlocksQuery, ListLedgerEventBlocksQueryVariables>
+export const ListLedgerEventHandlersDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListLedgerEventHandlers' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'eventType' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'isActive' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'awaitingApproval' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '100' },
+        },
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } },
+          },
+          defaultValue: { kind: 'IntValue', value: '0' },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'eventHandlers' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'eventType' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'eventType' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'isActive' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'isActive' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'awaitingApproval' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'awaitingApproval' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'limit' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'offset' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'offset' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'eventHandlers' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      {
+                        kind: 'FragmentSpread',
+                        name: { kind: 'Name', value: 'EventHandlerFields' },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'pagination' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'total' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'limit' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'offset' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'hasMore' } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'EventHandlerFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'EventHandler' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'eventType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'eventCategory' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchSource' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchAgentType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchResourceType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchMetadataExpression' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transactionTemplate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'priority' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'origin' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'suggestedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'confidence' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'approvedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'approvedAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'awaitingApproval' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListLedgerEventHandlersQuery, ListLedgerEventHandlersQueryVariables>
+export const GetLedgerEventHandlerDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'GetLedgerEventHandler' },
+      variableDefinitions: [
+        {
+          kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+          type: {
+            kind: 'NonNullType',
+            type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'eventHandler' },
+            arguments: [
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'id' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'id' } },
+              },
+            ],
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'EventHandlerFields' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+    {
+      kind: 'FragmentDefinition',
+      name: { kind: 'Name', value: 'EventHandlerFields' },
+      typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'EventHandler' } },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'eventType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'eventCategory' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchSource' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchAgentType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchResourceType' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'matchMetadataExpression' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'transactionTemplate' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'priority' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'isActive' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'origin' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'suggestedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'confidence' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'approvedBy' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'approvedAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'awaitingApproval' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+          { kind: 'Field', name: { kind: 'Name', value: 'createdBy' } },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<GetLedgerEventHandlerQuery, GetLedgerEventHandlerQueryVariables>
 export const GetLedgerFiscalCalendarDocument = {
   kind: 'Document',
   definitions: [

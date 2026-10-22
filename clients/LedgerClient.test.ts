@@ -2483,6 +2483,56 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listEventHandlers', () => {
+    it('unwraps the list and sends the approval filter', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          eventHandlers: {
+            eventHandlers: [
+              {
+                id: 'hdl_1',
+                name: 'Stripe payouts',
+                eventType: 'bank_transaction',
+                transactionTemplate: { transactions: [] },
+                priority: 10,
+                isActive: true,
+                origin: 'tenant',
+                suggestedBy: 'ai',
+                awaitingApproval: true,
+              },
+            ],
+            pagination: { total: 1, limit: 100, offset: 0, hasMore: false },
+          },
+        })
+      )
+      const handlers = await client.listEventHandlers('graph_1', {
+        awaitingApproval: true,
+      })
+      expect(handlers).toHaveLength(1)
+      expect(handlers[0]).toMatchObject({ id: 'hdl_1', awaitingApproval: true })
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body as string)
+      expect(body.variables).toEqual({
+        eventType: null,
+        isActive: null,
+        awaitingApproval: true,
+        limit: 100,
+        offset: 0,
+      })
+    })
+
+    it('returns an empty list when there are none', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ eventHandlers: null }))
+      expect(await client.listEventHandlers('graph_1')).toEqual([])
+    })
+  })
+
+  describe('getEventHandler', () => {
+    it('returns null for a missing handler', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ eventHandler: null }))
+      expect(await client.getEventHandler('graph_1', 'hdl_x')).toBeNull()
+    })
+  })
+
   describe('listReportShares', () => {
     it('unwraps the paginated list, revocation state included', async () => {
       mockFetch.mockResolvedValueOnce(
