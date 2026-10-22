@@ -7315,6 +7315,10 @@ export type FinancialStatementAnalysisResponse = {
      * Fact Count
      */
     fact_count: number;
+    /**
+     * On a ledger's graph, whether the graph is current with the books; null on shared repositories, which are not rebuilt from a ledger.
+     */
+    graph_freshness?: GraphFreshness | null;
 };
 
 /**
@@ -7801,6 +7805,41 @@ export type GraphCapacityResponse = {
      * Capacity status per tier
      */
     tiers: Array<TierCapacity>;
+};
+
+/**
+ * GraphFreshness
+ *
+ * Whether a ledger's graph is current with its books.
+ *
+ * A ledger's graph is a projection of its database, rebuilt after writes;
+ * until a rebuild finishes, graph-backed reads answer from the previous one.
+ */
+export type GraphFreshness = {
+    /**
+     * Stale
+     *
+     * True when the books have changed since the graph was last rebuilt, so this answer can be behind them. A rebuild is queued automatically.
+     */
+    stale: boolean;
+    /**
+     * Stale Since
+     *
+     * When the graph first fell behind the books (ISO 8601); null when current.
+     */
+    stale_since?: string | null;
+    /**
+     * Stale Reason
+     *
+     * The latest write that left the graph behind (e.g. 'period_closed').
+     */
+    stale_reason?: string | null;
+    /**
+     * Last Materialized At
+     *
+     * When the graph was last rebuilt (ISO 8601).
+     */
+    last_materialized_at?: string | null;
 };
 
 /**
@@ -15368,31 +15407,43 @@ export type OwnershipChangeResponse = {
     /**
      * Consideration
      *
-     * Cents paid to the outside owners.
+     * Cents paid to the outside owners, or received from them for shares sold.
      */
     consideration: number;
     /**
      * Book Value
      *
-     * Cents: the share bought of the member's capital, which the investment elimination moves from the outside owners to the parent.
+     * Cents: the share bought of the member's capital, which the investment elimination moves from the outside owners to the parent; negative for a share sold, moved the other way.
      */
     book_value: number;
     /**
      * Earnings Transferred
      *
-     * Cents: the share bought of the member's results since it joined, moved from the outside owners' interest to the parent.
+     * Cents: the share bought of the member's results since it joined, moved from the outside owners' interest to the parent; negative for a share sold.
      */
     earnings_transferred: number;
     /**
      * Premium Transferred
      *
-     * Cents: the share bought of the outside owners' interest beyond their share of book value (from the acquisition at fair value, or its step-ups), moved to the parent.
+     * Cents: the share bought of the outside owners' interest beyond their share of book value (from the acquisition at fair value, or its step-ups), moved to the parent; negative for a share sold.
      */
     premium_transferred?: number;
     /**
+     * Carrying Released
+     *
+     * Cents, for a sale: the carrying amount of the shares sold on the parent's books, its cost pro rata, which its sale entry credits against the investment. Zero for a purchase.
+     */
+    carrying_released?: number;
+    /**
+     * Gain Reversed
+     *
+     * Cents, for a sale: the gain (a loss negative) the parent's own books take, the price less the carrying amount released, which the entry reverses — the group has none while control is kept. Zero for a purchase.
+     */
+    gain_reversed?: number;
+    /**
      * Equity Adjustment
      *
-     * Cents taken from the parent's equity: the price above the carrying amount of what was bought (negative when it paid less).
+     * Cents taken from the parent's equity (negative: added to it): for a purchase, the price above the carrying amount of what was bought; for a sale, the carrying amount given up above the price.
      */
     equity_adjustment: number;
     /**
@@ -17996,9 +18047,9 @@ export type RecordOpeningBalanceRequest = {
 /**
  * RecordOwnershipChangeRequest
  *
- * The parent buys more of a member from its outside owners, staying on the
- * same consolidation method: the share it holds from a month, and what it
- * paid. ASC 810 makes it an equity transaction, never a gain or loss.
+ * The parent buys more of a member from its outside owners, or sells some
+ * of it to them while keeping control: the share it holds from a month, and
+ * the price. ASC 810 makes it an equity transaction, never a gain or loss.
  */
 export type RecordOwnershipChangeRequest = {
     /**
@@ -18016,19 +18067,19 @@ export type RecordOwnershipChangeRequest = {
     /**
      * Ownership Pct
      *
-     * The parent's share from `period`, as a percentage: above its share the month before, and 50 or more, so the member stays consolidated in full.
+     * The parent's share from `period`, as a percentage: above its share the month before for a purchase, below it for a sale, and 50 or more either way, so the member stays consolidated in full.
      */
     ownership_pct: number;
     /**
      * Consideration
      *
-     * Cents the parent paid the outside owners for the shares. Its line names them, not the member, which is why it is given here.
+     * Cents the parent paid the outside owners for the shares, or received from them for shares sold. Its line names them, not the member, which is why it is given here.
      */
     consideration: number;
     /**
      * Basis
      *
-     * The purchase agreement, or what sets the price.
+     * The purchase or sale agreement, or what sets the price.
      */
     basis: string;
 };
@@ -23413,6 +23464,10 @@ export type ViewMetadata = {
      * True when more facts matched than `limit` allowed. The returned facts are the most recent by period; narrow the filters or raise `limit` to see the rest.
      */
     truncated?: boolean;
+    /**
+     * On a ledger's graph, whether the graph is current with the books; null on shared repositories, which are not rebuilt from a ledger.
+     */
+    graph_freshness?: GraphFreshness | null;
 };
 
 /**
