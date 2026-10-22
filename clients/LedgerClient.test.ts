@@ -3090,6 +3090,33 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('recordOwnershipChange', () => {
+    it('POSTs the share, month and price to record-ownership-change', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('record-ownership-change', {
+          entity_id: 'ent_cafe',
+          from_pct: 70,
+          to_pct: 80,
+          equity_adjustment: 41750,
+        })
+      )
+      const result = await client.recordOwnershipChange('graph_42', {
+        entity_id: 'ent_cafe',
+        period: '2026-02',
+        ownership_pct: 80,
+        consideration: 150000,
+        basis: 'Share purchase agreement',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/record-ownership-change'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.ownership_pct).toBe(80)
+      expect(result.equity_adjustment).toBe(41750)
+    })
+  })
+
   describe('getAllocationShare', () => {
     it('sends the member and month and returns the share', async () => {
       mockFetch.mockResolvedValueOnce(

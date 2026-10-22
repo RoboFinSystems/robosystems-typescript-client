@@ -2650,7 +2650,7 @@ export type ConsolidationProposal = {
      *
      * What the entry adjusts.
      */
-    adjustment_kind: 'elimination_investment' | 'elimination_intercompany' | 'elimination_unrealized_profit' | 'nci_allocation' | 'nci_distribution' | 'equity_method_pickup' | 'equity_method_distribution' | 'acquisition' | 'deconsolidation' | 'translation' | 'manual';
+    adjustment_kind: 'elimination_investment' | 'elimination_intercompany' | 'elimination_unrealized_profit' | 'nci_allocation' | 'nci_distribution' | 'equity_method_pickup' | 'equity_method_distribution' | 'acquisition' | 'ownership_change' | 'deconsolidation' | 'translation' | 'manual';
     /**
      * Adjusts Entity Id
      *
@@ -13350,6 +13350,52 @@ export type OperationEnvelopeLiveFinancialStatementResponse = {
 };
 
 /**
+ * OperationEnvelope[OwnershipChangeResponse]
+ */
+export type OperationEnvelopeOwnershipChangeResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: OwnershipChangeResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[PortfolioBlockEnvelope]
  */
 export type OperationEnvelopePortfolioBlockEnvelope = {
@@ -15007,6 +15053,79 @@ export type OrgUsageSummary = {
      * Storage Limit Gb
      */
     storage_limit_gb: number | null;
+};
+
+/**
+ * OwnershipChangeResponse
+ *
+ * A change in the parent's share of a member as recorded: the draft in
+ * the consolidation entity its close posts.
+ */
+export type OwnershipChangeResponse = {
+    /**
+     * Entity Id
+     *
+     * The member.
+     */
+    entity_id: string;
+    /**
+     * Entity Name
+     *
+     * The member's name.
+     */
+    entity_name: string;
+    /**
+     * Period
+     *
+     * The first month the new share holds.
+     */
+    period: string;
+    /**
+     * From Pct
+     *
+     * The parent's share the month before.
+     */
+    from_pct: number;
+    /**
+     * To Pct
+     *
+     * The parent's share from `period`.
+     */
+    to_pct: number;
+    /**
+     * Consideration
+     *
+     * Cents paid to the outside owners.
+     */
+    consideration: number;
+    /**
+     * Book Value
+     *
+     * Cents: the share bought of the member's capital, which the investment elimination moves from the outside owners to the parent.
+     */
+    book_value: number;
+    /**
+     * Earnings Transferred
+     *
+     * Cents: the share bought of the member's results since it joined, moved from the outside owners' interest to the parent.
+     */
+    earnings_transferred: number;
+    /**
+     * Equity Adjustment
+     *
+     * Cents taken from the parent's equity: the price above the carrying amount of what was bought (negative when it paid less).
+     */
+    equity_adjustment: number;
+    /**
+     * The ownership change entry, a draft the close posts.
+     */
+    entry: JournalEntryResponse;
+    /**
+     * Replaced
+     *
+     * True when it replaced an earlier draft for the month.
+     */
+    replaced?: boolean;
 };
 
 /**
@@ -17436,6 +17555,46 @@ export type RecordOpeningBalanceRequest = {
      * The entry's memo; defaults to 'Opening balances'.
      */
     memo?: string | null;
+};
+
+/**
+ * RecordOwnershipChangeRequest
+ *
+ * The parent buys more of a member from its outside owners, staying on the
+ * same consolidation method: the share it holds from a month, and what it
+ * paid. ASC 810 makes it an equity transaction, never a gain or loss.
+ */
+export type RecordOwnershipChangeRequest = {
+    /**
+     * Entity Id
+     *
+     * The member, consolidated in full.
+     */
+    entity_id: string;
+    /**
+     * Period
+     *
+     * The month, as YYYY-MM.
+     */
+    period: string;
+    /**
+     * Ownership Pct
+     *
+     * The parent's share from `period`, as a percentage: above its share the month before, and 50 or more, so the member stays consolidated in full.
+     */
+    ownership_pct: number;
+    /**
+     * Consideration
+     *
+     * Cents the parent paid the outside owners for the shares. Its line names them, not the member, which is why it is given here.
+     */
+    consideration: number;
+    /**
+     * Basis
+     *
+     * The purchase agreement, or what sets the price.
+     */
+    basis: string;
 };
 
 /**
@@ -33575,6 +33734,70 @@ export type RecordAcquisitionResponses = {
 };
 
 export type RecordAcquisitionResponse = RecordAcquisitionResponses[keyof RecordAcquisitionResponses];
+
+export type RecordOwnershipChangeData = {
+    body: RecordOwnershipChangeRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/record-ownership-change';
+};
+
+export type RecordOwnershipChangeErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type RecordOwnershipChangeError = RecordOwnershipChangeErrors[keyof RecordOwnershipChangeErrors];
+
+export type RecordOwnershipChangeResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeOwnershipChangeResponse;
+};
+
+export type RecordOwnershipChangeResponse = RecordOwnershipChangeResponses[keyof RecordOwnershipChangeResponses];
 
 export type UpdateJournalEntryData = {
     body: UpdateJournalEntryRequest;
