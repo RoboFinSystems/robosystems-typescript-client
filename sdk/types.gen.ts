@@ -2123,7 +2123,7 @@ export type ClosePeriodResponse = {
     /**
      * Gate Findings
      *
-     * Blocker codes a shadow close recorded instead of enforcing: sync_stale, pending_obligations, stranded_obligations, reconciling_items, unposted_source_events, unreconciled_accounts, held_bank_lines. Empty outside shadow.
+     * Blocker codes a shadow close recorded instead of enforcing: sync_stale, pending_obligations, stranded_obligations, reconciling_items, unposted_source_events, unreconciled_accounts, unmapped_accounts, held_bank_lines. Empty outside shadow.
      */
     gate_findings?: Array<string>;
     /**
@@ -7374,7 +7374,7 @@ export type FiscalCalendarResponse = {
     /**
      * Blockers
      *
-     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations', 'reconciling_items', 'unposted_source_events', 'unreconciled_accounts', 'held_bank_lines'; on the consolidation entity, whose close is the group's, also 'entity_open', 'adjustments_unposted', 'residual_unexplained', 'consolidated_does_not_foot'
+     * Structured blocker codes when closeable_now is False: 'sequence_violation', 'period_incomplete', 'sync_stale', 'calendar_not_initialized', 'period_already_closed', 'pending_obligations', 'stranded_obligations', 'reconciling_items', 'unposted_source_events', 'unreconciled_accounts', 'unmapped_accounts', 'held_bank_lines'; on the consolidation entity, whose close is the group's, also 'entity_open', 'adjustments_unposted', 'residual_unexplained', 'consolidated_does_not_foot'
      */
     blockers?: Array<string>;
     /**
@@ -7461,6 +7461,18 @@ export type FiscalCalendarResponse = {
      * Name and status of up to 5 of those reconciliations, so the blocker names what is holding the close.
      */
     unreconciled_account_sample?: Array<string>;
+    /**
+     * Unmapped Account Count
+     *
+     * Accounts in this entity's chart with postings through the period that its mapping does not map to a reporting concept. Their balances are in no statement, so the month cannot be stated until each is mapped: suggest-mapping, then create-mapping-association. No override lifts it.
+     */
+    unmapped_account_count?: number;
+    /**
+     * Unmapped Account Sample
+     *
+     * Code and name of up to 5 of those accounts, so the blocker names what is holding the close.
+     */
+    unmapped_account_sample?: Array<string>;
     /**
      * Group Open Entities
      *
