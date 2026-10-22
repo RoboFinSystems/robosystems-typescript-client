@@ -3090,6 +3090,21 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listElements', () => {
+    it('asks for active elements unless told to include retired ones', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ elements: { elements: [], pagination: {} } }))
+      await client.listElements('graph_1', { taxonomyId: 'tax_coa' })
+      expect(JSON.parse(mockFetch.mock.calls[0][1].body as string).variables.includeInactive).toBe(
+        false
+      )
+      mockFetch.mockResolvedValueOnce(gqlResponse({ elements: { elements: [], pagination: {} } }))
+      await client.listElements('graph_1', { taxonomyId: 'tax_coa', includeInactive: true })
+      expect(JSON.parse(mockFetch.mock.calls[1][1].body as string).variables.includeInactive).toBe(
+        true
+      )
+    })
+  })
+
   describe('recordOwnershipChange', () => {
     it('POSTs the share, month and price to record-ownership-change', async () => {
       mockFetch.mockResolvedValueOnce(

@@ -1703,6 +1703,8 @@ export class LedgerClient {
       source?: string
       classification?: string
       isAbstract?: boolean
+      /** Include retired accounts (`isActive: false`), to reactivate one. */
+      includeInactive?: boolean
       limit?: number
       offset?: number
     }
@@ -1715,6 +1717,7 @@ export class LedgerClient {
         source: options?.source ?? null,
         classification: options?.classification ?? null,
         isAbstract: options?.isAbstract ?? null,
+        includeInactive: options?.includeInactive ?? false,
         limit: options?.limit ?? 100,
         offset: options?.offset ?? 0,
       },

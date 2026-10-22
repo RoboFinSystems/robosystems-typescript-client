@@ -4033,9 +4033,9 @@ export type CreateScheduleRequest = {
     /**
      * Monthly Amount
      *
-     * Monthly amount in cents
+     * Monthly amount in cents. Required for a straight-line schedule; a custom or loan schedule takes its amounts from its curve.
      */
-    monthly_amount: number;
+    monthly_amount?: number;
     entry_template: EntryTemplateRequest;
     schedule_metadata?: ScheduleMetadataRequest | null;
     /**
@@ -6172,7 +6172,7 @@ export type EntryTemplateRequest = {
     /**
      * Credit Element Id
      *
-     * CoA element id to credit (e.g. Accumulated Depreciation). A chart-of-accounts element id (see get-unmapped-elements), not a taxonomy qname. One template = one debit/credit pair; model a multi-account entry as several schedules.
+     * CoA element id to credit (e.g. Accumulated Depreciation). A chart-of-accounts element id (see get-unmapped-elements), not a taxonomy qname. A straight-line or custom schedule posts this one debit/credit pair; a loan schedule posts its `legs`.
      */
     credit_element_id: string;
     /**
@@ -6199,6 +6199,12 @@ export type EntryTemplateRequest = {
      * The management dimension members (department, class, location, project) every entry the schedule drafts carries on both lines, one per axis: a department's depreciation lands in that department.
      */
     dimension_ids?: Array<string>;
+    /**
+     * Legs
+     *
+     * The lines of a loan schedule's entry (`method='effective_interest'` only), each taking one column of the amortization table; each period's lines must balance. Accrue interest and pay through the bank: debit Interest Expense and credit Accrued Interest, both `interest`. The schedule settles the payment itself: debit the note `principal`, debit Interest Expense `interest`, credit cash or a due-to `payment`. `debit_element_id` names the interest debit leg and `credit_element_id` one credit leg. Empty for every other method, which posts the debit/credit pair.
+     */
+    legs?: Array<ScheduleLegRequest>;
 };
 
 /**
@@ -10679,6 +10685,86 @@ export type LiveStatementFactRow = {
 };
 
 /**
+ * LoanTermsRequest
+ *
+ * The terms a loan schedule's amortization table is computed from.
+ */
+export type LoanTermsRequest = {
+    /**
+     * Principal
+     *
+     * Principal drawn, in cents.
+     */
+    principal: number;
+    /**
+     * Annual Rate
+     *
+     * Annual interest rate as a fraction: 0.099 for 9.9%.
+     */
+    annual_rate: number;
+    /**
+     * Start Date
+     *
+     * The day the principal was drawn; interest accrues from it. Falls in the schedule's first month.
+     */
+    start_date: string;
+    /**
+     * Day Count
+     *
+     * How a period's interest counts days: `30/360` (every whole month is 30 days), `actual/365` or `actual/360` (the days elapsed, over a 365- or 360-day year; actual/360 is the usual bank line of credit).
+     */
+    day_count?: '30/360' | 'actual/365' | 'actual/360';
+    /**
+     * Payment Frequency
+     *
+     * How often a payment falls due. A payment is applied at the end of the month it falls in.
+     */
+    payment_frequency?: 'monthly' | 'quarterly' | 'annual' | 'at_maturity';
+    /**
+     * First Payment Date
+     *
+     * The first payment's date. Omit for one frequency after the schedule's first month.
+     */
+    first_payment_date?: string | null;
+    /**
+     * Payment Amount
+     *
+     * Each scheduled payment in cents, interest included. Omit for the level payment that retires the principal by `maturity_date`, or for the accrued interest when `interest_only`.
+     */
+    payment_amount?: number | null;
+    /**
+     * Interest Only
+     *
+     * Payments settle interest only; the principal is due at maturity.
+     */
+    interest_only?: boolean;
+    /**
+     * Maturity Date
+     *
+     * When the remaining principal is due: it is repaid in that month, which is the schedule's last. Omit for a line of credit with no maturity, whose balance carries past the schedule.
+     */
+    maturity_date?: string | null;
+    /**
+     * Capitalize Interest
+     *
+     * Interest is added to the note rather than accrued apart (a PIK note): the balance grows by each period's interest, and payments reduce it whole.
+     */
+    capitalize_interest?: boolean;
+    /**
+     * Note Element Id
+     *
+     * The liability account the principal is carried in. The schedule states its balance each period, which the schedule reconciliation compares with the ledger.
+     */
+    note_element_id: string;
+    /**
+     * Current Portion Element Id
+     *
+     * A current-liability account for the principal due within twelve months. When set, each period's entry also reclasses between it and `note_element_id` so it holds the next twelve months' principal.
+     */
+    current_portion_element_id?: string | null;
+};
+
+/**
  * LoginRequest
  *
  * Login request model.
@@ -13534,6 +13620,52 @@ export type OperationEnvelopePreviewEventBlockResponse = {
 };
 
 /**
+ * OperationEnvelope[PreviewScheduleResponse]
+ */
+export type OperationEnvelopePreviewScheduleResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: PreviewScheduleResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[PromoteObligationsResponse]
  */
 export type OperationEnvelopePromoteObligationsResponse = {
@@ -16202,6 +16334,103 @@ export type PreviewReconcilingItemRequest = {
 };
 
 /**
+ * PreviewScheduleRequest
+ *
+ * A schedule's definition, generated without being kept.
+ */
+export type PreviewScheduleRequest = {
+    /**
+     * Name
+     *
+     * Schedule name
+     */
+    name: string;
+    /**
+     * Entity Id
+     *
+     * The entity whose books the schedule belongs to, by id. Omit for the group parent. Its facts, obligations and closing entries land in that entity's books, against that entity's own accounts.
+     */
+    entity_id?: string | null;
+    /**
+     * Taxonomy Id
+     *
+     * Taxonomy ID (auto-creates if omitted)
+     */
+    taxonomy_id?: string | null;
+    /**
+     * Element Ids
+     *
+     * CoA element ids the schedule touches (the `id` from get-unmapped-elements, not taxonomy qnames) — typically the same debit + credit ids used in entry_template.
+     */
+    element_ids: Array<string>;
+    /**
+     * Period Start
+     *
+     * First period start
+     */
+    period_start: string;
+    /**
+     * Period End
+     *
+     * Last period end
+     */
+    period_end: string;
+    /**
+     * Monthly Amount
+     *
+     * Monthly amount in cents. Required for a straight-line schedule; a custom or loan schedule takes its amounts from its curve.
+     */
+    monthly_amount?: number;
+    entry_template: EntryTemplateRequest;
+    schedule_metadata?: ScheduleMetadataRequest | null;
+    /**
+     * Closed Through
+     *
+     * Watermark for onboarding. Facts with period_end ≤ this date are flagged 'historical' and their schedule_entry_due obligations are emitted 'voided', so the close workflow starts drafting at the first open period. Defaults to the calendar's history end: the last day of its closed_through month (calendar '2026-05' → '2026-05-31'), or the day before its first month when nothing has closed yet. An earlier date is raised to it, since an obligation there could never post; set a later one only to treat more months as already booked.
+     */
+    closed_through?: string | null;
+    /**
+     * Source Transaction Id
+     *
+     * Free-form reference to the originating GL transaction (e.g. an import ID, ledger entry ID, or external system key). Stored in artifact_mechanics for audit; no FK constraint.
+     */
+    source_transaction_id?: string | null;
+    /**
+     * Replaces Structure Id
+     *
+     * The schedule this definition would replace, when editing or recreating one: the preview then says what its posted entries mean for the change.
+     */
+    replaces_structure_id?: string | null;
+};
+
+/**
+ * PreviewScheduleResponse
+ *
+ * A generated schedule nobody kept: its envelope as create would leave
+ * it, period by period.
+ */
+export type PreviewScheduleResponse = {
+    /**
+     * The schedule's Information Block envelope as create would leave it. Its ids are provisional: nothing was written.
+     */
+    envelope: InformationBlockEnvelope;
+    /**
+     * Roll Forward
+     */
+    roll_forward?: Array<ScheduleRollForwardRow>;
+    /**
+     * Warnings
+     *
+     * Things create would go ahead with that deserve a look: an active schedule already posting to the same accounts over the same months.
+     */
+    warnings?: Array<string>;
+    /**
+     * With `replaces_structure_id`: the schedule being replaced.
+     */
+    replaces?: ScheduleReplacementSummary | null;
+};
+
+/**
  * PromoteObligationsRequest
  *
  * On-demand trigger for the obligation-promotion sweep.
@@ -16636,6 +16865,11 @@ export type ReadTextResponse = {
  * month, are history), so a rebuild re-scopes the schedule to today's
  * close state. Use this to pick up a fixed generator (e.g. the
  * roll-forward direction fix) without orphaning obligations.
+ *
+ * It is also how an edit is saved while nothing has posted: the fields below
+ * replace the stored definition before it regenerates, as the schedule's
+ * envelope reads them back (`artifact.mechanics`). Omitted fields keep their
+ * stored values, inside `schedule_metadata` too.
  */
 export type RebuildScheduleRequest = {
     /**
@@ -16644,6 +16878,32 @@ export type RebuildScheduleRequest = {
      * The schedule structure to regenerate in place.
      */
     structure_id: string;
+    /**
+     * Period Start
+     *
+     * A new first period start.
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     *
+     * A new last period end.
+     */
+    period_end?: string | null;
+    /**
+     * Monthly Amount
+     *
+     * A new straight-line monthly amount, in cents.
+     */
+    monthly_amount?: number | null;
+    /**
+     * A new entry template, replacing the stored one whole.
+     */
+    entry_template?: EntryTemplateRequest | null;
+    /**
+     * The schedule_metadata fields to change.
+     */
+    schedule_metadata?: ScheduleMetadataRequest | null;
 };
 
 /**
@@ -18702,6 +18962,38 @@ export type ScheduleCreatedResponse = {
      * Pending Event Count
      */
     pending_event_count?: number;
+    /**
+     * Warnings
+     *
+     * What the write went ahead with that deserves a look: another active schedule posting to the same accounts over the same months.
+     */
+    warnings?: Array<string>;
+};
+
+/**
+ * ScheduleLegRequest
+ *
+ * One line of the entry a loan schedule drafts each period.
+ */
+export type ScheduleLegRequest = {
+    /**
+     * Element Id
+     *
+     * CoA element id the line posts to.
+     */
+    element_id: string;
+    /**
+     * Side
+     *
+     * The line's side.
+     */
+    side: 'debit' | 'credit';
+    /**
+     * Amount Source
+     *
+     * The amortization-table column the line takes each period: `interest` (accrued in the period), `interest_paid` (accrued interest settled by the period's payment), `principal` (principal repaid), `payment` (interest_paid + principal).
+     */
+    amount_source: 'interest' | 'interest_paid' | 'principal' | 'payment';
 };
 
 /**
@@ -18733,6 +19025,42 @@ export type ScheduleMechanics = {
      * Number of in-scope periods that have at least one closing entry posted. Runtime state derived at envelope-build time from the Entry table.
      */
     periods_with_entries?: number;
+    /**
+     * Period Start
+     *
+     * The schedule's first period start, as defined.
+     */
+    period_start?: string | null;
+    /**
+     * Period End
+     *
+     * The schedule's last period end, as defined. An early end is `end_date`; rebuild-schedule regenerates to this and ends at it again.
+     */
+    period_end?: string | null;
+    /**
+     * Monthly Amount
+     *
+     * The straight-line monthly amount in cents. With `period_start`, `period_end`, `entry_template` and `schedule_metadata` this is the whole definition: rebuild-schedule takes the same fields back.
+     */
+    monthly_amount?: number | null;
+    /**
+     * End Date
+     *
+     * Where terminate-schedule ended it, when it did.
+     */
+    end_date?: string | null;
+    /**
+     * Posted Periods
+     *
+     * The months (YYYY-MM) holding a posted or shadowed closing entry of the schedule, which no edit may rewrite.
+     */
+    posted_periods?: Array<string>;
+    /**
+     * Edit Warning
+     *
+     * Set once an entry has posted: what deleting, rebuilding or recreating the schedule would do to that history, and the path an edit takes instead.
+     */
+    edit_warning?: string | null;
 };
 
 /**
@@ -18742,9 +19070,13 @@ export type ScheduleMetadataRequest = {
     /**
      * Method
      *
-     * Calculation method. 'straight_line' (default) distributes `monthly_amount` evenly across periods with the final period absorbing rounding. 'custom' requires `periodic_amounts` — the generator uses those values verbatim instead of computing. Other strings are labels only; fact values still come from `monthly_amount` or `periodic_amounts`.
+     * Calculation method. 'straight_line' (default) distributes `monthly_amount` evenly across periods with the final period absorbing rounding. 'custom' requires `periodic_amounts` — the generator uses those values verbatim instead of computing. 'effective_interest' requires `loan_terms` and the template's `legs`: the generator computes the amortization table (opening balance, interest, payment, principal, closing balance) and drafts the legs from it. Other strings are labels only; fact values still come from `monthly_amount` or `periodic_amounts`.
      */
     method?: string;
+    /**
+     * The loan's terms, for `method='effective_interest'`.
+     */
+    loan_terms?: LoanTermsRequest | null;
     /**
      * Original Amount
      *
@@ -18781,6 +19113,109 @@ export type ScheduleMetadataRequest = {
      * Explicit per-period amounts in cents. When set, the generator uses these values instead of `monthly_amount` — enabling non-straight-line schedules (effective-interest bond discount amortization, day-count interest accrual, variable lease payments, pre-computed effective-yield curves, etc.). Length must match the number of monthly periods between `period_start` and `period_end`; sum must equal `original_amount` less `residual_value` exactly. The auto-generated SumEquals rule proves that total regardless of the curve shape.
      */
     periodic_amounts?: Array<number> | null;
+};
+
+/**
+ * ScheduleReplacementSummary
+ *
+ * What an existing schedule's entries mean for replacing it.
+ */
+export type ScheduleReplacementSummary = {
+    /**
+     * Structure Id
+     */
+    structure_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Posted Entry Count
+     *
+     * Its posted or shadowed closing entries.
+     */
+    posted_entry_count: number;
+    /**
+     * Posted Periods
+     *
+     * The months those entries are in (YYYY-MM).
+     */
+    posted_periods?: Array<string>;
+    /**
+     * Draft Entry Count
+     */
+    draft_entry_count?: number;
+    /**
+     * Path
+     *
+     * `rebuild` when nothing has posted: rebuild-schedule with the new definition replaces it in place. `terminate_and_succeed` once an entry has: terminate it after its last posted month and create the successor from the month after.
+     */
+    path: 'rebuild' | 'terminate_and_succeed';
+};
+
+/**
+ * ScheduleRollForwardRow
+ *
+ * One period of a previewed schedule: the balance it carries, and what
+ * moves it.
+ */
+export type ScheduleRollForwardRow = {
+    /**
+     * Period Start
+     */
+    period_start: string;
+    /**
+     * Period End
+     */
+    period_end: string;
+    /**
+     * Opening
+     *
+     * The carried balance at the period's start.
+     */
+    opening: number;
+    /**
+     * Amount
+     *
+     * What the period recognizes: the entry's debit amount.
+     */
+    amount: number;
+    /**
+     * Closing
+     *
+     * The carried balance at the period's end.
+     */
+    closing: number;
+    /**
+     * Scope
+     *
+     * `historical` for a month already in the books' history, which the schedule records but never drafts; `in_scope` for one a close drafts.
+     */
+    scope: 'historical' | 'in_scope';
+    /**
+     * Interest
+     *
+     * Loan schedules: interest accrued.
+     */
+    interest?: number | null;
+    /**
+     * Payment
+     *
+     * Loan schedules: the payment.
+     */
+    payment?: number | null;
+    /**
+     * Principal
+     *
+     * Loan schedules: principal repaid.
+     */
+    principal?: number | null;
+    /**
+     * Current Portion
+     *
+     * Loan schedules with a current-portion account: the principal due in the next twelve months.
+     */
+    current_portion?: number | null;
 };
 
 /**
@@ -34246,6 +34681,70 @@ export type PromoteObligationsResponses = {
 };
 
 export type PromoteObligationsResponse2 = PromoteObligationsResponses[keyof PromoteObligationsResponses];
+
+export type PreviewScheduleData = {
+    body: PreviewScheduleRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboledger/{graph_id}/operations/preview-schedule';
+};
+
+export type PreviewScheduleErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type PreviewScheduleError = PreviewScheduleErrors[keyof PreviewScheduleErrors];
+
+export type PreviewScheduleResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopePreviewScheduleResponse;
+};
+
+export type PreviewScheduleResponse2 = PreviewScheduleResponses[keyof PreviewScheduleResponses];
 
 export type RebuildScheduleData = {
     body: RebuildScheduleRequest;
