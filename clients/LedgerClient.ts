@@ -72,6 +72,7 @@ import {
   rebuildSchedule,
   recordAcquisition,
   recordOpeningBalance,
+  recordOwnershipChange,
   recordStatementBalance,
   refreshReconciliations,
   regenerateReport,
@@ -156,6 +157,7 @@ import type {
   LiveFinancialStatementRequest,
   LiveFinancialStatementResponse,
   OperationEnvelope,
+  OwnershipChangeResponse,
   PreviewConsolidationEntriesResponse,
   PreviewEventBlockResponse,
   PreviewReconciliationsRequest,
@@ -175,6 +177,7 @@ import type {
   ReconcilingItemPlan,
   RecordAcquisitionRequest,
   RecordOpeningBalanceRequest,
+  RecordOwnershipChangeRequest,
   RecordStatementBalanceRequest,
   RefreshReconciliationsRequest,
   ReopenPeriodOperation,
@@ -2961,6 +2964,23 @@ export class LedgerClient {
       recordAcquisition({ ...o, path: { graph_id: graphId }, body })
     )
     return this.requireResult('Record acquisition', envelope.result)
+  }
+
+  /**
+   * Record the parent buying more of a member from its outside owners,
+   * staying on full consolidation: the share it holds from `period` and the
+   * price paid, in cents, with the basis. Sets the member's share from that
+   * month and writes a draft in the consolidation entity that its close
+   * posts — an equity transaction under ASC 810, never a gain or loss.
+   */
+  async recordOwnershipChange(
+    graphId: string,
+    body: RecordOwnershipChangeRequest
+  ): Promise<OwnershipChangeResponse> {
+    const envelope = await this.callOperation('Record ownership change', (o) =>
+      recordOwnershipChange({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Record ownership change', envelope.result)
   }
 
   // ── Event blocks (generic preview + status transitions) ──────────────
