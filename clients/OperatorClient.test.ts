@@ -73,6 +73,14 @@ class MockEventSource {
 }
 
 // Helper to create proper mock Response objects
+/** The JSON body of the one request the generated client sent: a `Request`, not `(url, init)`. */
+async function sentBody(mockFetch: any): Promise<Record<string, any>> {
+  const sent = mockFetch.mock.calls[0][0]
+  const text =
+    typeof sent === 'string' ? mockFetch.mock.calls[0][1]?.body : await sent.clone().text()
+  return JSON.parse(text)
+}
+
 function createMockResponse(data: any, options: { ok?: boolean; status?: number } = {}) {
   return {
     ok: options.ok ?? true,
@@ -154,10 +162,32 @@ describe('OperatorClient', () => {
         mode: 'extended',
         enableRag: true,
         forceExtendedAnalysis: true,
+        threadId: 'thr_01ABC',
       })
 
       expect(result.content).toBe('Answer')
       expect(mockFetch).toHaveBeenCalledTimes(1)
+      // The thread id rides the body under the API's name.
+      const sent = await sentBody(mockFetch)
+      expect(sent.thread_id).toBe('thr_01ABC')
+      expect(sent.history).toEqual([{ role: 'user', content: 'prior question' }])
+    })
+
+    it('sends no thread field when the request is unthreaded, and names a sync run', async () => {
+      mockFetch.mockResolvedValueOnce(
+        createMockResponse({
+          content: 'Answer',
+          operator_used: 'analyst',
+          mode_used: 'standard',
+          operation_id: 'op_sync_1',
+        })
+      )
+
+      const result = await client.executeQuery('graph_1', { message: 'test query' })
+
+      const sent = await sentBody(mockFetch)
+      expect(sent).not.toHaveProperty('thread_id')
+      expect(result.operation_id).toBe('op_sync_1')
     })
 
     it('should throw QueuedOperatorError when maxWait is 0', async () => {
@@ -447,6 +477,8 @@ describe('OperatorClient queued runs', () => {
     expect(result.operator_used).toBe('analyst')
     expect(result.execution_time).toBe(21.2)
     expect(result.error_details).toBeUndefined()
+    // A followed run names itself, so its record can be read back.
+    expect(result.operation_id).toBe('op_456')
     // Only the submit hit the network — no polling when the stream works.
     expect(mockFetch).toHaveBeenCalledTimes(1)
   })

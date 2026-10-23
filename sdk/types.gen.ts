@@ -14923,9 +14923,15 @@ export type OperatorRequest = {
     /**
      * History
      *
-     * Conversation history
+     * Conversation history. Omit it on a threaded request and the run is seeded from the thread's own record instead
      */
     history?: Array<OperatorMessage>;
+    /**
+     * Thread Id
+     *
+     * Groups this run with the earlier runs of one conversation. A caller mints the id (any ULID or UUID) on the first question and sends it with each follow-up; the run is recorded under it, and with no `history` given, the thread's last exchanges are the history. Runs list by thread at `GET /v1/graphs/{graph_id}/audit/runs`
+     */
+    thread_id?: string | null;
     /**
      * Context
      *
@@ -15050,6 +15056,339 @@ export type OperatorResponse = {
      * Response timestamp
      */
     timestamp?: string;
+};
+
+/**
+ * OperatorRunDetail
+ *
+ * A run with its full paper trail: the history it was given, every model
+ * call, and the response envelope's metadata.
+ */
+export type OperatorRunDetail = {
+    /**
+     * Operation Id
+     *
+     * The run's operation id; every mutation audit entry the run made carries it as `operation_id`
+     */
+    operation_id: string;
+    /**
+     * Thread Id
+     *
+     * The conversation the run belongs to, when the caller threaded it; null for a standalone API call
+     */
+    thread_id?: string | null;
+    /**
+     * User Id
+     *
+     * The user the run ran as
+     */
+    user_id: string;
+    /**
+     * Operator Type
+     *
+     * The operator that ran
+     */
+    operator_type: string;
+    /**
+     * Mode
+     *
+     * The execution mode the run used
+     */
+    mode: string;
+    /**
+     * Status
+     *
+     * How the run ended
+     */
+    status: 'completed' | 'failed' | 'cancelled';
+    /**
+     * Question
+     *
+     * The message the run was given
+     */
+    question: string;
+    /**
+     * Answer
+     *
+     * The operator's answer; null when the run did not reach one
+     */
+    answer?: string | null;
+    /**
+     * Error
+     *
+     * Why a failed run failed
+     */
+    error?: string | null;
+    /**
+     * Credits Consumed
+     *
+     * Credits the run's model calls cost
+     */
+    credits_consumed?: number;
+    /**
+     * Call Count
+     *
+     * Model calls the run made
+     */
+    call_count?: number;
+    /**
+     * Tools Called
+     *
+     * The tools the run called, each named once
+     */
+    tools_called?: Array<string>;
+    /**
+     * Write Count
+     *
+     * Writes the run made to the graph
+     */
+    write_count?: number;
+    /**
+     * Started At
+     *
+     * When the run started on the worker
+     */
+    started_at: string;
+    /**
+     * Finished At
+     *
+     * When the run ended
+     */
+    finished_at: string;
+    /**
+     * Duration Ms
+     *
+     * How long the run took
+     */
+    duration_ms: number;
+    /**
+     * History
+     *
+     * The prior turns the run was given, as role/content pairs
+     */
+    history?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Transcript
+     *
+     * One entry per model call, in order: the input added since the previous call (the question, then each turn's tool results), the model's output blocks (text and tool calls), stop reason, token usage and credits. The first entry also carries the system prompt's SHA-256 and size and the tool names offered; later entries repeat them only when they change
+     */
+    transcript?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Result
+     *
+     * The response envelope's metadata without its result rows: tokens, credits, the Cypher run, the writes made, confidence and loop flags
+     */
+    result?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * OperatorRunListResponse
+ *
+ * A page of the graph's operator runs, newest first.
+ */
+export type OperatorRunListResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Runs
+     */
+    runs: Array<OperatorRunSummary>;
+    /**
+     * Next Cursor
+     *
+     * Pass as `cursor` for the next, older page; null on the last page
+     */
+    next_cursor?: string | null;
+};
+
+/**
+ * OperatorRunSummary
+ *
+ * One in-app AI operator run: what it was asked and what it answered.
+ */
+export type OperatorRunSummary = {
+    /**
+     * Operation Id
+     *
+     * The run's operation id; every mutation audit entry the run made carries it as `operation_id`
+     */
+    operation_id: string;
+    /**
+     * Thread Id
+     *
+     * The conversation the run belongs to, when the caller threaded it; null for a standalone API call
+     */
+    thread_id?: string | null;
+    /**
+     * User Id
+     *
+     * The user the run ran as
+     */
+    user_id: string;
+    /**
+     * Operator Type
+     *
+     * The operator that ran
+     */
+    operator_type: string;
+    /**
+     * Mode
+     *
+     * The execution mode the run used
+     */
+    mode: string;
+    /**
+     * Status
+     *
+     * How the run ended
+     */
+    status: 'completed' | 'failed' | 'cancelled';
+    /**
+     * Question
+     *
+     * The message the run was given
+     */
+    question: string;
+    /**
+     * Answer
+     *
+     * The operator's answer; null when the run did not reach one
+     */
+    answer?: string | null;
+    /**
+     * Error
+     *
+     * Why a failed run failed
+     */
+    error?: string | null;
+    /**
+     * Credits Consumed
+     *
+     * Credits the run's model calls cost
+     */
+    credits_consumed?: number;
+    /**
+     * Call Count
+     *
+     * Model calls the run made
+     */
+    call_count?: number;
+    /**
+     * Tools Called
+     *
+     * The tools the run called, each named once
+     */
+    tools_called?: Array<string>;
+    /**
+     * Write Count
+     *
+     * Writes the run made to the graph
+     */
+    write_count?: number;
+    /**
+     * Started At
+     *
+     * When the run started on the worker
+     */
+    started_at: string;
+    /**
+     * Finished At
+     *
+     * When the run ended
+     */
+    finished_at: string;
+    /**
+     * Duration Ms
+     *
+     * How long the run took
+     */
+    duration_ms: number;
+};
+
+/**
+ * OperatorThreadListResponse
+ *
+ * A page of the graph's operator threads, most recently active first.
+ */
+export type OperatorThreadListResponse = {
+    /**
+     * Graph Id
+     */
+    graph_id: string;
+    /**
+     * Threads
+     */
+    threads: Array<OperatorThreadSummary>;
+    /**
+     * Next Cursor
+     *
+     * Pass as `cursor` for the next, older page; null on the last page
+     */
+    next_cursor?: string | null;
+};
+
+/**
+ * OperatorThreadSummary
+ *
+ * One console conversation: the runs that share a thread id.
+ */
+export type OperatorThreadSummary = {
+    /**
+     * Thread Id
+     *
+     * The thread id the runs were made under
+     */
+    thread_id: string;
+    /**
+     * User Id
+     *
+     * The user whose conversation it is
+     */
+    user_id: string;
+    /**
+     * Title
+     *
+     * The conversation's first question, clipped
+     */
+    title: string;
+    /**
+     * Run Count
+     *
+     * Runs in the thread
+     */
+    run_count: number;
+    /**
+     * First Run At
+     *
+     * When the first run started
+     */
+    first_run_at: string;
+    /**
+     * Last Run At
+     *
+     * When the latest run started
+     */
+    last_run_at: string;
+    /**
+     * Last Operator Type
+     *
+     * The operator the latest run used
+     */
+    last_operator_type: string;
+    /**
+     * Last Status
+     *
+     * How the latest run ended
+     */
+    last_status: 'completed' | 'failed' | 'cancelled';
 };
 
 /**
@@ -28246,6 +28585,248 @@ export type ListGraphMutationsResponses = {
 };
 
 export type ListGraphMutationsResponse = ListGraphMutationsResponses[keyof ListGraphMutationsResponses];
+
+export type ListOperatorThreadsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * User Id
+         *
+         * Only this user's threads (admins; members see their own)
+         */
+        user_id?: string | null;
+        /**
+         * Cursor
+         *
+         * The `next_cursor` of the previous page
+         */
+        cursor?: string | null;
+        /**
+         * Limit
+         *
+         * Threads per page
+         */
+        limit?: number;
+    };
+    url: '/v1/graphs/{graph_id}/audit/threads';
+};
+
+export type ListOperatorThreadsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListOperatorThreadsError = ListOperatorThreadsErrors[keyof ListOperatorThreadsErrors];
+
+export type ListOperatorThreadsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperatorThreadListResponse;
+};
+
+export type ListOperatorThreadsResponse = ListOperatorThreadsResponses[keyof ListOperatorThreadsResponses];
+
+export type ListOperatorRunsData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+    };
+    query?: {
+        /**
+         * Thread Id
+         *
+         * Only the runs of this thread
+         */
+        thread_id?: string | null;
+        /**
+         * User Id
+         *
+         * Only runs made as this user (admins; members see their own)
+         */
+        user_id?: string | null;
+        /**
+         * Operator Type
+         *
+         * Only runs of this operator
+         */
+        operator_type?: string | null;
+        /**
+         * Status
+         *
+         * Only runs that ended this way
+         */
+        status?: 'completed' | 'failed' | 'cancelled' | null;
+        /**
+         * Since
+         *
+         * Only runs started at or after this time
+         */
+        since?: string | null;
+        /**
+         * Until
+         *
+         * Only runs started before this time
+         */
+        until?: string | null;
+        /**
+         * Cursor
+         *
+         * The `next_cursor` of the previous page
+         */
+        cursor?: string | null;
+        /**
+         * Limit
+         *
+         * Runs per page
+         */
+        limit?: number;
+    };
+    url: '/v1/graphs/{graph_id}/audit/runs';
+};
+
+export type ListOperatorRunsErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ListOperatorRunsError = ListOperatorRunsErrors[keyof ListOperatorRunsErrors];
+
+export type ListOperatorRunsResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperatorRunListResponse;
+};
+
+export type ListOperatorRunsResponse = ListOperatorRunsResponses[keyof ListOperatorRunsResponses];
+
+export type GetOperatorRunData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Graph identifier
+         */
+        graph_id: string;
+        /**
+         * Operation Id
+         *
+         * The run's operation id
+         */
+        operation_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/audit/runs/{operation_id}';
+};
+
+export type GetOperatorRunErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type GetOperatorRunError = GetOperatorRunErrors[keyof GetOperatorRunErrors];
+
+export type GetOperatorRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperatorRunDetail;
+};
+
+export type GetOperatorRunResponse = GetOperatorRunResponses[keyof GetOperatorRunResponses];
 
 export type ListSubgraphsData = {
     body?: never;
