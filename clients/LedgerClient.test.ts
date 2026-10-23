@@ -4394,4 +4394,28 @@ describe('LedgerClient.createEventBlock', () => {
       'Create event block: operation envelope had no result'
     )
   })
+
+  describe('getReportDownloadUrl', () => {
+    it('asks for the lineage holon by its enum and returns its link', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          reportDownloadUrl: {
+            downloadUrl: 'https://s3.example.com/bundles/rpt_01/g3',
+            expiresAt: '2026-10-23T03:00:00Z',
+            contentType: 'application/ld+json',
+            format: 'holon-jsonld-lineage',
+            generationCount: 3,
+          },
+        })
+      )
+      const link = await client.getReportDownloadUrl('graph_1', 'rpt_01', {
+        format: 'HOLON_JSONLD_LINEAGE',
+      })
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.format).toBe('HOLON_JSONLD_LINEAGE')
+      expect(link?.format).toBe('holon-jsonld-lineage')
+      expect(link?.generationCount).toBe(3)
+    })
+  })
 })

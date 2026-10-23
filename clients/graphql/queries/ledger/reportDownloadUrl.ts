@@ -9,7 +9,7 @@ import { gql } from 'graphql-request'
  * follows directly (the Tavi compiled model is stamped at publish time;
  * the holon and XBRL are materialized + cached on first request).
  * `format` accepts the `ReportDownloadFormat` enum (`TAVI`,
- * `HOLON_JSONLD`, `XBRL_2_1`).
+ * `HOLON_JSONLD`, `HOLON_JSONLD_LINEAGE`, `XBRL_2_1`).
  */
 export const GET_REPORT_DOWNLOAD_URL = gql`
   query GetLedgerReportDownloadUrl(
