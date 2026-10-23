@@ -3369,6 +3369,32 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('recordDeconsolidation', () => {
+    it('POSTs the consideration and basis to record-deconsolidation', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('record-deconsolidation', {
+          entity_id: 'ent_cafe',
+          period: '2026-06',
+          consideration: 6200000,
+          earnings_restored: 2440000,
+          gain_loss: -2443412,
+        })
+      )
+      const result = await client.recordDeconsolidation('graph_42', {
+        entity_id: 'ent_cafe',
+        consideration: 6200000,
+        basis: 'Sale agreement',
+      })
+      const req = mockFetch.mock.calls[0][0] as Request
+      expect(req.url).toBe(
+        'http://localhost:8000/extensions/roboledger/graph_42/operations/record-deconsolidation'
+      )
+      const body = JSON.parse(await req.text())
+      expect(body.consideration).toBe(6200000)
+      expect(result.gain_loss).toBe(-2443412)
+    })
+  })
+
   describe('getAllocationShare', () => {
     it('sends the member and month and returns the share', async () => {
       mockFetch.mockResolvedValueOnce(

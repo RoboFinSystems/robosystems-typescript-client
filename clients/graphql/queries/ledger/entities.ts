@@ -24,6 +24,7 @@ export const LIST_ENTITIES = gql`
       entityRole
       joinedOn
       leftOn
+      isFormer
       source
       sourceGraphId
       connectionId
