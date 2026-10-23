@@ -18,6 +18,14 @@ export interface OperatorQueryRequest {
   mode?: 'quick' | 'standard' | 'extended' | 'streaming'
   enableRag?: boolean
   forceExtendedAnalysis?: boolean
+  /**
+   * Groups the run with the earlier runs of one conversation. Mint any
+   * URL-safe token (a UUID) on the first question and send it with each
+   * follow-up; with no `history` given, the server seeds the run from the
+   * thread's own record. Runs list by thread under the graph's audit
+   * (`listOperatorThreads`, `listOperatorRuns`, `getOperatorRun`).
+   */
+  threadId?: string
 }
 
 export interface OperatorOptions {
@@ -51,6 +59,11 @@ export interface OperatorResult {
    * then carries the explanation rather than an answer.
    */
   error_details?: Record<string, any>
+  /**
+   * The run's operation id: the key of its record under the graph's audit
+   * (`getOperatorRun`) and of every mutation it made.
+   */
+  operation_id?: string
 }
 
 export interface QueuedOperatorResponse {
@@ -120,7 +133,7 @@ const describeDetail = (detail: unknown): string => {
  * event, or the `/status` `result` — into the public result type. All three
  * carry the same fields, so one mapper keeps them consistent.
  */
-function toOperatorResult(data: Record<string, any>): OperatorResult {
+function toOperatorResult(data: Record<string, any>, operationId?: string): OperatorResult {
   const result: OperatorResult = {
     content: data.content ?? '',
     operator_used: data.operator_used || 'unknown',
@@ -133,6 +146,10 @@ function toOperatorResult(data: Record<string, any>): OperatorResult {
   }
   if (data.error_details) {
     result.error_details = data.error_details
+  }
+  const runId = operationId || data.operation_id
+  if (typeof runId === 'string' && runId) {
+    result.operation_id = runId
   }
   return result
 }
@@ -194,6 +211,7 @@ export class OperatorClient {
         mode: request.mode,
         enable_rag: request.enableRag,
         force_extended_analysis: request.forceExtendedAnalysis,
+        thread_id: request.threadId,
       },
     }
 
@@ -224,6 +242,7 @@ export class OperatorClient {
         mode: request.mode,
         enable_rag: request.enableRag,
         force_extended_analysis: request.forceExtendedAnalysis,
+        thread_id: request.threadId,
       },
     }
 
@@ -338,7 +357,7 @@ export class OperatorClient {
       })
 
       sseClient.on('operator_completed' as EventType, (data) => {
-        result = toOperatorResult(data)
+        result = toOperatorResult(data, operationId)
         finish()
         resolve(result)
       })
@@ -346,7 +365,7 @@ export class OperatorClient {
       // Fallback to generic completion event
       sseClient.on(EventType.OPERATION_COMPLETED, (data) => {
         if (!result) {
-          result = toOperatorResult(data.result || data)
+          result = toOperatorResult(data.result || data, operationId)
           finish()
           resolve(result)
         }
@@ -429,7 +448,7 @@ export class OperatorClient {
 
       switch (status.status) {
         case 'completed':
-          return toOperatorResult(status.result || {})
+          return toOperatorResult(status.result || {}, operationId)
         case 'failed':
           throw new OperatorRunError(
             status.error || status.message || 'Operator run failed',
