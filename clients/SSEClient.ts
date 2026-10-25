@@ -25,6 +25,7 @@
  */
 
 import type { TokenProvider } from './graphql/client'
+import { pathSegment } from './graphql/client'
 
 export interface SSEConfig {
   baseUrl: string
@@ -97,7 +98,7 @@ export class SSEClient {
     if (reconnect && this.closed) return
 
     return new Promise((resolve, reject) => {
-      let url = `${this.config.baseUrl}/v1/operations/${operationId}/stream?from_sequence=${fromSequence}`
+      let url = `${this.config.baseUrl}/v1/operations/${pathSegment(operationId, 'operationId')}/stream?from_sequence=${encodeURIComponent(String(fromSequence))}`
 
       // Add JWT token as query parameter if provided
       // WARNING: EventSource API doesn't support custom headers, so tokens are passed via query param

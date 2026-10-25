@@ -205,16 +205,29 @@ export async function resolveCredential(
   }
 }
 
+const PATH_SEGMENT_PATTERN = /^[A-Za-z0-9_.-]{1,128}$/
+
+/**
+ * Validate and encode a value interpolated into a request path as one segment.
+ * Anything that could change the route — a separator, dot segments, a query
+ * or fragment marker — is refused rather than escaped.
+ */
+export function pathSegment(value: string, name: string): string {
+  if (!value || !PATH_SEGMENT_PATTERN.test(value) || value === '.' || value === '..') {
+    throw new Error(`${name} must be a single path segment`)
+  }
+  return encodeURIComponent(value)
+}
+
 /**
  * Build a new GraphQL client for the given graph. Prefer
  * `GraphQLClientCache.get(graphId)` in facade code — this is the raw
  * factory and bypasses the cache.
  */
 export function createGraphQLClient(config: GraphQLClientConfig, graphId: string): GraphQLClient {
-  if (!graphId) {
-    throw new Error('createGraphQLClient requires a non-empty graphId')
-  }
-  const url = `${config.baseUrl.replace(/\/$/, '')}/extensions/${graphId}/graphql`
+  // One path segment, nothing else: a graph id from a URL parameter must not be
+  // able to re-target the request (and its credential) to another endpoint.
+  const url = `${config.baseUrl.replace(/\/$/, '')}/extensions/${pathSegment(graphId, 'graphId')}/graphql`
   const staticHeaders: Record<string, string> = {
     ...(config.headers ?? {}),
   }
