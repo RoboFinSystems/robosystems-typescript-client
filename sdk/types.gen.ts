@@ -2588,7 +2588,7 @@ export type ConnectionResponse = {
     /**
      * Entity Id
      *
-     * Entity identifier
+     * The entity whose books the connection keeps: the group parent for QuickBooks, the entity a bank feed was connected for (each of its accounts can move to another entity later), none for an external source, whose events name their own.
      */
     entity_id?: string | null;
     /**
@@ -3177,7 +3177,7 @@ export type CreateConnectionRequest = {
     /**
      * Entity Id
      *
-     * Entity identifier. Required for QuickBooks.
+     * QuickBooks: the entity whose books it keeps, which can only be the group parent; omit it. A bank feed names its entity on its own config.
      */
     entity_id?: string | null;
     quickbooks_config?: QuickBooksConnectionConfig | null;
@@ -4888,7 +4888,11 @@ export type DeleteForecastRequest = {
  *
  * - **Immediate** (default): subscription canceled now (`ends_at = now`) and
  * fast-path deprovisioning fires within ~10 minutes. Use when you want
- * the data gone and the slot freed right away.
+ * the data gone and the slot freed right away. The unused part of the
+ * billed period is credited, not refunded: on a card-billed plan to the
+ * organization's account balance, applied to its next invoice; on an
+ * invoiced plan as a credit on that period's invoice, or a separate credit
+ * invoice if it is already paid.
  * - **At period end** (`at_period_end=true`): subscription canceled but
  * `ends_at = current_period_end` so the graph stays usable through the
  * paid period. The existing suspend → deprovision sensor pipeline tears
@@ -19422,6 +19426,12 @@ export type SsoCompleteRequest = {
      * Temporary session ID from secure handoff
      */
     session_id: string;
+    /**
+     * Browser Nonce
+     *
+     * The nonce this browser minted when it started the bridge; its SHA-256 was passed through the exchange as browser_nonce_hash.
+     */
+    browser_nonce?: string | null;
 };
 
 /**
@@ -19448,6 +19458,12 @@ export type SsoExchangeRequest = {
      * Optional return URL after authentication
      */
     return_url?: string | null;
+    /**
+     * Browser Nonce Hash
+     *
+     * SHA-256 (hex) of a nonce the target app minted in the browser that is signing in. Completion must present the nonce, so the handoff cannot be redeemed by any other browser.
+     */
+    browser_nonce_hash?: string | null;
 };
 
 /**
@@ -22852,9 +22868,15 @@ export type UpdateEventHandlerRequest = {
     /**
      * Approve
      *
-     * Approval shortcut: True stamps approved_by/approved_at to the current user; False clears both.
+     * Approval shortcut: True stamps approved_by/approved_at to the current user; False clears both. Approving an AI-suggested handler also needs `expected_updated_at`.
      */
     approve?: boolean | null;
+    /**
+     * Expected Updated At
+     *
+     * The handler's `updated_at` as shown when it was reviewed. Required with `approve=true` on an AI-suggested handler, so the approval covers exactly that version; a mismatch is refused with 409.
+     */
+    expected_updated_at?: string | null;
     /**
      * Metadata Patch
      *
@@ -26601,7 +26623,7 @@ export type ListConnectionsData = {
         /**
          * Entity Id
          *
-         * Filter by entity ID
+         * Only the connections that keep this entity's books
          */
         entity_id?: string | null;
         /**
