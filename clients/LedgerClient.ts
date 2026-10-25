@@ -495,7 +495,8 @@ export type LedgerAllocationOverride = NonNullable<
 /**
  * A rule that turns a matching event into GL rows. `awaitingApproval` marks
  * an AI client's suggestion, which takes no part in matching until a person
- * approves it with `updateEventHandler(..., { approve: true })`.
+ * approves it with `updateEventHandler(..., { approve: true,
+ * expected_updated_at })`, naming the `updatedAt` they reviewed.
  */
 export type LedgerEventHandler = NonNullable<
   ListLedgerEventHandlersQuery['eventHandlers']
@@ -3511,9 +3512,10 @@ export class LedgerClient {
   }
 
   /**
-   * Update a registered event handler. Pass `approve: true` to approve an
-   * AI-suggested handler — a person's action: through an AI client it is
-   * refused.
+   * Update a registered event handler. Pass `approve: true` with
+   * `expected_updated_at` (the handler's `updatedAt` as the person saw it) to
+   * approve an AI-suggested handler; the API answers 409 if it changed since.
+   * A person's action: through an AI client it is refused.
    */
   async updateEventHandler(
     graphId: string,
