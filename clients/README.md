@@ -40,7 +40,7 @@ TypeScript resolves the subpaths with `moduleResolution` set to `bundler` or `no
 - `token`: a static value captured at construction. A value starting with `rfs` is an API key, sent as `X-API-Key`. Anything else is a JWT, sent as `Authorization: Bearer`.
 - `tokenProvider`: a callback, sync or async, called on every GraphQL request, facade REST call and stream connect. It wins over `token`. Use it when a JWT can rotate. Returning `null` sends the request with no credential; throwing fails the call.
 - `headers`: static headers. A resolved credential replaces any `X-API-Key` or `Authorization` in them.
-- `credentials`: passed to `fetch`, and set as `withCredentials` on `EventSource` when `'include'`. It is not an auth method. The API authenticates these calls from the two headers above and the stream's `token` parameter, not from cookies.
+- `credentials`: passed to `fetch`. It is not an auth method. The API authenticates these calls from the two headers above, not from cookies.
 
 ## Base URL
 
@@ -111,7 +111,7 @@ const matches = await library.searchLibraryElements(LIBRARY_GRAPH_ID, 'revenue',
 
 ## QueryClient
 
-Runs Cypher. `query()` uses `auto` mode, in which the API answers with a result or, under load, a queue handle. The client follows a queued query over the operation stream, which needs a JWT and a global `EventSource` (see below). `maxWait: 0` on `executeQuery` throws `QueuedQueryError` instead; no other value of `maxWait` is read. `executeQuery` declares a return type that includes an async iterator, but no code path returns one, so cast to `QueryResult`.
+Runs Cypher. `query()` uses `auto` mode, in which the API answers with a result or, under load, a queue handle. The client follows a queued query over the operation stream. `maxWait: 0` on `executeQuery` throws `QueuedQueryError` instead; no other value of `maxWait` is read. `executeQuery` declares a return type that includes an async iterator, but no code path returns one, so cast to `QueryResult`.
 
 `streamQuery` asks for `mode=stream`, so the API sends NDJSON in chunks of `chunkSize` rows. The client does not process those chunks as they arrive. It collects every row into one array and then yields the rows one at a time, so the first row arrives only after the whole response is in memory. To limit client memory, page with `SKIP` and `LIMIT`.
 
@@ -145,9 +145,7 @@ ops.closeAll()
 
 `monitorOperation` resolves with `success: false` when the operation fails or is cancelled, or the stream ends first. It rejects when the stream cannot open or `timeout` elapses. `waitForOperation(id, timeoutMs?)` throws instead. Also available: `monitorMultiple(ids)`, the async iterator `monitorWithProgress(id)`, `getStatus(id)` and `cancelOperation(id)`. The last two do not report HTTP errors: `getStatus` resolves to `undefined` and `cancelOperation` resolves normally.
 
-**Stream authentication.** `EventSource` cannot send headers, so the credential goes in the URL as `?token=`, and the API reads that parameter as a JWT. An API key cannot open a stream through this SDK: it is sent as `token` and refused with a 401. With an API key, poll `getStatus` instead of calling `monitorOperation`, and use `maxWait: 0` on queries. A token in a URL can appear in proxy logs, so prefer short-lived JWTs.
-
-**Node.js.** `SSEClient` calls `new EventSource()` on the global, and the package ships no polyfill. Where the global is missing, `connect()` rejects with `EventSource is not defined`. Tested on Node 24, it exists only when Node is started with `--experimental-eventsource`. Otherwise, assign an implementation to `globalThis.EventSource` before connecting.
+**Stream transport.** Streams are read over `fetch`, so a JWT or an API key goes in a header as on every other call, never in the URL, and the same code runs in browsers and Node.
 
 ### SSEClient
 
@@ -166,14 +164,14 @@ await sse.connect(operationId)
 
 - `on()` delivers the `EventType` values. The operation stream sends the `operation_started`, `operation_progress`, `operation_completed`, `operation_error` and `operation_cancelled` members; its event list does not define the others (`data_chunk`, `metadata`, `heartbeat`, `queue_update`).
 - `connected`, `closed`, `reconnecting`, `max_retries_exceeded`, `error` and `parse_error` come from the client. `error` carries a server-sent stream error, which ends the stream.
-- The API also sends `keepalive`, `stream_end`, `operation_awaiting_input` and `operation_resumed`. The client does not subscribe to them, so listeners for those names never fire.
-- A completed, failed or cancelled event closes the client. `close()` removes all listeners, so use a new `SSEClient` for the next stream. `connect()` rejects if the stream does not open within 10 seconds.
-- A dropped connection reconnects with exponential backoff, up to `maxRetries` (default 5) from `retryDelay` (default 1000 ms), at the original `fromSequence`. The API sends no SSE event ids, so the client has no last-event position. At the default of 0, a running operation sends only live events, so progress during the gap is lost, and a finished one replays its history. Payloads carry `sequence_number`, which you can pass as the second argument to `connect()` on a new client.
-- `headers` and `heartbeatInterval` are accepted and never read.
+- `on()` also delivers any other name the server sends, such as `operation_awaiting_input` and `operation_resumed`. `stream_end` closes the client, so a paused operation does not reconnect. `keepalive` and the server's `connected` are not delivered.
+- A completed, failed or cancelled event closes the client. `close()` removes all listeners, so use a new `SSEClient` for the next stream. `connect()` rejects if the stream is refused, with the status and the API's detail in the message, or does not open within 10 seconds.
+- A dropped connection, a close before the operation finishes, or a `429` or `5xx` on reconnecting retries with exponential backoff, up to `maxRetries` (default 5) from `retryDelay` (default 1000 ms), at the original `fromSequence`. The attempts reset only when a real event arrives. Any other refusal while reconnecting emits `error` and closes. The API sends no SSE event ids, so the client has no last-event position. At the default of 0, a running operation sends only live events, so progress during the gap is lost, and a finished one replays its history. Payloads carry `sequence_number`, which you can pass as the second argument to `connect()` on a new client.
+- `heartbeatInterval` is accepted and never read. `headers` are sent with the connect; a browser only allows those the API's CORS policy lists.
 
 ## OperatorClient
 
-Runs AI operators. `query()` lets the API pick the operator; `executeOperator()` names one, such as `analyst` or `mapping`. A queued run is followed over the stream, then by polling `/v1/operations/{id}/status` if the stream cannot open or drops, so a run started with an API key still returns its result.
+Runs AI operators. `query()` lets the API pick the operator; `executeOperator()` names one, such as `analyst` or `mapping`. A queued run is followed over the stream, then by polling `/v1/operations/{id}/status` if the stream cannot open or its reconnects run out.
 
 ```typescript
 import { OperatorClient } from '@robosystems/client/clients'

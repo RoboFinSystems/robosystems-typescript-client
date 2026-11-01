@@ -1,76 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { installStreamFetch, tick, type StreamFetch } from '../test/sseStream'
 import {
   OperatorClient,
   OperatorRequestError,
   OperatorRunError,
   QueuedOperatorError,
 } from './OperatorClient'
-
-// Mock EventSource for SSE tests
-class MockEventSource {
-  url: string
-  withCredentials: boolean
-  readyState: number = 0
-  onopen: ((event: any) => void) | null = null
-  onerror: ((event: any) => void) | null = null
-  onmessage: ((event: any) => void) | null = null
-  private eventListeners: Map<string, Set<(event: any) => void>> = new Map()
-
-  static CONNECTING = 0
-  static OPEN = 1
-  static CLOSED = 2
-
-  constructor(url: string, options?: { withCredentials?: boolean }) {
-    this.url = url
-    this.withCredentials = options?.withCredentials ?? false
-
-    setTimeout(() => {
-      this.readyState = MockEventSource.OPEN
-      if (this.onopen) {
-        this.onopen({ type: 'open' })
-      }
-    }, 0)
-  }
-
-  addEventListener(event: string, listener: (event: any) => void) {
-    if (!this.eventListeners.has(event)) {
-      this.eventListeners.set(event, new Set())
-    }
-    this.eventListeners.get(event)!.add(listener)
-  }
-
-  removeEventListener(event: string, listener: (event: any) => void) {
-    const listeners = this.eventListeners.get(event)
-    if (listeners) {
-      listeners.delete(listener)
-    }
-  }
-
-  dispatchEvent(event: any) {
-    const listeners = this.eventListeners.get(event.type)
-    if (listeners) {
-      listeners.forEach((listener) => listener(event))
-    }
-    return true
-  }
-
-  close() {
-    this.readyState = MockEventSource.CLOSED
-  }
-
-  simulateMessage(eventType: string, data: any) {
-    const event = {
-      type: eventType,
-      data: JSON.stringify(data),
-      lastEventId: '',
-    }
-
-    const listeners = this.eventListeners.get(eventType)
-    if (listeners) {
-      listeners.forEach((listener) => listener(event))
-    }
-  }
-}
 
 // Helper to create proper mock Response objects
 /** The JSON body of the one request the generated client sent: a `Request`, not `(url, init)`. */
@@ -97,6 +32,7 @@ function createMockResponse(data: any, options: { ok?: boolean; status?: number 
 describe('OperatorClient', () => {
   let client: OperatorClient
   let mockFetch: any
+  let net: StreamFetch
 
   beforeEach(() => {
     client = new OperatorClient({
@@ -106,9 +42,7 @@ describe('OperatorClient', () => {
     })
 
     mockFetch = vi.fn()
-    global.fetch = mockFetch
-    globalThis.fetch = mockFetch
-    global.EventSource = MockEventSource as any
+    net = installStreamFetch(mockFetch)
     vi.clearAllMocks()
   })
 
@@ -231,23 +165,21 @@ describe('OperatorClient', () => {
         })
       )
 
-      void client.executeQuery('graph_1', { message: 'test' })
+      const pending = client.executeQuery('graph_1', { message: 'test' })
 
-      // Wait for SSE client to connect
-      await new Promise((r) => setTimeout(r, 10))
+      const stream = await net.opened()
+      expect(new URL(stream.url).pathname).toBe('/v1/operations/op_456/stream')
+      stream.send('operator_completed', {
+        content: 'Done',
+        operator_used: 'analyst',
+        mode_used: 'standard',
+      })
 
-      // Find the SSEClient's EventSource and simulate operator_completed
-      // The SSEClient creates a new EventSource internally
-      // We need to find the last created MockEventSource
-      // Since we mocked EventSource globally, the last constructed instance will get the events
-
-      // Simulate the operator_completed event through the mock EventSource
-      // The SSEClient connects and registers listeners
-      await new Promise((r) => setTimeout(r, 50))
-
-      // Since we can't easily access the internal EventSource in this test pattern,
-      // and the SSE test infrastructure is complex, let's verify the error path instead
-      // The promise will reject since no SSE events come
+      await expect(pending).resolves.toMatchObject({
+        content: 'Done',
+        operator_used: 'analyst',
+        operation_id: 'op_456',
+      })
     })
   })
 
@@ -388,53 +320,6 @@ describe('OperatorClient', () => {
 
 // ── queued runs: stream and polling fallback ─────────────────────────────
 
-/** Records every constructed instance so a test can reach the live stream. */
-class RecordingEventSource extends MockEventSource {
-  static instances: RecordingEventSource[] = []
-
-  constructor(url: string, options?: { withCredentials?: boolean }) {
-    super(url, options)
-    RecordingEventSource.instances.push(this)
-  }
-
-  static get last(): RecordingEventSource {
-    return RecordingEventSource.instances[RecordingEventSource.instances.length - 1]
-  }
-}
-
-/** Fails before `open`, the way a 401/403/404 on the stream URL surfaces. */
-class RejectedEventSource {
-  static constructed = 0
-  url: string
-  readyState = 0
-  onopen: ((event: any) => void) | null = null
-  onerror: ((event: any) => void) | null = null
-  onmessage: ((event: any) => void) | null = null
-
-  static CONNECTING = 0
-  static OPEN = 1
-  static CLOSED = 2
-
-  constructor(url: string) {
-    this.url = url
-    RejectedEventSource.constructed += 1
-    setTimeout(() => {
-      this.readyState = RejectedEventSource.CLOSED
-      this.onerror?.({ type: 'error' })
-    }, 0)
-  }
-
-  addEventListener() {}
-  removeEventListener() {}
-  close() {
-    this.readyState = RejectedEventSource.CLOSED
-  }
-}
-
-/** Waits until the run's stream is constructed and open: a fixed delay races a slow runner. */
-const streamOpened = () =>
-  vi.waitFor(() => expect(RecordingEventSource.last?.readyState).toBe(MockEventSource.OPEN))
-
 const queuedResponse = (operationId: string) =>
   createMockResponse({ status: 'queued', operation_id: operationId, message: 'Queued' })
 
@@ -449,28 +334,31 @@ const completedResult = {
 
 describe('OperatorClient queued runs', () => {
   let mockFetch: any
+  let net: StreamFetch
+
+  /** Stream connects the client attempted: every fetch that did not reach the REST mock. */
+  const connectAttempts = () => net.fetch.mock.calls.length - mockFetch.mock.calls.length
+
+  /** The next connect is refused before it opens, the way a 401/403/404 on the stream URL is. */
+  const refuseNextConnect = () =>
+    net.answerNext(new Response(JSON.stringify({ detail: 'Token expired' }), { status: 401 }))
 
   beforeEach(() => {
     mockFetch = vi.fn()
-    global.fetch = mockFetch
-    globalThis.fetch = mockFetch
-    RecordingEventSource.instances = []
-    RejectedEventSource.constructed = 0
+    net = installStreamFetch(mockFetch)
     vi.clearAllMocks()
   })
 
   it('resolves from the operation_completed event on the stream', async () => {
-    global.EventSource = RecordingEventSource as any
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
     const pending = client.executeQuery('graph_1', { message: 'burn rate?' })
-    await streamOpened()
+    const stream = await net.opened()
 
-    const stream = RecordingEventSource.last
     expect(stream.url).toContain('/v1/operations/op_456/stream')
-    stream.simulateMessage('operation_progress', { message: 'Working', progress_percentage: 40 })
-    stream.simulateMessage('operation_completed', { message: 'done', result: completedResult })
+    stream.send('operation_progress', { message: 'Working', progress_percentage: 40 })
+    stream.send('operation_completed', { message: 'done', result: completedResult })
 
     const result = await pending
     expect(result.content).toBe(completedResult.content)
@@ -484,7 +372,6 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('opens the stream with the token the provider returns now, not at construction', async () => {
-    global.EventSource = RecordingEventSource as any
     let current = 'jwt-old'
     const client = new OperatorClient({
       baseUrl: 'http://localhost:8000',
@@ -495,15 +382,17 @@ describe('OperatorClient queued runs', () => {
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
     const pending = client.executeQuery('graph_1', { message: 'burn rate?' })
-    await streamOpened()
+    const stream = await net.opened()
 
-    expect(new URL(RecordingEventSource.last.url).searchParams.get('token')).toBe('jwt-rotated')
-    RecordingEventSource.last.simulateMessage('operation_completed', { result: completedResult })
+    expect(stream.headers.get('Authorization')).toBe('Bearer jwt-rotated')
+    expect(stream.url).not.toContain('jwt-rotated')
+    expect(new URL(stream.url).searchParams.has('token')).toBe(false)
+    stream.send('operation_completed', { result: completedResult })
     await pending
   })
 
   it('falls back to status polling when the stream cannot open', async () => {
-    global.EventSource = RejectedEventSource as any
+    refuseNextConnect()
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     const onProgress = vi.fn()
     mockFetch
@@ -532,7 +421,7 @@ describe('OperatorClient queued runs', () => {
 
     expect(result.content).toBe(completedResult.content)
     expect(result.operator_used).toBe('analyst')
-    expect(RejectedEventSource.constructed).toBe(1)
+    expect(connectAttempts()).toBe(1)
     expect(mockFetch).toHaveBeenCalledTimes(3)
     const statusCall = mockFetch.mock.calls[1][0]
     expect(typeof statusCall === 'string' ? statusCall : statusCall.url).toContain(
@@ -552,7 +441,6 @@ describe('OperatorClient queued runs', () => {
       })
 
     it('follows the run over status when the reconnect fails', async () => {
-      global.EventSource = RecordingEventSource as any
       const client = new OperatorClient({
         baseUrl: 'http://localhost:8000',
         token: 'jwt',
@@ -567,19 +455,19 @@ describe('OperatorClient queued runs', () => {
         { message: 'burn rate?' },
         { pollIntervalMs: 1 }
       )
-      await streamOpened()
+      const stream = await net.opened()
       // The reconnect is refused before it opens (an expired token, say).
-      global.EventSource = RejectedEventSource as any
-      RecordingEventSource.last.onerror?.({ type: 'error' })
+      refuseNextConnect()
+      stream.drop()
 
       const result = await pending
       expect(result.content).toBe(completedResult.content)
-      expect(RejectedEventSource.constructed).toBe(1)
+      // The stream that dropped, then the one reconnect that was refused.
+      expect(connectAttempts()).toBe(2)
       expect(mockFetch).toHaveBeenCalledTimes(2)
     })
 
     it('follows the run over status once the retries run out', async () => {
-      global.EventSource = RecordingEventSource as any
       const client = new OperatorClient({
         baseUrl: 'http://localhost:8000',
         token: 'jwt',
@@ -594,14 +482,14 @@ describe('OperatorClient queued runs', () => {
         { message: 'burn rate?' },
         { pollIntervalMs: 1 }
       )
-      await streamOpened()
-      RecordingEventSource.last.onerror?.({ type: 'error' })
+      const stream = await net.opened()
+      stream.drop()
 
       await expect(pending).resolves.toMatchObject({ content: completedResult.content })
+      expect(connectAttempts()).toBe(1)
     })
 
     it('follows the run over status when the server refuses the stream at the connection cap', async () => {
-      global.EventSource = RecordingEventSource as any
       const client = new OperatorClient({
         baseUrl: 'http://localhost:8000',
         token: 'jwt',
@@ -616,26 +504,23 @@ describe('OperatorClient queued runs', () => {
         { message: 'burn rate?' },
         { pollIntervalMs: 1 }
       )
-      await streamOpened()
+      const stream = await net.opened()
       // 200 first, then the server's in-stream `event: error`.
-      RecordingEventSource.last.onerror?.({
-        type: 'error',
-        data: JSON.stringify({ error: 'Too many concurrent SSE connections (limit: 3)' }),
-      })
+      stream.send('error', { error: 'Too many concurrent SSE connections (limit: 3)' })
 
       await expect(pending).resolves.toMatchObject({ content: completedResult.content })
       // No reconnect loop: the one stream, then /status.
-      expect(RecordingEventSource.instances).toHaveLength(1)
+      await tick()
+      expect(connectAttempts()).toBe(1)
       expect(mockFetch).toHaveBeenCalledTimes(2)
     })
 
     it('rejects, and does not poll, when the client itself is closed', async () => {
-      global.EventSource = RecordingEventSource as any
       const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
       mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
       const pending = client.executeQuery('graph_1', { message: 'burn rate?' })
-      await streamOpened()
+      await net.opened()
       client.close()
 
       await expect(pending).rejects.toThrow('Operator client closed')
@@ -644,7 +529,7 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('surfaces a failed run from the status fallback', async () => {
-    global.EventSource = RejectedEventSource as any
+    refuseNextConnect()
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456')).mockResolvedValueOnce(
       createMockResponse({
@@ -660,7 +545,7 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('carries the writes a failed run already made', async () => {
-    global.EventSource = RejectedEventSource as any
+    refuseNextConnect()
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     const write = { operation: 'create-agent', id: 'agt_1', name: 'Notion Labs' }
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456')).mockResolvedValueOnce(
@@ -683,7 +568,7 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('carries the writes a cancelled run kept', async () => {
-    global.EventSource = RejectedEventSource as any
+    refuseNextConnect()
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     const write = { operation: 'remember', id: 'mem_1' }
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456')).mockResolvedValueOnce(
@@ -704,13 +589,12 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('carries the writes from a streamed failure', async () => {
-    global.EventSource = RecordingEventSource as any
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456'))
 
     const pending = client.executeQuery('graph_1', { message: 'add Notion Labs' }).catch((e) => e)
-    await streamOpened()
-    RecordingEventSource.last.simulateMessage('operation_error', {
+    const stream = await net.opened()
+    stream.send('operation_error', {
       error: 'Task timed out after 600s',
       error_details: { error_type: 'TimeoutError', writes: [{ id: 'agt_2' }] },
     })
@@ -721,7 +605,7 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('stops polling on a definitive 4xx from /status', async () => {
-    global.EventSource = RejectedEventSource as any
+    refuseNextConnect()
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch
       .mockResolvedValueOnce(queuedResponse('op_456'))
@@ -734,13 +618,15 @@ describe('OperatorClient queued runs', () => {
 
     await expect(
       client.executeQuery('graph_1', { message: 'burn rate?' }, { pollIntervalMs: 1 })
-    ).rejects.toThrow(/SSE connection failed before open.*404: Operation not found/)
+    ).rejects.toThrow(
+      /Operator stream failed \(SSE connection failed: HTTP 401 Token expired\); status check failed \(404: Operation not found/
+    )
     // Submit + one status call; a 404 is not retried.
     expect(mockFetch).toHaveBeenCalledTimes(2)
   })
 
   it('rides out a transient status failure', async () => {
-    global.EventSource = RejectedEventSource as any
+    refuseNextConnect()
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch
       .mockResolvedValueOnce(queuedResponse('op_456'))
@@ -759,7 +645,7 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('gives up after repeated status failures', async () => {
-    global.EventSource = RejectedEventSource as any
+    refuseNextConnect()
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch.mockResolvedValueOnce(queuedResponse('op_456')).mockRejectedValue(new Error('down'))
 
@@ -775,7 +661,6 @@ describe('OperatorClient queued runs', () => {
   })
 
   it('passes error_details through on a sync response', async () => {
-    global.EventSource = RecordingEventSource as any
     const client = new OperatorClient({ baseUrl: 'http://localhost:8000', token: 'jwt' })
     mockFetch.mockResolvedValueOnce(
       createMockResponse({

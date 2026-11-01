@@ -1,60 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { installStreamFetch, type StreamFetch } from '../test/sseStream'
 import { OperationClient } from './OperationClient'
 import { EventType } from './SSEClient'
-
-// Mock EventSource for SSE tests
-class MockEventSource {
-  url: string
-  withCredentials: boolean
-  readyState: number = 0
-  onopen: ((event: any) => void) | null = null
-  onerror: ((event: any) => void) | null = null
-  onmessage: ((event: any) => void) | null = null
-  private eventListeners: Map<string, Set<(event: any) => void>> = new Map()
-
-  static CONNECTING = 0
-  static OPEN = 1
-  static CLOSED = 2
-
-  constructor(url: string, options?: { withCredentials?: boolean }) {
-    this.url = url
-    this.withCredentials = options?.withCredentials ?? false
-    setTimeout(() => {
-      this.readyState = MockEventSource.OPEN
-      if (this.onopen) {
-        this.onopen({ type: 'open' })
-      }
-    }, 0)
-  }
-
-  addEventListener(event: string, listener: (event: any) => void) {
-    if (!this.eventListeners.has(event)) {
-      this.eventListeners.set(event, new Set())
-    }
-    this.eventListeners.get(event)!.add(listener)
-  }
-
-  removeEventListener(event: string, listener: (event: any) => void) {
-    const listeners = this.eventListeners.get(event)
-    if (listeners) listeners.delete(listener)
-  }
-
-  dispatchEvent(event: any) {
-    const listeners = this.eventListeners.get(event.type)
-    if (listeners) listeners.forEach((l) => l(event))
-    return true
-  }
-
-  close() {
-    this.readyState = MockEventSource.CLOSED
-  }
-
-  simulateMessage(eventType: string, data: any) {
-    const event = { type: eventType, data: JSON.stringify(data), lastEventId: '' }
-    const listeners = this.eventListeners.get(eventType)
-    if (listeners) listeners.forEach((l) => l(event))
-  }
-}
 
 // Helper to create proper mock Response objects
 function createMockResponse(data: any, options: { ok?: boolean; status?: number } = {}) {
@@ -73,6 +20,7 @@ function createMockResponse(data: any, options: { ok?: boolean; status?: number 
 describe('OperationClient', () => {
   let operationClient: OperationClient
   let mockFetch: any
+  let net: StreamFetch
 
   beforeEach(() => {
     operationClient = new OperationClient({
@@ -80,9 +28,9 @@ describe('OperationClient', () => {
       headers: { 'X-API-Key': 'test-key' },
     })
 
-    // Mock global fetch
+    // Mock global fetch: stream connects go to `net`, everything else to mockFetch
     mockFetch = vi.fn()
-    global.fetch = mockFetch
+    net = installStreamFetch(mockFetch)
 
     // Reset all mocks
     vi.clearAllMocks()
@@ -179,21 +127,11 @@ describe('OperationClient', () => {
   })
 
   describe('monitorOperation', () => {
-    beforeEach(() => {
-      global.EventSource = MockEventSource as any
-    })
-
     it('should resolve with success on OPERATION_COMPLETED', async () => {
       const resultPromise = operationClient.monitorOperation('op_sse_1')
 
-      // Wait for SSE connection to establish
-      await new Promise((r) => setTimeout(r, 20))
-
-      // Get the SSE client and simulate completion
-      const sseClients = (operationClient as any).sseClients as Map<string, any>
-      const sseClient = sseClients.get('op_sse_1')
-      const eventSource = (sseClient as any).eventSource as MockEventSource
-      eventSource.simulateMessage(EventType.OPERATION_COMPLETED, {
+      const stream = await net.opened()
+      stream.send(EventType.OPERATION_COMPLETED, {
         result: { graph_id: 'graph_done' },
         metadata: { took: 5000 },
       })
@@ -207,12 +145,8 @@ describe('OperationClient', () => {
     it('should resolve with error on OPERATION_ERROR', async () => {
       const resultPromise = operationClient.monitorOperation('op_sse_err')
 
-      await new Promise((r) => setTimeout(r, 20))
-
-      const sseClients = (operationClient as any).sseClients as Map<string, any>
-      const sseClient = sseClients.get('op_sse_err')
-      const eventSource = (sseClient as any).eventSource as MockEventSource
-      eventSource.simulateMessage(EventType.OPERATION_ERROR, {
+      const stream = await net.opened()
+      stream.send(EventType.OPERATION_ERROR, {
         message: 'Processing failed',
       })
 
@@ -225,12 +159,8 @@ describe('OperationClient', () => {
     it('should resolve with cancelled on OPERATION_CANCELLED', async () => {
       const resultPromise = operationClient.monitorOperation('op_sse_cancel')
 
-      await new Promise((r) => setTimeout(r, 20))
-
-      const sseClients = (operationClient as any).sseClients as Map<string, any>
-      const sseClient = sseClients.get('op_sse_cancel')
-      const eventSource = (sseClient as any).eventSource as MockEventSource
-      eventSource.simulateMessage(EventType.OPERATION_CANCELLED, {})
+      const stream = await net.opened()
+      stream.send(EventType.OPERATION_CANCELLED, {})
 
       const result = await resultPromise
 
@@ -245,19 +175,15 @@ describe('OperationClient', () => {
         onProgress: (p) => progressUpdates.push(p),
       })
 
-      await new Promise((r) => setTimeout(r, 20))
-
-      const sseClients = (operationClient as any).sseClients as Map<string, any>
-      const sseClient = sseClients.get('op_progress')
-      const eventSource = (sseClient as any).eventSource as MockEventSource
+      const stream = await net.opened()
 
       // Send progress then completion
-      eventSource.simulateMessage(EventType.OPERATION_PROGRESS, {
+      stream.send(EventType.OPERATION_PROGRESS, {
         message: 'Step 1 of 3',
         progress_percent: 33,
       })
 
-      eventSource.simulateMessage(EventType.OPERATION_COMPLETED, {
+      stream.send(EventType.OPERATION_COMPLETED, {
         result: { done: true },
       })
 
@@ -276,13 +202,10 @@ describe('OperationClient', () => {
       await expect(resultPromise).rejects.toThrow('Operation timeout after 100ms')
     })
 
-    const liveSource = (client: OperationClient, operationId: string) =>
-      ((client as any).sseClients.get(operationId) as any).eventSource as MockEventSource
-
     it('settles when cancelOperation() closes the stream', async () => {
       mockFetch.mockResolvedValueOnce(createMockResponse({ status: 'cancelled' }))
       const resultPromise = operationClient.monitorOperation('op_cancel_local')
-      await new Promise((r) => setTimeout(r, 20))
+      await net.opened()
 
       await operationClient.cancelOperation('op_cancel_local')
 
@@ -294,7 +217,7 @@ describe('OperationClient', () => {
 
     it('settles when closeAll() runs', async () => {
       const resultPromise = operationClient.monitorOperation('op_close_all')
-      await new Promise((r) => setTimeout(r, 20))
+      await net.opened()
 
       operationClient.closeAll()
 
@@ -304,40 +227,25 @@ describe('OperationClient', () => {
     it('settles when a reconnect fails before it opens', async () => {
       const client = new OperationClient({ baseUrl: 'http://localhost:8000', retryDelay: 1 })
       const resultPromise = client.monitorOperation('op_reconnect')
-      await new Promise((r) => setTimeout(r, 20))
+      const stream = await net.opened()
 
       // The reconnect is refused before open (an expired token, say).
-      global.EventSource = class {
-        static CLOSED = 2
-        readyState = 0
-        onopen: ((event: any) => void) | null = null
-        onerror: ((event: any) => void) | null = null
-        onmessage: ((event: any) => void) | null = null
-        constructor() {
-          setTimeout(() => {
-            this.readyState = 2
-            this.onerror?.({ type: 'error' })
-          }, 0)
-        }
-        addEventListener() {}
-        close() {
-          this.readyState = 2
-        }
-      } as any
-      liveSource(client, 'op_reconnect').onerror?.({ type: 'error' })
+      net.answerNext(new Response(JSON.stringify({ detail: 'Token expired' }), { status: 401 }))
+      stream.drop()
 
-      await expect(resultPromise).resolves.toMatchObject({ success: false })
+      await expect(resultPromise).resolves.toMatchObject({
+        success: false,
+        error: 'SSE connection failed: HTTP 401 Token expired',
+      })
+      expect(net.streams).toHaveLength(1)
       client.closeAll()
     })
 
     it("resolves with the server's in-stream error", async () => {
       const resultPromise = operationClient.monitorOperation('op_capped')
-      await new Promise((r) => setTimeout(r, 20))
+      const stream = await net.opened()
 
-      liveSource(operationClient, 'op_capped').onerror?.({
-        type: 'error',
-        data: JSON.stringify({ error: 'Too many concurrent SSE connections (limit: 3)' }),
-      })
+      stream.send('error', { error: 'Too many concurrent SSE connections (limit: 3)' })
 
       await expect(resultPromise).resolves.toEqual({
         success: false,
@@ -347,19 +255,11 @@ describe('OperationClient', () => {
   })
 
   describe('waitForOperation', () => {
-    beforeEach(() => {
-      global.EventSource = MockEventSource as any
-    })
-
     it('should return result on success', async () => {
       const resultPromise = operationClient.waitForOperation('op_wait')
 
-      await new Promise((r) => setTimeout(r, 20))
-
-      const sseClients = (operationClient as any).sseClients as Map<string, any>
-      const sseClient = sseClients.get('op_wait')
-      const eventSource = (sseClient as any).eventSource as MockEventSource
-      eventSource.simulateMessage(EventType.OPERATION_COMPLETED, {
+      const stream = await net.opened()
+      stream.send(EventType.OPERATION_COMPLETED, {
         result: { data: 'done' },
       })
 
@@ -371,12 +271,8 @@ describe('OperationClient', () => {
     it('should throw on failure', async () => {
       const resultPromise = operationClient.waitForOperation('op_wait_fail')
 
-      await new Promise((r) => setTimeout(r, 20))
-
-      const sseClients = (operationClient as any).sseClients as Map<string, any>
-      const sseClient = sseClients.get('op_wait_fail')
-      const eventSource = (sseClient as any).eventSource as MockEventSource
-      eventSource.simulateMessage(EventType.OPERATION_ERROR, {
+      const stream = await net.opened()
+      stream.send(EventType.OPERATION_ERROR, {
         message: 'Server error',
       })
 
