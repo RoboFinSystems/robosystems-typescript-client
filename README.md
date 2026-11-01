@@ -13,7 +13,7 @@ Official TypeScript client for the RoboSystems financial intelligence platform â
 - **High-level domain clients** for RoboLedger, RoboInvestor, and the element library
 - **Streaming query mode** over NDJSON for large results; the client collects the rows before yielding them
 - **AI Operator** integration for natural language financial analysis
-- **Comprehensive error handling** with typed errors
+- **Typed errors** for GraphQL reads, queued work and operator runs
 
 ## Installation
 
