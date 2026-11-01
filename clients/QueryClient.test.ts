@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { installStreamFetch, type StreamFetch } from '../test/sseStream'
 import { QueryClient, QueuedQueryError } from './QueryClient'
 
 // Helper to create proper mock Response objects
@@ -467,36 +468,12 @@ describe('QueryClient request options', () => {
 })
 
 describe('QueryClient queued query stream', () => {
-  class OpenEventSource {
-    static instances: OpenEventSource[] = []
-    static CLOSED = 2
-    readyState = 0
-    onopen: ((event: any) => void) | null = null
-    onerror: ((event: any) => void) | null = null
-    onmessage: ((event: any) => void) | null = null
-    constructor() {
-      OpenEventSource.instances.push(this)
-      setTimeout(() => {
-        this.readyState = 1
-        this.onopen?.({ type: 'open' })
-      }, 0)
-    }
-    listeners = new Map<string, (event: any) => void>()
-    addEventListener(type: string, listener: (event: any) => void) {
-      this.listeners.set(type, listener)
-    }
-    close() {
-      this.readyState = 2
-    }
-  }
-
   let mockFetch: any
+  let net: StreamFetch
 
   beforeEach(() => {
     mockFetch = vi.fn()
-    globalThis.fetch = mockFetch
-    OpenEventSource.instances = []
-    global.EventSource = OpenEventSource as any
+    net = installStreamFetch(mockFetch)
   })
 
   const queued = () =>
@@ -513,10 +490,9 @@ describe('QueryClient queued query stream', () => {
     const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
 
     const pending = client.executeQuery('graph_123', { query: 'RETURN 1' })
-    await new Promise((r) => setTimeout(r, 10))
-    OpenEventSource.instances[0].listeners.get('operation_completed')?.({
-      data: JSON.stringify({ result: { data: [{ n: 1 }], columns: ['n'], row_count: 1 } }),
-      lastEventId: '3',
+    const stream = await net.opened()
+    stream.send('operation_completed', {
+      result: { data: [{ n: 1 }], columns: ['n'], row_count: 1 },
     })
 
     await expect(pending).resolves.toMatchObject({ data: [{ n: 1 }], row_count: 1 })
@@ -527,7 +503,7 @@ describe('QueryClient queued query stream', () => {
     const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
 
     const pending = client.executeQuery('graph_123', { query: 'RETURN 1' })
-    await new Promise((r) => setTimeout(r, 10))
+    await net.opened()
     client.close()
 
     await expect(pending).rejects.toThrow('Query stream closed before the query completed')
@@ -538,11 +514,8 @@ describe('QueryClient queued query stream', () => {
     const client = new QueryClient({ baseUrl: 'http://localhost:8000' })
 
     const pending = client.executeQuery('graph_123', { query: 'RETURN 1' })
-    await new Promise((r) => setTimeout(r, 10))
-    OpenEventSource.instances[0].onerror?.({
-      type: 'error',
-      data: JSON.stringify({ error: 'Too many concurrent SSE connections (limit: 3)' }),
-    })
+    const stream = await net.opened()
+    stream.send('error', { error: 'Too many concurrent SSE connections (limit: 3)' })
 
     await expect(pending).rejects.toThrow('Too many concurrent SSE connections (limit: 3)')
   })

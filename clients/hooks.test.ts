@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { installStreamFetch } from '../test/sseStream'
 import {
   useMultipleOperations,
   useOperation,
@@ -286,28 +287,9 @@ describe('useOperation', () => {
   })
 
   it('should set running state when monitoring starts', async () => {
-    // Mock EventSource for SSE
-    class MockEventSource {
-      onopen: any = null
-      onerror: any = null
-      onmessage: any = null
-      readyState = 0
-      url: string
-      withCredentials = false
-      static CONNECTING = 0
-      static OPEN = 1
-      static CLOSED = 2
-      constructor(url: string) {
-        this.url = url
-        // Never connect - we just want to test the state transition
-      }
-      addEventListener() {}
-      removeEventListener() {}
-      close() {
-        this.readyState = 2
-      }
-    }
-    global.EventSource = MockEventSource as any
+    // A stream that never opens: we just want to test the state transition
+    const net = installStreamFetch(mockFetch)
+    net.answerNext(() => new Promise(() => {}))
 
     const { result } = renderHook(() => useOperation())
 
@@ -395,9 +377,9 @@ describe('useSDKClients', () => {
       expect(result.current.query).not.toBeNull()
     })
 
-    // Both clients open SSE streams, and the stream endpoint authenticates
-    // the JWT from the URL — a token captured at hook init would be dead
-    // after the first session refresh.
+    // Both clients open SSE streams, and each connect sends the current
+    // credential — a token captured at hook init would be dead after the
+    // first session refresh.
     expect((result.current.query as any).config.tokenProvider).toBe(mockTokenProvider)
     expect((result.current.operations as any).config.tokenProvider).toBe(mockTokenProvider)
   })

@@ -164,7 +164,7 @@ function createTimeoutFetch(timeoutMs: number): typeof fetch {
  * The two credential types are NOT interchangeable at the backend —
  * sending a JWT as `X-API-Key` or an API key as Bearer both 401.
  */
-function applyAuthHeader(headers: Headers, token: string): void {
+export function applyAuthHeader(headers: Headers, token: string): void {
   // The resolved credential replaces any the static headers carry, so
   // exactly one is sent.
   headers.delete('X-API-Key')
