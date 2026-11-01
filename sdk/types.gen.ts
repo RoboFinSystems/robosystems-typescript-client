@@ -1075,7 +1075,7 @@ export type BackupCreateRequest = {
     /**
      * Backup Format
      *
-     * Backup format - only 'full_dump' is supported (complete .lbug database file)
+     * Backup format - only 'full_dump' is supported (complete .lbdb database file)
      */
     backup_format?: string;
     /**
@@ -1267,7 +1267,7 @@ export type BackupResponse = {
     /**
      * Download Extension
      *
-     * Extension the download will carry, and therefore how to unpack it: '.lbug.zip' is a ZIP holding the LadybugDB database file, '.lbug.zst' is zstd-compressed (`zstd -d`). Null only when the backup has no stored object yet.
+     * Extension the download will carry, and therefore how to unpack it: '.lbdb.zip' is a ZIP holding the LadybugDB database file, '.lbdb.zst' is zstd-compressed (`zstd -d`). Null only when the backup has no stored object yet.
      */
     download_extension?: string | null;
     /**
