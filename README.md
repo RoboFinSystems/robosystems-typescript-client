@@ -8,10 +8,10 @@ Official TypeScript client for the RoboSystems financial intelligence platform â
 ## Features
 
 - **Type-safe API client** with full TypeScript types
-- **Browser & Node.js support** with different auth strategies
+- **Browser & Node.js support** for REST and GraphQL calls; operation streams need a global `EventSource` and a JWT
 - **React hooks** for seamless UI integration
 - **High-level domain clients** for RoboLedger, RoboInvestor, and the element library
-- **Streaming support** for memory-efficient processing of large result sets
+- **Streaming query mode** over NDJSON for large results; the client collects the rows before yielding them
 - **AI Operator** integration for natural language financial analysis
 - **Comprehensive error handling** with typed errors
 
