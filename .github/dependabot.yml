@@ -76,11 +76,11 @@ updates:
         update-types:
           - 'version-update:semver-major'
       # @types/node tracks the runtime floor, not npm's cadence. This package
-      # declares engines >=22.0.0, and as a published library it has to keep
+      # declares engines >=24.0.0, and as a published library it has to keep
       # compiling for the *oldest* Node it claims to support — so the types
       # belong on 22 even when newer ones exist. Bumping them would let code
       # referencing Node 24+ APIs typecheck clean and still break a consumer
-      # on Node 22. Drop this entry when engines moves off >=22.
+      # on Node 24. Move this with the floor.
       #
       # Note: unlike the frontend apps, there is deliberately no `eslint`
       # major ignore here. Their block exists because eslint-plugin-jsx-a11y
