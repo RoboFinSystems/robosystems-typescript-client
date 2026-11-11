@@ -101,7 +101,7 @@ export type AcceptSuggestionLine = {
     /**
      * Reason
      *
-     * Why a skipped line was not taken: `not_open` (already classified, posted or retracted), `no_suggestion` (nothing to take, or a name that matches no account), `source_changed` (the feed changed it after capture), `suggestion_changed` (a line taken earlier in the batch moved the counterparty's default, so this one's suggestion is not the one selected; review it again), `closed_period`, `locked` (another process holds it; retry), or `refused` (the handler would not post the choice).
+     * Why a skipped line was not taken: `not_open` (already classified, posted or retracted), `no_suggestion` (nothing to take, or a name that matches no account), `source_changed` (the feed changed it after capture), `needs_review` (the suggestion carries a caution, such as an amount far above the counterparty's usual; classify the line on its own), `suggestion_changed` (a line taken earlier in the batch moved the counterparty's default, so this one's suggestion is not the one selected; review it again), `closed_period`, `locked` (another process holds it; retry), or `refused` (the handler would not post the choice).
      */
     reason?: string | null;
     /**
@@ -2618,7 +2618,7 @@ export type ConnectionResponse = {
     /**
      * Write Policy
      *
-     * Source-of-truth write policy: 'native' (RoboSystems is authoritative; no outbound write-back) or 'qb_authoritative' (QuickBooks is authoritative; RoboSystems-originated entries publish to QB). Set via the write-policy endpoint.
+     * Outbound write policy: 'qb_authoritative' (QuickBooks is the book of record and RoboSystems-originated entries publish to it at close), 'shadow' (QuickBooks is the book of record, nothing is written to it and the close posts nothing locally), or 'native' (no external ledger; what severing leaves). Set via the write-policy endpoint.
      */
     write_policy?: string | null;
     /**
@@ -8312,6 +8312,12 @@ export type GraphSubscriptionResponse = {
      * Cancellation date
      */
     canceled_at?: string | null;
+    /**
+     * Trial Ends At
+     *
+     * When the free trial ends and the first charge is made. Null for a subscription that opened without a trial; kept after the trial is over.
+     */
+    trial_ends_at?: string | null;
     /**
      * Ends At
      *
@@ -19035,6 +19041,12 @@ export type RepositoryInfo = {
      */
     coming_soon: boolean;
     /**
+     * Trial Days
+     *
+     * Length in days of the free trial a first subscription opens with; 0 when the repository offers none
+     */
+    trial_days?: number;
+    /**
      * Plans
      *
      * Available plans
@@ -20692,7 +20704,7 @@ export type SetWritePolicyRequest = {
     /**
      * Write Policy
      *
-     * 'qb_authoritative' = QuickBooks authoritative, entries publish to QB; 'shadow' = QuickBooks authoritative and RoboSystems only observes: nothing is written to QuickBooks, the close posts nothing locally, its drafts become shadowed expectations and its gates are findings. 'native', books kept in RoboSystems with no write-back, is what disconnecting or severing leaves, not a choice for a live connection.
+     * 'qb_authoritative' = QuickBooks authoritative, entries publish to QB; 'shadow' = QuickBooks authoritative and RoboSystems only observes: nothing is written to QuickBooks, the close posts nothing locally, its drafts become shadowed expectations and its gates are findings. 'native', books kept in RoboSystems with no write-back, is what severing leaves, not a choice for a live connection.
      */
     write_policy: 'qb_authoritative' | 'shadow';
 };
@@ -29139,6 +29151,62 @@ export type CreateRepositorySubscriptionResponses = {
 };
 
 export type CreateRepositorySubscriptionResponse = CreateRepositorySubscriptionResponses[keyof CreateRepositorySubscriptionResponses];
+
+export type EndRepositorySubscriptionTrialData = {
+    body?: never;
+    path: {
+        /**
+         * Graph Id
+         *
+         * Repository name (e.g., 'sec')
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/subscriptions/end-trial';
+};
+
+export type EndRepositorySubscriptionTrialErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type EndRepositorySubscriptionTrialError = EndRepositorySubscriptionTrialErrors[keyof EndRepositorySubscriptionTrialErrors];
+
+export type EndRepositorySubscriptionTrialResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type EndRepositorySubscriptionTrialResponse = EndRepositorySubscriptionTrialResponses[keyof EndRepositorySubscriptionTrialResponses];
 
 export type CancelRepositorySubscriptionData = {
     body?: CancelSubscriptionRequest;
