@@ -2592,6 +2592,12 @@ export type ConnectionResponse = {
      */
     entity_id?: string | null;
     /**
+     * Keeps Books
+     *
+     * Whether this connection is the ledger of record for `entity_id`: its books are kept in the connected system, and `write_policy` says whether entries are written back to it or only mirrored. False for a bank feed or an external event source.
+     */
+    keeps_books?: boolean;
+    /**
      * Status
      *
      * Connection status
@@ -2618,7 +2624,7 @@ export type ConnectionResponse = {
     /**
      * Write Policy
      *
-     * Outbound write policy: 'qb_authoritative' (QuickBooks is the book of record and RoboSystems-originated entries publish to it at close), 'shadow' (QuickBooks is the book of record, nothing is written to it and the close posts nothing locally), or 'native' (no external ledger; what severing leaves). Set via the write-policy endpoint.
+     * Outbound write policy: 'qb_authoritative' (QuickBooks is the book of record and RoboSystems-originated entries publish to it at close), 'shadow' (QuickBooks is the book of record, nothing is written to it and the close posts nothing locally), or 'native' (no external ledger; what severing leaves). It governs the books of `entity_id`, and only on the connection that keeps them. Set via the write-policy endpoint.
      */
     write_policy?: string | null;
     /**
@@ -3272,7 +3278,7 @@ export type CreateEntityRequest = {
     /**
      * Reporting Style Id
      *
-     * Structure id of the Reporting Style to present under, validated in the graph like change-reporting-style. Omit to derive it from `entity_type`.
+     * Structure id of the Reporting Style to present under, validated in the graph like change-reporting-style. Omit to derive it from `entity_type`. A consolidation entity always takes the group parent's.
      */
     reporting_style_id?: string | null;
     /**
