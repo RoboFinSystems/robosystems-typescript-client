@@ -399,7 +399,7 @@ export const listUserApiKeys = <ThrowOnError extends boolean = false>(options?: 
 /**
  * Create API Key
  *
- * The raw key value is only returned once at creation time and cannot be retrieved again.
+ * The raw key value is only returned once at creation time and cannot be retrieved again. Requires a signed-in session; API keys are not accepted.
  */
 export const createUserApiKey = <ThrowOnError extends boolean = false>(options: Options<CreateUserApiKeyData, ThrowOnError>): RequestResult<CreateUserApiKeyResponses, CreateUserApiKeyErrors, ThrowOnError> => (options.client ?? client).post<CreateUserApiKeyResponses, CreateUserApiKeyErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -522,7 +522,7 @@ export const removeOrgMember = <ThrowOnError extends boolean = false>(options: O
 /**
  * Update Member Role
  *
- * Requires admin or owner role. Owner promotion/demotion requires a dedicated ownership transfer workflow.
+ * Requires admin or owner role. Owner promotion/demotion requires a dedicated ownership transfer workflow. Requires a signed-in session; API keys are not accepted.
  */
 export const updateOrgMemberRole = <ThrowOnError extends boolean = false>(options: Options<UpdateOrgMemberRoleData, ThrowOnError>): RequestResult<UpdateOrgMemberRoleResponses, UpdateOrgMemberRoleErrors, ThrowOnError> => (options.client ?? client).put<UpdateOrgMemberRoleResponses, UpdateOrgMemberRoleErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -548,7 +548,7 @@ export const listOrgInvitations = <ThrowOnError extends boolean = false>(options
 /**
  * Invite Member
  *
- * Invite a new user to the organization by email. Disabled by default (ORG_MEMBER_INVITATIONS_ENABLED=false); returns 501 when disabled. Requires admin or owner role. Only emails without an existing account can be invited.
+ * Invite a new user to the organization by email. Disabled by default (ORG_MEMBER_INVITATIONS_ENABLED=false); returns 501 when disabled. Requires admin or owner role. Only emails without an existing account can be invited. Requires a signed-in session; API keys are not accepted.
  */
 export const createOrgInvitation = <ThrowOnError extends boolean = false>(options: Options<CreateOrgInvitationData, ThrowOnError>): RequestResult<CreateOrgInvitationResponses, CreateOrgInvitationErrors, ThrowOnError> => (options.client ?? client).post<CreateOrgInvitationResponses, CreateOrgInvitationErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -574,7 +574,7 @@ export const revokeOrgInvitation = <ThrowOnError extends boolean = false>(option
 /**
  * Resend Invitation
  *
- * Requires admin or owner role. Rotates the invitation token, extends its expiry, and re-sends the email.
+ * Requires admin or owner role. Rotates the invitation token, extends its expiry, and re-sends the email. Requires a signed-in session; API keys are not accepted.
  */
 export const resendOrgInvitation = <ThrowOnError extends boolean = false>(options: Options<ResendOrgInvitationData, ThrowOnError>): RequestResult<ResendOrgInvitationResponses, ResendOrgInvitationErrors, ThrowOnError> => (options.client ?? client).post<ResendOrgInvitationResponses, ResendOrgInvitationErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -927,7 +927,7 @@ export const listGraphMembers = <ThrowOnError extends boolean = false>(options: 
 /**
  * Add Graph Member
  *
- * Grant a member of the graph's organization access at a chosen role. Requires graph admin.
+ * Grant a member of the graph's organization access at a chosen role. Requires graph admin. Requires a signed-in session; API keys are not accepted.
  */
 export const addGraphMember = <ThrowOnError extends boolean = false>(options: Options<AddGraphMemberData, ThrowOnError>): RequestResult<AddGraphMemberResponses, AddGraphMemberErrors, ThrowOnError> => (options.client ?? client).post<AddGraphMemberResponses, AddGraphMemberErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -953,7 +953,7 @@ export const removeGraphMember = <ThrowOnError extends boolean = false>(options:
 /**
  * Update Graph Member Role
  *
- * Change an explicit member's graph role. Requires graph admin. Implicit org owner/admin access is managed through org roles.
+ * Change an explicit member's graph role. Requires graph admin. Implicit org owner/admin access is managed through org roles. Requires a signed-in session; API keys are not accepted.
  */
 export const updateGraphMemberRole = <ThrowOnError extends boolean = false>(options: Options<UpdateGraphMemberRoleData, ThrowOnError>): RequestResult<UpdateGraphMemberRoleResponses, UpdateGraphMemberRoleErrors, ThrowOnError> => (options.client ?? client).put<UpdateGraphMemberRoleResponses, UpdateGraphMemberRoleErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1862,7 +1862,7 @@ export const updateEntity = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Change Reporting Style
  *
- * Switch the reporting entity's Reporting Style — how its statements are laid out (equity-form, close-target concept, per-statement Networks). Validates that the target Style has a complete composition in the tenant schema, then flips `entities.reporting_style_id`. Omit `entity_id` to target the graph's primary entity. Filed Reports are unaffected (their FactSet rows pin their structures at create-time); new reports use the new Style. Idempotent on the same id.
+ * Switch the reporting entity's Reporting Style — how its statements are laid out (equity-form, close-target concept, per-statement Networks). Validates that the target Style has a complete composition in the tenant schema, then flips `entities.reporting_style_id`. Omit `entity_id` to target the graph's primary entity. A group's consolidation entity follows the parent's Style: changing the parent's changes both, and it cannot be set on its own. Filed Reports are unaffected (their FactSet rows pin their structures at create-time); new reports use the new Style. Idempotent on the same id.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
