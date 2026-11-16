@@ -1,7 +1,7 @@
 {
   "name": "@robosystems/client",
   "version": "2.38.0",
-  "description": "TypeScript client library for the RoboSystems financial intelligence platform",
+  "description": "TypeScript SDK for RoboSystems, the open-source knowledge graph for finance",
   "main": "index.js",
   "types": "index.d.ts",
   "bin": {

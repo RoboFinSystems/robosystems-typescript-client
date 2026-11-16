@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/@robosystems%2Fclient.svg)](https://www.npmjs.com/package/@robosystems/client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Official TypeScript client for the RoboSystems financial intelligence platform — accounting, financial reporting, and investment management over a knowledge graph API. Type-safe and modern, generated from the OpenAPI spec, with GraphQL reads and idempotent operation writes.
+Part of RoboSystems, the open-source knowledge graph for finance. The official TypeScript client for the RoboSystems API: accounting, financial reporting, and investment management over the graph. Type-safe and modern, generated from the OpenAPI spec, with GraphQL reads and idempotent operation writes.
 
 ## Features
 
