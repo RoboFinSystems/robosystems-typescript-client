@@ -729,7 +729,7 @@ export const listOperators = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Auto-select Operator for Query
  *
- * Routes to the best operator for your query. Operators: `analyst` (answers natural-language questions over the graph — curated financial reads, documents, memory, and read-only Cypher; supports `quick`, `standard`, `extended`; `cypher` is accepted as its former name) and `mapping` (autonomous Chart of Accounts → rs-gaap mapping; roboledger graphs only, `extended` only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. Credits are consumed by actual token usage, not a fixed price per mode. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
+ * Routes to the best operator for your query. Operators: `analyst` (answers natural-language questions over the graph — curated financial reads, documents, memory, and read-only Cypher; supports `quick`, `standard`, `extended`; `cypher` is accepted as its former name) and `mapping` (automatic Chart of Accounts → rs-gaap mapping; roboledger graphs only, `extended` only). `author` makes writes, so it is never chosen here: call it by name. `GET /v1/graphs/{graph_id}/operator` lists what is registered. Credits are consumed by actual token usage, not a fixed price per mode. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
  */
 export const autoSelectOperator = <ThrowOnError extends boolean = false>(options: Options<AutoSelectOperatorData, ThrowOnError>): RequestResult<AutoSelectOperatorResponses, AutoSelectOperatorErrors, ThrowOnError> => (options.client ?? client).post<AutoSelectOperatorResponses, AutoSelectOperatorErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -753,7 +753,7 @@ export const getOperatorMetadata = <ThrowOnError extends boolean = false>(option
 /**
  * Execute Specific Operator
  *
- * Available: `analyst` (natural-language questions over the graph — curated financial reads, documents, memory, and read-only Cypher; RAG retrieval is one of its capabilities, not a separate operator; `cypher` is accepted as its former name) and `mapping` (Chart of Accounts → rs-gaap mapping, roboledger graphs only). `GET /v1/graphs/{graph_id}/operator` lists what is registered. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
+ * Available: `analyst` (natural-language questions over the graph — curated financial reads, documents, memory, and read-only Cypher; RAG retrieval is one of its capabilities, not a separate operator; `cypher` is accepted as its former name), `mapping` (Chart of Accounts → rs-gaap mapping, roboledger graphs only) and `author` (makes the change a request asks for, such as metric and forecast blocks, counterparties, memories, draft reports and inbox classifications, through writes that are reversible or wait on a person's step; needs write access to the graph). `GET /v1/graphs/{graph_id}/operator` lists what is registered. The run executes on the background worker: the default answer is 202 with the operation's `_links` (stream, status, cancel); `?mode=sync` waits up to 50s and answers 200 with the result.
  */
 export const executeSpecificOperator = <ThrowOnError extends boolean = false>(options: Options<ExecuteSpecificOperatorData, ThrowOnError>): RequestResult<ExecuteSpecificOperatorResponses, ExecuteSpecificOperatorErrors, ThrowOnError> => (options.client ?? client).post<ExecuteSpecificOperatorResponses, ExecuteSpecificOperatorErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1811,7 +1811,7 @@ export const changeCalendarStart = <ThrowOnError extends boolean = false>(option
 /**
  * Initialize Chart of Accounts
  *
- * Create the graph's chart of accounts from a shipped template — the fresh-company path to native books. Use when the graph has NO chart (a QuickBooks-synced tenant never needs this: its chart arrives with the sync and stays after a sever) and before connecting a bank feed, which needs a chart to resolve against. Templates: `saas` (subscription software), `services` (professional services), `product` (inventory and COGS) — the `chartTemplates` GraphQL field lists them with names and account counts. Creates the chart, its `coa_mapping` structure and the template's CoA → rs-gaap mapping associations in one transaction, with the equity rows mapped by the entity's legal form (`entity_type`, defaulting to the entity's). Each entity of the group keeps its own chart: `entity_id` names a subsidiary, omitted means the group parent. One-time per entity: 409 once that entity has a chart — a chart is never replaced. Customize afterwards with update-taxonomy-block; accounts that carry activity are never deleted.
+ * Create the graph's chart of accounts from a shipped template — the fresh-company path to native books. Use when the graph has NO chart (a QuickBooks-synced tenant never needs this: its chart arrives with the sync and stays after a sever) and before connecting a bank feed, which needs a chart to resolve against. Templates: `saas` (subscription software), `services` (professional services), `product` (inventory and COGS), `consolidation` (a group's consolidation entity — the adjustments column, never an operating company's chart). Creates the chart, its `coa_mapping` structure and the template's CoA → rs-gaap mapping associations in one transaction, with the equity rows mapped by the entity's legal form (`entity_type`, defaulting to the entity's). Each entity of the group keeps its own chart: `entity_id` names a subsidiary, omitted means the group parent. One-time per entity: 409 once that entity has a chart — a chart is never replaced. Customize afterwards with update-taxonomy-block; accounts that carry activity are never deleted.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1879,7 +1879,7 @@ export const changeReportingStyle = <ThrowOnError extends boolean = false>(optio
 /**
  * Link Bank Account
  *
- * Point a bank feed's account at a chart account. Name `element_id` for an existing active account, or `entity_id` alone to create one in that entity's chart. The chart the account is in decides whose books the feed's lines go into, so this is also how a feed account is bound to a subsidiary. Lines still in the inbox move with it (across an entity change their suggestion is resolved again on the new chart, and a classification that named the old entity's account is dropped); posted entries stay where they were posted. An account another connection already feeds is refused, as is an entity whose books QuickBooks keeps (the group parent, while QuickBooks is connected). An account the feed created and then left stays on its chart as an ordinary account. A sync already in flight when the link moves can still land a line or two on the old account; running this again moves them. Read the group's accounts with the `bankAccounts` GraphQL field.
+ * Point a bank feed's account at a chart account. Name `element_id` for an existing active account, or `entity_id` alone to create one in that entity's chart. The chart the account is in decides whose books the feed's lines go into, so this is also how a feed account is bound to a subsidiary. Lines still in the inbox move with it (across an entity change their suggestion is resolved again on the new chart, and a classification that named the old entity's account is dropped); posted entries stay where they were posted. An account another connection already feeds is refused, as is an entity whose books QuickBooks keeps (the group parent, while QuickBooks is connected). An account the feed created and then left stays on its chart as an ordinary account. A sync already in flight when the link moves can still land a line or two on the old account; running this again moves them. The group's accounts are `list-bank-accounts` over MCP and the `bankAccounts` GraphQL field.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -1981,7 +1981,7 @@ export const createMappingAssociation = <ThrowOnError extends boolean = false>(o
 /**
  * Delete Mapping Association
  *
- * Remove a single CoA → reporting-concept mapping edge by id. The mapping structure itself remains; only the association row is dropped. Use this to correct a wrong mapping — delete the bad edge, then `create-mapping-association` the right one. Find the association id via the `library_element_arcs` GraphQL field. Library-seeded rows cannot be deleted (403). An edge for an account with landed history in a closed month cannot be removed on its own (422): move the account with `create-mapping-association` and `replaces_association_id` instead.
+ * Remove a single CoA → reporting-concept mapping edge by id. The mapping structure itself remains; only the association row is dropped. Use this to correct a wrong mapping — delete the bad edge, then `create-mapping-association` the right one. The association id is `list-element-arcs` over MCP and the `libraryElementArcs` GraphQL field. Library-seeded rows cannot be deleted (403). An edge for an account with landed history in a closed month cannot be removed on its own (422): move the account with `create-mapping-association` and `replaces_association_id` instead.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2015,7 +2015,7 @@ export const autoMapElements = <ThrowOnError extends boolean = false>(options: O
 /**
  * Create Information Block
  *
- * Generic Information Block construction entry. `block_type` selects the registered block type; `payload` is validated against that type's creation schema at dispatch. Schedule dispatches to the existing Schedule machinery; statement block types raise 501 (use create-report instead). Authoring schedules for a close? Call `get-close-playbook` (mode='initiate') first — one schedule is a single debit/credit element pair, so multi-line entries become multiple schedules, and element ids must be real (discover via get-graph-schema / get-unmapped-elements / suggest-mapping).
+ * Generic Information Block construction entry. `block_type` selects the registered block type; `payload` is validated against that type's creation schema at dispatch. Only schedule and forecast are constructed here; the other block types raise 501 with a hint naming their own operation (statements: create-report; disclosure and metric structures: create-taxonomy-block). Authoring schedules for a close? Call `get-close-playbook` (mode='initiate') first — one schedule is a single debit/credit element pair, so multi-line entries become multiple schedules, and element ids must be real (discover via get-graph-schema / get-unmapped-elements / suggest-mapping).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2032,7 +2032,7 @@ export const createInformationBlock = <ThrowOnError extends boolean = false>(opt
 /**
  * Update Information Block
  *
- * Generic Information Block update entry. Dispatches by `block_type` to the registered mutation handler. Block types whose Structures are library-seeded and immutable (statement family) surface 501.
+ * Generic Information Block update entry. Dispatches by `block_type` to the registered mutation handler. Only schedule and forecast blocks update here; the statement family (library-seeded and immutable), disclosure, metric and reconciliation blocks surface 501 with a hint naming the operation that changes them.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2049,7 +2049,7 @@ export const updateInformationBlock = <ThrowOnError extends boolean = false>(opt
 /**
  * Delete Information Block
  *
- * Generic Information Block deletion entry. Returns a thin confirmation (deleted / structure_id / block_type / name). Block types whose Structures are library-seeded cannot be deleted per tenant and surface 501.
+ * Generic Information Block deletion entry. Returns a thin confirmation (deleted / structure_id / block_type / name). Only schedule and forecast blocks delete here; statement, disclosure, metric and reconciliation blocks surface 501 with a hint naming the operation that manages them.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2117,7 +2117,7 @@ export const assertMetrics = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Compute Forecast for a Forecast Block
  *
- * Walks a forecast block's driver cascade month-by-month forward from its base period: lever-driven rs-driver Derive rules in dependency order, carry-forward for unmodeled income-statement lines, calc-DAG subtotals — upserting one scenario income-statement FactSet (plus a working-capital balance-sheet set) per forward month, all keyed by the block's scenario_id (NULL = actuals; scenario reads pass it as a filter). Re-running replaces each month's values. Rules with missing lever months or unbound operands are skipped with a reason (their targets fall back to carry-forward), never errored. Deterministic and non-AI — no credits consumed.
+ * Walks a forecast block's driver cascade month-by-month forward from its anchor (with base_anchor='seam', the default, the newest closed month inside the horizon; with 'fixed', the block's base_period): lever-driven rs-driver Derive rules in dependency order, carry-forward for unmodeled income-statement lines, calc-DAG subtotals — upserting per forward month a scenario income-statement FactSet, a balance-sheet set (the full roll when the anchor month has an actual balance sheet, else only the rule-driven working-capital instants) and a derived cash-flow set when an actual one exists, all keyed by the block's scenario_id (NULL = actuals; scenario reads pass it as a filter). Re-running replaces each month's values. Rules with missing lever months or unbound operands are skipped with a reason (their targets fall back to carry-forward). Each month's sets are verified; a month that fails halts the walk there (halted_at), since every later month would be derived from it. Deterministic and non-AI — no credits consumed.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2287,7 +2287,7 @@ export const updateEventBlock = <ThrowOnError extends boolean = false>(options: 
 /**
  * Execute Event Block
  *
- * For events on a connection with write_policy='qb_authoritative' or 'hybrid', publish the event's draft GL entries to the source-of-truth system (QuickBooks), each as its own JournalEntry. Records the QuickBooks ids per entry on event.metadata.qb_entry_ids and promotes the published entries to 'posted'; the event goes 'fulfilled' once no draft remains, or 'pending' on rejection (what landed is kept). Native-policy events fast-path through with no QB write — RoboSystems is the system of record. Only the group parent's books are QuickBooks': an event on a subsidiary's books is refused.
+ * For events on a connection with write_policy='qb_authoritative' or 'hybrid', publish the event's draft GL entries to the source-of-truth system (QuickBooks), each as its own JournalEntry. Records the QuickBooks ids per entry on event.metadata.qb_entry_ids and promotes the published entries to 'posted'; the event goes 'fulfilled' once no draft remains. On rejection what landed is kept, the status is unchanged and the error is stamped on event.metadata.last_outbound_error (and returned as qb_error). Events on 'native' or 'shadow' books pass through with no QB write. Only the group parent's books are QuickBooks': an event on a subsidiary's books is refused.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2695,7 +2695,7 @@ export const promoteObligations = <ThrowOnError extends boolean = false>(options
 /**
  * Preview Schedule
  *
- * Generate a schedule from a definition without keeping it: the same generator and guards as creating one (block_type='schedule' on create-information-block), run and rolled back. Returns the envelope create would leave (its ids provisional) and the period-by-period roll-forward: the balance the schedule carries on the account it credits (a loan's: the note), opening, the period's amount, closing, and for a loan the interest, payment, principal and current portion. Show it to the person before asking to create. A definition create would refuse (a roll-forward that climbs where it should fall, legs that do not balance) is refused here with the period that breaks. `warnings` names any active schedule already posting the same accounts in the same months. With `replaces_structure_id`, `replaces` says what the schedule being edited or recreated has posted, by month, and the path the change takes: `rebuild` (rebuild-schedule with the new definition) while nothing has posted, `terminate_and_succeed` after.
+ * Generate a schedule from a definition without keeping it: the same generator and guards as creating one (block_type='schedule' on create-information-block), run and rolled back. Returns the envelope create would leave (its ids provisional) and the period-by-period roll-forward: the balance the schedule carries on the account it credits (a loan's: the note), opening, the period's amount, closing, and for a loan the interest, payment, principal and current portion. Show it to the person before asking to create. A definition create would refuse (a roll-forward that climbs where it should fall, legs that do not balance) is refused here with the period that breaks. `warnings` names any active schedule already posting the same accounts in the same months. With `replaces_structure_id`, `replaces` says what the schedule being edited or recreated has posted, by month, and the path the change takes: `rebuild` (the schedule regenerated in place from the new definition) while nothing has posted, `terminate_and_succeed` after.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -2916,7 +2916,7 @@ export const deletePublishList = <ThrowOnError extends boolean = false>(options:
 /**
  * Add Members to Publish List
  *
- * Add one or more recipient graphs to a publish list. Targets must exist and have the same extension enabled (e.g. roboledger). Self-graph rejected (422); already-member rejected (409).
+ * Add one or more recipient graphs to a publish list. Targets must exist and carry the roboledger or roboinvestor extension. Self-graph rejected (422); already-member rejected (409).
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */
@@ -3205,7 +3205,7 @@ export const deletePortfolioBlock = <ThrowOnError extends boolean = false>(optio
 /**
  * Create Security
  *
- * Register a security (common stock, preferred stock, warrant, convertible note, etc.) owned by this graph's entity. Optionally cross-links to an issuing entity in another graph via `source_graph_id` for mutual-handshake attribution.
+ * Register a security (common stock, preferred stock, warrant, convertible note, etc.) in this graph's registry. Its `entity_id` is the issuer, not the holder; a portfolio's `entity_id` is the owner. Optionally cross-links to the issuer's own graph via `source_graph_id` for mutual-handshake attribution.
  *
  * **Idempotency**: supply an `Idempotency-Key` header to make safe retries; replays within 24 hours return the same envelope. Reusing the key with a different body returns HTTP 409 Conflict.
  */

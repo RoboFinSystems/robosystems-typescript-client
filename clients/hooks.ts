@@ -21,7 +21,7 @@ import { QueryClient } from './QueryClient'
  * const { execute, loading, error, data } = useQuery('graph_123')
  *
  * const handleSearch = async () => {
- *   const result = await execute('MATCH (n:Company) RETURN n LIMIT 10')
+ *   const result = await execute('MATCH (e:Entity) RETURN e.name LIMIT 10')
  *   console.log(result.data)
  * }
  * ```
@@ -215,11 +215,11 @@ export function useStreamingQuery(graphId: string) {
  *
  * @example
  * ```tsx
- * const { monitor, status, progress, error, result } = useOperation<BackupResult>()
+ * const { monitor, status, progress, error, result } = useOperation()
  *
  * const handleBackup = async () => {
- *   const { operation_id } = await createBackup({ ... })
- *   const result = await monitor(operation_id)
+ *   const { data } = await createBackup({ path: { graph_id: graphId }, body: { ... } })
+ *   const result = await monitor(data!.operationId)
  *   console.log('Backup completed:', result)
  * }
  * ```
@@ -330,12 +330,12 @@ export function useOperation<T = any>(operationId?: string) {
  * const { monitorAll, results, allCompleted, hasErrors } = useMultipleOperations()
  *
  * const handleMultiple = async () => {
- *   const operations = await Promise.all([
- *     createBackup(...),
- *     createExport(...),
+ *   const responses = await Promise.all([
+ *     createBackup({ path: { graph_id: graphA }, body: { ... } }),
+ *     materialize({ path: { graph_id: graphB }, body: {} }),
  *   ])
  *
- *   const results = await monitorAll(operations.map(op => op.operation_id))
+ *   const results = await monitorAll(responses.map(({ data }) => data!.operationId))
  * }
  * ```
  */

@@ -1,11 +1,9 @@
 import { gql } from 'graphql-request'
 
 /**
- * Information Block envelope — the cross-block-type read that replaces
- * block-specific reads like `scheduleFacts` and (eventually)
- * `statement`. Returns the assembled envelope with bundled atoms
- * (elements, connections, facts) plus the typed artifact mechanics
- * branch. See `local/docs/specs/information-block.md` §2.
+ * Information Block envelope — the read shared by every block type.
+ * Returns the assembled envelope with bundled atoms (elements,
+ * connections, facts) plus the typed artifact mechanics branch.
  */
 export const GET_INFORMATION_BLOCK = gql`
   query GetInformationBlock(

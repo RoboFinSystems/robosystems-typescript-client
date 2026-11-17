@@ -112,13 +112,13 @@ Look for issues labeled `good first issue` or `help wanted`. These are great sta
 
 ### Code Generation
 
-Parts of this SDK are auto-generated from the OpenAPI spec. To regenerate:
+Parts of this SDK are generated: the operation functions and types in `sdk/` from the OpenAPI spec, and the typed GraphQL documents in `clients/graphql/generated/` from the extensions GraphQL schema and the queries in `clients/graphql/queries/`. Both read a running RoboSystems API: set `ROBOSYSTEMS_API_URL` for the OpenAPI spec; the GraphQL schema defaults to a local API on port 8000 (override with `GRAPHQL_SCHEMA_URL`). To regenerate:
 
 ```bash
-npm run generate
+ROBOSYSTEMS_API_URL=http://localhost:8000 npm run generate
 ```
 
-**Important:** Don't manually edit generated files (`*.gen.ts`). Instead, modify the generation templates or the source OpenAPI spec.
+**Important:** Don't manually edit generated files (`sdk/**`, `*.gen.ts`, `clients/graphql/generated/**`). Change the API, or the query documents for GraphQL, and regenerate.
 
 ## Coding Standards
 
@@ -186,11 +186,11 @@ When adding new methods:
 # Run all tests
 npm test
 
-# Run with coverage
-npm run test:coverage
-
 # Run in watch mode
 npm run test:watch
+
+# Format, lint, typecheck, test and build: the full local gate
+npm run test:all
 ```
 
 ## Pull Request Process
@@ -214,9 +214,7 @@ npm run test:watch
 3. **Run all checks locally**:
 
    ```bash
-   npm run build
-   npm test
-   npm run lint
+   npm run test:all
    ```
 
 4. **Push your branch**:
@@ -239,14 +237,10 @@ gh pr create --base main --title "Your PR title" --body "Your PR description"
 
 ## Publishing
 
-This package is published to npm as `@robosystems/client`. Releases are managed by maintainers:
+This package is published to npm as `@robosystems/client`. Releases are cut by maintainers through the `create-release.yml` workflow, which bumps the version, tags the release and publishes to npm with provenance:
 
 ```bash
-# Version bump (patch/minor/major)
-npm version patch
-
-# Publish to npm
-npm publish
+npm run release:create -- patch   # or minor / major
 ```
 
 **Note:** Only maintainers can publish new versions.

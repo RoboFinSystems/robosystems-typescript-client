@@ -100,7 +100,7 @@ export const SEARCH_LIBRARY_ELEMENTS = gql`
 `
 
 /**
- * Get a single element by id or by qname ('sfac6:Assets', etc).
+ * Get a single element by id or by qname ('rs-gaap:Assets', etc).
  * Returns null when neither identifier resolves.
  */
 export const GET_LIBRARY_ELEMENT = gql`

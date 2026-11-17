@@ -3,7 +3,7 @@ import { gql } from 'graphql-request'
 /**
  * List every arc contributed by a taxonomy (via its structures) + the
  * total count in one round-trip. For mapping taxonomies
- * (fac-to-rs-gaap, sfac6-to-fac, type-subtype) this is the primary
+ * (fac-to-rs-gaap, rs-gaap-type-subtype, rs-gaap-calculations) this is the primary
  * browse view — the arcs ARE what the taxonomy contributes.
  */
 export const LIST_LIBRARY_TAXONOMY_ARCS = gql`
