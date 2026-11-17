@@ -619,7 +619,7 @@ interface RawClosePeriodResult {
   entries_posted_locally?: number
   target_auto_advanced: boolean
   fiscal_calendar: RawFiscalCalendar
-  // §3.8 — auto-run rules on close. `null` when no schedules with facts
+  // Auto-run rules on close. `null` when no schedules with facts
   // in the period had rules attached. Otherwise a status-keyed tally.
   rule_summary?: Record<string, number> | null
   // ids of schedule Structures whose rules were evaluated during the
@@ -633,7 +633,7 @@ interface RawScheduleCreatedResult {
   taxonomy_id: string
   total_periods: number
   total_facts: number
-  // §3.8 — populated when create_schedule (or update_schedule on a
+  // Populated when create_schedule (or update_schedule on a
   // template change) re-runs the rule engine. Otherwise null.
   rule_summary?: Record<string, number> | null
 }
@@ -660,7 +660,7 @@ export interface ClosePeriodResult {
   targetAutoAdvanced: boolean
   fiscalCalendar: LedgerFiscalCalendar
   /**
-   * §3.8 — aggregated rule-eval outcome across every schedule Structure
+   * Aggregated rule-eval outcome across every schedule Structure
    * with facts in the closed period. Keys: `pass` / `fail` / `error` /
    * `skipped`. `null` when no schedules had facts in the period.
    */
@@ -696,7 +696,7 @@ export interface ScheduleCreated {
   totalPeriods: number
   totalFacts: number
   /**
-   * §3.8 — populated when create_schedule (or update_schedule on a
+   * Populated when create_schedule (or update_schedule on a
    * template change) re-runs the rule engine. Keys: `pass` / `fail` /
    * `error` / `skipped`. `null` when no rules were re-evaluated.
    */
@@ -1160,9 +1160,9 @@ export interface CreateJournalEntryOptions {
   transactionId?: string | null
   /**
    * Who fired the event. Defaults to `'manual'` (user-initiated journal
-   * entry). Sync adapters (QuickBooks, Plaid, etc.) override with their
-   * adapter name. Must match the server's CHECK constraint set:
-   * `manual | schedule | system | quickbooks | xero | plaid`.
+   * entry). Otherwise `system`, `schedule`, a connected provider's name
+   * (e.g. `quickbooks`), or a source name registered through an `external`
+   * connection; the server validates it against the graph's connections.
    */
   source?: string
   idempotencyKey?: string | null
@@ -2115,8 +2115,8 @@ export class LedgerClient {
   }
 
   /**
-   * Trigger the AI MappingAgent. Returns the operation id — async; the
-   * agent runs in the background. Consumers can subscribe to progress
+   * Trigger the AI mapping operator. Returns the operation id — async; the
+   * operator runs in the background. Consumers can subscribe to progress
    * via `/v1/operations/{operationId}/stream`.
    */
   async autoMapElements(
@@ -2134,7 +2134,7 @@ export class LedgerClient {
   /**
    * Fetch an Information Block envelope by id — the generic
    * cross-block-type read. Returns `null` when the block doesn't exist
-   * (or its type isn't registered). See `information-block.md`.
+   * (or its type isn't registered).
    *
    * `options.scenarioId` selects the FactSet slice: omitted = actuals;
    * a forecast block's structure id = that scenario's parallel universe
@@ -2286,10 +2286,11 @@ export class LedgerClient {
    *
    * Generic wrapper over `create-information-block`. Pass a typed
    * `CreateInformationBlockRequest` body — the discriminator routes
-   * server-side to the correct dispatch handler. Convenience methods
-   * exist for specific block types (e.g. `createSchedule`); for
-   * block types without one (currently `rollforward`), use this
-   * generic entry.
+   * server-side to the correct dispatch handler. It creates `schedule`
+   * blocks (also `createSchedule`) and `forecast` blocks; every other
+   * block type is built by its own operation (statements by
+   * `createReport`, reconciliations by `refreshReconciliations`), and
+   * naming one here returns 501 with a hint naming that operation.
    */
   async createInformationBlock(
     graphId: string,
@@ -3527,13 +3528,18 @@ export class LedgerClient {
     return this.requireResult('Update event handler', envelope.result)
   }
 
-  // ── Financial statements (graph-backed) ──────────────────────────────
+  // ── Financial statements ─────────────────────────────────────────────
 
   /**
-   * Live financial statement — pulls facts directly from the graph for
-   * an explicit period window (or fiscal year) and returns the statement
-   * shape without a persisted Report row. Useful for ad-hoc previews and
-   * dashboards.
+   * Live financial statement — rendered from the ledger (the extensions
+   * database, no graph materialization) for an explicit period window (or
+   * fiscal year), without a persisted Report row. Useful for ad-hoc
+   * previews and dashboards. `scope` is `entity` (one entity's books, the
+   * default), `combined` (on the group parent, every member consolidated in
+   * full, summed) or `consolidated` (that sum plus the consolidation
+   * entity's eliminations and noncontrolling interest); `consolidated: true`
+   * is the older spelling of `scope: 'consolidated'`. Refused on shared
+   * repositories, which use `financialStatementAnalysis`.
    */
   async liveFinancialStatement(
     graphId: string,
@@ -3578,10 +3584,11 @@ export class LedgerClient {
   }
 
   /**
-   * Run a financial statement analysis against an existing report.
-   * On shared-repo graphs (e.g. SEC), `ticker` is required; on tenant
-   * graphs it's ignored. Either pass an explicit `report_id` or let the
-   * server auto-resolve via `fiscal_year` + `period_type`.
+   * Read a rendered statement from the graph (Structure → FactSet → Fact).
+   * On shared-repo graphs (e.g. SEC), pass `ticker` and the server resolves
+   * the latest filing, narrowed by `fiscal_year` + `period_type`, or pass a
+   * `report_id`. On tenant graphs `report_id` is required and the ledger
+   * must have been materialized to the graph.
    */
   async financialStatementAnalysis(
     graphId: string,
@@ -3779,8 +3786,9 @@ export class LedgerClient {
    * A download is a read, so this resolves through GraphQL
    * (`reportDownloadUrl`) — the retired `GET .../reports/{id}/download`
    * REST resource is gone. Every flavor resolves to a presigned S3 URL:
-   * the Tavi model is stamped at publish time; the holon and XBRL are
-   * materialized + cached on first request. The returned `downloadUrl` is valid for
+   * the holon is stamped at publish time; the Tavi model, the XBRL and the
+   * holon with lineage are materialized + cached on first request. The
+   * returned `downloadUrl` is valid for
    * `expiresIn` seconds (default 300, max 3600); browser callers
    * navigate to it via `window.location.href` (or an `<a href>` click)
    * to trigger the download — the server-set Content-Disposition forces
@@ -3796,7 +3804,7 @@ export class LedgerClient {
    *   holon, which carries the whole report), `HOLON_JSONLD_LINEAGE` (the
    *   holon with its `#lineage` graph: the ledger lines, entries and events
    *   behind every frozen figure, for this graph's own members), `TAVI` (the
-   *   Project Tavi compiled model stamped at publish), or `XBRL_2_1`.
+   *   Project Tavi compiled model), or `XBRL_2_1`.
    * @param options.expiresIn Presigned URL lifetime, in seconds.
    */
   async getReportDownloadUrl(

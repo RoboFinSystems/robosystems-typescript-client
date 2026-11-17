@@ -269,8 +269,10 @@ export class InvestorClient {
   }
 
   /**
-   * Create a new security. Passing `source_graph_id` auto-links to the
-   * matching entity in the target graph.
+   * Create a new security. `entity_id` is the issuer. Without one,
+   * `source_graph_id` (the issuer's own graph) links the security to the
+   * entity this graph already holds for that graph, or, when there is none
+   * yet, once a report shared from it arrives.
    */
   async createSecurity(graphId: string, body: CreateSecurityRequest): Promise<InvestorSecurity> {
     const envelope = await this.callOperation('Create security', (o) =>

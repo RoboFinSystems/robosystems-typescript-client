@@ -4,7 +4,7 @@
  * Library Client for RoboSystems API
  *
  * Read-only facade for the taxonomy library — the shared reference
- * material (sfac6, fac, rs-gaap, …, mapping taxonomies) that lives
+ * material (fac, cm, rs-gaap and its packages, the mapping bridges) that lives
  * in the extensions DB public schema.
  *
  * **Two access modes** — picked by the caller's `graphId`:
@@ -173,8 +173,8 @@ export class LibraryClient {
   /**
    * List every taxonomy visible at this graph_id.
    *
-   * On the `"library"` sentinel this is the canonical set (sfac6,
-   * fac, rs-gaap, …). On a tenant graph_id this also includes the
+   * On the `"library"` sentinel this is the canonical set (fac, cm,
+   * rs-gaap, …). On a tenant graph_id this also includes the
    * tenant's own CoA and any custom taxonomies they've created.
    */
   async listLibraryTaxonomies(
@@ -286,8 +286,8 @@ export class LibraryClient {
 
   /**
    * All arcs contributed by a taxonomy, plus their total count, in one
-   * round-trip. For mapping taxonomies (fac-to-rs-gaap, sfac6-to-fac,
-   * type-subtype) this is the primary browse view.
+   * round-trip. For mapping taxonomies (fac-to-rs-gaap,
+   * rs-gaap-type-subtype, rs-gaap-calculations) this is the primary browse view.
    */
   async listLibraryTaxonomyArcs(
     graphId: string,

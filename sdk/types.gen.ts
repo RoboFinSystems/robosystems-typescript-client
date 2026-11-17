@@ -389,7 +389,7 @@ export type AddPublishListMembersOperation = {
     /**
      * Target Graph Ids
      *
-     * Graph IDs to add. Each must exist and have the same extension (roboledger / roboinvestor) enabled. Self-graph rejected.
+     * Graph IDs to add. Each must exist and carry the roboledger or roboinvestor extension. Self-graph rejected.
      */
     target_graph_ids: Array<string>;
     /**
@@ -2195,14 +2195,18 @@ export type CompleteDocumentUploadOp = {
  *
  * Request body for the `compute-forecast` operation.
  *
- * Walks the scenario's driver cascade month-by-month forward from the
- * forecast block's `base_period`: lever-driven Derive rules in
- * dependency order, carry-forward for unmodeled IS lines, calc-DAG
- * subtotals — upserting one scenario IS FactSet (+ a working-capital BS
- * set) per forward month, all keyed by the forecast block's
- * `scenario_id`. Re-running replaces each month's values (the
- * compute-metrics drift semantics). Deterministic and non-AI — no
- * credits consumed.
+ * Walks the scenario's driver cascade month-by-month forward from its
+ * anchor — the newest closed month inside the horizon under
+ * `base_anchor='seam'` (the default), the block's `base_period` under
+ * `'fixed'`: lever-driven Derive rules in dependency order, carry-forward
+ * for unmodeled IS lines, calc-DAG subtotals — upserting per forward
+ * month a scenario IS FactSet, a BS set (the full roll when the anchor
+ * month has an actual balance sheet, else the rule-driven working-capital
+ * instants) and a derived CF set when an actual one exists, all keyed by
+ * the forecast block's `scenario_id`. Re-running replaces each month's
+ * values (the compute-metrics drift semantics). A month that fails
+ * verification halts the walk (`halted_at`). Deterministic and non-AI —
+ * no credits consumed.
  */
 export type ComputeForecastRequest = {
     /**
@@ -3677,7 +3681,7 @@ export type CreateForecastRequest = {
     /**
      * Base Period
      *
-     * Seed month (`YYYY-MM`) the walk projects forward from. Defaults to the fiscal calendar's closed-through period, else the newest actual report month. Resolved and stored at create time, and it never moves afterwards — every lever is keyed to a month inside `base_period + 1 … + horizon_months`, so moving it would mean restating all of them. `base_anchor` decides whether the walk still *seeds* here once months close under it.
+     * Origin month (`YYYY-MM`) of the authored window. Defaults to the fiscal calendar's closed-through period, else the newest actual report month. Resolved and stored at create time, and it never moves afterwards — every lever is keyed to a month inside `base_period + 1 … + horizon_months`, so moving it would mean restating all of them. `base_anchor` decides whether the walk still *seeds* here once months close under it.
      */
     base_period?: string | null;
     /**
@@ -3759,10 +3763,11 @@ export type CreateGraphRequest = {
  *
  * Create an Information Block. The body is a discriminated union on
  * `block_type`: pick the arm matching the block type you want to
- * create. The schedule arm carries a fully typed payload; statement
- * and metric arms accept an untyped payload but currently return HTTP
- * 501 (statements are constructed via `create-report`; metric
- * construction is pending).
+ * create. The schedule and forecast arms carry fully typed payloads;
+ * the remaining arms accept an untyped payload and return HTTP 501
+ * with a hint naming the operation that constructs them (statements
+ * via `create-report`, disclosure and metric structures via
+ * `create-taxonomy-block`).
  */
 export type CreateInformationBlockRequest = ({
     block_type: 'schedule';
@@ -4927,8 +4932,8 @@ export type DeleteGraphOp = {
  *
  * Delete an Information Block. The body is a discriminated union on
  * `block_type` mirroring `CreateInformationBlockRequest`. The schedule
- * arm carries a fully typed delete payload; statement and metric arms
- * return HTTP 501.
+ * and forecast arms carry fully typed delete payloads; the remaining
+ * arms return HTTP 501.
  */
 export type DeleteInformationBlockRequest = ({
     block_type: 'schedule';
@@ -6744,11 +6749,11 @@ export type EventHandlerResponse = {
  * each draft entry posts as its own JournalEntry, with the entry id as
  * the RequestId, and its QuickBooks id is recorded per entry on
  * `event.metadata.qb_entry_ids`. The event goes `fulfilled` once no
- * draft remains, or `pending` when QuickBooks rejects an entry (what
- * landed is kept).
+ * draft remains. When QuickBooks rejects an entry, what landed is kept,
+ * the status is unchanged, and the error is stamped on
+ * `event.metadata.last_outbound_error` and returned as `qb_error`.
  *
- * `'native'`-policy events fast-path through with no QB write —
- * RoboSystems IS the source of truth, no outbound publish needed.
+ * Events on `'native'` or `'shadow'` books pass through with no QB write.
  */
 export type ExecuteEventBlockRequest = {
     /**
@@ -6780,7 +6785,7 @@ export type ExecuteEventBlockResponse = {
     /**
      * Status
      *
-     * The event's status after the call. Unchanged when no write fired (native policy, a source that does not publish) or when drafts in a later period are still unpublished. `'fulfilled'` once every draft entry of the event is in QuickBooks and posted. `'pending'` when QuickBooks rejected an entry — see `qb_error`; retry after fixing the underlying issue.
+     * The event's status after the call. Unchanged when no write fired (native policy, a source that does not publish) or when drafts in a later period are still unpublished. `'fulfilled'` once every draft entry of the event is in QuickBooks and posted. Also unchanged when QuickBooks rejected an entry — see `qb_error`; retry after fixing the underlying issue.
      */
     status: string;
     /**
@@ -9038,7 +9043,7 @@ export type InformationModelResponse = {
     /**
      * Concept Arrangement
      *
-     * roll_up | roll_forward | variance | adjustment | set | arithmetic | textblock. Null for block types where the concept arrangement is implicit in their mechanics.
+     * A Concept Arrangement Pattern: set | roll_up | roll_forward | roll_forward_info | adjustment | variance | arithmetic | text_block, a text-block or detail level (level1_textblock … level4_detail, table_equivalent_textblock), or grid | compound_fact. Null for block types where the concept arrangement is implicit in their mechanics.
      */
     concept_arrangement?: string | null;
     /**
@@ -9615,7 +9620,7 @@ export type JournalEntryLineItemInput = {
     /**
      * Flow Qname
      *
-     * The cash flow row this line's cash belongs to, an rs-gaap flow qname (`flowCandidates(entityId)` lists the rows this company's statement offers). Only for a loan drawn or repaid, capital put in or taken out, an asset bought or sold; omitted, the account's default flow applies. A flow set on one side of the entry tags the untagged lines on the other: the cash flow statement reads the cash line and the roll-forwards read the account line. On the group's consolidation entity, which moves no cash, every tagged line counts on its own, cash-effect signed (a credit is an inflow), so an elimination offsets the flow a member's line produced, and a tag does not spread to the other side. Refused when it is not a row of the entity's cash flow statement.
+     * The cash flow row this line's cash belongs to, an rs-gaap flow qname (`list-flow-candidates` over MCP and `flowCandidates` over GraphQL list the rows this company's statement offers). Only for a loan drawn or repaid, capital put in or taken out, an asset bought or sold; omitted, the account's default flow applies. A flow set on one side of the entry tags the untagged lines on the other: the cash flow statement reads the cash line and the roll-forwards read the account line. On the group's consolidation entity, which moves no cash, every tagged line counts on its own, cash-effect signed (a credit is an inflow), so an elimination offsets the flow a member's line produced, and a tag does not spread to the other side. Refused when it is not a row of the entity's cash flow statement.
      */
     flow_qname?: string | null;
     /**
@@ -9627,7 +9632,7 @@ export type JournalEntryLineItemInput = {
     /**
      * Metadata
      *
-     * Optional per-line metadata stamped on `LineItem.metadata_`. Used to carry source-system fields the standard columns don't cover — e.g. an external flow-tag code that drives rollforward attribution (`transaction_description_code`), an external memo, or a cost-center hint. Pass-through is non-validating; the renderer / filter engine reads keys it knows about and ignores the rest. `None` is normalized to `{}` at persist time.
+     * Optional per-line metadata stamped on `LineItem.metadata_`. Used to carry source-system fields the standard columns don't cover — e.g. an external memo or a cost-center hint. A flow tag goes in `flow_qname`, not here. Pass-through is non-validating; the renderer / filter engine reads keys it knows about and ignores the rest. `None` is normalized to `{}` at persist time.
      */
     metadata?: {
         [key: string]: unknown;
@@ -15188,7 +15193,7 @@ export type OperatorRunDetail = {
     /**
      * Transcript
      *
-     * One entry per model call, in order: the input added since the previous call (the question, then each turn's tool results), the model's output blocks (text and tool calls), stop reason, token usage and credits. The first entry also carries the system prompt's SHA-256 and size and the tool names offered; later entries repeat them only when they change
+     * One entry per model call, in order: the input added since the previous call (the question, then each turn's tool results), the model's output blocks (text and tool calls), stop reason, token usage, credits and sampling settings. The first entry also carries the SHA-256 and size of the system prompt and the SHA-256 and names of the tools offered; later entries repeat them only when they change
      */
     transcript?: Array<{
         [key: string]: unknown;
@@ -16344,19 +16349,19 @@ export type PortfolioBlockEnvelope = {
     /**
      * Positions
      *
-     * All positions in this portfolio, including disposed ones (filter by `status` for active-only display).
+     * The portfolio's active positions; disposed ones are not included.
      */
     positions: Array<PositionBlock>;
     /**
      * Total Cost Basis Dollars
      *
-     * Sum of `cost_basis_dollars` across every position.
+     * Sum of `cost_basis_dollars` across the active positions.
      */
     total_cost_basis_dollars: number;
     /**
      * Total Current Value Dollars
      *
-     * Sum of `current_value_dollars` across every position. `null` when any active position lacks a mark.
+     * Sum of `current_value_dollars` across the marked active positions; an unmarked one adds nothing. `null` only when no active position has a mark.
      */
     total_current_value_dollars?: number | null;
     /**
@@ -16714,7 +16719,7 @@ export type PositionBlock = {
     /**
      * Status
      *
-     * Lifecycle state (`active`, `disposed`, `archived`). See `PositionResponse.status` for the full vocabulary.
+     * Lifecycle state (`active`, `disposed`). See `PositionResponse.status` for the full vocabulary.
      */
     status: string;
     /**
@@ -18759,10 +18764,12 @@ export type RenderingPeriodLite = {
  *
  * One row of a server-side rendered statement.
  *
- * Mirrors :class:`FactRow` in
+ * Drawn from :class:`FactRow` in
  * :mod:`robosystems.operations.roboledger.reports.fact_grid`, restated at the
- * API boundary so envelope consumers don't depend on that module. `values`
- * holds one entry per period column in :class:`RenderingLite.periods`.
+ * API boundary so envelope consumers don't depend on that module. It does not
+ * carry FactRow's `is_abstract`, `position` or `period_role` (the start/end
+ * role that tells a roll-forward's two balance rows apart).
+ * `values` holds one entry per period column in :class:`RenderingLite.periods`.
  */
 export type RenderingRowLite = {
     /**
@@ -22806,7 +22813,7 @@ export type UpdateEventBlockRequest = {
     /**
      * Discharge Allocations
      *
-     * What this payment settles, document by document: one row per invoice or bill with the positive cents applied to it, together at most the payment's amount (the rest is unapplied). Replaces any held; an empty list clears them, and the settlement link becomes the first row's. Each must be an obligation of this event's entity, not voided: an invoice for money in, a bill for money out. A person chooses them; the open items a bank line may settle are `dischargeCandidates` over GraphQL.
+     * What this payment settles, document by document: one row per invoice or bill with the positive cents applied to it, together at most the payment's amount (the rest is unapplied). Replaces any held; an empty list clears them, and the settlement link becomes the first row's. Each must be an obligation of this event's entity, not voided: an invoice for money in, a bill for money out. A person chooses them; the open items a bank line may settle are `list-discharge-candidates` over MCP and `dischargeCandidates` over GraphQL.
      */
     discharge_allocations?: Array<DischargeAllocation> | null;
     /**
@@ -23018,9 +23025,9 @@ export type UpdateGraphMetadataOp = {
  *
  * Update an Information Block. The body is a discriminated union on
  * `block_type` mirroring `CreateInformationBlockRequest`. The schedule
- * arm carries a fully typed update payload; statement and metric arms
- * return HTTP 501 (statements are library-seeded; metric updates are
- * pending).
+ * and forecast arms carry fully typed update payloads; the remaining
+ * arms return HTTP 501 (statements are library-seeded; the others
+ * change through their own operations).
  */
 export type UpdateInformationBlockRequest = ({
     block_type: 'schedule';
@@ -23308,7 +23315,7 @@ export type UpdateSecurityOperation = {
     /**
      * Terms
      *
-     * Replacement terms blob. Pass `null`/omit to leave existing terms unchanged; pass `{}` to clear them.
+     * Replacement terms blob. Omit to leave existing terms unchanged; pass `{}` to clear them.
      */
     terms?: {
         [key: string]: unknown;
@@ -23864,20 +23871,17 @@ export type ViewMetadata = {
 /**
  * ViewProjections
  *
- * The six `type-of` View projections of an Information Block (Rendering,
- * FactTable, ModelStructure, VerificationResults, ReportElements,
- * BusinessRules), surfaced at the envelope boundary.
+ * The server-computed View projections of an Information Block,
+ * surfaced at the envelope boundary.
  *
- * Each projection is computed server-side at envelope-build time when
- * its source data is available. The frontend's `BlockView` dispatcher
- * routes to the projection component matching the user's selected view
- * mode; missing projections render as empty states without breaking the
- * dispatcher.
- *
- * Today: `rendering` is computed for the statement family, and
- * `chart` (panel/series config over the rendering's rows and periods)
- * for metric blocks. Projections without backend support yet are empty;
- * `fact_table` is derivable from `InformationBlockEnvelope.facts`.
+ * Two are computed at envelope-build time when their source data is
+ * available: `rendering` (the rendered rows and periods) for the
+ * statement family, disclosures, metrics, forecasts and reconciliations,
+ * and `chart` (panel/series config over the rendering's rows and
+ * periods) for metric blocks. The other views a client shows are
+ * derived from the envelope itself — a fact table from
+ * `InformationBlockEnvelope.facts`, rule outcomes from its rules and
+ * verification results.
  */
 export type ViewProjections = {
     rendering?: RenderingLite | null;
@@ -24047,24 +24051,26 @@ export type CreateForecastArm = {
 /**
  * _CreateLegacyArm
  *
- * Create-information-block body for block types that don't yet have
- * a typed construction path at the API boundary.
+ * Create-information-block body for block types constructed through
+ * another operation.
  *
  * Statement-family blocks (balance_sheet, income_statement,
  * cash_flow_statement, equity_statement, comprehensive_income) are
  * constructed via `create-report`, not this endpoint. Disclosure
  * structures (regulatory_disclosure) are vocabulary, authored via
  * `create-taxonomy-block`; their facts land when `create-report`
- * picks them. Metric blocks are recognized but their evaluator has
- * not shipped. Calling this endpoint with one of these block types
- * returns HTTP 501 with a hint pointing to the correct construction
- * path.
+ * picks them. Metric structures are authored via
+ * `create-taxonomy-block` and their facts written by `compute-metrics`
+ * or `assert-metrics`. Reconciliation blocks are created by
+ * `refresh-reconciliations`. Calling this endpoint with one of these
+ * block types returns HTTP 501 with a hint pointing to the correct
+ * construction path.
  */
 export type CreateLegacyArm = {
     /**
      * Block Type
      *
-     * Statement-family or metric block type. The endpoint returns 501 for these values — statements are constructed via `create-report`; metric construction is pending.
+     * Statement-family, disclosure, metric or reconciliation block type. The endpoint returns 501 for these values with a hint naming the operation that constructs each.
      */
     block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric' | 'reconciliation';
     /**
@@ -24126,14 +24132,16 @@ export type DeleteForecastArm = {
  * a typed delete path at the API boundary.
  *
  * Statement-family blocks cannot be deleted per tenant (the underlying
- * Report should be archived via the report APIs instead). Metric
- * deletion is not yet implemented. Calls return HTTP 501.
+ * Report should be archived via the report APIs instead). Disclosure
+ * and metric structures are removed through the taxonomy-block
+ * operations; a reconciliation stops holding the close through
+ * `set-reconciliation-policy`. Calls return HTTP 501.
  */
 export type DeleteLegacyArm = {
     /**
      * Block Type
      *
-     * Statement-family or metric block type. Deletion returns 501 — statements are library-seeded (archive the underlying Report instead); metric deletion is pending.
+     * Statement-family, disclosure, metric or reconciliation block type. Deletion returns 501 — statements are library-seeded (archive the underlying Report instead); the others are managed through their own operations, named in the 501's hint.
      */
     block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric' | 'reconciliation';
     /**
@@ -24191,18 +24199,19 @@ export type UpdateForecastArm = {
 /**
  * _UpdateLegacyArm
  *
- * Update-information-block body for block types that don't yet have
- * a typed update path at the API boundary.
+ * Update-information-block body for block types updated through
+ * another operation.
  *
- * Statement-family blocks are library-seeded and immutable. Metric
- * block updates are not yet implemented. Calling this endpoint with
- * one of these block types returns HTTP 501.
+ * Statement-family blocks are library-seeded and immutable. Disclosure
+ * and metric structures change through the taxonomy-block operations;
+ * a reconciliation's policy through `set-reconciliation-policy`.
+ * Calling this endpoint with one of these block types returns HTTP 501.
  */
 export type UpdateLegacyArm = {
     /**
      * Block Type
      *
-     * Statement-family or metric block type. Updates return 501 — statement Structures are library-seeded; metric updates are pending.
+     * Statement-family, disclosure, metric or reconciliation block type. Updates return 501 — statement Structures are library-seeded; the others change through their own operations, named in the 501's hint.
      */
     block_type: 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'comprehensive_income' | 'regulatory_disclosure' | 'metric' | 'reconciliation';
     /**
@@ -27271,7 +27280,7 @@ export type GetOperatorMetadataData = {
         /**
          * Operator Type
          *
-         * Operator type identifier (e.g., 'analyst', 'mapping')
+         * Operator type identifier: 'analyst', 'mapping' or 'author'
          */
         operator_type: string;
     };

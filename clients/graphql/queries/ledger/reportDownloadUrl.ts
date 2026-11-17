@@ -6,8 +6,9 @@ import { gql } from 'graphql-request'
  * Replaces the retired `GET .../reports/{id}/download` REST resource — a
  * download is a read of stored state, so it lives on the read surface.
  * Every flavor resolves to a short-lived presigned S3 URL the client
- * follows directly (the Tavi compiled model is stamped at publish time;
- * the holon and XBRL are materialized + cached on first request).
+ * follows directly (the holon is stamped at publish time; the Tavi
+ * compiled model, the XBRL and the holon with lineage are materialized +
+ * cached on first request).
  * `format` accepts the `ReportDownloadFormat` enum (`TAVI`,
  * `HOLON_JSONLD`, `HOLON_JSONLD_LINEAGE`, `XBRL_2_1`).
  */

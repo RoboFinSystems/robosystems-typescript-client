@@ -4,7 +4,7 @@ import { gql } from 'graphql-request'
  * Trial balance rolled up to reporting concepts via a mapping structure.
  *
  * Unlike `trialBalance`, which groups by raw CoA account, this query
- * groups by the US GAAP reporting concept each account maps to. Used
+ * groups by the reporting concept (rs-gaap) each account maps to. Used
  * by the report builder to preview what a generated statement will
  * look like before materializing it.
  */

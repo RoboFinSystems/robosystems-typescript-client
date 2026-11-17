@@ -471,7 +471,7 @@ export class OperatorClient {
   }
 
   /**
-   * Convenience method for simple agent queries with auto-selection
+   * Convenience method for simple operator queries with auto-selection
    */
   async query(
     graphId: string,
@@ -519,7 +519,7 @@ const readWrites = (source: unknown): Record<string, any>[] => {
 }
 
 /**
- * Error thrown when agent execution is queued and maxWait is 0
+ * Error thrown when an operator run is queued and maxWait is 0
  */
 export class QueuedOperatorError extends Error {
   constructor(public queueInfo: QueuedOperatorResponse) {

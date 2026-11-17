@@ -5,7 +5,7 @@ import { gql } from 'graphql-request'
  *
  * Optional `mappingId` scopes the check to a single mapping structure;
  * when omitted, checks across all mapping structures. Used by the
- * MappingAgent workflow and the manual mapping UI.
+ * mapping operator workflow and the manual mapping UI.
  */
 export const LIST_UNMAPPED_ELEMENTS = gql`
   query ListLedgerUnmappedElements($mappingId: String) {

@@ -1,7 +1,7 @@
 import { gql } from 'graphql-request'
 
 /**
- * CoA → GAAP mapping coverage stats. Used by the MappingAgent to
+ * CoA → GAAP mapping coverage stats. Used by the mapping operator to
  * decide "am I done yet?" and by the close screen to show progress.
  */
 export const GET_MAPPING_COVERAGE = gql`

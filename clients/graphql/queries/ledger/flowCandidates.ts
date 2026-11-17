@@ -5,7 +5,7 @@ import { gql } from 'graphql-request'
  * classification beside the account: it overrides the account's default flow
  * on the cash flow and equity statements (a bank line's
  * `classified_flow_qname`, a journal-entry line's
- * `transaction_description_code`). These are the leaf investing and financing
+ * `flow_qname`). These are the leaf investing and financing
  * rows of the entity's cash flow statement under its Reporting Style
  * (`$entityId`, default the group parent) — the set the write path accepts —
  * so a picker built from them never offers a row the statement cannot
