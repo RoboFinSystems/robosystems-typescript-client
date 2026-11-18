@@ -1073,7 +1073,7 @@ export const createRepositorySubscription = <ThrowOnError extends boolean = fals
 /**
  * End Repository Trial
  *
- * End your free trial of a shared repository now and start the paid plan. The first period is charged to the payment method on file; raw queries, the AI analyst and the plan's credits open once the payment clears, usually within a minute. Returns 400 when the subscription is not on a trial.
+ * End your free trial of a shared repository now and start the paid plan. The first period is charged to the payment method on file; raw queries, the AI analyst and the plan's credits open once the payment clears, usually within a minute. Returns 400 when the subscription is not on a trial, or when no payment method is on file yet.
  */
 export const endRepositorySubscriptionTrial = <ThrowOnError extends boolean = false>(options: Options<EndRepositorySubscriptionTrialData, ThrowOnError>): RequestResult<EndRepositorySubscriptionTrialResponses, EndRepositorySubscriptionTrialErrors, ThrowOnError> => (options.client ?? client).post<EndRepositorySubscriptionTrialResponses, EndRepositorySubscriptionTrialErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
@@ -1707,7 +1707,7 @@ export const getOrgUpcomingInvoice = <ThrowOnError extends boolean = false>(opti
 /**
  * Create Payment Checkout Session
  *
- * Initiates a Stripe checkout session for payment collection. Creates a pending subscription; the webhook activates it and provisions the resource after payment completes. Returns billing_disabled=true with no URL when billing is off. Requires org owner role.
+ * Initiates a Stripe checkout session for payment collection. Creates a pending subscription; the webhook activates it and provisions the resource after payment completes. Returns billing_disabled=true with no URL when billing is off. Requires org owner role. A repository's free trial asks for no card but needs a verified email: an unverified account starting one gets 403.
  */
 export const createCheckoutSession = <ThrowOnError extends boolean = false>(options: Options<CreateCheckoutSessionData, ThrowOnError>): RequestResult<CreateCheckoutSessionResponses, CreateCheckoutSessionErrors, ThrowOnError> => (options.client ?? client).post<CreateCheckoutSessionResponses, CreateCheckoutSessionErrors, ThrowOnError>({
     security: [{ name: 'X-API-Key', type: 'apiKey' }, { scheme: 'bearer', type: 'http' }],
