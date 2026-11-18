@@ -8326,7 +8326,7 @@ export type GraphSubscriptionResponse = {
     /**
      * Trial Ends At
      *
-     * When the free trial ends and the first charge is made. Null for a subscription that opened without a trial; kept after the trial is over.
+     * When the free trial ends: the first charge is made then to a card on file, and with none the subscription ends. Null for a subscription that opened without a trial; kept after the trial is over.
      */
     trial_ends_at?: string | null;
     /**
