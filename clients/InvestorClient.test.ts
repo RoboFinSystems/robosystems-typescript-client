@@ -146,6 +146,8 @@ describe('InvestorClient', () => {
             totalCostBasisDollars: 0,
             totalCurrentValueDollars: null,
             activePositionCount: 0,
+            markedPositionCount: 0,
+            currentValueIsPartial: false,
             createdAt: '2024-01-01T00:00:00Z',
             updatedAt: '2024-01-01T00:00:00Z',
           },
@@ -387,6 +389,8 @@ describe('InvestorClient', () => {
                 totalCostBasisDollars: 2000,
                 totalCurrentValueDollars: 2500,
                 positionCount: 2,
+                markedPositionCount: 1,
+                currentValueIsPartial: true,
                 securities: [
                   {
                     securityId: 'sec_1',

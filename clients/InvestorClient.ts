@@ -525,6 +525,8 @@ interface RawPortfolioBlockResponse {
   total_cost_basis_dollars: number
   total_current_value_dollars: number | null
   active_position_count: number
+  marked_position_count?: number
+  current_value_is_partial?: boolean
   created_at: string
   updated_at: string
 }
@@ -597,6 +599,8 @@ function rawToPortfolioBlock(raw: RawPortfolioBlockResponse): InvestorPortfolioB
     totalCostBasisDollars: raw.total_cost_basis_dollars,
     totalCurrentValueDollars: raw.total_current_value_dollars,
     activePositionCount: raw.active_position_count,
+    markedPositionCount: raw.marked_position_count ?? 0,
+    currentValueIsPartial: raw.current_value_is_partial ?? false,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
   }

@@ -16744,6 +16744,18 @@ export type PortfolioBlockEnvelope = {
      */
     active_position_count: number;
     /**
+     * Marked Position Count
+     *
+     * How many active positions have a mark, and so how many `total_current_value_dollars` covers.
+     */
+    marked_position_count?: number;
+    /**
+     * Current Value Is Partial
+     *
+     * True when some active positions have a mark and some do not: `total_current_value_dollars` then leaves the unmarked ones out and is not comparable with `total_cost_basis_dollars`, which covers them all.
+     */
+    current_value_is_partial?: boolean;
+    /**
      * Created At
      *
      * Row creation timestamp (UTC).
