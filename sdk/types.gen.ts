@@ -3791,6 +3791,67 @@ export type CreateInvitationRequest = {
 };
 
 /**
+ * CreateIssuerRequest
+ *
+ * CQRS body for `POST /operations/create-issuer`.
+ *
+ * An issuer is a company the fund holds or follows that does not keep its
+ * books on this platform: an entity in the fund's graph that securities and
+ * received reports attach to. A company that shares a report in from its own
+ * graph gets its entity from the share instead.
+ */
+export type CreateIssuerRequest = {
+    /**
+     * Name
+     *
+     * The company's name.
+     */
+    name: string;
+    /**
+     * Legal Name
+     *
+     * Its legal name, when different.
+     */
+    legal_name?: string | null;
+    /**
+     * Lei
+     *
+     * Legal Entity Identifier, if it has one.
+     */
+    lei?: string | null;
+    /**
+     * Cik
+     *
+     * SEC Central Index Key, if it has one.
+     */
+    cik?: string | null;
+    /**
+     * Tax Id
+     *
+     * Tax identifier (an EIN in the United States).
+     */
+    tax_id?: string | null;
+    /**
+     * Entity Type
+     *
+     * Legal form, e.g. `corporation`, `llc`, `partnership`.
+     */
+    entity_type?: string | null;
+    /**
+     * Industry
+     *
+     * Industry, as free text.
+     */
+    industry?: string | null;
+    /**
+     * Website
+     *
+     * The company's website.
+     */
+    website?: string | null;
+};
+
+/**
  * CreateMappingAssociationOperation
  *
  * Create one CoA → reporting-concept mapping edge.
@@ -9078,6 +9139,158 @@ export type IngestFileOp = {
 };
 
 /**
+ * IngestReportRequest
+ *
+ * CQRS body for `POST /operations/ingest-report`.
+ *
+ * Give exactly one of `holon` (a report file already in the holon format),
+ * `tavi` (a Tavi compiled model) or `report` (rows read from a PDF or a
+ * workbook, which the server assembles into a holon). Every route ends in a
+ * holon that is checked, stored as the record of what was received, and
+ * loaded onto the entity.
+ */
+export type IngestReportRequest = {
+    /**
+     * Entity Id
+     *
+     * The entity the report is about (see `create-issuer`).
+     */
+    entity_id: string;
+    /**
+     * Holon
+     *
+     * The text of a `.holon.jsonld` report file.
+     */
+    holon?: string | null;
+    /**
+     * Tavi
+     *
+     * The text of a `.tavi.json` compiled model. It is converted to a holon, which is what is stored.
+     */
+    tavi?: string | null;
+    /**
+     * The report as rows.
+     */
+    report?: ReportRowsInput | null;
+    /**
+     * Name
+     *
+     * A display name for the report.
+     */
+    name?: string | null;
+    /**
+     * Require Source
+     *
+     * Refuse the report unless every value names its source.
+     */
+    require_source?: boolean;
+    /**
+     * Dry Run
+     *
+     * Check the report and say what would load, without writing anything.
+     */
+    dry_run?: boolean;
+};
+
+/**
+ * IngestReportResponse
+ *
+ * What an ingest loaded, or on a dry run what it would load.
+ */
+export type IngestReportResponse = {
+    /**
+     * Dry Run
+     *
+     * True when nothing was written.
+     */
+    dry_run: boolean;
+    /**
+     * Report Id
+     *
+     * The report's ID in this graph; null on a dry run.
+     */
+    report_id?: string | null;
+    /**
+     * Entity Id
+     *
+     * The entity the report hangs on.
+     */
+    entity_id: string;
+    /**
+     * Period End
+     *
+     * The last day the report covers.
+     */
+    period_end: string;
+    /**
+     * Kind
+     *
+     * What the report is.
+     */
+    kind: string;
+    /**
+     * Fact Count
+     *
+     * Values loaded as facts.
+     */
+    fact_count: number;
+    /**
+     * Section Count
+     *
+     * Statements and tables loaded.
+     */
+    section_count: number;
+    /**
+     * Calculations Checked
+     *
+     * Totals that were compared with their terms; all agreed.
+     */
+    calculations_checked: number;
+    /**
+     * Balance Checked
+     *
+     * Whether total assets were compared with liabilities and equity.
+     */
+    balance_checked: boolean;
+    /**
+     * Concepts Added
+     *
+     * Concepts the graph did not have, added to its received-reports vocabulary.
+     */
+    concepts_added?: Array<string>;
+    /**
+     * Dimensional Facts Not Loaded
+     *
+     * Values broken out by a dimension. They stay in the stored file; the graph holds the report's totals.
+     */
+    dimensional_facts_not_loaded?: number;
+    /**
+     * Replaced Report Ids
+     *
+     * Earlier ingests for the same entity, period end and kind, now replaced.
+     */
+    replaced_report_ids?: Array<string>;
+    /**
+     * Unplaced Concepts
+     *
+     * Library concepts with a value that no section places, for a report sent as rows. Their values load, but appear on no statement or table.
+     */
+    unplaced_concepts?: Array<string>;
+    /**
+     * Conforms To Library
+     *
+     * For a report sent as rows: true when its balance sheet and income statement are arranged as the library arranges them, so their lines mean what the same lines mean in any other report. Null for a holon or a Tavi model, which is not compared.
+     */
+    conforms_to_library?: boolean | null;
+    /**
+     * Departures
+     *
+     * Each place the report departs from the library's arrangement. The report still loads; the list is kept with it.
+     */
+    departures?: Array<ReportDeparture>;
+};
+
+/**
  * InitialEntityData
  *
  * Initial entity data for entity-focused graph creation.
@@ -9542,6 +9755,56 @@ export type InvoicesResponse = {
      * Whether more invoices are available
      */
     has_more: boolean;
+};
+
+/**
+ * IssuerResponse
+ *
+ * An issuer entity in the fund's graph.
+ */
+export type IssuerResponse = {
+    /**
+     * Id
+     *
+     * Entity ID; pass it to `ingest-report`.
+     */
+    id: string;
+    /**
+     * Name
+     *
+     * The company's name.
+     */
+    name: string;
+    /**
+     * Legal Name
+     *
+     * Its legal name.
+     */
+    legal_name?: string | null;
+    /**
+     * Lei
+     *
+     * Legal Entity Identifier.
+     */
+    lei?: string | null;
+    /**
+     * Cik
+     *
+     * SEC Central Index Key.
+     */
+    cik?: string | null;
+    /**
+     * Tax Id
+     *
+     * Tax identifier.
+     */
+    tax_id?: string | null;
+    /**
+     * Entity Type
+     *
+     * Legal form.
+     */
+    entity_type?: string | null;
 };
 
 /**
@@ -13281,6 +13544,52 @@ export type OperationEnvelopeInformationBlockResponse = {
 };
 
 /**
+ * OperationEnvelope[IngestReportResponse]
+ */
+export type OperationEnvelopeIngestReportResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: IngestReportResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
  * OperationEnvelope[InitializeChartOfAccountsResponse]
  */
 export type OperationEnvelopeInitializeChartOfAccountsResponse = {
@@ -13352,6 +13661,52 @@ export type OperationEnvelopeInitializeLedgerResponse = {
      * Command-specific result payload
      */
     result?: InitializeLedgerResponse | null;
+    /**
+     * At
+     *
+     * ISO-8601 UTC timestamp
+     */
+    at: string;
+    /**
+     * Createdby
+     *
+     * User ID that initiated the operation
+     */
+    createdBy?: string | null;
+    /**
+     * Idempotentreplay
+     *
+     * True when this envelope came from the idempotency cache — the underlying command did not execute again. False on fresh executions.
+     */
+    idempotentReplay?: boolean;
+};
+
+/**
+ * OperationEnvelope[IssuerResponse]
+ */
+export type OperationEnvelopeIssuerResponse = {
+    /**
+     * Operation
+     *
+     * Kebab-case operation name
+     */
+    operation: string;
+    /**
+     * Operationid
+     *
+     * op_-prefixed ULID for audit and SSE correlation
+     */
+    operationId: string;
+    /**
+     * Status
+     *
+     * Operation lifecycle state
+     */
+    status: 'completed' | 'pending' | 'failed';
+    /**
+     * Command-specific result payload
+     */
+    result?: IssuerResponse | null;
     /**
      * At
      *
@@ -18853,6 +19208,171 @@ export type ReopenPeriodOperation = {
 };
 
 /**
+ * ReportConceptRow
+ *
+ * A concept the report uses that the library may not have.
+ */
+export type ReportConceptRow = {
+    /**
+     * Qname
+     *
+     * Prefixed name, e.g. `rs-gaap:Assets` for a library concept or `kpi:Headcount` for one of the firm's own. A prefix other than a library's must be bound in `namespaces`.
+     */
+    qname: string;
+    /**
+     * Label
+     *
+     * The line's wording in the report.
+     */
+    label?: string | null;
+    /**
+     * Kind
+     *
+     * The value's type: `monetary`, `shares`, `percent`, `pure`, `decimal`, `integer`, `string`, `text_block`, `date` or `boolean`.
+     */
+    kind?: string;
+    /**
+     * Period Type
+     *
+     * `instant` for a balance at a date, `duration` for a flow over a period.
+     */
+    period_type?: string | null;
+    /**
+     * Balance
+     *
+     * `debit` or `credit`, when monetary.
+     */
+    balance?: string | null;
+    /**
+     * Abstract
+     *
+     * True for a heading that carries no value of its own.
+     */
+    abstract?: boolean;
+};
+
+/**
+ * ReportDeparture
+ *
+ * One place a report sent as rows arranges a primary statement differently
+ * than the library does.
+ */
+export type ReportDeparture = {
+    /**
+     * Section
+     *
+     * The section it is in.
+     */
+    section: string;
+    /**
+     * Kind
+     *
+     * moved: a library concept sits under a different line, or with a different sign, than the library gives it. placed: a library concept the library does not put on this statement was given a line. own_subtotal: a concept of the firm's own has library concepts beneath it. own_layout: the whole statement came with its own lines.
+     */
+    kind: 'moved' | 'placed' | 'own_subtotal' | 'own_layout';
+    /**
+     * Concept
+     *
+     * The concept, when it is about one.
+     */
+    concept?: string | null;
+    /**
+     * Library Parent
+     *
+     * For `moved`: the line the library puts it under.
+     */
+    library_parent?: string | null;
+    /**
+     * Parent
+     *
+     * The line the report puts it under.
+     */
+    parent?: string | null;
+    /**
+     * Detail
+     *
+     * The departure as a sentence.
+     */
+    detail: string;
+};
+
+/**
+ * ReportFactRow
+ *
+ * One value read from the report.
+ */
+export type ReportFactRow = {
+    /**
+     * Concept
+     *
+     * The concept qname the value is for.
+     */
+    concept: string;
+    /**
+     * Value
+     *
+     * The number, or the text for a non-numeric concept.
+     */
+    value: number | string | null;
+    /**
+     * End
+     *
+     * The date the value is as of, or the last day of its period.
+     */
+    end: string;
+    /**
+     * Start
+     *
+     * The first day of the period; omit for a balance at a date.
+     */
+    start?: string | null;
+    /**
+     * Unit
+     *
+     * A currency code (`USD`), `shares` or `pure`. Required for a number.
+     */
+    unit?: string | null;
+    /**
+     * Decimals
+     *
+     * Precision of the number: `0` to the unit, `-3` to the thousand, `2` to the cent. Totals are checked to this precision.
+     */
+    decimals?: number | null;
+    /**
+     * Source
+     *
+     * Where the value was read from: the document, then `#page=3` for a PDF or `#sheet=BS&cell=B10` for a workbook, with `&label=` and the line's wording when useful. Kept on the fact.
+     */
+    source?: string | null;
+};
+
+/**
+ * ReportLineRow
+ *
+ * One line of a section, top to bottom.
+ */
+export type ReportLineRow = {
+    /**
+     * Concept
+     *
+     * The line's concept qname.
+     */
+    concept: string;
+    /**
+     * Parent
+     *
+     * The qname of the line this one sits under; omit for a top line.
+     */
+    parent?: string | null;
+    /**
+     * Weight
+     *
+     * Set to make the line a term of its parent's total: `1` adds, `-1` subtracts. The total is then checked against its terms.
+     */
+    weight?: number | null;
+};
+
+/**
  * ReportResponse
  *
  * Report definition summary — header metadata, no facts.
@@ -18990,6 +19510,12 @@ export type ReportResponse = {
      */
     superseded_by_id?: string | null;
     /**
+     * Origin
+     *
+     * How the report came to be in this graph: `authored` from its own books, `shared` in from another graph, or `uploaded` as a file. Anything but `authored` is a received report: read-only, and served as the artifact that arrived.
+     */
+    origin?: string;
+    /**
      * Source Graph Id
      *
      * Origin graph for received (shared) reports — populated only on the recipient's copy.
@@ -19015,6 +19541,104 @@ export type ReportResponse = {
     rule_summary?: {
         [key: string]: number;
     } | null;
+};
+
+/**
+ * ReportRowsInput
+ *
+ * A report as rows, for the server to assemble into a holon.
+ */
+export type ReportRowsInput = {
+    /**
+     * Period End
+     *
+     * The last day the report covers.
+     */
+    period_end: string;
+    /**
+     * Kind
+     *
+     * What the report is, e.g. `monthly-package`, `quarterly-financials`. A later ingest for the same entity, period end and kind replaces this one.
+     */
+    kind?: string;
+    /**
+     * Attributed To
+     *
+     * Who or what read the values out of the source document.
+     */
+    attributed_to?: string | null;
+    /**
+     * Namespaces
+     *
+     * Prefix to namespace URI, for concept prefixes that are not a library's.
+     */
+    namespaces?: {
+        [key: string]: string;
+    };
+    /**
+     * Concepts
+     *
+     * The concepts the library does not have, each declared once. A library concept (`rs-gaap:Assets`) needs no entry unless the report words it differently.
+     */
+    concepts?: Array<ReportConceptRow>;
+    /**
+     * Labels
+     *
+     * The document's own wording for a line, by library concept (`rs-gaap:LaborAndRelatedExpense`: `Personnel Expense`). The report reads back with this wording; the concept stays the library's.
+     */
+    labels?: {
+        [key: string]: string;
+    };
+    /**
+     * Sections
+     *
+     * The report's statements and tables.
+     */
+    sections?: Array<ReportSectionRow>;
+    /**
+     * Facts
+     *
+     * The values.
+     */
+    facts: Array<ReportFactRow>;
+};
+
+/**
+ * ReportSectionRow
+ *
+ * A statement or a table of the report.
+ */
+export type ReportSectionRow = {
+    /**
+     * Name
+     *
+     * The section's title, e.g. `Balance Sheet`.
+     */
+    name: string;
+    /**
+     * Block Type
+     *
+     * `balance_sheet`, `income_statement`, `cash_flow_statement` or `equity_statement` for a primary statement; omit for any other table.
+     */
+    block_type?: string | null;
+    /**
+     * Head
+     *
+     * An abstract concept the section's top lines hang from. Required when a top line has nothing beneath it, as in a flat KPI table.
+     */
+    head?: string | null;
+    /**
+     * Layout
+     *
+     * `library` lays a `balance_sheet` or an `income_statement` out from the library: every value sent for a concept the statement places becomes a line under the nearest line above it that also has a value, and each total is checked against the lines beneath it. `given` uses `lines` exactly as sent. Omitted, it is `library` when there are no `lines` and `given` when there are.
+     */
+    layout?: 'library' | 'given' | null;
+    /**
+     * Lines
+     *
+     * The lines, in order. With `layout: library` these are only the lines the library cannot place, or places differently than the document: a concept of the firm's own, each with the `parent` it sits under (a line of the statement that has a value) and its `weight`. A line given here replaces the library's placement of that concept.
+     */
+    lines?: Array<ReportLineRow>;
 };
 
 /**
@@ -37786,3 +38410,131 @@ export type DeleteSecurityResponses = {
 };
 
 export type DeleteSecurityResponse = DeleteSecurityResponses[keyof DeleteSecurityResponses];
+
+export type CreateIssuerData = {
+    body: CreateIssuerRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboinvestor/{graph_id}/operations/create-issuer';
+};
+
+export type CreateIssuerErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type CreateIssuerError = CreateIssuerErrors[keyof CreateIssuerErrors];
+
+export type CreateIssuerResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeIssuerResponse;
+};
+
+export type CreateIssuerResponse = CreateIssuerResponses[keyof CreateIssuerResponses];
+
+export type IngestReportData = {
+    body: IngestReportRequest;
+    headers?: {
+        /**
+         * Idempotency-Key
+         */
+        'Idempotency-Key'?: string | null;
+    };
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+    };
+    query?: never;
+    url: '/extensions/roboinvestor/{graph_id}/operations/ingest-report';
+};
+
+export type IngestReportErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Idempotency-Key conflict — key reused with different body
+     */
+    409: ErrorResponse;
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type IngestReportError = IngestReportErrors[keyof IngestReportErrors];
+
+export type IngestReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: OperationEnvelopeIngestReportResponse;
+};
+
+export type IngestReportResponse2 = IngestReportResponses[keyof IngestReportResponses];

@@ -25,17 +25,23 @@
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core'
 import { ClientError } from 'graphql-request'
 import {
+  createIssuer,
   createPortfolioBlock,
   createSecurity,
   deletePortfolioBlock,
   deleteSecurity,
+  ingestReport,
   updatePortfolioBlock,
   updateSecurity,
 } from '../sdk/sdk.gen'
 import type {
+  CreateIssuerRequest,
   CreatePortfolioBlockRequest,
   CreateSecurityRequest,
   DeletePortfolioBlockOperation,
+  IngestReportRequest,
+  IngestReportResponse,
+  IssuerResponse,
   PortfolioBlockPortfolioPatch,
   PortfolioBlockPositions,
   UpdatePortfolioBlockOperation,
@@ -281,6 +287,34 @@ export class InvestorClient {
     return rawToInvestorSecurity(
       this.requireResult('Create security', envelope.result) as unknown as RawSecurityResponse
     )
+  }
+
+  // ── Issuers and received reports ────────────────────────────────────
+
+  /**
+   * Add a company the fund holds or follows that keeps its books elsewhere.
+   * The issuer is an entity in this graph: pass its `id` to `createSecurity`
+   * as `entity_id` and to `ingestReport`.
+   */
+  async createIssuer(graphId: string, body: CreateIssuerRequest): Promise<IssuerResponse> {
+    const envelope = await this.callOperation('Create issuer', (o) =>
+      createIssuer({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Create issuer', envelope.result) as IssuerResponse
+  }
+
+  /**
+   * Load a report a company sent onto its entity. The body names the
+   * `entity_id` and gives the report as exactly one of `holon`, `tavi` or
+   * `report` (rows read from a PDF or a workbook). Set `dry_run` to check it
+   * and write nothing. A report that does not check is refused with each
+   * reason.
+   */
+  async ingestReport(graphId: string, body: IngestReportRequest): Promise<IngestReportResponse> {
+    const envelope = await this.callOperation('Ingest report', (o) =>
+      ingestReport({ ...o, path: { graph_id: graphId }, body })
+    )
+    return this.requireResult('Ingest report', envelope.result) as IngestReportResponse
   }
 
   /** Update a security's metadata. Only provided fields are applied. */
