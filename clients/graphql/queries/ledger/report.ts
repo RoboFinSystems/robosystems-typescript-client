@@ -24,6 +24,7 @@ export const GET_REPORT = gql`
       sourceGraphId
       sourceReportId
       sharedAt
+      origin
       periods {
         start
         end

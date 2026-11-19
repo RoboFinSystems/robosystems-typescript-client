@@ -8,7 +8,8 @@ import { gql } from 'graphql-request'
  *
  * Includes both native reports (generated from this graph's books) and
  * shared reports (materialized from another graph via a publish list).
- * `sourceGraphId` / `sourceReportId` / `sharedAt` identify shared reports.
+ * `sourceGraphId` / `sourceReportId` / `sharedAt` identify shared reports;
+ * `origin` says how any report arrived (`authored`, `shared`, `uploaded`).
  */
 export const LIST_REPORTS = gql`
   query ListLedgerReports($lifecycle: ReportLifecycle! = CURRENT, $entityId: String) {
@@ -32,6 +33,7 @@ export const LIST_REPORTS = gql`
         sourceGraphId
         sourceReportId
         sharedAt
+        origin
         periods {
           start
           end

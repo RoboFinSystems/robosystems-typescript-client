@@ -2226,6 +2226,7 @@ export type GetLedgerReportQuery = {
     sourceGraphId: string | null
     sourceReportId: string | null
     sharedAt: string | null
+    origin: string
     periods: Array<{ start: string; end: string; label: string }> | null
     structures: Array<{ id: string; name: string; blockType: string }>
   } | null
@@ -2270,6 +2271,7 @@ export type GetLedgerReportPackageQuery = {
     sourceGraphId: string | null
     sourceReportId: string | null
     sharedAt: string | null
+    origin: string
     entityName: string | null
     aiGenerated: boolean
     createdAt: string
@@ -2489,6 +2491,7 @@ export type ListLedgerReportsQuery = {
       sourceGraphId: string | null
       sourceReportId: string | null
       sharedAt: string | null
+      origin: string
       periods: Array<{ start: string; end: string; label: string }> | null
       structures: Array<{ id: string; name: string; blockType: string }>
     }>
@@ -9077,6 +9080,7 @@ export const GetLedgerReportDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceReportId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sharedAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'origin' } },
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'periods' },
@@ -9230,6 +9234,7 @@ export const GetLedgerReportPackageDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sourceReportId' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'sharedAt' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'origin' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'entityName' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'aiGenerated' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
@@ -9872,6 +9877,7 @@ export const ListLedgerReportsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'sourceGraphId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'sourceReportId' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'sharedAt' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'origin' } },
                       {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'periods' },

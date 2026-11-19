@@ -30,6 +30,7 @@ export const GET_REPORT_PACKAGE = gql`
       sourceGraphId
       sourceReportId
       sharedAt
+      origin
       entityName
       aiGenerated
       createdAt
