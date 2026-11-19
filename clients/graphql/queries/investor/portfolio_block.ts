@@ -51,6 +51,8 @@ export const GET_PORTFOLIO_BLOCK = gql`
       totalCostBasisDollars
       totalCurrentValueDollars
       activePositionCount
+      markedPositionCount
+      currentValueIsPartial
       createdAt
       updatedAt
     }

@@ -19,6 +19,8 @@ export const GET_HOLDINGS = gql`
         totalCostBasisDollars
         totalCurrentValueDollars
         positionCount
+        markedPositionCount
+        currentValueIsPartial
         securities {
           securityId
           securityName

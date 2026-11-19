@@ -23,6 +23,8 @@ export type GetInvestorHoldingsQuery = {
       totalCostBasisDollars: number
       totalCurrentValueDollars: number | null
       positionCount: number
+      markedPositionCount: number
+      currentValueIsPartial: boolean
       securities: Array<{
         securityId: string
         securityName: string
@@ -51,6 +53,8 @@ export type GetInvestorPortfolioBlockQuery = {
     totalCostBasisDollars: number
     totalCurrentValueDollars: number | null
     activePositionCount: number
+    markedPositionCount: number
+    currentValueIsPartial: boolean
     createdAt: string
     updatedAt: string
     owner: { id: string; name: string; sourceGraphId: string | null } | null
@@ -3301,6 +3305,8 @@ export const GetInvestorHoldingsDocument = {
                       { kind: 'Field', name: { kind: 'Name', value: 'totalCostBasisDollars' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'totalCurrentValueDollars' } },
                       { kind: 'Field', name: { kind: 'Name', value: 'positionCount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'markedPositionCount' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'currentValueIsPartial' } },
                       {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'securities' },
@@ -3428,6 +3434,8 @@ export const GetInvestorPortfolioBlockDocument = {
                 { kind: 'Field', name: { kind: 'Name', value: 'totalCostBasisDollars' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'totalCurrentValueDollars' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'activePositionCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'markedPositionCount' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'currentValueIsPartial' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                 { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
               ],
