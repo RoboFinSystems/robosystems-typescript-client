@@ -285,6 +285,51 @@ describe('InvestorClient', () => {
     })
   })
 
+  // ── Issuers and received reports ────────────────────────────────────
+
+  describe('createIssuer', () => {
+    it('returns the issuer entity the operation created', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('create-issuer', { id: 'ent_new', name: 'Acme Co' })
+      )
+      const issuer = await client.createIssuer('graph_1', { name: 'Acme Co' })
+      expect(issuer.id).toBe('ent_new')
+      expect(issuer.name).toBe('Acme Co')
+    })
+  })
+
+  describe('ingestReport', () => {
+    it('returns what a dry run would load', async () => {
+      mockFetch.mockResolvedValueOnce(
+        envelopeResponse('ingest-report', {
+          dry_run: true,
+          report_id: null,
+          entity_id: 'ent_new',
+          period_end: '2026-10-31',
+          kind: 'monthly-package',
+          fact_count: 2,
+          section_count: 1,
+          calculations_checked: 0,
+          balance_checked: false,
+          conforms_to_library: true,
+          departures: [],
+        })
+      )
+      const result = await client.ingestReport('graph_1', {
+        entity_id: 'ent_new',
+        dry_run: true,
+        report: {
+          period_end: '2026-10-31',
+          kind: 'monthly-package',
+          sections: [{ name: 'Balance Sheet', block_type: 'balance_sheet' }],
+          facts: [{ concept: 'rs-gaap:Assets', value: 1, end: '2026-10-31', unit: 'USD' }],
+        },
+      })
+      expect(result.fact_count).toBe(2)
+      expect(result.conforms_to_library).toBe(true)
+    })
+  })
+
   // ── Positions (read-only) ───────────────────────────────────────────
 
   describe('listPositions', () => {
