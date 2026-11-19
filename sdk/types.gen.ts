@@ -2592,13 +2592,13 @@ export type ConnectionResponse = {
     /**
      * Entity Id
      *
-     * The entity whose books the connection keeps: the group parent for QuickBooks, the entity a bank feed was connected for (each of its accounts can move to another entity later), none for an external source, whose events name their own.
+     * The entity whose books the connection keeps: the group parent for QuickBooks, the entity a bank feed was connected for (each of its accounts can move to another entity later), the entity an external ledger source was registered for, and none for any other external source, whose events name their own.
      */
     entity_id?: string | null;
     /**
      * Keeps Books
      *
-     * Whether this connection is the ledger of record for `entity_id`: its books are kept in the connected system, and `write_policy` says whether entries are written back to it or only mirrored. False for a bank feed or an external event source.
+     * Whether this connection is the ledger of record for `entity_id`: its books are kept in the connected system, and `write_policy` says whether entries are written back to it or only mirrored. False for a bank feed or an external source that is not a ledger.
      */
     keeps_books?: boolean;
     /**
@@ -2628,7 +2628,7 @@ export type ConnectionResponse = {
     /**
      * Write Policy
      *
-     * Outbound write policy: 'qb_authoritative' (QuickBooks is the book of record and RoboSystems-originated entries publish to it at close), 'shadow' (QuickBooks is the book of record, nothing is written to it and the close posts nothing locally), or 'native' (no external ledger; what severing leaves). It governs the books of `entity_id`, and only on the connection that keeps them. Set via the write-policy endpoint.
+     * Outbound write policy: 'qb_authoritative' (QuickBooks is the book of record and RoboSystems-originated entries publish to it at close), 'shadow' (the connected ledger is the book of record, nothing is written to it and the close posts nothing locally; the only policy an external ledger source can hold), or 'native' (no external ledger; what severing leaves). It governs the books of `entity_id`, and only on the connection that keeps them. Set via the write-policy endpoint.
      */
     write_policy?: string | null;
     /**
@@ -3491,6 +3491,12 @@ export type CreateEventBlockRequest = {
      * Deep link back to source-system record
      */
     external_url?: string | null;
+    /**
+     * Source Version
+     *
+     * The source's revision of this record: a number that only grows, such as a revision counter or a last-modified timestamp. It matters for a `journal_entry_recorded` event from the external ledger that keeps the entity's books (a connection registered with `ledger`): sending the same `external_id` again with a higher version replaces the entry in the books, in an open period. An equal or lower version, or none, is the 409 of a repeat delivery. From any other source it is stored and has no effect.
+     */
+    source_version?: number | null;
     /**
      * Amount
      *
@@ -6897,6 +6903,18 @@ export type ExternalConnectionConfig = {
      * Human-readable label for the connections UI.
      */
     display_name?: string | null;
+    /**
+     * Ledger
+     *
+     * The source is the general ledger that keeps an entity's books. The connection becomes that entity's ledger of record in `shadow`: the journal entries the source sends land posted, nothing else posts to those books, nothing is written back, and the close stamps the period without posting. Refused (409) when another ledger already keeps the entity's books or the entity has books of its own.
+     */
+    ledger?: boolean;
+    /**
+     * Entity Id
+     *
+     * With `ledger`, the entity whose books the source keeps: a subsidiary's id, or omit for the group parent. One source keeps one entity's books; register a source per entity.
+     */
+    entity_id?: string | null;
 };
 
 /**
@@ -19642,6 +19660,39 @@ export type ReportSectionRow = {
 };
 
 /**
+ * ReportSyncRequest
+ *
+ * An external integration's report of a run it just finished.
+ *
+ * The platform runs no sync for an external source, so the integration says
+ * when its last run was: a successful report is the connection's
+ * `last_sync`, which a period close reads to tell whether the books it
+ * mirrors are current.
+ */
+export type ReportSyncRequest = {
+    /**
+     * Status
+     *
+     * 'succeeded' moves `last_sync` to now. 'failed' records the outcome and leaves `last_sync` where it was.
+     */
+    status: 'succeeded' | 'failed';
+    /**
+     * Counts
+     *
+     * What the run did, as the integration counts it (for example `entries_sent`, `entries_replaced`, `entries_withdrawn`). Shown with the connection; nothing reads the names.
+     */
+    counts?: {
+        [key: string]: number;
+    };
+    /**
+     * Message
+     *
+     * A line about the run: the window it covered, or why it failed.
+     */
+    message?: string | null;
+};
+
+/**
  * RepositoryInfo
  *
  * Information about a shared repository.
@@ -23446,6 +23497,12 @@ export type UpdateEventBlockRequest = {
      * Set or replace the stored document the event rests on; an empty string detaches it. Must be a document on this graph. Unset = unchanged.
      */
     document_id?: string | null;
+    /**
+     * Source Retracted
+     *
+     * With `transition_to: voided`, for an event from the external ledger that keeps the entity's books: the source no longer holds this record, so its posted entries are taken out of the books and the event is voided, in an open period. Refused for any other event.
+     */
+    source_retracted?: boolean;
 };
 
 /**
@@ -27703,6 +27760,66 @@ export type SyncConnectionResponses = {
 };
 
 export type SyncConnectionResponse = SyncConnectionResponses[keyof SyncConnectionResponses];
+
+export type ReportConnectionSyncData = {
+    body: ReportSyncRequest;
+    path: {
+        /**
+         * Graph Id
+         */
+        graph_id: string;
+        /**
+         * Connection Id
+         *
+         * Unique connection identifier
+         */
+        connection_id: string;
+    };
+    query?: never;
+    url: '/v1/graphs/{graph_id}/connections/{connection_id}/sync-report';
+};
+
+export type ReportConnectionSyncErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ReportConnectionSyncError = ReportConnectionSyncErrors[keyof ReportConnectionSyncErrors];
+
+export type ReportConnectionSyncResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConnectionResponse;
+};
+
+export type ReportConnectionSyncResponse = ReportConnectionSyncResponses[keyof ReportConnectionSyncResponses];
 
 export type SetConnectionWritePolicyData = {
     body: SetWritePolicyRequest;
