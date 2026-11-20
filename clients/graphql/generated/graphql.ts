@@ -1183,6 +1183,7 @@ export type ListLedgerEventBlocksQueryVariables = Exact<{
   status: string | null | undefined
   agentId: string | null | undefined
   source: string | null | undefined
+  externalId: string | null | undefined
   isReconcilingItem: boolean | null | undefined
   limit?: number
   offset?: number
@@ -6280,6 +6281,11 @@ export const ListLedgerEventBlocksDocument = {
         },
         {
           kind: 'VariableDefinition',
+          variable: { kind: 'Variable', name: { kind: 'Name', value: 'externalId' } },
+          type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+        },
+        {
+          kind: 'VariableDefinition',
           variable: { kind: 'Variable', name: { kind: 'Name', value: 'isReconcilingItem' } },
           type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } },
         },
@@ -6338,6 +6344,11 @@ export const ListLedgerEventBlocksDocument = {
                 kind: 'Argument',
                 name: { kind: 'Name', value: 'source' },
                 value: { kind: 'Variable', name: { kind: 'Name', value: 'source' } },
+              },
+              {
+                kind: 'Argument',
+                name: { kind: 'Name', value: 'externalId' },
+                value: { kind: 'Variable', name: { kind: 'Name', value: 'externalId' } },
               },
               {
                 kind: 'Argument',

@@ -18,6 +18,7 @@ export const LIST_EVENT_BLOCKS = gql`
     $status: String
     $agentId: String
     $source: String
+    $externalId: String
     $isReconcilingItem: Boolean
     $limit: Int! = 50
     $offset: Int! = 0
@@ -29,6 +30,7 @@ export const LIST_EVENT_BLOCKS = gql`
       status: $status
       agentId: $agentId
       source: $source
+      externalId: $externalId
       isReconcilingItem: $isReconcilingItem
       limit: $limit
       offset: $offset

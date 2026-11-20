@@ -1514,6 +1514,11 @@ export class LedgerClient {
       status?: string
       agentId?: string
       source?: string
+      /**
+       * The id a source sent the event under. With `source` it names at
+       * most one event.
+       */
+      externalId?: string
       /** Only posted events whose source payload changed afterwards. */
       isReconcilingItem?: boolean
       limit?: number
@@ -1530,6 +1535,7 @@ export class LedgerClient {
         status: options?.status ?? null,
         agentId: options?.agentId ?? null,
         source: options?.source ?? null,
+        externalId: options?.externalId ?? null,
         isReconcilingItem: options?.isReconcilingItem ?? null,
         limit: options?.limit ?? 50,
         offset: options?.offset ?? 0,
