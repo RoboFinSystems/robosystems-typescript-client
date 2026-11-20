@@ -3807,7 +3807,7 @@ export class LedgerClient {
    * @param graphId Graph identifier owning the Report.
    * @param reportId Report identifier (rpt_-prefixed ULID).
    * @param options.format Serialization flavor — `HOLON_JSONLD` (default, the
-   *   holon, which carries the whole report), `HOLON_JSONLD_LINEAGE` (the
+   *   holon, the primary serialization), `HOLON_JSONLD_LINEAGE` (the
    *   holon with its `#lineage` graph: the ledger lines, entries and events
    *   behind every frozen figure, for this graph's own members), `TAVI` (the
    *   Project Tavi compiled model), or `XBRL_2_1`.
