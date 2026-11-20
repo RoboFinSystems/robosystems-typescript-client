@@ -32653,6 +32653,64 @@ export type CancelOrgSubscriptionResponses = {
 
 export type CancelOrgSubscriptionResponse = CancelOrgSubscriptionResponses[keyof CancelOrgSubscriptionResponses];
 
+export type ResumeOrgSubscriptionData = {
+    body?: never;
+    path: {
+        /**
+         * Org Id
+         */
+        org_id: string;
+        /**
+         * Subscription Id
+         */
+        subscription_id: string;
+    };
+    query?: never;
+    url: '/v1/billing/subscriptions/{org_id}/subscription/{subscription_id}/resume';
+};
+
+export type ResumeOrgSubscriptionErrors = {
+    /**
+     * Invalid request
+     */
+    400: ErrorResponse;
+    /**
+     * Authentication required
+     */
+    401: ErrorResponse;
+    /**
+     * Access denied
+     */
+    403: ErrorResponse;
+    /**
+     * Resource not found
+     */
+    404: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Rate limit exceeded
+     */
+    429: ErrorResponse;
+    /**
+     * Internal server error
+     */
+    500: ErrorResponse;
+};
+
+export type ResumeOrgSubscriptionError = ResumeOrgSubscriptionErrors[keyof ResumeOrgSubscriptionErrors];
+
+export type ResumeOrgSubscriptionResponses = {
+    /**
+     * Successful Response
+     */
+    200: GraphSubscriptionResponse;
+};
+
+export type ResumeOrgSubscriptionResponse = ResumeOrgSubscriptionResponses[keyof ResumeOrgSubscriptionResponses];
+
 export type ListOrgInvoicesData = {
     body?: never;
     path: {
