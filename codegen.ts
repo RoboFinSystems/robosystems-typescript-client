@@ -94,7 +94,14 @@ const config: CodegenConfig = {
         enumsAsTypes: true,
         avoidOptionals: true,
         skipTypename: true,
-        scalars: { Date: 'string', DateTime: 'string', JSON: 'unknown' },
+        // BigInt is a whole number of any size (cents, share counts) sent as
+        // a JSON number: the same `number` these fields were as `Int`.
+        scalars: {
+          Date: 'string',
+          DateTime: 'string',
+          JSON: 'unknown',
+          BigInt: 'number',
+        },
       },
     },
   },

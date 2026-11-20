@@ -22780,7 +22780,7 @@ export type TaxonomyBlockStructureRequest = {
      *
      * DB `structures.block_type` enum. CoA blocks use `chart_of_accounts`; reporting extensions use the statement family, `regulatory_disclosure` (disclosure notes), or `custom`; custom ontology uses `custom`.
      */
-    block_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'rollforward' | 'reconciliation' | 'policy' | 'metric' | 'regulatory_disclosure';
+    block_type: 'chart_of_accounts' | 'custom' | 'balance_sheet' | 'income_statement' | 'cash_flow_statement' | 'equity_statement' | 'coa_mapping' | 'schedule' | 'reconciliation' | 'policy' | 'metric' | 'regulatory_disclosure';
     /**
      * Concept Arrangement
      *
