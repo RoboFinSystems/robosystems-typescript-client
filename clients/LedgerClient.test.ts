@@ -1012,6 +1012,14 @@ describe('LedgerClient', () => {
       expect(events[0].agentId).toBe('agt_1')
     })
 
+    it('finds the event a source sent under its own id', async () => {
+      mockFetch.mockResolvedValueOnce(gqlResponse({ eventBlocks: [] }))
+      await client.listEventBlocks('graph_1', { source: 'netsuite-uk', externalId: 'JE-1' })
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.variables).toMatchObject({ source: 'netsuite-uk', externalId: 'JE-1' })
+      expect(body.query).toContain('externalId: $externalId')
+    })
+
     it('forwards filter args as GraphQL variables', async () => {
       mockFetch.mockResolvedValueOnce(gqlResponse({ eventBlocks: [] }))
       await client.listEventBlocks('graph_1', {
