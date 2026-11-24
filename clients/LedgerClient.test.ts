@@ -1402,6 +1402,38 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listIndustries', () => {
+    it('returns the classification nodes', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          industries: [
+            {
+              id: 'technology',
+              parentId: null,
+              level: 'sector',
+              label: 'Technology',
+              path: ['Technology'],
+              carried: false,
+              replacedBy: null,
+            },
+            {
+              id: 'technology/software',
+              parentId: 'technology',
+              level: 'subsector',
+              label: 'Software',
+              path: ['Technology', 'Software'],
+              carried: false,
+              replacedBy: null,
+            },
+          ],
+        })
+      )
+      const industries = await client.listIndustries('graph_1')
+      expect(industries.map((i) => i.id)).toEqual(['technology', 'technology/software'])
+      expect(industries[1].path).toEqual(['Technology', 'Software'])
+    })
+  })
+
   // ── Chart of Accounts ──────────────────────────────────────────────
 
   describe('listChartTemplates', () => {
