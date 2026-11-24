@@ -1377,6 +1377,20 @@ export type FlowCandidatesQuery = {
   flowCandidates: Array<{ elementId: string; qname: string; name: string; activity: string }>
 }
 
+export type ListIndustriesQueryVariables = Exact<{ [key: string]: never }>
+
+export type ListIndustriesQuery = {
+  industries: Array<{
+    id: string
+    parentId: string | null
+    level: string
+    label: string
+    path: Array<string>
+    carried: boolean
+    replacedBy: string | null
+  }>
+}
+
 export type GetInformationBlockQueryVariables = Exact<{
   id: string | number
   scenarioId: string | null | undefined
@@ -6773,6 +6787,37 @@ export const FlowCandidatesDocument = {
     },
   ],
 } as unknown as DocumentNode<FlowCandidatesQuery, FlowCandidatesQueryVariables>
+export const ListIndustriesDocument = {
+  kind: 'Document',
+  definitions: [
+    {
+      kind: 'OperationDefinition',
+      operation: 'query',
+      name: { kind: 'Name', value: 'ListIndustries' },
+      selectionSet: {
+        kind: 'SelectionSet',
+        selections: [
+          {
+            kind: 'Field',
+            name: { kind: 'Name', value: 'industries' },
+            selectionSet: {
+              kind: 'SelectionSet',
+              selections: [
+                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'parentId' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'level' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'path' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'carried' } },
+                { kind: 'Field', name: { kind: 'Name', value: 'replacedBy' } },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ListIndustriesQuery, ListIndustriesQueryVariables>
 export const GetInformationBlockDocument = {
   kind: 'Document',
   definitions: [

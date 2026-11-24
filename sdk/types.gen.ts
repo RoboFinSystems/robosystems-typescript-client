@@ -3363,6 +3363,8 @@ export type CreateEntityRequest = {
     lei?: string | null;
     /**
      * Industry
+     *
+     * Industry, as an id from the industry classification (the `industries` GraphQL field), at any level: `technology`, `health-care/biotechnology`, `technology/software/application/payroll-and-hcm`. An unknown value is refused with the closest ids.
      */
     industry?: string | null;
     /**
@@ -10267,7 +10269,7 @@ export type LedgerEntityResponse = {
     /**
      * Industry
      *
-     * Free-form industry label.
+     * Industry, as an id from the industry classification (the `industries` field). An entity set before the classification may still hold free text.
      */
     industry?: string | null;
     /**
@@ -23361,6 +23363,8 @@ export type UpdateEntityRequest = {
     lei?: string | null;
     /**
      * Industry
+     *
+     * Industry, as an id from the industry classification (the `industries` GraphQL field), at any level: `technology`, `health-care/biotechnology`, `technology/software/application/payroll-and-hcm`. An unknown value is refused with the closest ids.
      */
     industry?: string | null;
     /**

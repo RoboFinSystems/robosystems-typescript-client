@@ -247,6 +247,7 @@ import {
   GetLedgerTransactionDocument,
   GetLedgerTrialBalanceDocument,
   ListChartTemplatesDocument,
+  ListIndustriesDocument,
   ListInformationBlocksDocument,
   ListInformationBlockSummariesDocument,
   ListLedgerAccountsDocument,
@@ -300,6 +301,7 @@ import {
   type GetLedgerTransactionQuery,
   type GetLedgerTrialBalanceQuery,
   type ListChartTemplatesQuery,
+  type ListIndustriesQuery,
   type ListInformationBlocksQuery,
   type ListInformationBlockSummariesQuery,
   type ListLedgerAccountsQuery,
@@ -427,6 +429,9 @@ export type LedgerClosingBookStructures = NonNullable<
 >
 
 export type LedgerFiscalCalendar = NonNullable<GetLedgerFiscalCalendarQuery['fiscalCalendar']>
+/** One node of the industry classification — `listIndustries()` row. */
+export type LedgerIndustry = ListIndustriesQuery['industries'][number]
+
 /** A shipped chart-of-accounts template — `listChartTemplates()` row. */
 export type LedgerChartTemplate = ListChartTemplatesQuery['chartTemplates'][number]
 export type LedgerFiscalPeriod = LedgerFiscalCalendar['periods'][number]
@@ -1291,6 +1296,22 @@ export class LedgerClient {
     )
     const raw = this.requireResult('Create entity', envelope.result)
     return entityResponseToCamel(raw)
+  }
+
+  /**
+   * The industry classification an entity's `industry` is chosen from: every
+   * node, parents before children. The same list for every graph. Pass a
+   * node's `id` as `industry` to `createEntity` or `updateEntity`, at any
+   * level; an unknown value is refused with the closest ids.
+   */
+  async listIndustries(graphId: string): Promise<LedgerIndustry[]> {
+    return this.gqlQuery(
+      graphId,
+      ListIndustriesDocument,
+      undefined,
+      'List industries',
+      (data) => data.industries
+    )
   }
 
   // ── Summary ────────────────────────────────────────────────────────
