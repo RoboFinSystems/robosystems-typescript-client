@@ -4457,5 +4457,27 @@ describe('LedgerClient.createEventBlock', () => {
       expect(link?.format).toBe('holon-jsonld-lineage')
       expect(link?.generationCount).toBe(3)
     })
+
+    it('asks for the DataBook by its enum and returns a Markdown link', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          reportDownloadUrl: {
+            downloadUrl: 'https://s3.example.com/bundles/rpt_01/g3.databook.md',
+            expiresAt: '2026-11-24T03:00:00Z',
+            contentType: 'text/markdown; charset=utf-8',
+            format: 'databook',
+            generationCount: 3,
+          },
+        })
+      )
+      const link = await client.getReportDownloadUrl('graph_1', 'rpt_01', {
+        format: 'DATABOOK',
+      })
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.format).toBe('DATABOOK')
+      expect(link?.format).toBe('databook')
+      expect(link?.contentType).toBe('text/markdown; charset=utf-8')
+    })
   })
 })
