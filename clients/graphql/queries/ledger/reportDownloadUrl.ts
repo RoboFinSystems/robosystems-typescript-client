@@ -7,10 +7,10 @@ import { gql } from 'graphql-request'
  * download is a read of stored state, so it lives on the read surface.
  * Every flavor resolves to a short-lived presigned S3 URL the client
  * follows directly (the holon is stamped at publish time; the Tavi
- * compiled model, the XBRL and the holon with lineage are materialized +
- * cached on first request).
+ * compiled model, the XBRL, the DataBook and the holon with lineage are
+ * materialized + cached on first request).
  * `format` accepts the `ReportDownloadFormat` enum (`TAVI`,
- * `HOLON_JSONLD`, `HOLON_JSONLD_LINEAGE`, `XBRL_2_1`).
+ * `HOLON_JSONLD`, `HOLON_JSONLD_LINEAGE`, `DATABOOK`, `XBRL_2_1`).
  */
 export const GET_REPORT_DOWNLOAD_URL = gql`
   query GetLedgerReportDownloadUrl(
