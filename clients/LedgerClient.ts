@@ -523,7 +523,7 @@ export interface ReportBundleDownloadResponse {
   expiresAt: string
   /** MIME type of the artifact behind the URL. */
   contentType: string
-  /** Serialization flavor — ``tavi``, ``holon-jsonld``, ``holon-jsonld-lineage``, ``databook`` or ``xbrl-2.1``. */
+  /** Serialization flavor — ``tavi``, ``holon-jsonld``, ``holon-jsonld-lineage``, ``databook``, ``workbook`` or ``xbrl-2.1``. */
   format: string
   /** Bundle generation number stamped on the Report. */
   generationCount: number
@@ -2767,7 +2767,8 @@ export class LedgerClient {
     const body: InitializeChartOfAccountsRequest = {
       template,
       entity_id: options?.entityId ?? null,
-      entity_type: options?.entityType ?? null,
+      // The option stays a string; the server refuses a form outside its list.
+      entity_type: (options?.entityType ?? null) as InitializeChartOfAccountsRequest['entity_type'],
       name: options?.name ?? null,
     }
     const envelope = await this.callOperation('Initialize chart of accounts', (o) =>
@@ -3832,8 +3833,10 @@ export class LedgerClient {
    *   holon with its `#lineage` graph: the ledger lines, entries and events
    *   behind every frozen figure, for this graph's own members), `DATABOOK`
    *   (the holon as a Markdown document a person reads: each value links to
-   *   its fact in the holon, which it names as its source), `TAVI` (the
-   *   Project Tavi compiled model), or `XBRL_2_1`.
+   *   its fact in the holon, which it names as its source), `WORKBOOK` (the
+   *   holon as an Excel file: a sheet per section, each line's breakdowns
+   *   beneath it, every number the reported fact and no formulas), `TAVI`
+   *   (the Project Tavi compiled model), or `XBRL_2_1`.
    * @param options.expiresIn Presigned URL lifetime, in seconds.
    */
   async getReportDownloadUrl(
