@@ -22,6 +22,12 @@ export const LIST_UNMAPPED_ELEMENTS = gql`
         name
         confidence
       }
+      netsAgainst {
+        elementId
+        qname
+        name
+        confidence
+      }
     }
   }
 `

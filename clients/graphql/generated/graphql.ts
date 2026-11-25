@@ -2729,6 +2729,12 @@ export type ListLedgerUnmappedElementsQuery = {
       name: string
       confidence: number | null
     }>
+    netsAgainst: {
+      elementId: string
+      qname: string
+      name: string
+      confidence: number | null
+    } | null
   }>
 }
 
@@ -10619,6 +10625,19 @@ export const ListLedgerUnmappedElementsDocument = {
                 {
                   kind: 'Field',
                   name: { kind: 'Name', value: 'suggestedTargets' },
+                  selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                      { kind: 'Field', name: { kind: 'Name', value: 'elementId' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'qname' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                      { kind: 'Field', name: { kind: 'Name', value: 'confidence' } },
+                    ],
+                  },
+                },
+                {
+                  kind: 'Field',
+                  name: { kind: 'Name', value: 'netsAgainst' },
                   selectionSet: {
                     kind: 'SelectionSet',
                     selections: [
