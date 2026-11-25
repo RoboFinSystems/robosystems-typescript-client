@@ -53,16 +53,35 @@ filesToCopy.forEach((file) => {
   }
 })
 
-// Create main index.js that re-exports everything
+// Create main index.js that re-exports everything. CommonJS, like the rest of
+// the build (package.json has no "type"), in the shape tsc emits so Node's ESM
+// loader still sees every named export.
 console.log('📝 Creating index files...')
-const indexContent = `// Re-export everything from the generated SDK
-export * from './sdk.gen.js';
-export * from './types.gen.js';
-export { client } from './client.gen.js';
-export * from './client/index.js';
-
+const indexContent = `"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.client = void 0;
+// Re-export everything from the generated SDK
+__exportStar(require("./sdk.gen.js"), exports);
+__exportStar(require("./types.gen.js"), exports);
+var client_gen_1 = require("./client.gen.js");
+Object.defineProperty(exports, "client", { enumerable: true, get: function () { return client_gen_1.client; } });
+__exportStar(require("./client/index.js"), exports);
 // Re-export SDK artifacts
-export * from './artifacts/index.js';
+__exportStar(require("./artifacts/index.js"), exports);
 `
 
 fs.writeFileSync(path.join(currentDir, 'index.js'), indexContent)
