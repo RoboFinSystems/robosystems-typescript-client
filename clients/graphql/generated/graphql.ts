@@ -5,7 +5,7 @@ export type Incremental<T> =
   T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never }
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core'
 export type ReportDownloadFormat =
-  'DATABOOK' | 'HOLON_JSONLD' | 'HOLON_JSONLD_LINEAGE' | 'TAVI' | 'XBRL_2_1'
+  'DATABOOK' | 'HOLON_JSONLD' | 'HOLON_JSONLD_LINEAGE' | 'TAVI' | 'WORKBOOK' | 'XBRL_2_1'
 
 export type ReportLifecycle = 'ALL' | 'ARCHIVED' | 'CURRENT'
 

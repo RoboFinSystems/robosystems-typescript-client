@@ -4479,5 +4479,28 @@ describe('LedgerClient.createEventBlock', () => {
       expect(link?.format).toBe('databook')
       expect(link?.contentType).toBe('text/markdown; charset=utf-8')
     })
+
+    it('asks for the workbook by its enum and returns an Excel link', async () => {
+      const xlsx = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          reportDownloadUrl: {
+            downloadUrl: 'https://s3.example.com/bundles/rpt_01/g3.xlsx',
+            expiresAt: '2026-11-24T03:00:00Z',
+            contentType: xlsx,
+            format: 'workbook',
+            generationCount: 3,
+          },
+        })
+      )
+      const link = await client.getReportDownloadUrl('graph_1', 'rpt_01', {
+        format: 'WORKBOOK',
+      })
+      const init = mockFetch.mock.calls[0][1] as RequestInit
+      const body = JSON.parse(init.body as string)
+      expect(body.variables.format).toBe('WORKBOOK')
+      expect(link?.format).toBe('workbook')
+      expect(link?.contentType).toBe(xlsx)
+    })
   })
 })

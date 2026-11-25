@@ -3278,7 +3278,7 @@ export type CreateEntityRequest = {
      *
      * Legal form: `corporation`, `llc`, `partnership`, `sole_proprietorship`, `non_profit`. Picks the default Reporting Style (partnership and llc have equity-form Styles of their own; anything else is corporate) and the equity rows of a chart template.
      */
-    entity_type?: string | null;
+    entity_type?: 'corporation' | 'llc' | 'partnership' | 'sole_proprietorship' | 'non_profit' | null;
     /**
      * Reporting Style Id
      *
@@ -3322,13 +3322,9 @@ export type CreateEntityRequest = {
      */
     ticker?: string | null;
     /**
-     * Uri
-     *
-     * Canonical URL / external identifier.
-     */
-    uri?: string | null;
-    /**
      * Cik
+     *
+     * SEC Central Index Key: up to 10 digits.
      */
     cik?: string | null;
     /**
@@ -3348,17 +3344,13 @@ export type CreateEntityRequest = {
      */
     state_of_incorporation?: string | null;
     /**
-     * Fiscal Year End
-     *
-     * Fiscal year-end as MM-DD. Defaults to the parent's: a graph has one fiscal cadence, and every entity's calendar follows it.
-     */
-    fiscal_year_end?: string | null;
-    /**
      * Tax Id
      */
     tax_id?: string | null;
     /**
      * Lei
+     *
+     * Legal Entity Identifier (ISO 17442): 20 letters and digits.
      */
     lei?: string | null;
     /**
@@ -3393,6 +3385,8 @@ export type CreateEntityRequest = {
     address_postal_code?: string | null;
     /**
      * Address Country
+     *
+     * ISO 3166-1 alpha-2 country code.
      */
     address_country?: string | null;
 };
@@ -9328,9 +9322,9 @@ export type InitialEntityData = {
     /**
      * Uri
      *
-     * Entity website or URI
+     * The entity's website, kept when it is an http(s) address. The entity's URI is assigned by RoboSystems.
      */
-    uri: string;
+    uri?: string | null;
     /**
      * Ticker
      *
@@ -9368,12 +9362,6 @@ export type InitialEntityData = {
      */
     state_of_incorporation?: string | null;
     /**
-     * Fiscal Year End
-     *
-     * Fiscal year end (MMDD)
-     */
-    fiscal_year_end?: string | null;
-    /**
      * Ein
      *
      * Employer Identification Number
@@ -9382,9 +9370,9 @@ export type InitialEntityData = {
     /**
      * Entity Type
      *
-     * Entity legal form (e.g. 'corporation', 'llc' / 'limited_liability_company', 'partnership', 'sole_proprietorship', 'non_profit'). Drives the graph's default Reporting Style at creation — partnership and llc get dedicated equity-form Styles; everything else defaults to corporate. Blank falls back to corporate.
+     * Entity legal form: 'corporation', 'llc', 'partnership', 'sole_proprietorship' or 'non_profit'. Drives the graph's default Reporting Style at creation — partnership and llc get dedicated equity-form Styles; everything else defaults to corporate. Blank falls back to corporate.
      */
-    entity_type?: string | null;
+    entity_type?: 'corporation' | 'llc' | 'partnership' | 'sole_proprietorship' | 'non_profit' | null;
     /**
      * Reporting Style Id
      *
@@ -9421,9 +9409,9 @@ export type InitializeChartOfAccountsRequest = {
     /**
      * Entity Type
      *
-     * Legal form for the equity mapping: `corporation`, `llc` or `partnership`. Defaults to the graph's primary entity, then to corporation.
+     * Legal form for the equity mapping: `corporation`, `llc` or `partnership` have rows of their own; any other form maps as a corporation. Defaults to the graph's primary entity, then to corporation.
      */
-    entity_type?: string | null;
+    entity_type?: 'corporation' | 'llc' | 'partnership' | 'sole_proprietorship' | 'non_profit' | null;
     /**
      * Name
      *
@@ -10203,7 +10191,7 @@ export type LedgerEntityResponse = {
     /**
      * Uri
      *
-     * Canonical URL / external identifier.
+     * The entity's URI, assigned by RoboSystems: `https://robosystems.ai/entities#<id>`.
      */
     uri?: string | null;
     /**
@@ -10251,7 +10239,7 @@ export type LedgerEntityResponse = {
     /**
      * Fiscal Year End
      *
-     * Fiscal year-end as MM-DD (e.g. '12-31', '06-30').
+     * Fiscal year-end as MM-DD, from the entity's fiscal calendar; null before the calendar is set up. Change it through the calendar.
      */
     fiscal_year_end?: string | null;
     /**
@@ -10275,7 +10263,7 @@ export type LedgerEntityResponse = {
     /**
      * Entity Type
      *
-     * Legal form (e.g. 'corporation', 'llc', 'lp').
+     * Legal form: `corporation`, `llc`, `partnership`, `sole_proprietorship` or `non_profit`. An entity set before the list may hold other text.
      */
     entity_type?: string | null;
     /**
@@ -23316,11 +23304,9 @@ export type UpdateEntityRequest = {
      */
     legal_name?: string | null;
     /**
-     * Uri
-     */
-    uri?: string | null;
-    /**
      * Cik
+     *
+     * SEC Central Index Key: up to 10 digits.
      */
     cik?: string | null;
     /**
@@ -23348,17 +23334,13 @@ export type UpdateEntityRequest = {
      */
     state_of_incorporation?: string | null;
     /**
-     * Fiscal Year End
-     *
-     * Fiscal year-end as MM-DD (e.g. '12-31', '06-30').
-     */
-    fiscal_year_end?: string | null;
-    /**
      * Tax Id
      */
     tax_id?: string | null;
     /**
      * Lei
+     *
+     * Legal Entity Identifier (ISO 17442): 20 letters and digits.
      */
     lei?: string | null;
     /**
@@ -23369,8 +23351,10 @@ export type UpdateEntityRequest = {
     industry?: string | null;
     /**
      * Entity Type
+     *
+     * Legal form: `corporation`, `llc`, `partnership`, `sole_proprietorship` or `non_profit`. Changing it leaves the Reporting Style as it is.
      */
-    entity_type?: string | null;
+    entity_type?: 'corporation' | 'llc' | 'partnership' | 'sole_proprietorship' | 'non_profit' | null;
     /**
      * Phone
      */
@@ -23397,6 +23381,8 @@ export type UpdateEntityRequest = {
     address_postal_code?: string | null;
     /**
      * Address Country
+     *
+     * ISO 3166-1 alpha-2 country code.
      */
     address_country?: string | null;
     /**
