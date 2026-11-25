@@ -657,6 +657,37 @@ describe('LedgerClient', () => {
     })
   })
 
+  describe('listUnmappedElements', () => {
+    it('names the concept a contra account nets against', async () => {
+      mockFetch.mockResolvedValueOnce(
+        gqlResponse({
+          unmappedElements: [
+            {
+              id: 'elem_3',
+              code: '1420',
+              name: 'Accumulated Amortization',
+              trait: 'contraAsset',
+              balanceType: 'credit',
+              externalSource: 'qb',
+              suggestedTargets: [],
+              netsAgainst: {
+                elementId: 'elem_intangibles',
+                qname: 'rs-gaap:IntangibleAssetsNetExcludingGoodwill',
+                name: 'Intangible Assets, Net (Excluding Goodwill)',
+                confidence: null,
+              },
+            },
+          ],
+        })
+      )
+      const [contra] = await client.listUnmappedElements('graph_1', { mappingId: 'map_1' })
+      expect(contra.netsAgainst?.qname).toBe('rs-gaap:IntangibleAssetsNetExcludingGoodwill')
+      const body = JSON.parse((mockFetch.mock.calls[0][1] as RequestInit).body as string)
+      expect(body.query).toContain('netsAgainst')
+      expect(body.variables.mappingId).toBe('map_1')
+    })
+  })
+
   describe('getAccountRegister', () => {
     it('forwards the account, window, slice and cursor', async () => {
       mockFetch.mockResolvedValueOnce(
