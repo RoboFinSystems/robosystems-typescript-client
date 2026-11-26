@@ -4511,8 +4511,8 @@ export type CreditSummaryResponse = {
  * Custom node and relationship types for a generic graph.
  *
  * For graphs that don't fit the entity-based schema — inventory, org charts,
- * project management. `extends` names a base schema to build on, or is
- * omitted for a bare database.
+ * project management. `extends` names a base schema to build on. A
+ * schema defines at least one node unless it extends `base`.
  */
 export type CustomSchemaDefinition = {
     /**
@@ -23490,7 +23490,7 @@ export type UpdateEventBlockRequest = {
     /**
      * Discharge Allocations
      *
-     * What this payment settles, document by document: one row per invoice or bill with the positive cents applied to it, together at most the payment's amount (the rest is unapplied). Replaces any held; an empty list clears them, and the settlement link becomes the first row's. Each must be an obligation of this event's entity, not voided: an invoice for money in, a bill for money out. A person chooses them; the open items a bank line may settle are `list-discharge-candidates` over MCP and `dischargeCandidates` over GraphQL.
+     * What this payment settles, document by document: one row per invoice or bill with the positive cents applied to it, together at most the payment's amount (the rest is unapplied). Replaces any held; an empty list clears them, and the settlement link becomes the first row's. Each must be an obligation of this event's entity, not voided: an invoice for money in, a bill for money out; a journal entry, which moves no cash, may settle either (bills converted into a note). A person chooses them; the open items a bank line may settle are `list-discharge-candidates` over MCP and `dischargeCandidates` over GraphQL.
      */
     discharge_allocations?: Array<DischargeAllocation> | null;
     /**
